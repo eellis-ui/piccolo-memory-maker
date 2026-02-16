@@ -2,7 +2,19 @@ import { useState } from "react";
 import { Check } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import logoImg from "@/assets/piccoload-logo.png";
+
+const FONT_OPTIONS = [
+  { value: "'Playfair Display', serif", label: "Playfair Display" },
+  { value: "'Inter', sans-serif", label: "Inter" },
+  { value: "'Georgia', serif", label: "Georgia" },
+  { value: "'Courier New', monospace", label: "Courier New" },
+  { value: "'Times New Roman', serif", label: "Times New Roman" },
+  { value: "'Arial', sans-serif", label: "Arial" },
+  { value: "'Brush Script MT', cursive", label: "Brush Script" },
+  { value: "'Comic Sans MS', cursive", label: "Comic Sans" },
+] as const;
 
 interface CoverPhoto {
   id: string;
@@ -24,6 +36,8 @@ const CoverStep = ({ availableImages, onCoverComplete, onBack }: CoverStepProps)
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
   const [title, setTitle] = useState("colour in your memories");
   const [subtitle, setSubtitle] = useState("FOR KIDS AND ADULTS ALIKE");
+  const [titleFont, setTitleFont] = useState<string>(FONT_OPTIONS[0].value);
+  const [subtitleFont, setSubtitleFont] = useState<string>(FONT_OPTIONS[1].value);
 
   const toggleImage = (id: string) => {
     setSelectedIds((prev) => {
@@ -119,10 +133,10 @@ const CoverStep = ({ availableImages, onCoverComplete, onBack }: CoverStepProps)
 
               {/* Subtitle + Title at bottom */}
               <div className="px-6 py-3 text-center shrink-0">
-                <p className="text-[8px] sm:text-[9px] tracking-[0.2em] uppercase text-muted-foreground font-medium">
+                <p className="text-[8px] sm:text-[9px] tracking-[0.2em] uppercase text-muted-foreground font-medium" style={{ fontFamily: subtitleFont }}>
                   {subtitle}
                 </p>
-                <h3 className="font-display text-base sm:text-lg italic font-semibold text-foreground leading-tight mt-0.5">
+                <h3 className="text-base sm:text-lg italic font-semibold text-foreground leading-tight mt-0.5" style={{ fontFamily: titleFont }}>
                   {title}
                 </h3>
               </div>
@@ -139,6 +153,18 @@ const CoverStep = ({ availableImages, onCoverComplete, onBack }: CoverStepProps)
                 className="mt-1 rounded-xl"
                 placeholder="colour in your memories"
               />
+              <Select value={titleFont} onValueChange={setTitleFont}>
+                <SelectTrigger className="mt-1.5 rounded-xl">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {FONT_OPTIONS.map((f) => (
+                    <SelectItem key={f.value} value={f.value}>
+                      <span style={{ fontFamily: f.value }}>{f.label}</span>
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </div>
             <div>
               <label className="text-sm font-medium text-foreground">Subtitle</label>
@@ -148,6 +174,18 @@ const CoverStep = ({ availableImages, onCoverComplete, onBack }: CoverStepProps)
                 className="mt-1 rounded-xl"
                 placeholder="FOR KIDS AND ADULTS ALIKE"
               />
+              <Select value={subtitleFont} onValueChange={setSubtitleFont}>
+                <SelectTrigger className="mt-1.5 rounded-xl">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {FONT_OPTIONS.map((f) => (
+                    <SelectItem key={f.value} value={f.value}>
+                      <span style={{ fontFamily: f.value }}>{f.label}</span>
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </div>
           </div>
         </div>
