@@ -69,7 +69,7 @@ Deno.serve(async (req) => {
             content: [
               {
                 type: "text",
-                text: "Convert this photo into a clean black-and-white colouring book line drawing. Use simple bold outlines only, no shading, no grey tones, no textures, no colour. Pure black outlines on a pure white background. The result should look like a professional colouring book page that a child could colour in. Maintain the key features and likeness of the subject. Output ONLY the converted image, no text.",
+                text: "Convert this photo into a clean black-and-white colouring book line drawing. CRITICAL: Keep the EXACT same orientation and rotation as the original photo — do NOT rotate the image. Use simple bold outlines only, no shading, no grey tones, no textures, no colour. Pure black outlines on a pure white background. The result should look like a professional colouring book page that a child could colour in. Maintain the key features, likeness, and orientation of the subject. Output ONLY the converted image, no text.",
               },
               {
                 type: "image_url",
