@@ -67,9 +67,9 @@ const CoverStep = ({ availableImages, onCoverComplete, onBack }: CoverStepProps)
           <div className="bg-cream rounded-3xl p-6 shadow-soft">
             <div className="aspect-[3/4] bg-background rounded-2xl shadow-soft-lg overflow-hidden flex flex-col items-center">
               {/* Logo header */}
-              <div className="pt-6 pb-1 flex flex-col items-center">
-                <img src={logoImg} alt="Piccoload" className="h-10" />
-                <p className="text-[9px] sm:text-[10px] tracking-[0.2em] uppercase text-muted-foreground mt-1">
+              <div className="pt-8 pb-2 flex flex-col items-center">
+                <img src={logoImg} alt="Piccoload" className="h-16 sm:h-20" />
+                <p className="text-[9px] sm:text-[11px] tracking-[0.25em] uppercase text-muted-foreground mt-1.5">
                   FROM PIC TO PEN
                 </p>
               </div>
