@@ -8,6 +8,7 @@ import ApproveStep from "@/components/builder/ApproveStep";
 import CoverStep from "@/components/builder/CoverStep";
 import CheckoutStep from "@/components/builder/CheckoutStep";
 
+
 type BuilderStep = "upload" | "approve" | "cover" | "checkout";
 
 export interface OrderPhoto {
@@ -46,9 +47,9 @@ const Builder = () => {
     dedicationPageText: "",
   });
   const [coverData, setCoverData] = useState<{
-    imageId: string;
-    zoom: number;
-    position: { x: number; y: number };
+    imageIds: [string, string];
+    title: string;
+    subtitle: string;
   } | null>(null);
 
   const currentStepIndex = steps.findIndex((s) => s.key === currentStep);
@@ -80,19 +81,16 @@ const Builder = () => {
   };
 
   const handleCoverComplete = async (data: {
-    imageId: string;
-    zoom: number;
-    position: { x: number; y: number };
+    imageIds: [string, string];
+    title: string;
+    subtitle: string;
   }) => {
     setCoverData(data);
     if (orderId) {
       await supabase
         .from("orders")
         .update({
-          cover_image_id: data.imageId,
-          cover_zoom: data.zoom,
-          cover_position_x: data.position.x,
-          cover_position_y: data.position.y,
+          cover_image_id: data.imageIds[0],
           ...bookOptions && {
             title_page_enabled: bookOptions.titlePageEnabled,
             title_page_text: bookOptions.titlePageText,
@@ -180,7 +178,8 @@ const Builder = () => {
               <CoverStep
                 availableImages={orderPhotos.map((p) => ({
                   id: p.id,
-                  url: p.originalUrl,
+                  originalUrl: p.originalUrl,
+                  convertedUrl: p.convertedUrl,
                 }))}
                 onCoverComplete={handleCoverComplete}
                 onBack={() => setCurrentStep("approve")}
