@@ -189,8 +189,10 @@ const Builder = () => {
             {currentStep === "checkout" && (
               <CheckoutStep
                 pageCount={orderPhotos.length}
-                hasUniquePhotos={orderPhotos.length > 1}
+                hasUniquePhotos={false}
                 extraPages={0}
+                bookCount={1}
+                convertedUrls={orderPhotos.map((p) => p.convertedUrl)}
                 onBack={() => setCurrentStep("cover")}
               />
             )}
