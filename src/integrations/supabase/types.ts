@@ -14,7 +14,95 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      order_photos: {
+        Row: {
+          conversion_status: string
+          converted_path: string | null
+          created_at: string
+          id: string
+          is_approved: boolean
+          order_id: string
+          original_path: string
+          page_position: number
+        }
+        Insert: {
+          conversion_status?: string
+          converted_path?: string | null
+          created_at?: string
+          id?: string
+          is_approved?: boolean
+          order_id: string
+          original_path: string
+          page_position: number
+        }
+        Update: {
+          conversion_status?: string
+          converted_path?: string | null
+          created_at?: string
+          id?: string
+          is_approved?: boolean
+          order_id?: string
+          original_path?: string
+          page_position?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "order_photos_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
+            referencedRelation: "orders"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      orders: {
+        Row: {
+          cover_image_id: string | null
+          cover_position_x: number
+          cover_position_y: number
+          cover_zoom: number
+          created_at: string
+          dedication_page_enabled: boolean
+          dedication_page_text: string | null
+          extra_pages: number
+          id: string
+          status: string
+          title_page_enabled: boolean
+          title_page_text: string
+          unique_photos: boolean
+        }
+        Insert: {
+          cover_image_id?: string | null
+          cover_position_x?: number
+          cover_position_y?: number
+          cover_zoom?: number
+          created_at?: string
+          dedication_page_enabled?: boolean
+          dedication_page_text?: string | null
+          extra_pages?: number
+          id?: string
+          status?: string
+          title_page_enabled?: boolean
+          title_page_text?: string
+          unique_photos?: boolean
+        }
+        Update: {
+          cover_image_id?: string | null
+          cover_position_x?: number
+          cover_position_y?: number
+          cover_zoom?: number
+          created_at?: string
+          dedication_page_enabled?: boolean
+          dedication_page_text?: string | null
+          extra_pages?: number
+          id?: string
+          status?: string
+          title_page_enabled?: boolean
+          title_page_text?: string
+          unique_photos?: boolean
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
