@@ -1,47 +1,52 @@
-import { useState, useRef, useCallback } from "react";
-import { ZoomIn, ZoomOut, Move } from "lucide-react";
+import { useState } from "react";
+import { Check } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Slider } from "@/components/ui/slider";
+import { Input } from "@/components/ui/input";
+import logoImg from "@/assets/piccoload-logo.png";
+
+interface CoverPhoto {
+  id: string;
+  originalUrl: string;
+  convertedUrl: string | null;
+}
 
 interface CoverStepProps {
-  availableImages: { id: string; url: string }[];
-  onCoverComplete: (coverData: { imageId: string; zoom: number; position: { x: number; y: number } }) => void;
+  availableImages: CoverPhoto[];
+  onCoverComplete: (coverData: {
+    imageIds: [string, string];
+    title: string;
+    subtitle: string;
+  }) => void;
   onBack: () => void;
 }
 
 const CoverStep = ({ availableImages, onCoverComplete, onBack }: CoverStepProps) => {
-  const [selectedImage, setSelectedImage] = useState(availableImages[0]?.id || "");
-  const [zoom, setZoom] = useState([1]);
-  const [position, setPosition] = useState({ x: 0, y: 0 });
-  const [isDragging, setIsDragging] = useState(false);
-  const dragStart = useRef({ x: 0, y: 0 });
-  const frameRef = useRef<HTMLDivElement>(null);
+  const [selectedIds, setSelectedIds] = useState<string[]>([]);
+  const [title, setTitle] = useState("colour in your memories");
+  const [subtitle, setSubtitle] = useState("FOR KIDS AND ADULTS ALIKE");
 
-  const selectedImageUrl = availableImages.find((img) => img.id === selectedImage)?.url || "";
-
-  const handleMouseDown = useCallback((e: React.MouseEvent) => {
-    setIsDragging(true);
-    dragStart.current = { x: e.clientX - position.x, y: e.clientY - position.y };
-  }, [position]);
-
-  const handleMouseMove = useCallback((e: React.MouseEvent) => {
-    if (!isDragging) return;
-    setPosition({
-      x: e.clientX - dragStart.current.x,
-      y: e.clientY - dragStart.current.y,
+  const toggleImage = (id: string) => {
+    setSelectedIds((prev) => {
+      if (prev.includes(id)) return prev.filter((i) => i !== id);
+      if (prev.length >= 2) return [prev[1], id]; // replace oldest
+      return [...prev, id];
     });
-  }, [isDragging]);
+  };
 
-  const handleMouseUp = useCallback(() => {
-    setIsDragging(false);
-  }, []);
+  const selectedPhotos = selectedIds
+    .map((id) => availableImages.find((img) => img.id === id))
+    .filter(Boolean) as CoverPhoto[];
+
+  const canContinue = selectedIds.length === 2;
 
   const handleContinue = () => {
-    onCoverComplete({
-      imageId: selectedImage,
-      zoom: zoom[0],
-      position,
-    });
+    if (canContinue) {
+      onCoverComplete({
+        imageIds: [selectedIds[0], selectedIds[1]],
+        title,
+        subtitle,
+      });
+    }
   };
 
   return (
@@ -52,101 +57,138 @@ const CoverStep = ({ availableImages, onCoverComplete, onBack }: CoverStepProps)
           Design Your Cover
         </h2>
         <p className="text-muted-foreground">
-          Select a photo and position it within the frame
+          Select 2 photos for your cover — they'll appear alongside their line art versions
         </p>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
         {/* Cover Preview */}
         <div className="order-2 lg:order-1">
-          <div className="bg-cream rounded-3xl p-8 shadow-soft">
-            {/* Book Cover */}
+          <div className="bg-cream rounded-3xl p-6 shadow-soft">
             <div className="aspect-[3/4] bg-background rounded-2xl shadow-soft-lg overflow-hidden flex flex-col">
+              {/* Subtitle */}
+              <div className="pt-6 px-6 text-center">
+                <p className="text-[10px] sm:text-xs tracking-[0.2em] uppercase text-muted-foreground font-medium">
+                  {subtitle}
+                </p>
+              </div>
+
               {/* Title */}
-              <div className="p-6 text-center border-b border-border">
-                <h3 className="font-display text-lg font-semibold text-foreground">
-                  My Piccoload Colouring Book
+              <div className="px-6 pt-2 text-center">
+                <h3 className="font-display text-lg sm:text-xl font-semibold text-foreground leading-tight">
+                  {title}
                 </h3>
               </div>
 
-              {/* Image Frame */}
-              <div
-                ref={frameRef}
-                className="flex-1 m-6 rounded-xl overflow-hidden bg-cream relative cursor-move"
-                onMouseDown={handleMouseDown}
-                onMouseMove={handleMouseMove}
-                onMouseUp={handleMouseUp}
-                onMouseLeave={handleMouseUp}
-              >
-                {selectedImageUrl ? (
-                  <img
-                    src={selectedImageUrl}
-                    alt="Cover"
-                    className="absolute w-full h-full object-cover transition-transform"
-                    style={{
-                      transform: `scale(${zoom[0]}) translate(${position.x / zoom[0]}px, ${position.y / zoom[0]}px)`,
-                    }}
-                    draggable={false}
-                  />
-                ) : (
-                  <div className="absolute inset-0 flex items-center justify-center text-muted-foreground">
-                    Select a photo
-                  </div>
-                )}
-                
-                {/* Drag hint */}
-                <div className="absolute bottom-2 right-2 bg-background/80 rounded-lg px-2 py-1 text-xs text-muted-foreground flex items-center gap-1">
-                  <Move className="w-3 h-3" />
-                  Drag to reposition
-                </div>
+              {/* Two photo pairs */}
+              <div className="flex-1 px-4 py-3 flex flex-col gap-3 justify-center">
+                {[0, 1].map((idx) => {
+                  const photo = selectedPhotos[idx];
+                  return (
+                    <div
+                      key={idx}
+                      className="flex-1 flex gap-2 rounded-xl overflow-hidden bg-cream border border-border"
+                    >
+                      {photo ? (
+                        <>
+                          {/* Original photo */}
+                          <div className="w-1/2 relative">
+                            <img
+                              src={photo.originalUrl}
+                              alt={`Cover photo ${idx + 1}`}
+                              className="w-full h-full object-cover"
+                            />
+                          </div>
+                          {/* Line art version */}
+                          <div className="w-1/2 relative bg-white">
+                            {photo.convertedUrl ? (
+                              <img
+                                src={photo.convertedUrl}
+                                alt={`Line art ${idx + 1}`}
+                                className="w-full h-full object-cover"
+                              />
+                            ) : (
+                              <div className="w-full h-full flex items-center justify-center text-xs text-muted-foreground">
+                                No line art
+                              </div>
+                            )}
+                          </div>
+                        </>
+                      ) : (
+                        <div className="w-full h-full min-h-[80px] flex items-center justify-center text-sm text-muted-foreground">
+                          Select photo {idx + 1}
+                        </div>
+                      )}
+                    </div>
+                  );
+                })}
               </div>
 
-              {/* Footer */}
-              <div className="p-4 text-center border-t border-border">
-                <p className="text-sm text-muted-foreground">Made with Piccoload</p>
+              {/* Logo footer */}
+              <div className="px-6 pb-4 flex justify-center">
+                <img src={logoImg} alt="Piccoload" className="h-6 opacity-60" />
               </div>
             </div>
           </div>
 
-          {/* Zoom Control */}
-          <div className="mt-6 flex items-center gap-4 bg-cream rounded-2xl p-4">
-            <ZoomOut className="w-5 h-5 text-muted-foreground" />
-            <Slider
-              value={zoom}
-              onValueChange={setZoom}
-              min={1}
-              max={3}
-              step={0.1}
-              className="flex-1"
-            />
-            <ZoomIn className="w-5 h-5 text-muted-foreground" />
+          {/* Editable text fields */}
+          <div className="mt-6 space-y-3">
+            <div>
+              <label className="text-sm font-medium text-foreground">Cover Title</label>
+              <Input
+                value={title}
+                onChange={(e) => setTitle(e.target.value)}
+                className="mt-1 rounded-xl"
+                placeholder="colour in your memories"
+              />
+            </div>
+            <div>
+              <label className="text-sm font-medium text-foreground">Subtitle</label>
+              <Input
+                value={subtitle}
+                onChange={(e) => setSubtitle(e.target.value)}
+                className="mt-1 rounded-xl"
+                placeholder="FOR KIDS AND ADULTS ALIKE"
+              />
+            </div>
           </div>
         </div>
 
         {/* Image Selection */}
         <div className="order-1 lg:order-2">
-          <h3 className="font-medium text-foreground mb-4">Select Cover Photo</h3>
+          <h3 className="font-medium text-foreground mb-2">
+            Select 2 Cover Photos{" "}
+            <span className="text-muted-foreground font-normal">
+              ({selectedIds.length}/2 selected)
+            </span>
+          </h3>
           <div className="grid grid-cols-3 sm:grid-cols-4 gap-3 max-h-[500px] overflow-y-auto p-1">
-            {availableImages.map((image) => (
-              <button
-                key={image.id}
-                onClick={() => {
-                  setSelectedImage(image.id);
-                  setPosition({ x: 0, y: 0 });
-                }}
-                className={`aspect-square rounded-xl overflow-hidden border-2 transition-all ${
-                  selectedImage === image.id
-                    ? "border-primary shadow-soft ring-2 ring-primary/20"
-                    : "border-transparent hover:border-border"
-                }`}
-              >
-                <img
-                  src={image.url}
-                  alt="Option"
-                  className="w-full h-full object-cover"
-                />
-              </button>
-            ))}
+            {availableImages.map((image) => {
+              const isSelected = selectedIds.includes(image.id);
+              const selectionIndex = selectedIds.indexOf(image.id);
+              return (
+                <button
+                  key={image.id}
+                  onClick={() => toggleImage(image.id)}
+                  className={`aspect-square rounded-xl overflow-hidden border-2 transition-all relative ${
+                    isSelected
+                      ? "border-primary shadow-soft ring-2 ring-primary/20"
+                      : "border-transparent hover:border-border"
+                  }`}
+                >
+                  <img
+                    src={image.originalUrl}
+                    alt="Option"
+                    className="w-full h-full object-cover"
+                  />
+                  {isSelected && (
+                    <div className="absolute top-1 right-1 w-6 h-6 rounded-full bg-primary text-primary-foreground flex items-center justify-center text-xs font-bold">
+                      {selectionIndex + 1}
+                    </div>
+                  )}
+                </button>
+              );
+            })}
           </div>
         </div>
       </div>
@@ -158,10 +200,10 @@ const CoverStep = ({ availableImages, onCoverComplete, onBack }: CoverStepProps)
         </Button>
         <Button
           onClick={handleContinue}
-          disabled={!selectedImage}
+          disabled={!canContinue}
           className="rounded-2xl px-8"
         >
-          Continue to Checkout
+          {canContinue ? "Continue to Checkout" : `Select ${2 - selectedIds.length} more photo${selectedIds.length === 1 ? "" : "s"}`}
         </Button>
       </div>
     </div>
