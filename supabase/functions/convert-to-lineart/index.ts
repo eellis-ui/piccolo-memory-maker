@@ -46,14 +46,26 @@ Deno.serve(async (req) => {
       .update({ conversion_status: "converting" })
       .eq("id", photoId);
 
-    // Get public URL for the original image
-    const { data: urlData } = supabase.storage
+    // Download the original image and convert to base64 to strip EXIF issues
+    const { data: fileData, error: downloadError } = await supabase.storage
       .from("order-files")
-      .getPublicUrl(photo.original_path);
+      .download(photo.original_path);
 
-    const imageUrl = urlData.publicUrl;
+    if (downloadError || !fileData) {
+      throw new Error(`Failed to download original image: ${downloadError?.message}`);
+    }
 
-    // Call Lovable AI Gateway with Gemini image generation model
+    const arrayBuffer = await fileData.arrayBuffer();
+    const uint8 = new Uint8Array(arrayBuffer);
+    let binary = "";
+    for (let i = 0; i < uint8.length; i++) {
+      binary += String.fromCharCode(uint8[i]);
+    }
+    const imageBase64Input = btoa(binary);
+    const mimeType = fileData.type || "image/jpeg";
+    const dataUrl = `data:${mimeType};base64,${imageBase64Input}`;
+
+    // Call Lovable AI Gateway with Gemini pro image model
     const aiResponse = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
       method: "POST",
       headers: {
@@ -61,7 +73,7 @@ Deno.serve(async (req) => {
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        model: "google/gemini-2.5-flash-image",
+        model: "google/gemini-3-pro-image-preview",
         modalities: ["image", "text"],
         messages: [
           {
@@ -69,11 +81,11 @@ Deno.serve(async (req) => {
             content: [
               {
                 type: "text",
-                text: "Convert this photo into a clean black-and-white colouring book line drawing. CRITICAL: Keep the EXACT same orientation and rotation as the original photo — do NOT rotate the image. Use simple bold outlines only, no shading, no grey tones, no textures, no colour. Pure black outlines on a pure white background. The result should look like a professional colouring book page that a child could colour in. Maintain the key features, likeness, and orientation of the subject. Output ONLY the converted image, no text.",
+                text: "Convert this photo into a clean black-and-white colouring book line drawing. IMPORTANT: The output image MUST have the EXACT same orientation, rotation, and aspect ratio as the input photo. Do NOT rotate or flip. Use simple bold outlines only, no shading, no grey tones, no textures, no colour. Pure black outlines on a pure white background. Maintain the key features and likeness of the subject. Output ONLY the converted image.",
               },
               {
                 type: "image_url",
-                image_url: { url: imageUrl },
+                image_url: { url: dataUrl },
               },
             ],
           },
