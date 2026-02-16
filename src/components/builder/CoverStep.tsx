@@ -67,12 +67,12 @@ const CoverStep = ({ availableImages, onCoverComplete, onBack }: CoverStepProps)
           <div className="bg-cream rounded-3xl p-6 shadow-soft">
             <div className="aspect-[3/4] bg-background rounded-2xl shadow-soft-lg overflow-hidden flex flex-col items-center">
               {/* Logo header */}
-              <div className="pt-8 pb-3 flex flex-col items-center">
-                <img src={logoImg} alt="Piccoload – From Pic to Pen" className="h-24 sm:h-32" />
+              <div className="pt-6 pb-2 flex flex-col items-center px-8">
+                <img src={logoImg} alt="Piccoload – From Pic to Pen" className="w-[55%] max-w-[220px]" />
               </div>
 
-              {/* Two photo pairs – alternating layout, no gap, centered */}
-              <div className="flex-1 px-6 py-3 flex flex-col gap-0 justify-center w-full">
+              {/* Two photo pairs – alternating layout, no gap, fills space */}
+              <div className="flex-1 flex flex-col gap-0 w-full">
                 {[0, 1].map((idx) => {
                   const photo = selectedPhotos[idx];
                   // Row 0: original | lineart, Row 1: lineart | original
@@ -80,7 +80,7 @@ const CoverStep = ({ availableImages, onCoverComplete, onBack }: CoverStepProps)
                   return (
                     <div
                       key={idx}
-                      className="flex overflow-hidden"
+                      className="flex overflow-hidden flex-1"
                     >
                       {photo ? (
                         <>
