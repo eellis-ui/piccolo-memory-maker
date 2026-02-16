@@ -16,7 +16,7 @@ const StorySection = () => {
 
           <div className="prose prose-lg mx-auto text-center">
             <p className="text-muted-foreground text-lg leading-relaxed mb-6">
-              Piccolo'd was born during a hospital stay, where colouring became a 
+              Piccoload was born during a hospital stay, where colouring became a 
               source of calm and comfort during recovery. What started as a personal 
               coping mechanism transformed into something bigger—a way to turn 
               cherished memories into meaningful, therapeutic art.
@@ -31,7 +31,7 @@ const StorySection = () => {
             </p>
             
             <p className="text-muted-foreground text-lg leading-relaxed">
-              Every Piccolo'd book is made with love in the UK, using premium 
+              Every Piccoload book is made with love in the UK, using premium 
               materials that honour the memories within. Whether it's a gift for 
               a loved one or a keepsake for yourself, each book is a unique 
               celebration of life's precious moments.

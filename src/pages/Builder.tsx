@@ -41,7 +41,7 @@ const Builder = () => {
   const [orderPhotos, setOrderPhotos] = useState<OrderPhoto[]>([]);
   const [bookOptions, setBookOptions] = useState<BookOptions>({
     titlePageEnabled: true,
-    titlePageText: "My Piccolo'd Colouring Book",
+    titlePageText: "My Piccoload Colouring Book",
     dedicationPageEnabled: false,
     dedicationPageText: "",
   });

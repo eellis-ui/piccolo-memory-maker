@@ -46,7 +46,7 @@ const BookOptionsPanel = ({ options, onChange }: BookOptionsPanelProps) => {
             onChange={(e) =>
               onChange({ ...options, titlePageText: e.target.value })
             }
-            placeholder="My Piccolo'd Colouring Book"
+            placeholder="My Piccoload Colouring Book"
             className="rounded-xl"
           />
         )}
