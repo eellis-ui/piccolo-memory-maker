@@ -22,7 +22,20 @@ Deno.serve(async (req) => {
 
     const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
     const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
-    const replicateToken = Deno.env.get("REPLICATE_API_TOKEN")!;
+    const replicateToken = Deno.env.get("REPLICATE_API_TOKEN");
+
+    console.log("REPLICATE_API_TOKEN check:", {
+      exists: !!replicateToken,
+      length: replicateToken?.length ?? 0,
+      prefix: replicateToken?.substring(0, 4) ?? "N/A",
+    });
+
+    if (!replicateToken) {
+      return new Response(JSON.stringify({ error: "REPLICATE_API_TOKEN is not configured" }), {
+        status: 500,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
 
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
