@@ -61,7 +61,8 @@ Deno.serve(async (req) => {
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        model: "google/gemini-3-pro-image-preview",
+        model: "google/gemini-2.5-flash-image",
+        modalities: ["image", "text"],
         messages: [
           {
             role: "user",
@@ -89,52 +90,23 @@ Deno.serve(async (req) => {
     const aiResult = await aiResponse.json();
     console.log("AI response structure:", JSON.stringify(aiResult).substring(0, 500));
 
-    // Extract the image from the response
-    const content = aiResult.choices?.[0]?.message?.content;
+    // Extract the image from the response - check message.images array first
+    const message = aiResult.choices?.[0]?.message;
     let imageBase64: string | null = null;
 
-    if (typeof content === "string") {
-      // Check if content contains inline base64 image data
-      const base64Match = content.match(/data:image\/[^;]+;base64,([^\s"]+)/);
-      if (base64Match) {
-        imageBase64 = base64Match[1];
+    // Primary: check message.images array (Lovable AI image generation format)
+    if (message?.images && Array.isArray(message.images) && message.images.length > 0) {
+      const imgUrl = message.images[0]?.image_url?.url;
+      if (imgUrl && imgUrl.startsWith("data:image")) {
+        const match = imgUrl.match(/base64,(.+)/);
+        if (match) imageBase64 = match[1];
       }
-    } else if (Array.isArray(content)) {
-      // Multi-part response - look for image parts
-      for (const part of content) {
-        if (part.type === "image_url" && part.image_url?.url) {
-          const url = part.image_url.url;
-          if (url.startsWith("data:image")) {
-            const match = url.match(/base64,(.+)/);
-            if (match) imageBase64 = match[1];
-          } else {
-            // It's a URL - download it
-            const imgResp = await fetch(url);
-            const imgBuf = new Uint8Array(await imgResp.arrayBuffer());
-            const convertedPath = `converted/${photo.order_id}/${photoId}.png`;
-            const { error: uploadError } = await supabase.storage
-              .from("order-files")
-              .upload(convertedPath, imgBuf, { contentType: "image/png", upsert: true });
-            if (uploadError) throw new Error(`Upload failed: ${uploadError.message}`);
+    }
 
-            await supabase.from("order_photos").update({
-              converted_path: convertedPath,
-              conversion_status: "completed",
-            }).eq("id", photoId);
-
-            const { data: convertedUrlData } = supabase.storage
-              .from("order-files")
-              .getPublicUrl(convertedPath);
-
-            return new Response(
-              JSON.stringify({ success: true, convertedUrl: convertedUrlData.publicUrl, convertedPath }),
-              { headers: { ...corsHeaders, "Content-Type": "application/json" } }
-            );
-          }
-        } else if (part.type === "inline_data" || part.inline_data) {
-          imageBase64 = part.inline_data?.data || part.data;
-        }
-      }
+    // Fallback: check content for inline base64
+    if (!imageBase64 && typeof message?.content === "string") {
+      const base64Match = message.content.match(/data:image\/[^;]+;base64,([^\s"]+)/);
+      if (base64Match) imageBase64 = base64Match[1];
     }
 
     if (!imageBase64) {
