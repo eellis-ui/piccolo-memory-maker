@@ -8,10 +8,12 @@ interface CheckoutStepProps {
   pageCount: number;
   hasUniquePhotos: boolean;
   extraPages: number;
+  bookCount: number;
+  convertedUrls: (string | null)[];
   onBack: () => void;
 }
 
-const CheckoutStep = ({ pageCount, hasUniquePhotos, extraPages, onBack }: CheckoutStepProps) => {
+const CheckoutStep = ({ pageCount, hasUniquePhotos, extraPages, bookCount, convertedUrls, onBack }: CheckoutStepProps) => {
   // Pricing calculation
   const basePrice = 26;
   const uniquePhotosPrice = hasUniquePhotos ? 5 : 0;
@@ -59,10 +61,10 @@ const CheckoutStep = ({ pageCount, hasUniquePhotos, extraPages, onBack }: Checko
                 <Check className="w-5 h-5 text-primary" />
                 <span>UK delivery included</span>
               </div>
-              {hasUniquePhotos && (
+              {hasUniquePhotos && bookCount > 1 && (
                 <div className="flex items-center gap-3">
                   <Check className="w-5 h-5 text-primary" />
-                  <span>20 unique photos (no repeats)</span>
+                  <span>20 unique photos per book (no repeats across books)</span>
                   <Badge variant="secondary">Add-on</Badge>
                 </div>
               )}
@@ -76,14 +78,13 @@ const CheckoutStep = ({ pageCount, hasUniquePhotos, extraPages, onBack }: Checko
             </CardHeader>
             <CardContent>
               <div className="flex gap-4 overflow-x-auto pb-4">
-                {/* Placeholder previews */}
-                <div className="flex-shrink-0 w-32 aspect-[3/4] bg-cream rounded-xl flex items-center justify-center">
-                  <span className="text-xs text-muted-foreground">Cover</span>
-                </div>
-                {[1, 2, 3, 4].map((i) => (
-                  <div key={i} className="flex-shrink-0 w-32 aspect-[3/4] bg-cream rounded-xl flex items-center justify-center relative">
-                    <span className="text-xs text-muted-foreground">Page {i}</span>
-                    {/* Watermark */}
+                {convertedUrls.map((url, i) => (
+                  <div key={i} className="flex-shrink-0 w-32 aspect-[3/4] bg-cream rounded-xl flex items-center justify-center relative overflow-hidden">
+                    {url ? (
+                      <img src={url} alt={`Page ${i + 1}`} className="w-full h-full object-cover" />
+                    ) : (
+                      <span className="text-xs text-muted-foreground">Page {i + 1}</span>
+                    )}
                     <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
                       <span className="text-lg font-display text-foreground/5 rotate-[-30deg]">
                         PREVIEW
@@ -91,9 +92,11 @@ const CheckoutStep = ({ pageCount, hasUniquePhotos, extraPages, onBack }: Checko
                     </div>
                   </div>
                 ))}
-                <div className="flex-shrink-0 w-32 aspect-[3/4] bg-cream rounded-xl flex items-center justify-center">
-                  <span className="text-xs text-muted-foreground">+{pageCount - 4} more</span>
-                </div>
+                {pageCount > convertedUrls.length && (
+                  <div className="flex-shrink-0 w-32 aspect-[3/4] bg-cream rounded-xl flex items-center justify-center">
+                    <span className="text-xs text-muted-foreground">+{pageCount - convertedUrls.length} more</span>
+                  </div>
+                )}
               </div>
             </CardContent>
           </Card>
@@ -132,9 +135,9 @@ const CheckoutStep = ({ pageCount, hasUniquePhotos, extraPages, onBack }: Checko
                 <span>£{totalPrice.toFixed(2)}</span>
               </div>
 
-              <Button className="w-full rounded-2xl py-6 text-lg mt-4" size="lg">
-                <ShoppingCart className="w-5 h-5 mr-2" />
-                Continue to Secure Checkout
+              <Button className="w-full rounded-2xl py-6 text-base mt-4" size="lg">
+                <ShoppingCart className="w-5 h-5 mr-2 shrink-0" />
+                <span className="truncate">Secure Checkout</span>
               </Button>
 
               <div className="flex items-center justify-center gap-2 text-sm text-muted-foreground">
