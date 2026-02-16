@@ -65,14 +65,14 @@ const CoverStep = ({ availableImages, onCoverComplete, onBack }: CoverStepProps)
         {/* Cover Preview */}
         <div className="order-2 lg:order-1">
           <div className="bg-cream rounded-3xl p-6 shadow-soft">
-            <div className="aspect-[3/4] bg-background rounded-2xl shadow-soft-lg overflow-hidden grid grid-rows-[auto_1fr_auto]">
-              {/* Logo header */}
-              <div className="pt-6 pb-2 flex justify-center px-6">
-                <img src={logoImg} alt="Piccoload – From Pic to Pen" className="w-[65%]" />
+          <div className="aspect-[3/4] bg-cream rounded-2xl shadow-soft-lg overflow-hidden flex flex-col">
+              {/* Logo header – compact */}
+              <div className="pt-4 pb-1 flex justify-center px-6 shrink-0">
+                <img src={logoImg} alt="Piccoload – From Pic to Pen" className="w-[45%]" />
               </div>
 
-              {/* Two photo pairs – 2x2 grid filling middle */}
-              <div className="grid grid-rows-2 w-full min-h-0">
+              {/* Two photo pairs – fills the bulk of the page */}
+              <div className="flex-1 grid grid-rows-2 w-full min-h-0">
                 {[0, 1].map((idx) => {
                   const photo = selectedPhotos[idx];
                   const isReversed = idx === 1;
@@ -118,11 +118,11 @@ const CoverStep = ({ availableImages, onCoverComplete, onBack }: CoverStepProps)
               </div>
 
               {/* Subtitle + Title at bottom */}
-              <div className="px-6 py-4 text-center">
-                <p className="text-[9px] sm:text-[10px] tracking-[0.2em] uppercase text-muted-foreground font-medium">
+              <div className="px-6 py-3 text-center shrink-0">
+                <p className="text-[8px] sm:text-[9px] tracking-[0.2em] uppercase text-muted-foreground font-medium">
                   {subtitle}
                 </p>
-                <h3 className="font-display text-lg sm:text-xl font-semibold text-foreground leading-tight mt-1">
+                <h3 className="font-display text-base sm:text-lg italic font-semibold text-foreground leading-tight mt-0.5">
                   {title}
                 </h3>
               </div>
