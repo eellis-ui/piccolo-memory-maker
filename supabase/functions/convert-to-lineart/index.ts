@@ -22,20 +22,7 @@ Deno.serve(async (req) => {
 
     const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
     const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
-    const replicateToken = Deno.env.get("REPLICATE_API_TOKEN");
-
-    console.log("REPLICATE_API_TOKEN check:", {
-      exists: !!replicateToken,
-      length: replicateToken?.length ?? 0,
-      prefix: replicateToken?.substring(0, 4) ?? "N/A",
-    });
-
-    if (!replicateToken) {
-      return new Response(JSON.stringify({ error: "REPLICATE_API_TOKEN is not configured" }), {
-        status: 500,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-      });
-    }
+    const lovableApiKey = Deno.env.get("LOVABLE_API_KEY")!;
 
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
@@ -66,108 +53,128 @@ Deno.serve(async (req) => {
 
     const imageUrl = urlData.publicUrl;
 
-    // Call Replicate API - create prediction
-    const createResponse = await fetch("https://api.replicate.com/v1/predictions", {
+    // Call Lovable AI Gateway with Gemini image generation model
+    const aiResponse = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
       method: "POST",
       headers: {
-        Authorization: `Bearer ${replicateToken}`,
+        Authorization: `Bearer ${lovableApiKey}`,
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        version: "854e8727697a057c525cdb45ab037f64ecca770a1769cc52287c2e56c5c572b9",
-        input: {
-          image: imageUrl,
-          prompt:
-            "clean black-and-white colouring book line drawing, simple bold outlines, no shading, white background",
-          negative_prompt:
-            "shadows, grey tones, textures, colour, background noise, realism, pencil texture, sketch, greyscale, shading",
-          num_samples: "1",
-          image_resolution: "512",
-          detect_resolution: 512,
-          ddim_steps: 30,
-          scale: 9,
-          seed: 0,
-          a_prompt: "best quality, clean lines, high contrast",
-        },
+        model: "google/gemini-3-pro-image-preview",
+        messages: [
+          {
+            role: "user",
+            content: [
+              {
+                type: "text",
+                text: "Convert this photo into a clean black-and-white colouring book line drawing. Use simple bold outlines only, no shading, no grey tones, no textures, no colour. Pure black outlines on a pure white background. The result should look like a professional colouring book page that a child could colour in. Maintain the key features and likeness of the subject. Output ONLY the converted image, no text.",
+              },
+              {
+                type: "image_url",
+                image_url: { url: imageUrl },
+              },
+            ],
+          },
+        ],
       }),
     });
 
-    if (!createResponse.ok) {
-      const errText = await createResponse.text();
-      throw new Error(`Replicate API error: ${errText}`);
+    if (!aiResponse.ok) {
+      const errText = await aiResponse.text();
+      console.error("AI Gateway error:", errText);
+      throw new Error(`AI conversion error: ${errText}`);
     }
 
-    let prediction = await createResponse.json();
+    const aiResult = await aiResponse.json();
+    console.log("AI response structure:", JSON.stringify(aiResult).substring(0, 500));
 
-    // Poll for completion
-    while (prediction.status !== "succeeded" && prediction.status !== "failed") {
-      await new Promise((r) => setTimeout(r, 2000));
-      const pollResponse = await fetch(
-        `https://api.replicate.com/v1/predictions/${prediction.id}`,
-        {
-          headers: { Authorization: `Bearer ${replicateToken}` },
+    // Extract the image from the response
+    const content = aiResult.choices?.[0]?.message?.content;
+    let imageBase64: string | null = null;
+
+    if (typeof content === "string") {
+      // Check if content contains inline base64 image data
+      const base64Match = content.match(/data:image\/[^;]+;base64,([^\s"]+)/);
+      if (base64Match) {
+        imageBase64 = base64Match[1];
+      }
+    } else if (Array.isArray(content)) {
+      // Multi-part response - look for image parts
+      for (const part of content) {
+        if (part.type === "image_url" && part.image_url?.url) {
+          const url = part.image_url.url;
+          if (url.startsWith("data:image")) {
+            const match = url.match(/base64,(.+)/);
+            if (match) imageBase64 = match[1];
+          } else {
+            // It's a URL - download it
+            const imgResp = await fetch(url);
+            const imgBuf = new Uint8Array(await imgResp.arrayBuffer());
+            const convertedPath = `converted/${photo.order_id}/${photoId}.png`;
+            const { error: uploadError } = await supabase.storage
+              .from("order-files")
+              .upload(convertedPath, imgBuf, { contentType: "image/png", upsert: true });
+            if (uploadError) throw new Error(`Upload failed: ${uploadError.message}`);
+
+            await supabase.from("order_photos").update({
+              converted_path: convertedPath,
+              conversion_status: "completed",
+            }).eq("id", photoId);
+
+            const { data: convertedUrlData } = supabase.storage
+              .from("order-files")
+              .getPublicUrl(convertedPath);
+
+            return new Response(
+              JSON.stringify({ success: true, convertedUrl: convertedUrlData.publicUrl, convertedPath }),
+              { headers: { ...corsHeaders, "Content-Type": "application/json" } }
+            );
+          }
+        } else if (part.type === "inline_data" || part.inline_data) {
+          imageBase64 = part.inline_data?.data || part.data;
         }
-      );
-      prediction = await pollResponse.json();
+      }
     }
 
-    if (prediction.status === "failed") {
-      await supabase
-        .from("order_photos")
-        .update({ conversion_status: "failed" })
-        .eq("id", photoId);
-
+    if (!imageBase64) {
+      console.error("Could not extract image from AI response. Full response:", JSON.stringify(aiResult).substring(0, 2000));
+      await supabase.from("order_photos").update({ conversion_status: "failed" }).eq("id", photoId);
       return new Response(
-        JSON.stringify({ error: "Conversion failed", details: prediction.error }),
+        JSON.stringify({ error: "AI did not return an image" }),
         { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
 
-    // Download converted image from Replicate
-    const outputUrl = Array.isArray(prediction.output)
-      ? prediction.output[0]
-      : prediction.output;
+    // Decode base64 and upload
+    const binaryString = atob(imageBase64);
+    const imageBuffer = new Uint8Array(binaryString.length);
+    for (let i = 0; i < binaryString.length; i++) {
+      imageBuffer[i] = binaryString.charCodeAt(i);
+    }
 
-    const imageResponse = await fetch(outputUrl);
-    const imageBlob = await imageResponse.blob();
-    const imageBuffer = new Uint8Array(await imageBlob.arrayBuffer());
-
-    // Upload to storage
     const convertedPath = `converted/${photo.order_id}/${photoId}.png`;
     const { error: uploadError } = await supabase.storage
       .from("order-files")
-      .upload(convertedPath, imageBuffer, {
-        contentType: "image/png",
-        upsert: true,
-      });
+      .upload(convertedPath, imageBuffer, { contentType: "image/png", upsert: true });
 
-    if (uploadError) {
-      throw new Error(`Storage upload failed: ${uploadError.message}`);
-    }
+    if (uploadError) throw new Error(`Storage upload failed: ${uploadError.message}`);
 
-    // Update photo record
-    await supabase
-      .from("order_photos")
-      .update({
-        converted_path: convertedPath,
-        conversion_status: "completed",
-      })
-      .eq("id", photoId);
+    await supabase.from("order_photos").update({
+      converted_path: convertedPath,
+      conversion_status: "completed",
+    }).eq("id", photoId);
 
-    // Get public URL for the converted image
     const { data: convertedUrlData } = supabase.storage
       .from("order-files")
       .getPublicUrl(convertedPath);
 
     return new Response(
-      JSON.stringify({
-        success: true,
-        convertedUrl: convertedUrlData.publicUrl,
-        convertedPath,
-      }),
+      JSON.stringify({ success: true, convertedUrl: convertedUrlData.publicUrl, convertedPath }),
       { headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
   } catch (error) {
+    console.error("Conversion error:", error);
     return new Response(
       JSON.stringify({ error: error.message }),
       { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
