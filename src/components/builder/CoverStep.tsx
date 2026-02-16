@@ -65,43 +65,43 @@ const CoverStep = ({ availableImages, onCoverComplete, onBack }: CoverStepProps)
         {/* Cover Preview */}
         <div className="order-2 lg:order-1">
           <div className="bg-cream rounded-3xl p-6 shadow-soft">
-            <div className="aspect-[3/4] bg-background rounded-2xl shadow-soft-lg overflow-hidden flex flex-col">
-              {/* Subtitle */}
-              <div className="pt-6 px-6 text-center">
-                <p className="text-[10px] sm:text-xs tracking-[0.2em] uppercase text-muted-foreground font-medium">
-                  {subtitle}
+            <div className="aspect-[3/4] bg-background rounded-2xl shadow-soft-lg overflow-hidden flex flex-col items-center">
+              {/* Logo header */}
+              <div className="pt-6 pb-1 flex flex-col items-center">
+                <img src={logoImg} alt="Piccoload" className="h-10" />
+                <p className="text-[9px] sm:text-[10px] tracking-[0.2em] uppercase text-muted-foreground mt-1">
+                  FROM PIC TO PEN
                 </p>
               </div>
 
-              {/* Title */}
-              <div className="px-6 pt-2 text-center">
-                <h3 className="font-display text-lg sm:text-xl font-semibold text-foreground leading-tight">
-                  {title}
-                </h3>
-              </div>
-
-              {/* Two photo pairs */}
-              <div className="flex-1 px-4 py-3 flex flex-col gap-3 justify-center">
+              {/* Two photo pairs – alternating layout, no gap, centered */}
+              <div className="flex-1 px-6 py-3 flex flex-col gap-0 justify-center w-full">
                 {[0, 1].map((idx) => {
                   const photo = selectedPhotos[idx];
+                  // Row 0: original | lineart, Row 1: lineart | original
+                  const isReversed = idx === 1;
                   return (
                     <div
                       key={idx}
-                      className="flex-1 flex gap-2 rounded-xl overflow-hidden bg-cream border border-border"
+                      className="flex overflow-hidden"
                     >
                       {photo ? (
                         <>
-                          {/* Original photo */}
                           <div className="w-1/2 relative">
                             <img
-                              src={photo.originalUrl}
-                              alt={`Cover photo ${idx + 1}`}
+                              src={isReversed ? (photo.convertedUrl || photo.originalUrl) : photo.originalUrl}
+                              alt={isReversed ? `Line art ${idx + 1}` : `Cover photo ${idx + 1}`}
                               className="w-full h-full object-cover"
                             />
                           </div>
-                          {/* Line art version */}
                           <div className="w-1/2 relative bg-white">
-                            {photo.convertedUrl ? (
+                            {isReversed ? (
+                              <img
+                                src={photo.originalUrl}
+                                alt={`Cover photo ${idx + 1}`}
+                                className="w-full h-full object-cover"
+                              />
+                            ) : photo.convertedUrl ? (
                               <img
                                 src={photo.convertedUrl}
                                 alt={`Line art ${idx + 1}`}
@@ -115,7 +115,7 @@ const CoverStep = ({ availableImages, onCoverComplete, onBack }: CoverStepProps)
                           </div>
                         </>
                       ) : (
-                        <div className="w-full h-full min-h-[80px] flex items-center justify-center text-sm text-muted-foreground">
+                        <div className="w-full min-h-[80px] flex items-center justify-center text-sm text-muted-foreground bg-cream">
                           Select photo {idx + 1}
                         </div>
                       )}
@@ -124,9 +124,14 @@ const CoverStep = ({ availableImages, onCoverComplete, onBack }: CoverStepProps)
                 })}
               </div>
 
-              {/* Logo footer */}
-              <div className="px-6 pb-4 flex justify-center">
-                <img src={logoImg} alt="Piccoload" className="h-6 opacity-60" />
+              {/* Subtitle + Title at bottom */}
+              <div className="px-6 pb-5 text-center">
+                <p className="text-[9px] sm:text-[10px] tracking-[0.2em] uppercase text-muted-foreground font-medium">
+                  {subtitle}
+                </p>
+                <h3 className="font-display text-lg sm:text-xl font-semibold text-foreground leading-tight mt-1">
+                  {title}
+                </h3>
               </div>
             </div>
           </div>
