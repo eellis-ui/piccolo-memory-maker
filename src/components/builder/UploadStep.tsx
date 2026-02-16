@@ -27,15 +27,40 @@ const UploadStep = ({ orderId, onImagesUploaded, maxImages = 20 }: UploadStepPro
   const [isDragging, setIsDragging] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
 
+  // Normalize image orientation by drawing to canvas (strips EXIF rotation)
+  const normalizeImage = (file: File): Promise<Blob> => {
+    return new Promise((resolve, reject) => {
+      const img = new window.Image();
+      img.onload = () => {
+        const canvas = document.createElement("canvas");
+        canvas.width = img.naturalWidth;
+        canvas.height = img.naturalHeight;
+        const ctx = canvas.getContext("2d");
+        if (!ctx) return reject(new Error("No canvas context"));
+        ctx.drawImage(img, 0, 0);
+        canvas.toBlob(
+          (blob) => (blob ? resolve(blob) : reject(new Error("Canvas toBlob failed"))),
+          "image/jpeg",
+          0.92
+        );
+        URL.revokeObjectURL(img.src);
+      };
+      img.onerror = () => reject(new Error("Image load failed"));
+      img.src = URL.createObjectURL(file);
+    });
+  };
+
   const uploadFile = async (file: File, localId: string, position: number): Promise<LocalImage | null> => {
-    const fileExt = file.name.split(".").pop();
-    const fileName = `${crypto.randomUUID()}.${fileExt}`;
+    const fileName = `${crypto.randomUUID()}.jpg`;
     const storagePath = `originals/${orderId}/${fileName}`;
+
+    // Normalize orientation via canvas before uploading
+    const normalizedBlob = await normalizeImage(file);
 
     // Upload to storage
     const { error: uploadError } = await supabase.storage
       .from("order-files")
-      .upload(storagePath, file, { contentType: file.type });
+      .upload(storagePath, normalizedBlob, { contentType: "image/jpeg" });
 
     if (uploadError) {
       toast.error(`Failed to upload ${file.name}`);
