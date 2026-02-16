@@ -35,9 +35,7 @@ interface CoverStepProps {
 const CoverStep = ({ availableImages, onCoverComplete, onBack }: CoverStepProps) => {
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
   const [title, setTitle] = useState("colour in your memories");
-  const [subtitle, setSubtitle] = useState("FOR KIDS AND ADULTS ALIKE");
   const [titleFont, setTitleFont] = useState<string>(FONT_OPTIONS[0].value);
-  const [subtitleFont, setSubtitleFont] = useState<string>(FONT_OPTIONS[1].value);
 
   const toggleImage = (id: string) => {
     setSelectedIds((prev) => {
@@ -58,7 +56,7 @@ const CoverStep = ({ availableImages, onCoverComplete, onBack }: CoverStepProps)
       onCoverComplete({
         imageIds: [selectedIds[0], selectedIds[1]],
         title,
-        subtitle,
+        subtitle: "FOR KIDS AND ADULTS ALIKE",
       });
     }
   };
@@ -133,8 +131,8 @@ const CoverStep = ({ availableImages, onCoverComplete, onBack }: CoverStepProps)
 
               {/* Subtitle + Title at bottom */}
               <div className="px-6 py-3 text-center shrink-0">
-                <p className="text-[8px] sm:text-[9px] tracking-[0.2em] uppercase text-muted-foreground font-medium" style={{ fontFamily: subtitleFont }}>
-                  {subtitle}
+                <p className="text-[8px] sm:text-[9px] tracking-[0.2em] uppercase text-muted-foreground font-medium" style={{ fontFamily: "'Yuji Syuku', serif" }}>
+                  FOR KIDS AND ADULTS ALIKE
                 </p>
                 <h3 className="text-base sm:text-lg italic font-semibold text-foreground leading-tight mt-0.5" style={{ fontFamily: titleFont }}>
                   {title}
@@ -154,27 +152,6 @@ const CoverStep = ({ availableImages, onCoverComplete, onBack }: CoverStepProps)
                 placeholder="colour in your memories"
               />
               <Select value={titleFont} onValueChange={setTitleFont}>
-                <SelectTrigger className="mt-1.5 rounded-xl">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  {FONT_OPTIONS.map((f) => (
-                    <SelectItem key={f.value} value={f.value}>
-                      <span style={{ fontFamily: f.value }}>{f.label}</span>
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-            <div>
-              <label className="text-sm font-medium text-foreground">Subtitle</label>
-              <Input
-                value={subtitle}
-                onChange={(e) => setSubtitle(e.target.value)}
-                className="mt-1 rounded-xl"
-                placeholder="FOR KIDS AND ADULTS ALIKE"
-              />
-              <Select value={subtitleFont} onValueChange={setSubtitleFont}>
                 <SelectTrigger className="mt-1.5 rounded-xl">
                   <SelectValue />
                 </SelectTrigger>
