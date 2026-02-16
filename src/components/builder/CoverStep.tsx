@@ -65,7 +65,7 @@ const CoverStep = ({ availableImages, onCoverComplete, onBack }: CoverStepProps)
               {/* Title */}
               <div className="p-6 text-center border-b border-border">
                 <h3 className="font-display text-lg font-semibold text-foreground">
-                  My Piccolo'd Colouring Book
+                  My Piccoload Colouring Book
                 </h3>
               </div>
 
@@ -103,7 +103,7 @@ const CoverStep = ({ availableImages, onCoverComplete, onBack }: CoverStepProps)
 
               {/* Footer */}
               <div className="p-4 text-center border-t border-border">
-                <p className="text-sm text-muted-foreground">Made with Piccolo'd</p>
+                <p className="text-sm text-muted-foreground">Made with Piccoload</p>
               </div>
             </div>
           </div>

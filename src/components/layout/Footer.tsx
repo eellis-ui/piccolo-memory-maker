@@ -1,4 +1,5 @@
 import { Link } from "react-router-dom";
+import piccoloadLogo from "@/assets/piccoload-logo.png";
 
 const Footer = () => {
   return (
@@ -8,9 +9,7 @@ const Footer = () => {
           {/* Brand */}
           <div className="col-span-1 md:col-span-2">
             <Link to="/" className="inline-block">
-              <span className="font-display text-2xl font-semibold text-foreground">
-                Piccolo'd
-              </span>
+              <img src={piccoloadLogo} alt="Piccoload – From pic to pen" className="h-10 w-auto" />
             </Link>
             <p className="mt-4 text-muted-foreground text-sm max-w-md">
               Transform your cherished photos into beautiful, personalised colouring books. 
@@ -59,8 +58,8 @@ const Footer = () => {
                 </Link>
               </li>
               <li>
-                <a href="mailto:hello@piccolod.com" className="text-sm text-muted-foreground hover:text-foreground transition-colors">
-                  hello@piccolod.com
+                <a href="mailto:hello@piccoload.com" className="text-sm text-muted-foreground hover:text-foreground transition-colors">
+                  hello@piccoload.com
                 </a>
               </li>
             </ul>
@@ -69,7 +68,7 @@ const Footer = () => {
 
         <div className="mt-12 pt-8 border-t border-border">
           <p className="text-sm text-muted-foreground text-center">
-            © {new Date().getFullYear()} Piccolo'd. All rights reserved. Made with love in the UK.
+            © {new Date().getFullYear()} Piccoload. All rights reserved. Made with love in the UK.
           </p>
         </div>
       </div>
