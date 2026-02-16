@@ -1,5 +1,6 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Check } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
 import Navbar from "@/components/layout/Navbar";
 import Footer from "@/components/layout/Footer";
 import UploadStep from "@/components/builder/UploadStep";
@@ -9,19 +10,22 @@ import CheckoutStep from "@/components/builder/CheckoutStep";
 
 type BuilderStep = "upload" | "approve" | "cover" | "checkout";
 
-interface UploadedImage {
+export interface OrderPhoto {
   id: string;
-  file: File;
-  preview: string;
-  status: "uploading" | "processing" | "ready" | "error";
-  progress: number;
+  originalPath: string;
+  convertedPath: string | null;
+  pagePosition: number;
+  isApproved: boolean;
+  conversionStatus: string;
+  originalUrl: string;
+  convertedUrl: string | null;
 }
 
-interface ConvertedPage {
-  id: string;
-  originalUrl: string;
-  lineArtUrl: string;
-  approved: boolean;
+export interface BookOptions {
+  titlePageEnabled: boolean;
+  titlePageText: string;
+  dedicationPageEnabled: boolean;
+  dedicationPageText: string;
 }
 
 const steps: { key: BuilderStep; label: string }[] = [
@@ -33,39 +37,78 @@ const steps: { key: BuilderStep; label: string }[] = [
 
 const Builder = () => {
   const [currentStep, setCurrentStep] = useState<BuilderStep>("upload");
-  const [uploadedImages, setUploadedImages] = useState<UploadedImage[]>([]);
-  const [convertedPages, setConvertedPages] = useState<ConvertedPage[]>([]);
-  const [coverData, setCoverData] = useState<{ imageId: string; zoom: number; position: { x: number; y: number } } | null>(null);
+  const [orderId, setOrderId] = useState<string | null>(null);
+  const [orderPhotos, setOrderPhotos] = useState<OrderPhoto[]>([]);
+  const [bookOptions, setBookOptions] = useState<BookOptions>({
+    titlePageEnabled: true,
+    titlePageText: "My Piccolo'd Colouring Book",
+    dedicationPageEnabled: false,
+    dedicationPageText: "",
+  });
+  const [coverData, setCoverData] = useState<{
+    imageId: string;
+    zoom: number;
+    position: { x: number; y: number };
+  } | null>(null);
 
   const currentStepIndex = steps.findIndex((s) => s.key === currentStep);
 
-  const handleImagesUploaded = (images: UploadedImage[]) => {
-    setUploadedImages(images);
-    // Simulate conversion - in real app, this would call the AI conversion API
-    const converted: ConvertedPage[] = images.map((img) => ({
-      id: img.id,
-      originalUrl: img.preview,
-      lineArtUrl: img.preview, // In real app, this would be the converted line art
-      approved: false,
-    }));
-    setConvertedPages(converted);
+  // Create order on mount
+  useEffect(() => {
+    const createOrder = async () => {
+      const { data, error } = await supabase
+        .from("orders")
+        .insert({ status: "draft" })
+        .select("id")
+        .single();
+
+      if (!error && data) {
+        setOrderId(data.id);
+      }
+    };
+    createOrder();
+  }, []);
+
+  const handleImagesUploaded = (photos: OrderPhoto[]) => {
+    setOrderPhotos(photos);
     setCurrentStep("approve");
   };
 
-  const handleApprovalComplete = (pages: ConvertedPage[]) => {
-    setConvertedPages(pages);
+  const handleApprovalComplete = (photos: OrderPhoto[]) => {
+    setOrderPhotos(photos);
     setCurrentStep("cover");
   };
 
-  const handleCoverComplete = (data: { imageId: string; zoom: number; position: { x: number; y: number } }) => {
+  const handleCoverComplete = async (data: {
+    imageId: string;
+    zoom: number;
+    position: { x: number; y: number };
+  }) => {
     setCoverData(data);
+    if (orderId) {
+      await supabase
+        .from("orders")
+        .update({
+          cover_image_id: data.imageId,
+          cover_zoom: data.zoom,
+          cover_position_x: data.position.x,
+          cover_position_y: data.position.y,
+          ...bookOptions && {
+            title_page_enabled: bookOptions.titlePageEnabled,
+            title_page_text: bookOptions.titlePageText,
+            dedication_page_enabled: bookOptions.dedicationPageEnabled,
+            dedication_page_text: bookOptions.dedicationPageText,
+          },
+        })
+        .eq("id", orderId);
+    }
     setCurrentStep("checkout");
   };
 
   return (
     <div className="min-h-screen bg-background">
       <Navbar />
-      
+
       <main className="pt-24 pb-16">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
           {/* Progress Steps */}
@@ -89,13 +132,17 @@ const Builder = () => {
                         index + 1
                       )}
                     </div>
-                    <span className={`mt-2 text-sm ${
-                      index <= currentStepIndex ? "text-foreground font-medium" : "text-muted-foreground"
-                    }`}>
+                    <span
+                      className={`mt-2 text-sm ${
+                        index <= currentStepIndex
+                          ? "text-foreground font-medium"
+                          : "text-muted-foreground"
+                      }`}
+                    >
                       {step.label}
                     </span>
                   </div>
-                  
+
                   {index < steps.length - 1 && (
                     <div
                       className={`w-16 sm:w-24 h-0.5 mx-2 ${
@@ -110,33 +157,40 @@ const Builder = () => {
 
           {/* Step Content */}
           <div className="max-w-5xl mx-auto">
-            {currentStep === "upload" && (
+            {currentStep === "upload" && orderId && (
               <UploadStep
+                orderId={orderId}
                 onImagesUploaded={handleImagesUploaded}
                 maxImages={20}
               />
             )}
-            
-            {currentStep === "approve" && (
+
+            {currentStep === "approve" && orderId && (
               <ApproveStep
-                pages={convertedPages}
+                orderId={orderId}
+                photos={orderPhotos}
+                bookOptions={bookOptions}
+                onBookOptionsChange={setBookOptions}
                 onApprovalComplete={handleApprovalComplete}
                 onBack={() => setCurrentStep("upload")}
               />
             )}
-            
+
             {currentStep === "cover" && (
               <CoverStep
-                availableImages={uploadedImages.map((img) => ({ id: img.id, url: img.preview }))}
+                availableImages={orderPhotos.map((p) => ({
+                  id: p.id,
+                  url: p.originalUrl,
+                }))}
                 onCoverComplete={handleCoverComplete}
                 onBack={() => setCurrentStep("approve")}
               />
             )}
-            
+
             {currentStep === "checkout" && (
               <CheckoutStep
-                pageCount={20}
-                hasUniquePhotos={uploadedImages.length > 1}
+                pageCount={orderPhotos.length}
+                hasUniquePhotos={orderPhotos.length > 1}
                 extraPages={0}
                 onBack={() => setCurrentStep("cover")}
               />
