@@ -14,8 +14,8 @@ export default {
     },
     extend: {
       fontFamily: {
-        display: ['"Playfair Display"', 'serif'],
-        sans: ['Inter', 'sans-serif'],
+        display: ['Bristol', 'serif'],
+        sans: ['"Yuji Syuku"', 'serif'],
       },
       colors: {
         border: "hsl(var(--border))",
