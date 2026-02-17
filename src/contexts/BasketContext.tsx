@@ -13,6 +13,15 @@ export interface DigitalDownload {
   price: number;
 }
 
+export interface BookAddOns {
+  titlePageEnabled: boolean;
+  titlePageText: string;
+  dedicationPageEnabled: boolean;
+  dedicationPageText: string;
+}
+
+const ADD_ON_PRICE = 2;
+
 const PRICING_TIERS = [
   { quantity: 1, pricePerBook: 35, originalPricePerBook: 42 },
   { quantity: 2, pricePerBook: 31.5, originalPricePerBook: 42 },
@@ -32,6 +41,10 @@ interface BasketContextType {
   pricingTiers: typeof PRICING_TIERS;
   digitalDownload: DigitalDownload | null;
   setDigitalDownload: (download: DigitalDownload | null) => void;
+  addOns: BookAddOns;
+  setAddOns: (addOns: BookAddOns) => void;
+  addOnPrice: number;
+  addOnsTotal: number;
 }
 
 const BasketContext = createContext<BasketContextType | undefined>(undefined);
@@ -39,6 +52,16 @@ const BasketContext = createContext<BasketContextType | undefined>(undefined);
 export const BasketProvider = ({ children }: { children: ReactNode }) => {
   const [item, setItem] = useState<BasketItem | null>(null);
   const [digitalDownload, setDigitalDownload] = useState<DigitalDownload | null>(null);
+  const [addOns, setAddOns] = useState<BookAddOns>({
+    titlePageEnabled: false,
+    titlePageText: "",
+    dedicationPageEnabled: false,
+    dedicationPageText: "",
+  });
+
+  const addOnsTotal =
+    (addOns.titlePageEnabled ? ADD_ON_PRICE : 0) +
+    (addOns.dedicationPageEnabled ? ADD_ON_PRICE : 0);
 
   const setQuantity = (quantity: number) => {
     if (quantity <= 0) {
@@ -58,10 +81,25 @@ export const BasketProvider = ({ children }: { children: ReactNode }) => {
   const clear = () => {
     setItem(null);
     setDigitalDownload(null);
+    setAddOns({
+      titlePageEnabled: false,
+      titlePageText: "",
+      dedicationPageEnabled: false,
+      dedicationPageText: "",
+    });
   };
 
   return (
-    <BasketContext.Provider value={{ item, setQuantity, clear, pricingTiers: PRICING_TIERS, digitalDownload, setDigitalDownload }}>
+    <BasketContext.Provider
+      value={{
+        item, setQuantity, clear,
+        pricingTiers: PRICING_TIERS,
+        digitalDownload, setDigitalDownload,
+        addOns, setAddOns,
+        addOnPrice: ADD_ON_PRICE,
+        addOnsTotal,
+      }}
+    >
       {children}
     </BasketContext.Provider>
   );

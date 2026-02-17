@@ -1,17 +1,15 @@
 import { useState } from "react";
-import { Check, RefreshCw, Loader2 } from "lucide-react";
+import { Check, RefreshCw, Loader2, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import BookOptionsPanel from "./BookOptionsPanel";
-import type { OrderPhoto, BookOptions } from "@/pages/Builder";
+import type { OrderPhoto } from "@/pages/Builder";
 
 interface ApproveStepProps {
   orderId: string;
   photos: OrderPhoto[];
-  bookOptions: BookOptions;
-  onBookOptionsChange: (options: BookOptions) => void;
   onApprovalComplete: (photos: OrderPhoto[]) => void;
   onBack: () => void;
 }
@@ -19,8 +17,6 @@ interface ApproveStepProps {
 const ApproveStep = ({
   orderId,
   photos: initialPhotos,
-  bookOptions,
-  onBookOptionsChange,
   onApprovalComplete,
   onBack,
 }: ApproveStepProps) => {
@@ -108,6 +104,12 @@ const ApproveStep = ({
     }
   };
 
+  const deletePhoto = async (id: string) => {
+    setPhotos((prev) => prev.filter((p) => p.id !== id));
+    await supabase.from("order_photos").delete().eq("id", id);
+    toast.success("Photo removed");
+  };
+
   const handleContinue = () => {
     onApprovalComplete(photos);
   };
@@ -160,12 +162,12 @@ const ApproveStep = ({
       <div className="w-full h-2 bg-muted rounded-full overflow-hidden">
         <div
           className="h-full bg-primary transition-all duration-300"
-          style={{ width: `${(approvedCount / photos.length) * 100}%` }}
+          style={{ width: `${(approvedCount / Math.max(photos.length, 1)) * 100}%` }}
         />
       </div>
 
-      {/* Book Options Panel */}
-      <BookOptionsPanel options={bookOptions} onChange={onBookOptionsChange} />
+      {/* Book Options Panel (uses basket context internally) */}
+      <BookOptionsPanel />
 
       {/* Pages Grid */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -184,6 +186,14 @@ const ApproveStep = ({
               <div className="absolute top-3 left-3 z-10">
                 <Badge variant="secondary">Page {index + 1}</Badge>
               </div>
+
+              {/* Delete button */}
+              <button
+                onClick={() => deletePhoto(photo.id)}
+                className="absolute top-3 right-3 z-10 w-7 h-7 rounded-full bg-destructive/90 text-destructive-foreground flex items-center justify-center hover:bg-destructive transition-colors"
+              >
+                <Trash2 className="w-3.5 h-3.5" />
+              </button>
 
               {/* Image display */}
               <div className={`relative bg-cream ${photo.isLandscape ? "aspect-[4/3]" : "aspect-[3/4]"}`}>

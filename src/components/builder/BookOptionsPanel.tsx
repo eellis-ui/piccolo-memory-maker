@@ -2,21 +2,17 @@ import { Switch } from "@/components/ui/switch";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
+import { Badge } from "@/components/ui/badge";
 import { BookOpen, Heart } from "lucide-react";
+import { useBasket } from "@/contexts/BasketContext";
 
-interface BookOptions {
-  titlePageEnabled: boolean;
-  titlePageText: string;
-  dedicationPageEnabled: boolean;
-  dedicationPageText: string;
-}
+const BookOptionsPanel = () => {
+  const { addOns, setAddOns, addOnPrice } = useBasket();
 
-interface BookOptionsPanelProps {
-  options: BookOptions;
-  onChange: (options: BookOptions) => void;
-}
+  const toggle = (field: "titlePageEnabled" | "dedicationPageEnabled") => {
+    setAddOns({ ...addOns, [field]: !addOns[field] });
+  };
 
-const BookOptionsPanel = ({ options, onChange }: BookOptionsPanelProps) => {
   return (
     <div className="rounded-3xl border border-border bg-card p-6 space-y-6">
       <h3 className="font-display text-lg font-semibold text-foreground">
@@ -31,20 +27,21 @@ const BookOptionsPanel = ({ options, onChange }: BookOptionsPanelProps) => {
             <Label htmlFor="title-page" className="font-medium">
               Title Page
             </Label>
+            <Badge variant="outline" className="text-xs">
+              +${addOnPrice.toFixed(2)}
+            </Badge>
           </div>
           <Switch
             id="title-page"
-            checked={options.titlePageEnabled}
-            onCheckedChange={(checked) =>
-              onChange({ ...options, titlePageEnabled: checked })
-            }
+            checked={addOns.titlePageEnabled}
+            onCheckedChange={() => toggle("titlePageEnabled")}
           />
         </div>
-        {options.titlePageEnabled && (
+        {addOns.titlePageEnabled && (
           <Input
-            value={options.titlePageText}
+            value={addOns.titlePageText}
             onChange={(e) =>
-              onChange({ ...options, titlePageText: e.target.value })
+              setAddOns({ ...addOns, titlePageText: e.target.value })
             }
             placeholder="My Piccoload Coloring Book"
             className="rounded-xl"
@@ -52,28 +49,32 @@ const BookOptionsPanel = ({ options, onChange }: BookOptionsPanelProps) => {
         )}
       </div>
 
-      {/* Dedication Page */}
+      {/* Dedication Note */}
       <div className="space-y-3">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
             <Heart className="w-4 h-4 text-primary" />
             <Label htmlFor="dedication-page" className="font-medium">
-              Dedication Page
+              Dedication Note
             </Label>
+            <Badge variant="outline" className="text-xs">
+              +${addOnPrice.toFixed(2)}
+            </Badge>
           </div>
           <Switch
             id="dedication-page"
-            checked={options.dedicationPageEnabled}
-            onCheckedChange={(checked) =>
-              onChange({ ...options, dedicationPageEnabled: checked })
-            }
+            checked={addOns.dedicationPageEnabled}
+            onCheckedChange={() => toggle("dedicationPageEnabled")}
           />
         </div>
-        {options.dedicationPageEnabled && (
+        <p className="text-xs text-muted-foreground">
+          Replaces "for kids and adults alike" on the cover
+        </p>
+        {addOns.dedicationPageEnabled && (
           <Textarea
-            value={options.dedicationPageText}
+            value={addOns.dedicationPageText}
             onChange={(e) =>
-              onChange({ ...options, dedicationPageText: e.target.value })
+              setAddOns({ ...addOns, dedicationPageText: e.target.value })
             }
             placeholder="For my little artist..."
             className="rounded-xl resize-none"
@@ -87,11 +88,11 @@ const BookOptionsPanel = ({ options, onChange }: BookOptionsPanelProps) => {
         <p>
           Your book will include:{" "}
           <span className="font-medium text-foreground">Cover</span>
-          {options.titlePageEnabled && (
-            <>, <span className="font-medium text-foreground">Title Page</span></>
+          {addOns.titlePageEnabled && (
+            <>, <span className="font-medium text-foreground">Title Page (+${addOnPrice})</span></>
           )}
-          {options.dedicationPageEnabled && (
-            <>, <span className="font-medium text-foreground">Dedication Page</span></>
+          {addOns.dedicationPageEnabled && (
+            <>, <span className="font-medium text-foreground">Dedication Note (+${addOnPrice})</span></>
           )}
           , then your coloring pages.
         </p>

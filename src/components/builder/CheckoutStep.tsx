@@ -14,7 +14,7 @@ interface CheckoutStepProps {
 }
 
 const CheckoutStep = ({ pageCount, hasUniquePhotos, extraPages, convertedUrls, onBack }: CheckoutStepProps) => {
-  const { item, setQuantity, pricingTiers, digitalDownload, setDigitalDownload } = useBasket();
+  const { item, setQuantity, pricingTiers, digitalDownload, setDigitalDownload, addOns, addOnsTotal, addOnPrice } = useBasket();
   
   const bookCount = item?.quantity ?? 1;
   const basePrice = item?.pricePerBook ?? 35;
@@ -22,8 +22,8 @@ const CheckoutStep = ({ pageCount, hasUniquePhotos, extraPages, convertedUrls, o
   const uniquePhotosPrice = hasUniquePhotos ? 5 : 0;
   const extraPagesPrice = extraPages === 10 ? 6 : extraPages === 20 ? 10 : extraPages === 40 ? 18 : 0;
   const digitalPrice = digitalDownload?.price ?? 0;
-  const totalPrice = (basePrice + uniquePhotosPrice + extraPagesPrice) * bookCount + digitalPrice;
-  const originalTotalPrice = (originalBasePrice + uniquePhotosPrice + extraPagesPrice) * bookCount + digitalPrice;
+  const totalPrice = (basePrice + uniquePhotosPrice + extraPagesPrice) * bookCount + digitalPrice + addOnsTotal;
+  const originalTotalPrice = (originalBasePrice + uniquePhotosPrice + extraPagesPrice) * bookCount + digitalPrice + addOnsTotal;
 
   const maxQuantity = Math.max(...pricingTiers.map((t) => t.quantity));
   const handleDecrement = () => { if (bookCount > 1) setQuantity(bookCount - 1); };
@@ -70,6 +70,20 @@ const CheckoutStep = ({ pageCount, hasUniquePhotos, extraPages, convertedUrls, o
                 <Check className="w-5 h-5 text-primary" />
                 <span>US delivery included</span>
               </div>
+              {addOns.titlePageEnabled && (
+                <div className="flex items-center gap-3">
+                  <Check className="w-5 h-5 text-primary" />
+                  <span>Title Page: "{addOns.titlePageText}"</span>
+                  <Badge variant="secondary">+${addOnPrice}</Badge>
+                </div>
+              )}
+              {addOns.dedicationPageEnabled && (
+                <div className="flex items-center gap-3">
+                  <Check className="w-5 h-5 text-primary" />
+                  <span>Dedication Note on cover</span>
+                  <Badge variant="secondary">+${addOnPrice}</Badge>
+                </div>
+              )}
               {hasUniquePhotos && bookCount > 1 && (
                 <div className="flex items-center gap-3">
                   <Check className="w-5 h-5 text-primary" />
@@ -188,6 +202,20 @@ const CheckoutStep = ({ pageCount, hasUniquePhotos, extraPages, convertedUrls, o
                   <span>${(basePrice * bookCount).toFixed(2)}</span>
                 </div>
               </div>
+
+              {addOns.titlePageEnabled && (
+                <div className="flex justify-between">
+                  <span className="text-muted-foreground">Title Page</span>
+                  <span>${addOnPrice.toFixed(2)}</span>
+                </div>
+              )}
+
+              {addOns.dedicationPageEnabled && (
+                <div className="flex justify-between">
+                  <span className="text-muted-foreground">Dedication Note</span>
+                  <span>${addOnPrice.toFixed(2)}</span>
+                </div>
+              )}
               
               {hasUniquePhotos && (
                 <div className="flex justify-between">
