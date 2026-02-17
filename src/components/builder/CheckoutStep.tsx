@@ -1,4 +1,4 @@
-import { Check, ShoppingCart, Lock } from "lucide-react";
+import { Check, ShoppingCart, Lock, Minus, Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -14,7 +14,7 @@ interface CheckoutStepProps {
 }
 
 const CheckoutStep = ({ pageCount, hasUniquePhotos, extraPages, convertedUrls, onBack }: CheckoutStepProps) => {
-  const { item } = useBasket();
+  const { item, setQuantity, pricingTiers } = useBasket();
   
   const bookCount = item?.quantity ?? 1;
   const basePrice = item?.pricePerBook ?? 35;
@@ -23,6 +23,10 @@ const CheckoutStep = ({ pageCount, hasUniquePhotos, extraPages, convertedUrls, o
   const extraPagesPrice = extraPages === 10 ? 6 : extraPages === 20 ? 10 : extraPages === 40 ? 18 : 0;
   const totalPrice = (basePrice + uniquePhotosPrice + extraPagesPrice) * bookCount;
   const originalTotalPrice = (originalBasePrice + uniquePhotosPrice + extraPagesPrice) * bookCount;
+
+  const maxQuantity = Math.max(...pricingTiers.map((t) => t.quantity));
+  const handleDecrement = () => { if (bookCount > 1) setQuantity(bookCount - 1); };
+  const handleIncrement = () => { if (bookCount < maxQuantity) setQuantity(bookCount + 1); };
 
   return (
     <div className="space-y-8">
@@ -113,6 +117,28 @@ const CheckoutStep = ({ pageCount, hasUniquePhotos, extraPages, convertedUrls, o
               <CardTitle className="font-display text-lg">Order Summary</CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
+              {/* Quantity selector */}
+              <div className="flex items-center justify-between">
+                <span className="text-muted-foreground">Quantity</span>
+                <div className="flex items-center gap-3">
+                  <button
+                    onClick={handleDecrement}
+                    disabled={bookCount <= 1}
+                    className="w-8 h-8 rounded-full border border-border flex items-center justify-center hover:bg-muted transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
+                  >
+                    <Minus className="w-3.5 h-3.5" />
+                  </button>
+                  <span className="font-semibold text-foreground w-6 text-center">{bookCount}</span>
+                  <button
+                    onClick={handleIncrement}
+                    disabled={bookCount >= maxQuantity}
+                    className="w-8 h-8 rounded-full border border-border flex items-center justify-center hover:bg-muted transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
+                  >
+                    <Plus className="w-3.5 h-3.5" />
+                  </button>
+                </div>
+              </div>
+
               <div className="flex justify-between items-center">
                 <span className="text-muted-foreground">Coloring Book (20 pages){bookCount > 1 ? ` × ${bookCount}` : ""}</span>
                 <div className="flex items-center gap-2">
