@@ -66,11 +66,15 @@ Deno.serve(async (req) => {
 
     const arrayBuffer = await fileData.arrayBuffer();
     const uint8 = new Uint8Array(arrayBuffer);
-    let binary = "";
-    for (let i = 0; i < uint8.length; i++) {
-      binary += String.fromCharCode(uint8[i]);
+
+    // Chunked base64 encoding to avoid memory exhaustion
+    const CHUNK_SIZE = 32768;
+    const chunks: string[] = [];
+    for (let i = 0; i < uint8.length; i += CHUNK_SIZE) {
+      const slice = uint8.subarray(i, Math.min(i + CHUNK_SIZE, uint8.length));
+      chunks.push(String.fromCharCode(...slice));
     }
-    const imageBase64Input = btoa(binary);
+    const imageBase64Input = btoa(chunks.join(""));
     const mimeType = fileData.type || "image/jpeg";
     const dataUrl = `data:${mimeType};base64,${imageBase64Input}`;
 
