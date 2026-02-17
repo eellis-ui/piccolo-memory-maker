@@ -1,4 +1,12 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Playfair+Display:wght@400;500;600;700&family=Yuji+Syuku&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Yuji+Syuku&display=swap');
+
+@font-face {
+  font-family: 'Bristol';
+  src: url('/fonts/Bristol.otf') format('opentype');
+  font-weight: normal;
+  font-style: normal;
+  font-display: swap;
+}
 
 @tailwind base;
 @tailwind components;
@@ -114,10 +122,10 @@
 
 @layer utilities {
   .font-display {
-    font-family: 'Playfair Display', serif;
+    font-family: 'Bristol', serif;
   }
   
   .font-sans {
-    font-family: 'Inter', sans-serif;
+    font-family: 'Yuji Syuku', serif;
   }
 }
