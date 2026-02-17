@@ -15,10 +15,12 @@ interface CheckoutStepProps {
 
 const CheckoutStep = ({ pageCount, hasUniquePhotos, extraPages, bookCount, convertedUrls, onBack }: CheckoutStepProps) => {
   // Pricing calculation
-  const basePrice = 26;
+  const basePrice = 35;
+  const originalBasePrice = Math.ceil(basePrice * 1.2 * 100) / 100; // "was" price at 20% more
   const uniquePhotosPrice = hasUniquePhotos ? 5 : 0;
   const extraPagesPrice = extraPages === 10 ? 6 : extraPages === 20 ? 10 : extraPages === 40 ? 18 : 0;
-  const totalPrice = basePrice + uniquePhotosPrice + extraPagesPrice;
+  const totalPrice = (basePrice + uniquePhotosPrice + extraPagesPrice) * bookCount;
+  const originalTotalPrice = (originalBasePrice + uniquePhotosPrice + extraPagesPrice) * bookCount;
 
   return (
     <div className="space-y-8">
@@ -109,22 +111,25 @@ const CheckoutStep = ({ pageCount, hasUniquePhotos, extraPages, bookCount, conve
               <CardTitle className="font-display text-lg">Order Summary</CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
-              <div className="flex justify-between">
-                <span className="text-muted-foreground">Coloring Book (20 pages)</span>
-                <span>${basePrice.toFixed(2)}</span>
+              <div className="flex justify-between items-center">
+                <span className="text-muted-foreground">Coloring Book (20 pages){bookCount > 1 ? ` × ${bookCount}` : ""}</span>
+                <div className="flex items-center gap-2">
+                  <span className="line-through text-muted-foreground text-sm">${(originalBasePrice * bookCount).toFixed(2)}</span>
+                  <span>${(basePrice * bookCount).toFixed(2)}</span>
+                </div>
               </div>
               
               {hasUniquePhotos && (
                 <div className="flex justify-between">
-                  <span className="text-muted-foreground">20 Unique Photos</span>
-                  <span>${uniquePhotosPrice.toFixed(2)}</span>
+                  <span className="text-muted-foreground">20 Unique Photos{bookCount > 1 ? ` × ${bookCount}` : ""}</span>
+                  <span>${(uniquePhotosPrice * bookCount).toFixed(2)}</span>
                 </div>
               )}
               
               {extraPages > 0 && (
                 <div className="flex justify-between">
-                  <span className="text-muted-foreground">+{extraPages} Extra Pages</span>
-                  <span>${extraPagesPrice.toFixed(2)}</span>
+                  <span className="text-muted-foreground">+{extraPages} Extra Pages{bookCount > 1 ? ` × ${bookCount}` : ""}</span>
+                  <span>${(extraPagesPrice * bookCount).toFixed(2)}</span>
                 </div>
               )}
               
@@ -132,7 +137,10 @@ const CheckoutStep = ({ pageCount, hasUniquePhotos, extraPages, bookCount, conve
               
               <div className="flex justify-between text-lg font-semibold">
                 <span>Total</span>
-                <span>${totalPrice.toFixed(2)}</span>
+                <div className="flex items-center gap-2">
+                  <span className="line-through text-muted-foreground text-sm font-normal">${originalTotalPrice.toFixed(2)}</span>
+                  <span>${totalPrice.toFixed(2)}</span>
+                </div>
               </div>
 
               <Button className="w-full rounded-2xl py-6 text-base mt-4" size="lg">
