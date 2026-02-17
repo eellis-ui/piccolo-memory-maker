@@ -13,7 +13,7 @@ const reviews = [
 
 const ReviewsBanner = () => {
   return (
-    <div className="bg-foreground text-background overflow-hidden py-2.5">
+    <div className="bg-foreground text-cream overflow-hidden py-2.5">
       <div className="flex animate-[scroll_30s_linear_infinite] w-max">
         {[...reviews, ...reviews].map((review, i) => (
           <div key={i} className="flex items-center gap-2 px-6 whitespace-nowrap">
@@ -25,8 +25,8 @@ const ReviewsBanner = () => {
             <span className="text-xs font-sans">
               "{review.text}"
             </span>
-            <span className="text-xs text-background/50">— {review.name}</span>
-            <span className="text-background/20 mx-4">•</span>
+            <span className="text-cream/50">— {review.name}</span>
+            <span className="text-cream/20 mx-4">•</span>
           </div>
         ))}
       </div>
