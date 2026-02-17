@@ -186,7 +186,7 @@ const ApproveStep = ({
               </div>
 
               {/* Image display */}
-              <div className="relative aspect-[3/4] bg-cream">
+              <div className={`relative bg-cream ${photo.isLandscape ? "aspect-[4/3]" : "aspect-[3/4]"}`}>
                 {hasConverted ? (
                   <div className="absolute inset-0 flex">
                     <div className="w-1/2 h-full border-r border-border/50 relative">

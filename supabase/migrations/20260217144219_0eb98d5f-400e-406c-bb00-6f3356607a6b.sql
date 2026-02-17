@@ -1,0 +1,1 @@
+ALTER TABLE public.order_photos ADD COLUMN is_landscape BOOLEAN NOT NULL DEFAULT false;

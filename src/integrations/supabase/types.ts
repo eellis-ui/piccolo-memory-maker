@@ -21,6 +21,7 @@ export type Database = {
           created_at: string
           id: string
           is_approved: boolean
+          is_landscape: boolean
           order_id: string
           original_path: string
           page_position: number
@@ -31,6 +32,7 @@ export type Database = {
           created_at?: string
           id?: string
           is_approved?: boolean
+          is_landscape?: boolean
           order_id: string
           original_path: string
           page_position: number
@@ -41,6 +43,7 @@ export type Database = {
           created_at?: string
           id?: string
           is_approved?: boolean
+          is_landscape?: boolean
           order_id?: string
           original_path?: string
           page_position?: number

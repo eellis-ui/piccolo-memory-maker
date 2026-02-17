@@ -20,6 +20,7 @@ export interface OrderPhoto {
   conversionStatus: string;
   originalUrl: string;
   convertedUrl: string | null;
+  isLandscape: boolean;
 }
 
 export interface BookOptions {

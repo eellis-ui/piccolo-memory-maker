@@ -12,7 +12,7 @@ Deno.serve(async (req) => {
   }
 
   try {
-    const { photoId } = await req.json();
+    const { photoId } = await req.json() as { photoId: string };
     if (!photoId) {
       return new Response(JSON.stringify({ error: "photoId is required" }), {
         status: 400,
@@ -31,7 +31,9 @@ Deno.serve(async (req) => {
       .from("order_photos")
       .select("*, orders!inner(id)")
       .eq("id", photoId)
-      .single();
+      .single() as { data: any; error: any };
+
+    const isLandscape = photo?.is_landscape ?? false;
 
     if (photoError || !photo) {
       return new Response(
@@ -81,7 +83,7 @@ Deno.serve(async (req) => {
             content: [
               {
                 type: "text",
-                text: "Convert this photo into a clean black-and-white colouring book line drawing. IMPORTANT: The output image MUST have the EXACT same orientation, rotation, and aspect ratio as the input photo. Do NOT rotate or flip. Use simple bold outlines only, no shading, no grey tones, no textures, no colour. Pure black outlines on a pure white background. Maintain the key features and likeness of the subject. Output ONLY the converted image.",
+                text: `Convert this photo into a clean black-and-white coloring book line drawing. CRITICAL RULES: 1) The output image MUST have the EXACT same orientation, rotation, and aspect ratio as the input photo. Do NOT rotate or flip. ${isLandscape ? "This is a LANDSCAPE photo — the output MUST remain landscape orientation." : "This is a PORTRAIT photo — the output MUST remain portrait orientation."} 2) Use simple bold outlines only, no shading, no grey tones, no textures, no color. 3) Pure black outlines on a pure white background. 4) Maintain the key features and likeness of the subject. Output ONLY the converted image.`,
               },
               {
                 type: "image_url",

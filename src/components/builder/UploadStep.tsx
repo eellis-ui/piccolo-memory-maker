@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import heic2any from "heic2any";
 import type { OrderPhoto } from "@/pages/Builder";
 
 interface UploadStepProps {
@@ -20,6 +21,7 @@ interface LocalImage {
   progress: number;
   dbId?: string;
   storagePath?: string;
+  isLandscape?: boolean;
 }
 
 const UploadStep = ({ orderId, onImagesUploaded, maxImages = 20 }: UploadStepProps) => {
@@ -27,8 +29,15 @@ const UploadStep = ({ orderId, onImagesUploaded, maxImages = 20 }: UploadStepPro
   const [isDragging, setIsDragging] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
 
+  // Convert HEIC to JPEG blob
+  const convertHeicToJpeg = async (file: File): Promise<Blob> => {
+    const result = await heic2any({ blob: file, toType: "image/jpeg", quality: 0.92 });
+    return Array.isArray(result) ? result[0] : result;
+  };
+
   // Normalize image orientation by drawing to canvas (strips EXIF rotation)
-  const normalizeImage = (file: File): Promise<Blob> => {
+  // Returns { blob, isLandscape }
+  const normalizeImage = (blob: Blob): Promise<{ blob: Blob; isLandscape: boolean }> => {
     return new Promise((resolve, reject) => {
       const img = new window.Image();
       img.onload = () => {
@@ -38,15 +47,16 @@ const UploadStep = ({ orderId, onImagesUploaded, maxImages = 20 }: UploadStepPro
         const ctx = canvas.getContext("2d");
         if (!ctx) return reject(new Error("No canvas context"));
         ctx.drawImage(img, 0, 0);
+        const isLandscape = img.naturalWidth > img.naturalHeight;
         canvas.toBlob(
-          (blob) => (blob ? resolve(blob) : reject(new Error("Canvas toBlob failed"))),
+          (result) => (result ? resolve({ blob: result, isLandscape }) : reject(new Error("Canvas toBlob failed"))),
           "image/jpeg",
           0.92
         );
         URL.revokeObjectURL(img.src);
       };
       img.onerror = () => reject(new Error("Image load failed"));
-      img.src = URL.createObjectURL(file);
+      img.src = URL.createObjectURL(blob);
     });
   };
 
@@ -54,8 +64,20 @@ const UploadStep = ({ orderId, onImagesUploaded, maxImages = 20 }: UploadStepPro
     const fileName = `${crypto.randomUUID()}.jpg`;
     const storagePath = `originals/${orderId}/${fileName}`;
 
+    // Convert HEIC if needed
+    let inputBlob: Blob = file;
+    const isHeic = file.name.toLowerCase().endsWith(".heic") || file.name.toLowerCase().endsWith(".heif") || file.type === "image/heic" || file.type === "image/heif";
+    if (isHeic) {
+      try {
+        inputBlob = await convertHeicToJpeg(file);
+      } catch {
+        toast.error(`Failed to convert HEIC file: ${file.name}`);
+        return null;
+      }
+    }
+
     // Normalize orientation via canvas before uploading
-    const normalizedBlob = await normalizeImage(file);
+    const { blob: normalizedBlob, isLandscape } = await normalizeImage(inputBlob);
 
     // Upload to storage
     const { error: uploadError } = await supabase.storage
@@ -75,6 +97,7 @@ const UploadStep = ({ orderId, onImagesUploaded, maxImages = 20 }: UploadStepPro
         original_path: storagePath,
         page_position: position,
         conversion_status: "pending",
+        is_landscape: isLandscape,
       })
       .select("id")
       .single();
@@ -87,11 +110,12 @@ const UploadStep = ({ orderId, onImagesUploaded, maxImages = 20 }: UploadStepPro
     return {
       id: localId,
       file,
-      preview: URL.createObjectURL(file),
+      preview: URL.createObjectURL(normalizedBlob),
       status: "ready",
       progress: 100,
       dbId: photoRecord.id,
       storagePath,
+      isLandscape,
     };
   };
 
@@ -100,7 +124,7 @@ const UploadStep = ({ orderId, onImagesUploaded, maxImages = 20 }: UploadStepPro
       if (!files || isUploading) return;
 
       const validFiles = Array.from(files)
-        .filter((file) => file.type.startsWith("image/"))
+        .filter((file) => file.type.startsWith("image/") || file.name.toLowerCase().endsWith(".heic") || file.name.toLowerCase().endsWith(".heif"))
         .slice(0, maxImages - images.length);
 
       if (validFiles.length === 0) return;
@@ -194,6 +218,7 @@ const UploadStep = ({ orderId, onImagesUploaded, maxImages = 20 }: UploadStepPro
         conversionStatus: "pending",
         originalUrl: data.publicUrl,
         convertedUrl: null,
+        isLandscape: img.isLandscape ?? false,
       };
     });
 
@@ -217,7 +242,7 @@ const UploadStep = ({ orderId, onImagesUploaded, maxImages = 20 }: UploadStepPro
       >
         <input
           type="file"
-          accept="image/jpeg,image/png"
+          accept="image/jpeg,image/png,image/heic,image/heif,.heic,.heif"
           multiple
           onChange={(e) => handleFiles(e.target.files)}
           className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
@@ -232,7 +257,7 @@ const UploadStep = ({ orderId, onImagesUploaded, maxImages = 20 }: UploadStepPro
             <p className="text-lg font-medium text-foreground">
               Drop your photos here
             </p>
-            <p className="text-muted-foreground">or click to browse (JPG, PNG)</p>
+            <p className="text-muted-foreground">or click to browse (JPG, PNG, HEIC)</p>
           </div>
           <p className="text-sm text-muted-foreground">
             {readyCount} of {maxImages} photos uploaded
@@ -290,7 +315,7 @@ const UploadStep = ({ orderId, onImagesUploaded, maxImages = 20 }: UploadStepPro
             <label className="relative aspect-square rounded-2xl border-2 border-dashed border-border hover:border-primary/50 cursor-pointer flex items-center justify-center transition-colors">
               <input
                 type="file"
-                accept="image/jpeg,image/png"
+                accept="image/jpeg,image/png,image/heic,image/heif,.heic,.heif"
                 multiple
                 onChange={(e) => handleFiles(e.target.files)}
                 className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
