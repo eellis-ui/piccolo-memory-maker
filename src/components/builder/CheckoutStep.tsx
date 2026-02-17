@@ -1,9 +1,9 @@
-import { Check, ShoppingCart, Lock, Minus, Plus } from "lucide-react";
+import { Check, ShoppingCart, Lock, Minus, Plus, Download } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
-import { useBasket } from "@/contexts/BasketContext";
+import { useBasket, DIGITAL_TIERS } from "@/contexts/BasketContext";
 
 interface CheckoutStepProps {
   pageCount: number;
@@ -14,15 +14,16 @@ interface CheckoutStepProps {
 }
 
 const CheckoutStep = ({ pageCount, hasUniquePhotos, extraPages, convertedUrls, onBack }: CheckoutStepProps) => {
-  const { item, setQuantity, pricingTiers } = useBasket();
+  const { item, setQuantity, pricingTiers, digitalDownload, setDigitalDownload } = useBasket();
   
   const bookCount = item?.quantity ?? 1;
   const basePrice = item?.pricePerBook ?? 35;
   const originalBasePrice = item?.originalPricePerBook ?? 42;
   const uniquePhotosPrice = hasUniquePhotos ? 5 : 0;
   const extraPagesPrice = extraPages === 10 ? 6 : extraPages === 20 ? 10 : extraPages === 40 ? 18 : 0;
-  const totalPrice = (basePrice + uniquePhotosPrice + extraPagesPrice) * bookCount;
-  const originalTotalPrice = (originalBasePrice + uniquePhotosPrice + extraPagesPrice) * bookCount;
+  const digitalPrice = digitalDownload?.price ?? 0;
+  const totalPrice = (basePrice + uniquePhotosPrice + extraPagesPrice) * bookCount + digitalPrice;
+  const originalTotalPrice = (originalBasePrice + uniquePhotosPrice + extraPagesPrice) * bookCount + digitalPrice;
 
   const maxQuantity = Math.max(...pricingTiers.map((t) => t.quantity));
   const handleDecrement = () => { if (bookCount > 1) setQuantity(bookCount - 1); };
@@ -76,8 +77,49 @@ const CheckoutStep = ({ pageCount, hasUniquePhotos, extraPages, convertedUrls, o
                   <Badge variant="secondary">Add-on</Badge>
                 </div>
               )}
+              {digitalDownload && (
+                <div className="flex items-center gap-3">
+                  <Check className="w-5 h-5 text-primary" />
+                  <span>{digitalDownload.pages} page digital download (PDF)</span>
+                  <Badge variant="secondary">Add-on</Badge>
+                </div>
+              )}
             </CardContent>
           </Card>
+
+          {/* Digital Download Upsell */}
+          {!digitalDownload && (
+            <Card className="rounded-3xl border-dashed border-2 border-primary/30 bg-primary/5">
+              <CardHeader>
+                <CardTitle className="font-display text-lg flex items-center gap-2">
+                  <Download className="w-5 h-5 text-primary" />
+                  Add a Digital Download
+                </CardTitle>
+                <p className="text-sm text-muted-foreground">
+                  Get a printable PDF so you can print extra copies at home anytime
+                </p>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-2">
+                  {DIGITAL_TIERS.map((tier) => (
+                    <button
+                      key={tier.pages}
+                      onClick={() => setDigitalDownload({ pages: tier.pages, price: tier.price })}
+                      className="w-full flex items-center justify-between p-3 rounded-xl border border-border bg-background hover:border-primary/50 hover:bg-primary/5 transition-all text-left"
+                    >
+                      <div>
+                        <span className="font-semibold text-foreground text-sm">{tier.pages} Pages</span>
+                        <span className="text-xs text-muted-foreground ml-2">
+                          (${(tier.price / tier.pages).toFixed(2)}/page)
+                        </span>
+                      </div>
+                      <span className="font-bold text-foreground">+ ${tier.price.toFixed(2)}</span>
+                    </button>
+                  ))}
+                </div>
+              </CardContent>
+            </Card>
+          )}
 
           {/* Preview */}
           <Card className="rounded-3xl">
@@ -158,6 +200,21 @@ const CheckoutStep = ({ pageCount, hasUniquePhotos, extraPages, convertedUrls, o
                 <div className="flex justify-between">
                   <span className="text-muted-foreground">+{extraPages} Extra Pages{bookCount > 1 ? ` × ${bookCount}` : ""}</span>
                   <span>${(extraPagesPrice * bookCount).toFixed(2)}</span>
+                </div>
+              )}
+
+              {digitalDownload && (
+                <div className="flex justify-between items-center">
+                  <div className="flex items-center gap-2">
+                    <span className="text-muted-foreground">Digital Download ({digitalDownload.pages} pages)</span>
+                    <button
+                      onClick={() => setDigitalDownload(null)}
+                      className="text-xs text-destructive hover:underline"
+                    >
+                      Remove
+                    </button>
+                  </div>
+                  <span>${digitalDownload.price.toFixed(2)}</span>
                 </div>
               )}
               
