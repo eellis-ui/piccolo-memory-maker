@@ -9,23 +9,29 @@ import { toast } from "sonner";
 const physicalPricing = [
   {
     quantity: 1,
-    price: "$26",
-    pricePerBook: "$26",
+    price: "$35",
+    originalPrice: "$42",
+    pricePerBook: "$35",
+    originalPerBook: "$42",
     popular: false,
   },
   {
     quantity: 2,
-    price: "$44.20",
-    pricePerBook: "$22.10",
+    price: "$70",
+    originalPrice: "$84",
+    pricePerBook: "$35",
+    originalPerBook: "$42",
     popular: true,
-    savings: "Save 15%",
+    savings: "Save 20%",
   },
   {
     quantity: 3,
-    price: "$51.48",
-    pricePerBook: "$17.16",
+    price: "$105",
+    originalPrice: "$126",
+    pricePerBook: "$35",
+    originalPerBook: "$42",
     popular: false,
-    savings: "Save 34%",
+    savings: "Save 20%",
   },
 ];
 
@@ -88,7 +94,8 @@ const PricingSection = () => {
                   <CardDescription className="text-muted-foreground">
                     {tier.quantity} {tier.quantity === 1 ? "Book" : "Books"}
                   </CardDescription>
-                  <CardTitle className="font-display text-4xl font-semibold text-foreground">
+                  <CardTitle className="font-display text-4xl font-semibold text-foreground flex items-center justify-center gap-2">
+                    <span className="line-through text-muted-foreground text-2xl font-normal">{tier.originalPrice}</span>
                     {tier.price}
                   </CardTitle>
                   {tier.savings && (
@@ -100,7 +107,7 @@ const PricingSection = () => {
                 
                 <CardContent className="pt-4">
                   <p className="text-sm text-muted-foreground text-center mb-6">
-                    {tier.pricePerBook} per book
+                    <span className="line-through mr-1">{tier.originalPerBook}</span> {tier.pricePerBook} per book
                   </p>
                   
                   <ul className="space-y-3 mb-6">
