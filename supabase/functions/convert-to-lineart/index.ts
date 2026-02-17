@@ -78,19 +78,18 @@ Deno.serve(async (req) => {
     const mimeType = fileData.type || "image/jpeg";
     const dataUrl = `data:${mimeType};base64,${imageBase64Input}`;
 
-    const prompt = `You are a coloring book illustration engine. Convert this photo into a STRICTLY black-and-white line drawing suitable for a coloring book.
+    const prompt = `Convert this photo into a clean black-and-white line drawing for a coloring book.
 
-ABSOLUTE RULES — NO EXCEPTIONS:
-- Output ONLY pure black (#000000) lines on a pure white (#FFFFFF) background.
-- ZERO color of any kind. No blue, no green, no red, no brown, no grey, no fill colors whatsoever.
-- NO shading, NO gradients, NO grey tones, NO halftones, NO cross-hatching fills.
-- NO colored regions or filled areas. Every enclosed shape must be empty white, bounded by black outlines only.
-- Lines must be clean, bold, and consistent in weight — like a professional coloring book page.
-- Maintain the key features, likeness, and composition of the original subject.
-- The output MUST have the EXACT same orientation, rotation, and aspect ratio as the input. Do NOT rotate or flip.
-${isLandscape ? "- This is a LANDSCAPE photo — output MUST remain landscape." : "- This is a PORTRAIT photo — output MUST remain portrait."}
+CRITICAL REQUIREMENTS:
+1. ONLY black (#000000) lines on white (#FFFFFF) background. ABSOLUTELY NO COLOR — no green, no brown, no grey, no skin tones, no colored fills of ANY kind. Every area inside outlines must be pure empty white.
+2. PRESERVE THE EXACT LIKENESS of the person in the photo — same face shape, same features, same hair texture and style, same pose, same expression. Do NOT replace the person with a generic or different-looking face. The converted image must be clearly recognizable as the same person.
+3. Use clean, consistent line weight throughout — like a professional coloring book page.
+4. Keep ALL accessories, clothing details, and background elements from the original photo.
+5. NO shading, NO gradients, NO cross-hatching, NO halftones, NO grey areas.
+6. ${isLandscape ? "This is LANDSCAPE — output MUST remain landscape." : "This is PORTRAIT — output MUST remain portrait."}
+7. Maintain the EXACT same orientation, rotation, and aspect ratio as the input.
 
-Think of this as a page from a store-bought coloring book: only black outlines on white paper, ready to be colored in by hand. Output ONLY the converted image, no text.`;
+Output ONLY the converted image, no text.`;
 
     let imageBase64: string | null = null;
     let lastError = "";
