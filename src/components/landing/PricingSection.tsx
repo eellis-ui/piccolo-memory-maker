@@ -1,178 +1,156 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Check, ShoppingCart } from "lucide-react";
 import { Link } from "react-router-dom";
-import { toast } from "sonner";
 
 const physicalPricing = [
   {
     quantity: 1,
-    price: "$35",
-    originalPrice: "$42",
-    pricePerBook: "$35",
-    originalPerBook: "$42",
-    popular: false,
+    price: 35,
+    originalPrice: 42,
+    savingsPercent: "17%",
+    label: null,
   },
   {
     quantity: 2,
-    price: "$63",
-    originalPrice: "$76",
-    pricePerBook: "$31.50",
-    originalPerBook: "$38",
-    popular: true,
-    savings: "Save 10%",
+    price: 63,
+    originalPrice: 84,
+    savingsPercent: "25%",
+    savingsBadge: "SAVE $21",
+    label: "MOST POPULAR",
   },
   {
     quantity: 3,
-    price: "$87",
-    originalPrice: "$105",
-    pricePerBook: "$29",
-    originalPerBook: "$35",
-    popular: false,
-    savings: "Save 17%",
+    price: 87,
+    originalPrice: 126,
+    savingsPercent: "31%",
+    savingsBadge: "SAVE $39",
+    label: "BEST VALUE",
   },
 ];
 
-const digitalPricing = [
-  { conversions: 10, price: "$2" },
-  { conversions: 25, price: "$4" },
-  { conversions: 50, price: "$7" },
-];
-
 const features = [
-  "20 pages included",
-  "High-quality line art conversion",
-  "Custom front cover",
-  "Premium paper quality",
-  "Made & shipped in the USA",
+  "Each book contains 20 Custom Photo Pages",
+  "Personalized Line Art from Your Own Photos",
+  "A Thoughtful Gift for Any Occasion",
+  "Premium Paper Quality",
+  "Made & Shipped in the USA",
 ];
 
 const PricingSection = () => {
-  const [selectedPack, setSelectedPack] = useState<number | null>(null);
+  const [selectedQuantity, setSelectedQuantity] = useState(2);
 
-  const handleSelectPack = (conversions: number, price: string) => {
-    setSelectedPack(conversions);
-    toast.success(`${conversions} conversions (${price}) added to basket`, {
-      description: "Shopify checkout coming soon",
-    });
-  };
+  const selectedTier = physicalPricing.find((t) => t.quantity === selectedQuantity)!;
+
   return (
     <section className="py-20 bg-cream">
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="text-center mb-16">
-          <h2 className="font-display text-3xl sm:text-4xl font-semibold text-foreground mb-4">
-            Simple, Transparent Pricing
+        <div className="max-w-lg mx-auto">
+          {/* Title */}
+          <h2 className="font-display text-2xl sm:text-3xl font-bold text-foreground mb-6 uppercase tracking-wide">
+            Personalized Coloring Book
           </h2>
-          <p className="text-muted-foreground text-lg max-w-2xl mx-auto">
-            Choose the perfect package for your personalized coloring book
-          </p>
-        </div>
 
-        {/* Physical Books */}
-        <div className="mb-16">
-          <h3 className="font-display text-xl font-semibold text-foreground text-center mb-8">
-            Physical Coloring Books
-          </h3>
-          
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-4xl mx-auto">
-            {physicalPricing.map((tier) => (
-              <Card 
-                key={tier.quantity}
-                className={`relative rounded-3xl border-2 transition-all duration-300 hover:shadow-soft-lg ${
-                  tier.popular ? "border-primary shadow-soft-lg" : "border-border"
-                }`}
-              >
-                {tier.popular && (
-                  <Badge className="absolute -top-3 left-1/2 -translate-x-1/2 bg-primary text-primary-foreground">
-                    Most Popular
-                  </Badge>
-                )}
-                
-                <CardHeader className="text-center pb-2">
-                  <CardDescription className="text-muted-foreground">
-                    {tier.quantity} {tier.quantity === 1 ? "Book" : "Books"}
-                  </CardDescription>
-                  <CardTitle className="font-display text-4xl font-semibold text-foreground flex items-center justify-center gap-2">
-                    <span className="line-through text-muted-foreground text-2xl font-normal">{tier.originalPrice}</span>
-                    {tier.price}
-                  </CardTitle>
-                  {tier.savings && (
-                    <Badge variant="secondary" className="mt-2">
-                      {tier.savings}
+          {/* Features list */}
+          <ul className="space-y-2 mb-8">
+            {features.map((feature) => (
+              <li key={feature} className="flex items-start gap-2 text-sm text-foreground">
+                <Check className="w-4 h-4 text-primary flex-shrink-0 mt-0.5" />
+                <span>{feature}</span>
+              </li>
+            ))}
+          </ul>
+
+          <p className="text-sm text-muted-foreground mb-8 leading-relaxed">
+            A one-of-a-kind coloring book made from your personal photos,
+            transformed into beautiful black-and-white line art, ready to color,
+            gift, or keep. Perfect for birthdays, anniversaries, memory books, or
+            moments that matter.
+          </p>
+
+          {/* Divider with sale text */}
+          <div className="relative mb-6">
+            <div className="absolute inset-0 flex items-center">
+              <div className="w-full border-t border-border" />
+            </div>
+            <div className="relative flex justify-center">
+              <span className="bg-cream px-4 text-xs font-bold uppercase tracking-widest text-foreground">
+                Limited Time Offer
+              </span>
+            </div>
+          </div>
+
+          {/* Pricing options */}
+          <div className="space-y-3 mb-6">
+            {physicalPricing.map((tier) => {
+              const isSelected = selectedQuantity === tier.quantity;
+              return (
+                <button
+                  key={tier.quantity}
+                  onClick={() => setSelectedQuantity(tier.quantity)}
+                  className={`w-full relative flex items-center gap-4 p-4 rounded-2xl border-2 transition-all text-left ${
+                    isSelected
+                      ? "border-primary bg-primary/5 shadow-sm"
+                      : "border-border bg-background hover:border-muted-foreground/30"
+                  }`}
+                >
+                  {/* Radio circle */}
+                  <div
+                    className={`w-5 h-5 rounded-full border-2 flex-shrink-0 flex items-center justify-center ${
+                      isSelected ? "border-primary" : "border-muted-foreground/40"
+                    }`}
+                  >
+                    {isSelected && (
+                      <div className="w-2.5 h-2.5 rounded-full bg-primary" />
+                    )}
+                  </div>
+
+                  {/* Text */}
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <span className="font-semibold text-foreground">
+                        {tier.quantity} Coloring {tier.quantity === 1 ? "Book" : "Books"}
+                      </span>
+                      {tier.savingsBadge && (
+                        <Badge className="bg-primary text-primary-foreground text-[10px] px-2 py-0.5 rounded-md">
+                          {tier.savingsBadge}
+                        </Badge>
+                      )}
+                    </div>
+                    <p className="text-xs text-primary font-medium mt-0.5">
+                      You save {tier.savingsPercent}
+                    </p>
+                  </div>
+
+                  {/* Price */}
+                  <div className="text-right flex-shrink-0">
+                    <p className="font-bold text-lg text-foreground">
+                      ${tier.price.toFixed(2)}
+                    </p>
+                    <p className="text-sm text-muted-foreground line-through">
+                      ${tier.originalPrice.toFixed(2)}
+                    </p>
+                  </div>
+
+                  {/* Label badge */}
+                  {tier.label && (
+                    <Badge className="absolute -top-2.5 right-4 bg-foreground text-background text-[10px] px-2 py-0.5 rounded-md">
+                      {tier.label}
                     </Badge>
                   )}
-                </CardHeader>
-                
-                <CardContent className="pt-4">
-                  <p className="text-sm text-muted-foreground text-center mb-6">
-                    <span className="line-through mr-1">{tier.originalPerBook}</span> {tier.pricePerBook} per book
-                  </p>
-                  
-                  <ul className="space-y-3 mb-6">
-                    {features.map((feature) => (
-                      <li key={feature} className="flex items-center gap-3 text-sm">
-                        <Check className="w-4 h-4 text-primary flex-shrink-0" />
-                        <span className="text-muted-foreground">{feature}</span>
-                      </li>
-                    ))}
-                  </ul>
-                  
-                  <Button asChild className="w-full rounded-2xl" variant={tier.popular ? "default" : "outline"}>
-                    <Link to="/builder">Get Started</Link>
-                  </Button>
-                </CardContent>
-              </Card>
-            ))}
+                </button>
+              );
+            })}
           </div>
-        </div>
 
-        {/* Digital Packs */}
-        <div className="max-w-2xl mx-auto">
-          <h3 className="font-display text-xl font-semibold text-foreground text-center mb-8">
-            Digital-Only Packs
-          </h3>
-          
-           <div className="grid grid-cols-3 gap-4">
-            {digitalPricing.map((pack) => (
-              <Card 
-                key={pack.conversions} 
-                className={`rounded-2xl text-center p-6 cursor-pointer transition-all hover:shadow-soft-lg ${
-                  selectedPack === pack.conversions 
-                    ? "border-2 border-primary shadow-soft-lg ring-2 ring-primary/20" 
-                    : "border-2 border-transparent hover:border-border"
-                }`}
-                onClick={() => handleSelectPack(pack.conversions, pack.price)}
-              >
-                <p className="font-display text-2xl font-semibold text-foreground mb-1">
-                  {pack.price}
-                </p>
-                <p className="text-sm text-muted-foreground mb-3">
-                  {pack.conversions} conversions
-                </p>
-                <Button 
-                  size="sm" 
-                  variant={selectedPack === pack.conversions ? "default" : "outline"} 
-                  className="w-full rounded-xl text-xs"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    handleSelectPack(pack.conversions, pack.price);
-                  }}
-                >
-                  <ShoppingCart className="w-3 h-3 mr-1" />
-                  {selectedPack === pack.conversions ? "Selected" : "Add to Basket"}
-                </Button>
-              </Card>
-            ))}
-          </div>
-        </div>
-
-        {/* Upsells info */}
-        <div className="mt-12 text-center">
-          <p className="text-muted-foreground text-sm">
-            Add-ons available: Extra pages • 20 unique photos per book • Hardcover upgrade
-          </p>
+          {/* Add to cart */}
+          <Button asChild className="w-full rounded-2xl py-6 text-base font-semibold" size="lg">
+            <Link to="/builder">
+              <ShoppingCart className="w-5 h-5 mr-2" />
+              Get Started — ${selectedTier.price.toFixed(2)}
+            </Link>
+          </Button>
         </div>
       </div>
     </section>
