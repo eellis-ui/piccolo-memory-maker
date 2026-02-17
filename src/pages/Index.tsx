@@ -1,5 +1,6 @@
 import Navbar from "@/components/layout/Navbar";
 import Footer from "@/components/layout/Footer";
+import ReviewsBanner from "@/components/landing/ReviewsBanner";
 import HeroSection from "@/components/landing/HeroSection";
 import HowItWorksSection from "@/components/landing/HowItWorksSection";
 import PricingSection from "@/components/landing/PricingSection";
@@ -9,6 +10,7 @@ import CTASection from "@/components/landing/CTASection";
 const Index = () => {
   return (
     <div className="min-h-screen bg-background">
+      <ReviewsBanner />
       <Navbar />
       <main className="pt-16">
         <HeroSection />
