@@ -28,11 +28,11 @@ const UploadStep = ({ orderId, onImagesUploaded, maxImages = 20 }: UploadStepPro
   const [isDragging, setIsDragging] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
 
-  // Convert HEIC to JPEG blob using dynamic import (heic2any uses window globals)
+  // Convert HEIC to JPEG blob using heic-to (supports newer iPhone HEIC formats)
   const convertHeicToJpeg = async (file: File): Promise<Blob> => {
-    const heic2any = (await import("heic2any")).default;
-    const result = await heic2any({ blob: file, toType: "image/jpeg", quality: 0.92 });
-    return Array.isArray(result) ? result[0] : result;
+    const { heicTo } = await import("heic-to");
+    const result = await heicTo({ blob: file, type: "image/jpeg", quality: 0.92 });
+    return result;
   };
 
   // Normalize image orientation by drawing to canvas (strips EXIF rotation)
