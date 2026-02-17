@@ -41,6 +41,10 @@ export const BasketProvider = ({ children }: { children: ReactNode }) => {
   const [digitalDownload, setDigitalDownload] = useState<DigitalDownload | null>(null);
 
   const setQuantity = (quantity: number) => {
+    if (quantity <= 0) {
+      setItem(null);
+      return;
+    }
     const tier = PRICING_TIERS.find((t) => t.quantity === quantity) ?? PRICING_TIERS[0];
     setItem({
       quantity: tier.quantity,
