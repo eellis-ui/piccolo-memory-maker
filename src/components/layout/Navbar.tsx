@@ -1,21 +1,163 @@
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { Menu, X, ShoppingCart } from "lucide-react";
+import { Menu, X, ShoppingCart, Minus, Plus, Trash2, Download } from "lucide-react";
 import { useState } from "react";
-import { useBasket } from "@/contexts/BasketContext";
+import { useBasket, DIGITAL_TIERS } from "@/contexts/BasketContext";
 import { Badge } from "@/components/ui/badge";
+import {
+  Sheet,
+  SheetContent,
+  SheetHeader,
+  SheetTitle,
+  SheetTrigger,
+} from "@/components/ui/sheet";
+import { Separator } from "@/components/ui/separator";
 
 const Navbar = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const { item } = useBasket();
+  const { item, setQuantity, pricingTiers, digitalDownload, setDigitalDownload } = useBasket();
 
   const navLinks = [
     { href: "/", label: "Home" },
-    { href: "/how-it-works", label: "How It Works" },
-    { href: "/pricing", label: "Pricing" },
+    { href: "/pricing", label: "Shop" },
     { href: "/about", label: "Our Story" },
-    { href: "/faq", label: "FAQs" },
+    { href: "/contact", label: "Contact Us" },
   ];
+
+  const maxQuantity = Math.max(...pricingTiers.map((t) => t.quantity));
+  const hasItems = !!(item || digitalDownload);
+  const itemCount = (item?.quantity ?? 0) + (digitalDownload ? 1 : 0);
+
+  const bookTotal = item ? item.totalPrice : 0;
+  const digitalTotal = digitalDownload?.price ?? 0;
+  const grandTotal = bookTotal + digitalTotal;
+
+  const BasketContent = () => (
+    <div className="flex flex-col h-full">
+      <div className="flex-1 overflow-y-auto space-y-4 py-4">
+        {!hasItems && (
+          <p className="text-center text-muted-foreground py-12 text-sm">
+            Your basket is empty
+          </p>
+        )}
+
+        {item && (
+          <div className="space-y-3 p-4 rounded-2xl border border-border bg-background">
+            <div className="flex items-center justify-between">
+              <span className="font-semibold text-foreground text-sm">
+                Coloring {item.quantity === 1 ? "Book" : "Books"}
+              </span>
+              <button
+                onClick={() => setQuantity(0)}
+                className="text-destructive hover:text-destructive/80 transition-colors"
+              >
+                <Trash2 className="w-4 h-4" />
+              </button>
+            </div>
+            <div className="flex items-center justify-between">
+              <span className="text-xs text-muted-foreground">Quantity</span>
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={() => { if (item.quantity > 1) setQuantity(item.quantity - 1); }}
+                  disabled={item.quantity <= 1}
+                  className="w-7 h-7 rounded-full border border-border flex items-center justify-center hover:bg-muted transition-colors disabled:opacity-30"
+                >
+                  <Minus className="w-3 h-3" />
+                </button>
+                <span className="font-semibold text-foreground w-5 text-center text-sm">{item.quantity}</span>
+                <button
+                  onClick={() => { if (item.quantity < maxQuantity) setQuantity(item.quantity + 1); }}
+                  disabled={item.quantity >= maxQuantity}
+                  className="w-7 h-7 rounded-full border border-border flex items-center justify-center hover:bg-muted transition-colors disabled:opacity-30"
+                >
+                  <Plus className="w-3 h-3" />
+                </button>
+              </div>
+            </div>
+            <div className="flex justify-between text-sm">
+              <span className="text-muted-foreground">${item.pricePerBook.toFixed(2)} each</span>
+              <span className="font-semibold">${item.totalPrice.toFixed(2)}</span>
+            </div>
+          </div>
+        )}
+
+        {digitalDownload && (
+          <div className="space-y-3 p-4 rounded-2xl border border-border bg-background">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <Download className="w-4 h-4 text-primary" />
+                <span className="font-semibold text-foreground text-sm">
+                  Digital Download
+                </span>
+              </div>
+              <button
+                onClick={() => setDigitalDownload(null)}
+                className="text-destructive hover:text-destructive/80 transition-colors"
+              >
+                <Trash2 className="w-4 h-4" />
+              </button>
+            </div>
+            <div className="flex justify-between text-sm">
+              <span className="text-muted-foreground">{digitalDownload.pages} pages (PDF)</span>
+              <span className="font-semibold">${digitalDownload.price.toFixed(2)}</span>
+            </div>
+            {/* Change tier */}
+            <div className="flex gap-2">
+              {DIGITAL_TIERS.map((tier) => (
+                <button
+                  key={tier.pages}
+                  onClick={() => setDigitalDownload({ pages: tier.pages, price: tier.price })}
+                  className={`flex-1 text-xs py-1.5 rounded-lg border transition-colors ${
+                    digitalDownload.pages === tier.pages
+                      ? "border-primary bg-primary/10 text-foreground font-semibold"
+                      : "border-border text-muted-foreground hover:border-primary/40"
+                  }`}
+                >
+                  {tier.pages}pg
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
+      </div>
+
+      {hasItems && (
+        <div className="border-t border-border pt-4 space-y-4">
+          <div className="flex justify-between font-semibold text-foreground">
+            <span>Total</span>
+            <span>${grandTotal.toFixed(2)}</span>
+          </div>
+          <Button asChild className="w-full rounded-2xl py-5" size="lg">
+            <Link to="/builder">
+              <ShoppingCart className="w-4 h-4 mr-2" />
+              Continue to Builder
+            </Link>
+          </Button>
+        </div>
+      )}
+    </div>
+  );
+
+  const CartButton = () => (
+    <Sheet>
+      <SheetTrigger asChild>
+        <button className="relative p-2 hover:bg-muted rounded-xl transition-colors">
+          <ShoppingCart className="w-5 h-5 text-foreground" />
+          {hasItems && (
+            <Badge className="absolute -top-1 -right-1 h-5 w-5 p-0 flex items-center justify-center text-[10px] bg-primary text-primary-foreground rounded-full">
+              {itemCount}
+            </Badge>
+          )}
+        </button>
+      </SheetTrigger>
+      <SheetContent className="w-[350px] sm:w-[400px]">
+        <SheetHeader>
+          <SheetTitle className="font-display">Your Basket</SheetTitle>
+        </SheetHeader>
+        <BasketContent />
+      </SheetContent>
+    </Sheet>
+  );
 
   return (
     <nav className="fixed top-0 left-0 right-0 z-50 bg-background/80 backdrop-blur-md border-b border-border">
@@ -41,14 +183,7 @@ const Navbar = () => {
 
           {/* CTA + Cart */}
           <div className="hidden md:flex items-center space-x-4">
-            {item && (
-              <Link to="/builder" className="relative p-2 hover:bg-muted rounded-xl transition-colors">
-                <ShoppingCart className="w-5 h-5 text-foreground" />
-                <Badge className="absolute -top-1 -right-1 h-5 w-5 p-0 flex items-center justify-center text-[10px] bg-primary text-primary-foreground rounded-full">
-                  {item.quantity}
-                </Badge>
-              </Link>
-            )}
+            <CartButton />
             <Button asChild className="rounded-2xl px-6">
               <Link to="/builder">Start Creating</Link>
             </Button>
@@ -56,14 +191,7 @@ const Navbar = () => {
 
           {/* Mobile Menu Button + Cart */}
           <div className="md:hidden flex items-center gap-2">
-            {item && (
-              <Link to="/builder" className="relative p-2">
-                <ShoppingCart className="w-5 h-5 text-foreground" />
-                <Badge className="absolute -top-1 -right-1 h-5 w-5 p-0 flex items-center justify-center text-[10px] bg-primary text-primary-foreground rounded-full">
-                  {item.quantity}
-                </Badge>
-              </Link>
-            )}
+            <CartButton />
             <button
               className="p-2"
               onClick={() => setIsMenuOpen(!isMenuOpen)}
