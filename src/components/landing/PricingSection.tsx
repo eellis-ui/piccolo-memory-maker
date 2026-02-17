@@ -1,8 +1,10 @@
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Check } from "lucide-react";
+import { Check, ShoppingCart } from "lucide-react";
 import { Link } from "react-router-dom";
+import { toast } from "sonner";
 
 const physicalPricing = [
   {
@@ -42,6 +44,14 @@ const features = [
 ];
 
 const PricingSection = () => {
+  const [selectedPack, setSelectedPack] = useState<number | null>(null);
+
+  const handleSelectPack = (conversions: number, price: string) => {
+    setSelectedPack(conversions);
+    toast.success(`${conversions} conversions (${price}) added to basket`, {
+      description: "Shopify checkout coming soon",
+    });
+  };
   return (
     <section className="py-20 bg-cream">
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
@@ -117,15 +127,35 @@ const PricingSection = () => {
             Digital-Only Packs
           </h3>
           
-          <div className="grid grid-cols-3 gap-4">
+           <div className="grid grid-cols-3 gap-4">
             {digitalPricing.map((pack) => (
-              <Card key={pack.conversions} className="rounded-2xl text-center p-6 hover:shadow-soft transition-all">
+              <Card 
+                key={pack.conversions} 
+                className={`rounded-2xl text-center p-6 cursor-pointer transition-all hover:shadow-soft-lg ${
+                  selectedPack === pack.conversions 
+                    ? "border-2 border-primary shadow-soft-lg ring-2 ring-primary/20" 
+                    : "border-2 border-transparent hover:border-border"
+                }`}
+                onClick={() => handleSelectPack(pack.conversions, pack.price)}
+              >
                 <p className="font-display text-2xl font-semibold text-foreground mb-1">
                   {pack.price}
                 </p>
-                <p className="text-sm text-muted-foreground">
+                <p className="text-sm text-muted-foreground mb-3">
                   {pack.conversions} conversions
                 </p>
+                <Button 
+                  size="sm" 
+                  variant={selectedPack === pack.conversions ? "default" : "outline"} 
+                  className="w-full rounded-xl text-xs"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    handleSelectPack(pack.conversions, pack.price);
+                  }}
+                >
+                  <ShoppingCart className="w-3 h-3 mr-1" />
+                  {selectedPack === pack.conversions ? "Selected" : "Add to Basket"}
+                </Button>
               </Card>
             ))}
           </div>
