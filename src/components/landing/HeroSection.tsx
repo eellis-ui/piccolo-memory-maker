@@ -11,6 +11,10 @@ const HeroSection = () => {
         <div className="absolute bottom-20 right-10 w-96 h-96 bg-primary/10 rounded-full blur-3xl" />
       </div>
 
+      <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+        <img src="/lovable-uploads/bc0afa55-54e9-40fc-b263-333f5ed085bc.png" alt="Piccoload logo" className="w-[500px] max-w-[80vw] opacity-10" />
+      </div>
+
       <div className="container mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
         <div className="max-w-4xl mx-auto text-center">
           
