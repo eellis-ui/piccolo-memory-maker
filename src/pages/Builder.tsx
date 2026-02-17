@@ -192,7 +192,6 @@ const Builder = () => {
                 pageCount={orderPhotos.length}
                 hasUniquePhotos={false}
                 extraPages={0}
-                bookCount={1}
                 convertedUrls={orderPhotos.map((p) => p.convertedUrl)}
                 onBack={() => setCurrentStep("cover")}
               />
