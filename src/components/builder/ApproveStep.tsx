@@ -1,10 +1,11 @@
-import { useState } from "react";
-import { Check, RefreshCw, Loader2, Trash2 } from "lucide-react";
+import { useState, useCallback } from "react";
+import { Check, RefreshCw, Loader2, Trash2, GripVertical } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import BookOptionsPanel from "./BookOptionsPanel";
+import BookPreview from "./BookPreview";
 import type { OrderPhoto } from "@/pages/Builder";
 
 interface ApproveStepProps {
@@ -26,7 +27,7 @@ const ApproveStep = ({
   const approvedCount = photos.filter((p) => p.isApproved).length;
   const allApproved = approvedCount === photos.length && photos.length > 0;
 
-  const convertPhoto = async (photoId: string) => {
+  const convertPhoto = useCallback(async (photoId: string) => {
     setConvertingIds((prev) => new Set(prev).add(photoId));
 
     try {
@@ -67,15 +68,16 @@ const ApproveStep = ({
         return next;
       });
     }
-  };
+  }, []);
 
   const convertAll = async () => {
     const unconverted = photos.filter(
       (p) => p.conversionStatus === "pending" || p.conversionStatus === "failed"
     );
-    for (const photo of unconverted) {
-      await convertPhoto(photo.id);
-    }
+    if (unconverted.length === 0) return;
+
+    // Fire all conversions in parallel
+    await Promise.allSettled(unconverted.map((photo) => convertPhoto(photo.id)));
   };
 
   const toggleApproval = async (id: string) => {
@@ -108,6 +110,17 @@ const ApproveStep = ({
     setPhotos((prev) => prev.filter((p) => p.id !== id));
     await supabase.from("order_photos").delete().eq("id", id);
     toast.success("Photo removed");
+  };
+
+  const handleReorder = async (reorderedPhotos: OrderPhoto[]) => {
+    setPhotos(reorderedPhotos);
+    // Persist new positions to database
+    for (let i = 0; i < reorderedPhotos.length; i++) {
+      await supabase
+        .from("order_photos")
+        .update({ page_position: i })
+        .eq("id", reorderedPhotos[i].id);
+    }
   };
 
   const handleContinue = () => {
@@ -147,7 +160,7 @@ const ApproveStep = ({
               ) : (
                 <RefreshCw className="w-4 h-4 mr-1" />
               )}
-              Convert All
+              Convert All ({photos.filter((p) => p.conversionStatus === "pending" || p.conversionStatus === "failed").length})
             </Button>
           )}
           {!allApproved && !hasUnconverted && (
@@ -166,8 +179,13 @@ const ApproveStep = ({
         />
       </div>
 
-      {/* Book Options Panel (uses basket context internally) */}
+      {/* Book Options Panel */}
       <BookOptionsPanel />
+
+      {/* Interactive Book Preview (when all approved) */}
+      {allApproved && (
+        <BookPreview photos={photos} onReorder={handleReorder} />
+      )}
 
       {/* Pages Grid */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
