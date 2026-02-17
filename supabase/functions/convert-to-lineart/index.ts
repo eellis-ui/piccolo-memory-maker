@@ -149,10 +149,11 @@ Think of this as a page from a store-bought coloring book: only black outlines o
         const embeddedMsg = choice.error.message || "";
         console.error(`Embedded AI error (code ${embeddedCode}):`, embeddedMsg);
 
-        if (embeddedCode === 502 && embeddedMsg.includes("429")) {
+        // Retry on all 502 errors (gateway/upstream issues) and rate limits
+        if (embeddedCode === 502 || embeddedCode === 429) {
           lastError = "AI service temporarily busy";
           if (attempt < MAX_RETRIES) {
-            console.log(`Embedded rate limit, waiting ${RETRY_DELAY_MS * attempt}ms before retry...`);
+            console.log(`Transient AI error, waiting ${RETRY_DELAY_MS * attempt}ms before retry...`);
             await sleep(RETRY_DELAY_MS * attempt);
             continue;
           }
