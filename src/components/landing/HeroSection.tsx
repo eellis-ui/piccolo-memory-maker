@@ -20,12 +20,12 @@ const HeroSection = () => {
           <h1 className="font-display text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-semibold text-foreground leading-tight mb-6 animate-fade-in" style={{ animationDelay: "0.1s" }}>
             Turn Your Memories Into{" "}
             <span className="text-primary">Beautiful</span>{" "}
-            Colouring Books
+            Coloring Books
           </h1>
           
           <p className="text-lg sm:text-xl text-muted-foreground max-w-2xl mx-auto mb-8 animate-fade-in" style={{ animationDelay: "0.2s" }}>
-            Upload your favourite photos and watch them transform into stunning 
-            line drawings. Create personalised colouring books that make 
+            Upload your favorite photos and watch them transform into stunning 
+            line drawings. Create personalized coloring books that make 
             meaningful gifts for loved ones.
           </p>
 

@@ -5,11 +5,11 @@ import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/
 const faqs = [
   {
     question: "How many photos can I include in my book?",
-    answer: "Each book includes up to 20 photo conversions. Every photo is transformed into a beautiful line drawing ready for colouring.",
+    answer: "Each book includes up to 20 photo conversions. Every photo is transformed into a beautiful line drawing ready for coloring.",
   },
   {
     question: "What if I order multiple books?",
-    answer: "By default, each additional book contains the same 20 images. If you'd like each book to have different photos, you can add the 'Unique Photos' add-on for £5, which gives each book its own set of 20 unique images.",
+    answer: "By default, each additional book contains the same 20 images. If you'd like each book to have different photos, you can add the 'Unique Photos' add-on for $5, which gives each book its own set of 20 unique images.",
   },
   {
     question: "What kind of photos work best?",
@@ -17,7 +17,7 @@ const faqs = [
   },
   {
     question: "How long does delivery take?",
-    answer: "Books are printed and dispatched within 3–5 working days. UK delivery typically takes an additional 2–3 working days.",
+    answer: "Books are printed and dispatched within 3–5 business days. US delivery typically takes an additional 3–5 business days.",
   },
   {
     question: "Can I preview my book before ordering?",
@@ -25,11 +25,11 @@ const faqs = [
   },
   {
     question: "What paper quality do you use?",
-    answer: "We use premium 170gsm uncoated paper, perfect for colouring with pencils, pens, or markers. The cover is printed on thick 350gsm card.",
+    answer: "We use premium 170gsm uncoated paper, perfect for coloring with pencils, pens, or markers. The cover is printed on thick 350gsm card.",
   },
   {
     question: "Do you ship internationally?",
-    answer: "Currently we ship within the UK. International shipping is coming soon — sign up for updates to be the first to know!",
+    answer: "Currently we ship within the United States. International shipping is coming soon — sign up for updates to be the first to know!",
   },
   {
     question: "Can I get a refund?",
@@ -50,7 +50,7 @@ const FAQ = () => {
                   Frequently Asked Questions
                 </h1>
                 <p className="text-muted-foreground text-lg">
-                  Everything you need to know about creating your personalised colouring book
+                  Everything you need to know about creating your personalized coloring book
                 </p>
               </div>
 

@@ -7,30 +7,30 @@ import { Link } from "react-router-dom";
 const physicalPricing = [
   {
     quantity: 1,
-    price: "£26",
-    pricePerBook: "£26",
+    price: "$26",
+    pricePerBook: "$26",
     popular: false,
   },
   {
     quantity: 2,
-    price: "£44.20",
-    pricePerBook: "£22.10",
+    price: "$44.20",
+    pricePerBook: "$22.10",
     popular: true,
     savings: "Save 15%",
   },
   {
     quantity: 3,
-    price: "£51.48",
-    pricePerBook: "£17.16",
+    price: "$51.48",
+    pricePerBook: "$17.16",
     popular: false,
     savings: "Save 34%",
   },
 ];
 
 const digitalPricing = [
-  { conversions: 10, price: "£2" },
-  { conversions: 25, price: "£4" },
-  { conversions: 50, price: "£7" },
+  { conversions: 10, price: "$2" },
+  { conversions: 25, price: "$4" },
+  { conversions: 50, price: "$7" },
 ];
 
 const features = [
@@ -38,7 +38,7 @@ const features = [
   "High-quality line art conversion",
   "Custom front cover",
   "Premium paper quality",
-  "UK-made & shipped",
+  "Made & shipped in the USA",
 ];
 
 const PricingSection = () => {
@@ -50,14 +50,14 @@ const PricingSection = () => {
             Simple, Transparent Pricing
           </h2>
           <p className="text-muted-foreground text-lg max-w-2xl mx-auto">
-            Choose the perfect package for your personalised colouring book
+            Choose the perfect package for your personalized coloring book
           </p>
         </div>
 
         {/* Physical Books */}
         <div className="mb-16">
           <h3 className="font-display text-xl font-semibold text-foreground text-center mb-8">
-            Physical Colouring Books
+            Physical Coloring Books
           </h3>
           
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-4xl mx-auto">

@@ -46,7 +46,7 @@ const BookOptionsPanel = ({ options, onChange }: BookOptionsPanelProps) => {
             onChange={(e) =>
               onChange({ ...options, titlePageText: e.target.value })
             }
-            placeholder="My Piccoload Colouring Book"
+            placeholder="My Piccoload Coloring Book"
             className="rounded-xl"
           />
         )}
@@ -93,7 +93,7 @@ const BookOptionsPanel = ({ options, onChange }: BookOptionsPanelProps) => {
           {options.dedicationPageEnabled && (
             <>, <span className="font-medium text-foreground">Dedication Page</span></>
           )}
-          , then your colouring pages.
+          , then your coloring pages.
         </p>
       </div>
     </div>

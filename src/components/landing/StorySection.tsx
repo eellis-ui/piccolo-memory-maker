@@ -16,14 +16,14 @@ const StorySection = () => {
 
           <div className="prose prose-lg mx-auto text-center">
             <p className="text-muted-foreground text-lg leading-relaxed mb-6">
-              Piccoload was born during a hospital stay, where colouring became a 
+              Piccoload was born during a hospital stay, where coloring became a 
               source of calm and comfort during recovery. What started as a personal 
               coping mechanism transformed into something bigger—a way to turn 
               cherished memories into meaningful, therapeutic art.
             </p>
             
             <p className="text-muted-foreground text-lg leading-relaxed mb-6">
-              We believe that colouring isn't just for children. It's a mindful 
+              We believe that coloring isn't just for children. It's a mindful 
               practice that helps us slow down, be present, and reconnect with 
               moments that matter. By transforming your photos into beautiful 
               line drawings, we help you relive your happiest memories in a 
@@ -31,8 +31,8 @@ const StorySection = () => {
             </p>
             
             <p className="text-muted-foreground text-lg leading-relaxed">
-              Every Piccoload book is made with love in the UK, using premium 
-              materials that honour the memories within. Whether it's a gift for 
+              Every Piccoload book is made with love in the USA, using premium 
+              materials that honor the memories within. Whether it's a gift for 
               a loved one or a keepsake for yourself, each book is a unique 
               celebration of life's precious moments.
             </p>
