@@ -6,6 +6,13 @@ const corsHeaders = {
     "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version",
 };
 
+const MAX_RETRIES = 3;
+const RETRY_DELAY_MS = 3000;
+
+function sleep(ms: number) {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
@@ -48,7 +55,7 @@ Deno.serve(async (req) => {
       .update({ conversion_status: "converting" })
       .eq("id", photoId);
 
-    // Download the original image and convert to base64 to strip EXIF issues
+    // Download the original image and convert to base64
     const { data: fileData, error: downloadError } = await supabase.storage
       .from("order-files")
       .download(photo.original_path);
@@ -67,67 +74,122 @@ Deno.serve(async (req) => {
     const mimeType = fileData.type || "image/jpeg";
     const dataUrl = `data:${mimeType};base64,${imageBase64Input}`;
 
-    // Call Lovable AI Gateway with Gemini pro image model
-    const aiResponse = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${lovableApiKey}`,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        model: "google/gemini-3-pro-image-preview",
-        modalities: ["image", "text"],
-        messages: [
-          {
-            role: "user",
-            content: [
-              {
-                type: "text",
-                text: `Convert this photo into a clean black-and-white coloring book line drawing. CRITICAL RULES: 1) The output image MUST have the EXACT same orientation, rotation, and aspect ratio as the input photo. Do NOT rotate or flip. ${isLandscape ? "This is a LANDSCAPE photo — the output MUST remain landscape orientation." : "This is a PORTRAIT photo — the output MUST remain portrait orientation."} 2) Use simple bold outlines only, no shading, no grey tones, no textures, no color. 3) Pure black outlines on a pure white background. 4) Maintain the key features and likeness of the subject. Output ONLY the converted image.`,
-              },
-              {
-                type: "image_url",
-                image_url: { url: dataUrl },
-              },
-            ],
-          },
-        ],
-      }),
-    });
+    const prompt = `Convert this photo into a clean black-and-white coloring book line drawing. CRITICAL RULES: 1) The output image MUST have the EXACT same orientation, rotation, and aspect ratio as the input photo. Do NOT rotate or flip. ${isLandscape ? "This is a LANDSCAPE photo — the output MUST remain landscape orientation." : "This is a PORTRAIT photo — the output MUST remain portrait orientation."} 2) Use simple bold outlines only, no shading, no grey tones, no textures, no color. 3) Pure black outlines on a pure white background. 4) Maintain the key features and likeness of the subject. Output ONLY the converted image.`;
 
-    if (!aiResponse.ok) {
-      const errText = await aiResponse.text();
-      console.error("AI Gateway error:", errText);
-      throw new Error(`AI conversion error: ${errText}`);
-    }
-
-    const aiResult = await aiResponse.json();
-    console.log("AI response structure:", JSON.stringify(aiResult).substring(0, 500));
-
-    // Extract the image from the response - check message.images array first
-    const message = aiResult.choices?.[0]?.message;
     let imageBase64: string | null = null;
+    let lastError = "";
 
-    // Primary: check message.images array (Lovable AI image generation format)
-    if (message?.images && Array.isArray(message.images) && message.images.length > 0) {
-      const imgUrl = message.images[0]?.image_url?.url;
-      if (imgUrl && imgUrl.startsWith("data:image")) {
-        const match = imgUrl.match(/base64,(.+)/);
-        if (match) imageBase64 = match[1];
+    for (let attempt = 1; attempt <= MAX_RETRIES; attempt++) {
+      console.log(`AI conversion attempt ${attempt}/${MAX_RETRIES}`);
+
+      const aiResponse = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${lovableApiKey}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          model: "google/gemini-3-pro-image-preview",
+          modalities: ["image", "text"],
+          messages: [
+            {
+              role: "user",
+              content: [
+                { type: "text", text: prompt },
+                { type: "image_url", image_url: { url: dataUrl } },
+              ],
+            },
+          ],
+        }),
+      });
+
+      if (!aiResponse.ok) {
+        const errText = await aiResponse.text();
+        console.error(`AI Gateway HTTP error (${aiResponse.status}):`, errText);
+
+        if (aiResponse.status === 429) {
+          lastError = "Rate limited by AI service";
+          if (attempt < MAX_RETRIES) {
+            console.log(`Rate limited, waiting ${RETRY_DELAY_MS * attempt}ms before retry...`);
+            await sleep(RETRY_DELAY_MS * attempt);
+            continue;
+          }
+          break;
+        }
+        if (aiResponse.status === 402) {
+          lastError = "AI credits exhausted. Please add funds to continue.";
+          break;
+        }
+        lastError = `AI service error (${aiResponse.status})`;
+        break;
+      }
+
+      const aiResult = await aiResponse.json();
+
+      // Check for embedded errors in the response (gateway returns 200 but with error in choices)
+      const choice = aiResult.choices?.[0];
+      if (choice?.error) {
+        const embeddedCode = choice.error.code;
+        const embeddedMsg = choice.error.message || "";
+        console.error(`Embedded AI error (code ${embeddedCode}):`, embeddedMsg);
+
+        if (embeddedCode === 502 && embeddedMsg.includes("429")) {
+          lastError = "AI service temporarily busy";
+          if (attempt < MAX_RETRIES) {
+            console.log(`Embedded rate limit, waiting ${RETRY_DELAY_MS * attempt}ms before retry...`);
+            await sleep(RETRY_DELAY_MS * attempt);
+            continue;
+          }
+          break;
+        }
+        lastError = `AI error: ${embeddedMsg.substring(0, 100)}`;
+        break;
+      }
+
+      // Check for content filtering
+      const finishReason = choice?.native_finish_reason;
+      if (finishReason === "IMAGE_PROHIBITED_CONTENT") {
+        console.error("Content filter blocked this image");
+        lastError = "This photo was blocked by the AI content filter. Try a different photo.";
+        break;
+      }
+
+      // Extract image from response
+      const message = choice?.message;
+
+      // Primary: check message.images array
+      if (message?.images && Array.isArray(message.images) && message.images.length > 0) {
+        const imgUrl = message.images[0]?.image_url?.url;
+        if (imgUrl && imgUrl.startsWith("data:image")) {
+          const match = imgUrl.match(/base64,(.+)/);
+          if (match) imageBase64 = match[1];
+        }
+      }
+
+      // Fallback: check content for inline base64
+      if (!imageBase64 && typeof message?.content === "string") {
+        const base64Match = message.content.match(/data:image\/[^;]+;base64,([^\s"]+)/);
+        if (base64Match) imageBase64 = base64Match[1];
+      }
+
+      if (imageBase64) {
+        console.log("Successfully extracted image on attempt", attempt);
+        break;
+      }
+
+      // No image but no clear error — retry
+      console.warn(`Attempt ${attempt}: No image in response. finish_reason: ${finishReason}`);
+      lastError = "AI did not return an image. Please try again.";
+      if (attempt < MAX_RETRIES) {
+        await sleep(RETRY_DELAY_MS);
       }
     }
 
-    // Fallback: check content for inline base64
-    if (!imageBase64 && typeof message?.content === "string") {
-      const base64Match = message.content.match(/data:image\/[^;]+;base64,([^\s"]+)/);
-      if (base64Match) imageBase64 = base64Match[1];
-    }
-
     if (!imageBase64) {
-      console.error("Could not extract image from AI response. Full response:", JSON.stringify(aiResult).substring(0, 2000));
+      console.error("All attempts failed. Last error:", lastError);
       await supabase.from("order_photos").update({ conversion_status: "failed" }).eq("id", photoId);
       return new Response(
-        JSON.stringify({ error: "AI did not return an image" }),
+        JSON.stringify({ error: lastError || "AI did not return an image" }),
         { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
