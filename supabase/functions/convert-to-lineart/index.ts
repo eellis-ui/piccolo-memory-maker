@@ -74,7 +74,19 @@ Deno.serve(async (req) => {
     const mimeType = fileData.type || "image/jpeg";
     const dataUrl = `data:${mimeType};base64,${imageBase64Input}`;
 
-    const prompt = `Convert this photo into a clean black-and-white coloring book line drawing. CRITICAL RULES: 1) The output image MUST have the EXACT same orientation, rotation, and aspect ratio as the input photo. Do NOT rotate or flip. ${isLandscape ? "This is a LANDSCAPE photo — the output MUST remain landscape orientation." : "This is a PORTRAIT photo — the output MUST remain portrait orientation."} 2) Use simple bold outlines only, no shading, no grey tones, no textures, no color. 3) Pure black outlines on a pure white background. 4) Maintain the key features and likeness of the subject. Output ONLY the converted image.`;
+    const prompt = `You are a coloring book illustration engine. Convert this photo into a STRICTLY black-and-white line drawing suitable for a coloring book.
+
+ABSOLUTE RULES — NO EXCEPTIONS:
+- Output ONLY pure black (#000000) lines on a pure white (#FFFFFF) background.
+- ZERO color of any kind. No blue, no green, no red, no brown, no grey, no fill colors whatsoever.
+- NO shading, NO gradients, NO grey tones, NO halftones, NO cross-hatching fills.
+- NO colored regions or filled areas. Every enclosed shape must be empty white, bounded by black outlines only.
+- Lines must be clean, bold, and consistent in weight — like a professional coloring book page.
+- Maintain the key features, likeness, and composition of the original subject.
+- The output MUST have the EXACT same orientation, rotation, and aspect ratio as the input. Do NOT rotate or flip.
+${isLandscape ? "- This is a LANDSCAPE photo — output MUST remain landscape." : "- This is a PORTRAIT photo — output MUST remain portrait."}
+
+Think of this as a page from a store-bought coloring book: only black outlines on white paper, ready to be colored in by hand. Output ONLY the converted image, no text.`;
 
     let imageBase64: string | null = null;
     let lastError = "";
