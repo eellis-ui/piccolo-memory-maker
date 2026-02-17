@@ -9,7 +9,7 @@ const steps = [
   {
     icon: Sparkles,
     title: "Magic Conversion",
-    description: "Our AI transforms each photo into a beautiful, high-quality line drawing ready for colouring.",
+    description: "Our AI transforms each photo into a beautiful, high-quality line drawing ready for coloring.",
   },
   {
     icon: BookOpen,
@@ -19,7 +19,7 @@ const steps = [
   {
     icon: Gift,
     title: "Receive Your Book",
-    description: "We print and deliver your personalised colouring book, beautifully packaged.",
+    description: "We print and deliver your personalized coloring book, beautifully packaged.",
   },
 ];
 
@@ -32,7 +32,7 @@ const HowItWorksSection = () => {
             How It Works
           </h2>
           <p className="text-muted-foreground text-lg max-w-2xl mx-auto">
-            Create your personalised colouring book in four simple steps
+            Create your personalized coloring book in four simple steps
           </p>
         </div>
 

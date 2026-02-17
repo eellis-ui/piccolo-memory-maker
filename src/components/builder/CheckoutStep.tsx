@@ -43,7 +43,7 @@ const CheckoutStep = ({ pageCount, hasUniquePhotos, extraPages, bookCount, conve
             <CardContent className="space-y-4">
               <div className="flex items-center gap-3">
                 <Check className="w-5 h-5 text-primary" />
-                <span>{pageCount + extraPages} page personalised colouring book</span>
+                <span>{pageCount + extraPages} page personalized coloring book</span>
               </div>
               <div className="flex items-center gap-3">
                 <Check className="w-5 h-5 text-primary" />
@@ -59,7 +59,7 @@ const CheckoutStep = ({ pageCount, hasUniquePhotos, extraPages, bookCount, conve
               </div>
               <div className="flex items-center gap-3">
                 <Check className="w-5 h-5 text-primary" />
-                <span>UK delivery included</span>
+                <span>US delivery included</span>
               </div>
               {hasUniquePhotos && bookCount > 1 && (
                 <div className="flex items-center gap-3">
@@ -110,21 +110,21 @@ const CheckoutStep = ({ pageCount, hasUniquePhotos, extraPages, bookCount, conve
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="flex justify-between">
-                <span className="text-muted-foreground">Colouring Book (20 pages)</span>
-                <span>£{basePrice.toFixed(2)}</span>
+                <span className="text-muted-foreground">Coloring Book (20 pages)</span>
+                <span>${basePrice.toFixed(2)}</span>
               </div>
               
               {hasUniquePhotos && (
                 <div className="flex justify-between">
                   <span className="text-muted-foreground">20 Unique Photos</span>
-                  <span>£{uniquePhotosPrice.toFixed(2)}</span>
+                  <span>${uniquePhotosPrice.toFixed(2)}</span>
                 </div>
               )}
               
               {extraPages > 0 && (
                 <div className="flex justify-between">
                   <span className="text-muted-foreground">+{extraPages} Extra Pages</span>
-                  <span>£{extraPagesPrice.toFixed(2)}</span>
+                  <span>${extraPagesPrice.toFixed(2)}</span>
                 </div>
               )}
               
@@ -132,7 +132,7 @@ const CheckoutStep = ({ pageCount, hasUniquePhotos, extraPages, bookCount, conve
               
               <div className="flex justify-between text-lg font-semibold">
                 <span>Total</span>
-                <span>£{totalPrice.toFixed(2)}</span>
+                <span>${totalPrice.toFixed(2)}</span>
               </div>
 
               <Button className="w-full rounded-2xl py-6 text-base mt-4" size="lg">

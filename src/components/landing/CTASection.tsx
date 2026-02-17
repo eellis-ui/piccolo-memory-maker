@@ -11,7 +11,7 @@ const CTASection = () => {
             Ready to Create Something Special?
           </h2>
           <p className="text-muted-foreground text-lg mb-8">
-            Transform your favourite photos into a personalised colouring book 
+            Transform your favorite photos into a personalized coloring book 
             in just a few minutes. It's the perfect gift for any occasion.
           </p>
           
