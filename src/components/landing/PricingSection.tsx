@@ -1,8 +1,10 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Check, ShoppingCart } from "lucide-react";
-import { Link } from "react-router-dom";
+import { useBasket } from "@/contexts/BasketContext";
+import { toast } from "sonner";
 
 const physicalPricing = [
   {
@@ -10,7 +12,8 @@ const physicalPricing = [
     price: 35,
     originalPrice: 42,
     savingsPercent: "17%",
-    label: null,
+    label: null as string | null,
+    savingsBadge: null as string | null,
   },
   {
     quantity: 2,
@@ -40,8 +43,16 @@ const features = [
 
 const PricingSection = () => {
   const [selectedQuantity, setSelectedQuantity] = useState(2);
+  const { setQuantity } = useBasket();
+  const navigate = useNavigate();
 
   const selectedTier = physicalPricing.find((t) => t.quantity === selectedQuantity)!;
+
+  const handleAddToBasket = () => {
+    setQuantity(selectedQuantity);
+    toast.success(`${selectedQuantity} coloring ${selectedQuantity === 1 ? "book" : "books"} added to basket!`);
+    navigate("/builder");
+  };
 
   return (
     <section className="py-20 bg-cream">
@@ -144,12 +155,10 @@ const PricingSection = () => {
             })}
           </div>
 
-          {/* Add to cart */}
-          <Button asChild className="w-full rounded-2xl py-6 text-base font-semibold" size="lg">
-            <Link to="/builder">
-              <ShoppingCart className="w-5 h-5 mr-2" />
-              Get Started — ${selectedTier.price.toFixed(2)}
-            </Link>
+          {/* Add to basket */}
+          <Button onClick={handleAddToBasket} className="w-full rounded-2xl py-6 text-base font-semibold" size="lg">
+            <ShoppingCart className="w-5 h-5 mr-2" />
+            Add to Basket — ${selectedTier.price.toFixed(2)}
           </Button>
         </div>
       </div>

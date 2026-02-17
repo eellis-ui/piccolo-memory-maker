@@ -3,20 +3,22 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
+import { useBasket } from "@/contexts/BasketContext";
 
 interface CheckoutStepProps {
   pageCount: number;
   hasUniquePhotos: boolean;
   extraPages: number;
-  bookCount: number;
   convertedUrls: (string | null)[];
   onBack: () => void;
 }
 
-const CheckoutStep = ({ pageCount, hasUniquePhotos, extraPages, bookCount, convertedUrls, onBack }: CheckoutStepProps) => {
-  // Pricing calculation
-  const basePrice = 35;
-  const originalBasePrice = Math.ceil(basePrice * 1.2 * 100) / 100; // "was" price at 20% more
+const CheckoutStep = ({ pageCount, hasUniquePhotos, extraPages, convertedUrls, onBack }: CheckoutStepProps) => {
+  const { item } = useBasket();
+  
+  const bookCount = item?.quantity ?? 1;
+  const basePrice = item?.pricePerBook ?? 35;
+  const originalBasePrice = item?.originalPricePerBook ?? 42;
   const uniquePhotosPrice = hasUniquePhotos ? 5 : 0;
   const extraPagesPrice = extraPages === 10 ? 6 : extraPages === 20 ? 10 : extraPages === 40 ? 18 : 0;
   const totalPrice = (basePrice + uniquePhotosPrice + extraPagesPrice) * bookCount;
