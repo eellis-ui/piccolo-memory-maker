@@ -15,7 +15,7 @@ import { Separator } from "@/components/ui/separator";
 
 const Navbar = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const { item, setQuantity, pricingTiers, digitalDownload, setDigitalDownload } = useBasket();
+  const { item, setQuantity, pricingTiers, digitalDownload, setDigitalDownload, addOnsTotal: basketAddOnsTotal } = useBasket();
 
   const navLinks = [
     { href: "/", label: "Home" },
@@ -30,7 +30,7 @@ const Navbar = () => {
 
   const bookTotal = item ? item.totalPrice : 0;
   const digitalTotal = digitalDownload?.price ?? 0;
-  const grandTotal = bookTotal + digitalTotal;
+  const grandTotal = bookTotal + digitalTotal + basketAddOnsTotal;
 
   const BasketContent = () => (
     <div className="flex flex-col h-full">

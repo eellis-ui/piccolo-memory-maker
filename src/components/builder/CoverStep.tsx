@@ -3,6 +3,7 @@ import { Check } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { useBasket } from "@/contexts/BasketContext";
 import logoImg from "@/assets/piccoload-logo.png";
 
 const FONT_OPTIONS = [
@@ -33,14 +34,15 @@ interface CoverStepProps {
 }
 
 const CoverStep = ({ availableImages, onCoverComplete, onBack }: CoverStepProps) => {
+  const { addOns } = useBasket();
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
-  const [title, setTitle] = useState("colour in your memories");
+  const [coverTitle, setCoverTitle] = useState("colour in your memories");
   const [titleFont, setTitleFont] = useState<string>(FONT_OPTIONS[0].value);
 
   const toggleImage = (id: string) => {
     setSelectedIds((prev) => {
       if (prev.includes(id)) return prev.filter((i) => i !== id);
-      if (prev.length >= 2) return [prev[1], id]; // replace oldest
+      if (prev.length >= 2) return [prev[1], id];
       return [...prev, id];
     });
   };
@@ -51,12 +53,20 @@ const CoverStep = ({ availableImages, onCoverComplete, onBack }: CoverStepProps)
 
   const canContinue = selectedIds.length === 2;
 
+  // Determine subtitle: dedication note replaces default if enabled
+  const subtitle = addOns.dedicationPageEnabled && addOns.dedicationPageText.trim()
+    ? addOns.dedicationPageText.trim()
+    : "FOR KIDS AND ADULTS ALIKE";
+
+  // Title on cover only shows if title page is enabled and text is provided
+  const showTitle = addOns.titlePageEnabled && addOns.titlePageText.trim();
+
   const handleContinue = () => {
     if (canContinue) {
       onCoverComplete({
         imageIds: [selectedIds[0], selectedIds[1]],
-        title,
-        subtitle: "FOR KIDS AND ADULTS ALIKE",
+        title: coverTitle,
+        subtitle,
       });
     }
   };
@@ -77,13 +87,22 @@ const CoverStep = ({ availableImages, onCoverComplete, onBack }: CoverStepProps)
         {/* Cover Preview */}
         <div className="order-2 lg:order-1">
           <div className="bg-cream rounded-3xl p-6 shadow-soft">
-          <div className="aspect-[3/4] bg-cream rounded-2xl shadow-soft-lg overflow-hidden flex flex-col">
-              {/* Logo header – compact */}
+            <div className="aspect-[3/4] bg-cream rounded-2xl shadow-soft-lg overflow-hidden flex flex-col">
+              {/* Logo header */}
               <div className="pt-4 pb-1 flex justify-center px-6 shrink-0">
                 <img src={logoImg} alt="Piccoload – From Pic to Pen" className="w-[45%]" />
               </div>
 
-              {/* Two photo pairs – fills the bulk of the page */}
+              {/* Title – only when enabled */}
+              {showTitle && (
+                <div className="px-6 text-center shrink-0">
+                  <h3 className="text-sm sm:text-base font-semibold text-foreground leading-tight">
+                    {addOns.titlePageText}
+                  </h3>
+                </div>
+              )}
+
+              {/* Two photo pairs */}
               <div className="flex-1 grid grid-rows-2 w-full min-h-0">
                 {[0, 1].map((idx) => {
                   const photo = selectedPhotos[idx];
@@ -129,13 +148,13 @@ const CoverStep = ({ availableImages, onCoverComplete, onBack }: CoverStepProps)
                 })}
               </div>
 
-              {/* Subtitle + Title at bottom */}
+              {/* Bottom text */}
               <div className="px-6 py-3 text-center shrink-0">
                 <p className="text-[8px] sm:text-[9px] tracking-[0.2em] uppercase text-muted-foreground font-medium" style={{ fontFamily: "'Yuji Syuku', serif" }}>
-                  FOR KIDS AND ADULTS ALIKE
+                  {subtitle}
                 </p>
                 <h3 className="text-base sm:text-lg italic font-semibold text-foreground leading-tight mt-0.5" style={{ fontFamily: titleFont }}>
-                  {title}
+                  {coverTitle}
                 </h3>
               </div>
             </div>
@@ -146,8 +165,8 @@ const CoverStep = ({ availableImages, onCoverComplete, onBack }: CoverStepProps)
             <div>
               <label className="text-sm font-medium text-foreground">Cover Title</label>
               <Input
-                value={title}
-                onChange={(e) => setTitle(e.target.value)}
+                value={coverTitle}
+                onChange={(e) => setCoverTitle(e.target.value)}
                 className="mt-1 rounded-xl"
                 placeholder="colour in your memories"
               />

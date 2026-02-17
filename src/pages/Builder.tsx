@@ -1,13 +1,13 @@
 import { useState, useEffect } from "react";
 import { Check } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
+import { useBasket } from "@/contexts/BasketContext";
 import Navbar from "@/components/layout/Navbar";
 import Footer from "@/components/layout/Footer";
 import UploadStep from "@/components/builder/UploadStep";
 import ApproveStep from "@/components/builder/ApproveStep";
 import CoverStep from "@/components/builder/CoverStep";
 import CheckoutStep from "@/components/builder/CheckoutStep";
-
 
 type BuilderStep = "upload" | "approve" | "cover" | "checkout";
 
@@ -23,13 +23,6 @@ export interface OrderPhoto {
   isLandscape: boolean;
 }
 
-export interface BookOptions {
-  titlePageEnabled: boolean;
-  titlePageText: string;
-  dedicationPageEnabled: boolean;
-  dedicationPageText: string;
-}
-
 const steps: { key: BuilderStep; label: string }[] = [
   { key: "upload", label: "Upload" },
   { key: "approve", label: "Approve" },
@@ -41,12 +34,7 @@ const Builder = () => {
   const [currentStep, setCurrentStep] = useState<BuilderStep>("upload");
   const [orderId, setOrderId] = useState<string | null>(null);
   const [orderPhotos, setOrderPhotos] = useState<OrderPhoto[]>([]);
-  const [bookOptions, setBookOptions] = useState<BookOptions>({
-    titlePageEnabled: true,
-    titlePageText: "My Piccoload Coloring Book",
-    dedicationPageEnabled: false,
-    dedicationPageText: "",
-  });
+  const { addOns } = useBasket();
   const [coverData, setCoverData] = useState<{
     imageIds: [string, string];
     title: string;
@@ -55,7 +43,6 @@ const Builder = () => {
 
   const currentStepIndex = steps.findIndex((s) => s.key === currentStep);
 
-  // Create order on mount
   useEffect(() => {
     const createOrder = async () => {
       const { data, error } = await supabase
@@ -92,12 +79,10 @@ const Builder = () => {
         .from("orders")
         .update({
           cover_image_id: data.imageIds[0],
-          ...bookOptions && {
-            title_page_enabled: bookOptions.titlePageEnabled,
-            title_page_text: bookOptions.titlePageText,
-            dedication_page_enabled: bookOptions.dedicationPageEnabled,
-            dedication_page_text: bookOptions.dedicationPageText,
-          },
+          title_page_enabled: addOns.titlePageEnabled,
+          title_page_text: addOns.titlePageText,
+          dedication_page_enabled: addOns.dedicationPageEnabled,
+          dedication_page_text: addOns.dedicationPageText,
         })
         .eq("id", orderId);
     }
@@ -168,8 +153,6 @@ const Builder = () => {
               <ApproveStep
                 orderId={orderId}
                 photos={orderPhotos}
-                bookOptions={bookOptions}
-                onBookOptionsChange={setBookOptions}
                 onApprovalComplete={handleApprovalComplete}
                 onBack={() => setCurrentStep("upload")}
               />
