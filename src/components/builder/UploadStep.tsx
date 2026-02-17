@@ -4,7 +4,6 @@ import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import heic2any from "heic2any";
 import type { OrderPhoto } from "@/pages/Builder";
 
 interface UploadStepProps {
@@ -29,8 +28,9 @@ const UploadStep = ({ orderId, onImagesUploaded, maxImages = 20 }: UploadStepPro
   const [isDragging, setIsDragging] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
 
-  // Convert HEIC to JPEG blob
+  // Convert HEIC to JPEG blob using dynamic import (heic2any uses window globals)
   const convertHeicToJpeg = async (file: File): Promise<Blob> => {
+    const heic2any = (await import("heic2any")).default;
     const result = await heic2any({ blob: file, toType: "image/jpeg", quality: 0.92 });
     return Array.isArray(result) ? result[0] : result;
   };
@@ -66,12 +66,16 @@ const UploadStep = ({ orderId, onImagesUploaded, maxImages = 20 }: UploadStepPro
 
     // Convert HEIC if needed
     let inputBlob: Blob = file;
-    const isHeic = file.name.toLowerCase().endsWith(".heic") || file.name.toLowerCase().endsWith(".heif") || file.type === "image/heic" || file.type === "image/heif";
+    const nameLower = file.name.toLowerCase();
+    const isHeic = nameLower.endsWith(".heic") || nameLower.endsWith(".heif") || file.type === "image/heic" || file.type === "image/heif";
     if (isHeic) {
       try {
+        console.log(`Converting HEIC file: ${file.name} (type: ${file.type}, size: ${file.size})`);
         inputBlob = await convertHeicToJpeg(file);
-      } catch {
-        toast.error(`Failed to convert HEIC file: ${file.name}`);
+        console.log(`HEIC conversion successful, output size: ${inputBlob.size}`);
+      } catch (err) {
+        console.error("HEIC conversion error:", err);
+        toast.error(`Failed to convert HEIC file: ${file.name}. Please convert to JPG first.`);
         return null;
       }
     }
@@ -131,14 +135,18 @@ const UploadStep = ({ orderId, onImagesUploaded, maxImages = 20 }: UploadStepPro
 
       setIsUploading(true);
 
-      // Add placeholders
-      const placeholders: LocalImage[] = validFiles.map((file) => ({
-        id: crypto.randomUUID(),
-        file,
-        preview: URL.createObjectURL(file),
-        status: "uploading" as const,
-        progress: 0,
-      }));
+      // Add placeholders (HEIC can't be previewed natively, use empty string)
+      const placeholders: LocalImage[] = validFiles.map((file) => {
+        const nameLower = file.name.toLowerCase();
+        const isHeicFile = nameLower.endsWith(".heic") || nameLower.endsWith(".heif");
+        return {
+          id: crypto.randomUUID(),
+          file,
+          preview: isHeicFile ? "" : URL.createObjectURL(file),
+          status: "uploading" as const,
+          progress: 0,
+        };
+      });
 
       setImages((prev) => [...prev, ...placeholders]);
 
@@ -286,11 +294,17 @@ const UploadStep = ({ orderId, onImagesUploaded, maxImages = 20 }: UploadStepPro
               key={image.id}
               className="relative aspect-square rounded-2xl overflow-hidden bg-cream group"
             >
-              <img
-                src={image.preview}
-                alt="Uploaded"
-                className="w-full h-full object-cover"
-              />
+              {image.preview ? (
+                <img
+                  src={image.preview}
+                  alt="Uploaded"
+                  className="w-full h-full object-cover"
+                />
+              ) : (
+                <div className="w-full h-full flex items-center justify-center">
+                  <ImageIcon className="w-10 h-10 text-muted-foreground" />
+                </div>
+              )}
               <button
                 onClick={() => removeImage(image.id)}
                 className="absolute top-2 right-2 p-1.5 rounded-full bg-background/80 opacity-0 group-hover:opacity-100 transition-opacity hover:bg-background"
