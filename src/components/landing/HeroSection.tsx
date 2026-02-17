@@ -49,10 +49,10 @@ const HeroSection = () => {
               <span className="w-2 h-2 bg-primary rounded-full" />
               Premium quality prints
             </span>
-            <span className="flex items-center gap-2">
-              <span className="w-2 h-2 bg-primary rounded-full" />
-              UK made & shipped
-            </span>
+            
+
+
+
             <span className="flex items-center gap-2">
               <span className="w-2 h-2 bg-primary rounded-full" />
               Satisfaction guaranteed
@@ -60,8 +60,8 @@ const HeroSection = () => {
           </div>
         </div>
       </div>
-    </section>
-  );
+    </section>);
+
 };
 
 export default HeroSection;
