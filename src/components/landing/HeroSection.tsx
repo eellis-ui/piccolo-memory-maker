@@ -16,7 +16,7 @@ const HeroSection = () => {
         <div className="max-w-4xl mx-auto text-center">
           
           <div className="flex justify-center mb-8 animate-fade-in">
-            <img src="/lovable-uploads/bc0afa55-54e9-40fc-b263-333f5ed085bc.png" alt="Piccoload logo" className="h-36 sm:h-48 w-auto" />
+            <img alt="Piccoload logo" className="h-36 sm:h-48 w-auto" src="/lovable-uploads/67e8bc18-d4da-4d1e-bb5c-8235ea57eb6d.png" />
           </div>
           <h1 className="font-display text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-semibold text-foreground leading-tight mb-6 animate-fade-in" style={{ animationDelay: "0.1s" }}>
             Turn Your Memories Into{" "}
