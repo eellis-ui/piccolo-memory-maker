@@ -1,9 +1,10 @@
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { Menu, X, ShoppingCart, Minus, Plus, Trash2, Download, Shield } from "lucide-react";
-import { useState } from "react";
+import { Menu, X, ShoppingCart, Minus, Plus, Trash2, Download, Shield, ClipboardList } from "lucide-react";
+import { useState, useEffect } from "react";
 import { useBasket, DIGITAL_TIERS } from "@/contexts/BasketContext";
 import { useIsAdmin } from "@/hooks/use-admin";
+import { supabase } from "@/integrations/supabase/client";
 import { Badge } from "@/components/ui/badge";
 import {
   Sheet,
@@ -18,6 +19,15 @@ const Navbar = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const { item, setQuantity, pricingTiers, digitalDownload, setDigitalDownload, addOnsTotal: basketAddOnsTotal } = useBasket();
   const { isAdmin } = useIsAdmin();
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+
+  useEffect(() => {
+    supabase.auth.getUser().then(({ data: { user } }) => setIsLoggedIn(!!user));
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_, session) => {
+      setIsLoggedIn(!!session?.user);
+    });
+    return () => subscription.unsubscribe();
+  }, []);
 
   const navLinks = [
     { href: "/", label: "Home" },
@@ -190,6 +200,15 @@ const Navbar = () => {
                 Admin
               </Link>
             )}
+            {isLoggedIn && !isAdmin && (
+              <Link
+                to="/my-orders"
+                className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors flex items-center gap-1"
+              >
+                <ClipboardList className="w-3.5 h-3.5" />
+                My Orders
+              </Link>
+            )}
           </div>
 
           {/* CTA + Cart */}
@@ -239,6 +258,16 @@ const Navbar = () => {
                 >
                   <Shield className="w-3.5 h-3.5" />
                   Admin
+                </Link>
+              )}
+              {isLoggedIn && !isAdmin && (
+                <Link
+                  to="/my-orders"
+                  className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors px-2 py-2 flex items-center gap-1"
+                  onClick={() => setIsMenuOpen(false)}
+                >
+                  <ClipboardList className="w-3.5 h-3.5" />
+                  My Orders
                 </Link>
               )}
               <Button asChild className="rounded-2xl mx-2">
