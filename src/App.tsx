@@ -7,6 +7,7 @@ import { BasketProvider } from "@/contexts/BasketContext";
 import Index from "./pages/Index";
 import Builder from "./pages/Builder";
 import Auth from "./pages/Auth";
+import Admin from "./pages/Admin";
 import HowItWorks from "./pages/HowItWorks";
 import Pricing from "./pages/Pricing";
 import About from "./pages/About";
@@ -32,6 +33,7 @@ const App = () => (
             <Route path="/faq" element={<FAQ />} />
             <Route path="/contact" element={<Contact />} />
             <Route path="/builder" element={<Builder />} />
+            <Route path="/admin" element={<Admin />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Routes>
