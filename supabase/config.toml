@@ -1,1 +1,4 @@
 project_id = "rthnnahjmvlkmpefvbxm"
+
+[functions.convert-to-lineart]
+verify_jwt = false
