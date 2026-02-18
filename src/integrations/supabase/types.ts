@@ -69,9 +69,11 @@ export type Database = {
           dedication_page_text: string | null
           extra_pages: number
           id: string
+          shipped_at: string | null
           status: string
           title_page_enabled: boolean
           title_page_text: string
+          tracking_number: string | null
           unique_photos: boolean
           user_id: string | null
         }
@@ -85,9 +87,11 @@ export type Database = {
           dedication_page_text?: string | null
           extra_pages?: number
           id?: string
+          shipped_at?: string | null
           status?: string
           title_page_enabled?: boolean
           title_page_text?: string
+          tracking_number?: string | null
           unique_photos?: boolean
           user_id?: string | null
         }
@@ -101,9 +105,11 @@ export type Database = {
           dedication_page_text?: string | null
           extra_pages?: number
           id?: string
+          shipped_at?: string | null
           status?: string
           title_page_enabled?: boolean
           title_page_text?: string
+          tracking_number?: string | null
           unique_photos?: boolean
           user_id?: string | null
         }
