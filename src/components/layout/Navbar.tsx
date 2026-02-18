@@ -1,8 +1,9 @@
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { Menu, X, ShoppingCart, Minus, Plus, Trash2, Download } from "lucide-react";
+import { Menu, X, ShoppingCart, Minus, Plus, Trash2, Download, Shield } from "lucide-react";
 import { useState } from "react";
 import { useBasket, DIGITAL_TIERS } from "@/contexts/BasketContext";
+import { useIsAdmin } from "@/hooks/use-admin";
 import { Badge } from "@/components/ui/badge";
 import {
   Sheet,
@@ -16,6 +17,7 @@ import { Separator } from "@/components/ui/separator";
 const Navbar = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const { item, setQuantity, pricingTiers, digitalDownload, setDigitalDownload, addOnsTotal: basketAddOnsTotal } = useBasket();
+  const { isAdmin } = useIsAdmin();
 
   const navLinks = [
     { href: "/", label: "Home" },
@@ -179,6 +181,15 @@ const Navbar = () => {
                 {link.label}
               </Link>
             ))}
+            {isAdmin && (
+              <Link
+                to="/admin"
+                className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors flex items-center gap-1"
+              >
+                <Shield className="w-3.5 h-3.5" />
+                Admin
+              </Link>
+            )}
           </div>
 
           {/* CTA + Cart */}
@@ -220,6 +231,16 @@ const Navbar = () => {
                   {link.label}
                 </Link>
               ))}
+              {isAdmin && (
+                <Link
+                  to="/admin"
+                  className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors px-2 py-2 flex items-center gap-1"
+                  onClick={() => setIsMenuOpen(false)}
+                >
+                  <Shield className="w-3.5 h-3.5" />
+                  Admin
+                </Link>
+              )}
               <Button asChild className="rounded-2xl mx-2">
                 <Link to="/builder" onClick={() => setIsMenuOpen(false)}>
                   Start Creating
