@@ -1,6 +1,7 @@
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { ArrowRight } from "lucide-react";
+import { GreenSplash, PinkSplash, BlueSplash, PeachSplash, LavenderSplash } from "./ColorSplash";
 
 const HeroSection = () => {
   return (
@@ -10,6 +11,13 @@ const HeroSection = () => {
         <div className="absolute top-20 left-10 w-64 h-64 bg-primary/20 rounded-full blur-3xl" />
         <div className="absolute bottom-20 right-10 w-96 h-96 bg-primary/10 rounded-full blur-3xl" />
       </div>
+      
+      {/* Color splashes */}
+      <GreenSplash size={140} className="top-16 left-[8%] opacity-60" />
+      <PinkSplash size={120} className="top-32 right-[10%] opacity-50" />
+      <BlueSplash size={100} className="bottom-24 left-[15%] opacity-50" />
+      <PeachSplash size={130} className="bottom-16 right-[20%] opacity-50" />
+      <LavenderSplash size={90} className="top-[40%] left-[5%] opacity-40" />
 
 
       <div className="container mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
