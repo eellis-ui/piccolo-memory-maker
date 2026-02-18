@@ -169,6 +169,7 @@ const CoverStep = ({ availableImages, onCoverComplete, onBack }: CoverStepProps)
                 onChange={(e) => setCoverTitle(e.target.value)}
                 className="mt-1 rounded-xl"
                 placeholder="colour in your memories"
+                maxLength={80}
               />
               <Select value={titleFont} onValueChange={setTitleFont}>
                 <SelectTrigger className="mt-1.5 rounded-xl">

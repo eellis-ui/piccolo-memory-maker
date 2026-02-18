@@ -44,6 +44,7 @@ const BookOptionsPanel = () => {
               setAddOns({ ...addOns, titlePageText: e.target.value })
             }
             placeholder="My Piccoload Coloring Book"
+            maxLength={100}
             className="rounded-xl"
           />
         )}
@@ -79,6 +80,7 @@ const BookOptionsPanel = () => {
             placeholder="For my little artist..."
             className="rounded-xl resize-none"
             rows={3}
+            maxLength={200}
           />
         )}
       </div>
