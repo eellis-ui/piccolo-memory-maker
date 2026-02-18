@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
-import { Loader2, Package, CheckCircle2, Truck, Printer, FileText, Pencil } from "lucide-react";
+import { Loader2, Package, CheckCircle2, Truck, Printer, FileText, Pencil, Download } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -161,6 +161,20 @@ const MyOrders = () => {
                                 <span className="text-muted-foreground">{order.tracking_number}</span>
                               </div>
                             )}
+
+                            {/* Digital Download Upsell for past orders */}
+                            <div className="mt-4 p-4 rounded-xl border border-dashed border-primary/30 bg-primary/5 flex items-center justify-between gap-3">
+                              <div className="flex items-center gap-3 min-w-0">
+                                <Download className="w-5 h-5 text-primary shrink-0" />
+                                <div className="min-w-0">
+                                  <p className="text-sm font-semibold text-foreground">Get a Digital Copy</p>
+                                  <p className="text-xs text-muted-foreground">Printable PDF from $5 — print at home anytime</p>
+                                </div>
+                              </div>
+                              <Button size="sm" className="rounded-xl shrink-0">
+                                Buy PDF
+                              </Button>
+                            </div>
                           </CardContent>
                         </Card>
                       );
