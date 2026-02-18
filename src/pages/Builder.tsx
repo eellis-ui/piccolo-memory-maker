@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { Check } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useBasket } from "@/contexts/BasketContext";
 import Navbar from "@/components/layout/Navbar";
@@ -31,6 +32,7 @@ const steps: { key: BuilderStep; label: string }[] = [
 ];
 
 const Builder = () => {
+  const navigate = useNavigate();
   const [currentStep, setCurrentStep] = useState<BuilderStep>("upload");
   const [orderId, setOrderId] = useState<string | null>(null);
   const [orderPhotos, setOrderPhotos] = useState<OrderPhoto[]>([]);
@@ -45,9 +47,15 @@ const Builder = () => {
 
   useEffect(() => {
     const createOrder = async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) {
+        navigate("/auth");
+        return;
+      }
+
       const { data, error } = await supabase
         .from("orders")
-        .insert({ status: "draft" })
+        .insert({ status: "draft", user_id: user.id })
         .select("id")
         .single();
 
@@ -56,7 +64,7 @@ const Builder = () => {
       }
     };
     createOrder();
-  }, []);
+  }, [navigate]);
 
   const handleImagesUploaded = (photos: OrderPhoto[]) => {
     setOrderPhotos(photos);

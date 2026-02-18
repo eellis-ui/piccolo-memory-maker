@@ -9,6 +9,23 @@ const corsHeaders = {
 const MAX_RETRIES = 3;
 const RETRY_DELAY_MS = 3000;
 
+// Simple in-memory rate limiter
+const RATE_LIMIT_WINDOW = 60000;
+const MAX_REQUESTS_PER_WINDOW = 10;
+const rateLimitMap = new Map<string, { count: number; resetAt: number }>();
+
+function checkRateLimit(userId: string): boolean {
+  const now = Date.now();
+  const entry = rateLimitMap.get(userId);
+  if (!entry || now > entry.resetAt) {
+    rateLimitMap.set(userId, { count: 1, resetAt: now + RATE_LIMIT_WINDOW });
+    return true;
+  }
+  if (entry.count >= MAX_REQUESTS_PER_WINDOW) return false;
+  entry.count++;
+  return true;
+}
+
 function sleep(ms: number) {
   return new Promise((resolve) => setTimeout(resolve, ms));
 }
@@ -19,6 +36,40 @@ Deno.serve(async (req) => {
   }
 
   try {
+    const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
+    const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
+    const lovableApiKey = Deno.env.get("LOVABLE_API_KEY")!;
+
+    // --- Authentication ---
+    const authHeader = req.headers.get("Authorization");
+    if (!authHeader?.startsWith("Bearer ")) {
+      return new Response(JSON.stringify({ error: "Missing authorization" }), {
+        status: 401,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
+    const token = authHeader.replace("Bearer ", "");
+    const authClient = createClient(supabaseUrl, Deno.env.get("SUPABASE_ANON_KEY")!, {
+      global: { headers: { Authorization: authHeader } },
+    });
+    const { data: claimsData, error: claimsError } = await authClient.auth.getUser(token);
+    if (claimsError || !claimsData?.user) {
+      return new Response(JSON.stringify({ error: "Invalid or expired token" }), {
+        status: 401,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+    const userId = claimsData.user.id;
+
+    // --- Rate limiting ---
+    if (!checkRateLimit(userId)) {
+      return new Response(JSON.stringify({ error: "Rate limit exceeded. Please try again later." }), {
+        status: 429,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
     const { photoId } = await req.json() as { photoId: string };
     if (!photoId) {
       return new Response(JSON.stringify({ error: "photoId is required" }), {
@@ -27,27 +78,31 @@ Deno.serve(async (req) => {
       });
     }
 
-    const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
-    const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
-    const lovableApiKey = Deno.env.get("LOVABLE_API_KEY")!;
-
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
-    // Get photo record
+    // Get photo record and verify ownership
     const { data: photo, error: photoError } = await supabase
       .from("order_photos")
-      .select("*, orders!inner(id)")
+      .select("*, orders!inner(id, user_id)")
       .eq("id", photoId)
       .single() as { data: any; error: any };
 
-    const isLandscape = photo?.is_landscape ?? false;
-
     if (photoError || !photo) {
       return new Response(
-        JSON.stringify({ error: "Photo not found", details: photoError }),
+        JSON.stringify({ error: "Photo not found" }),
         { status: 404, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
+
+    // --- Ownership check ---
+    if (photo.orders.user_id !== userId) {
+      return new Response(
+        JSON.stringify({ error: "Forbidden" }),
+        { status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
+    const isLandscape = photo?.is_landscape ?? false;
 
     // Update status to converting
     await supabase
@@ -67,7 +122,6 @@ Deno.serve(async (req) => {
     const arrayBuffer = await fileData.arrayBuffer();
     const uint8 = new Uint8Array(arrayBuffer);
 
-    // Chunked base64 encoding to avoid memory exhaustion
     const CHUNK_SIZE = 32768;
     const chunks: string[] = [];
     for (let i = 0; i < uint8.length; i += CHUNK_SIZE) {
@@ -125,7 +179,6 @@ Output ONLY the converted image, no text.`;
         if (aiResponse.status === 429) {
           lastError = "Rate limited by AI service";
           if (attempt < MAX_RETRIES) {
-            console.log(`Rate limited, waiting ${RETRY_DELAY_MS * attempt}ms before retry...`);
             await sleep(RETRY_DELAY_MS * attempt);
             continue;
           }
@@ -140,19 +193,15 @@ Output ONLY the converted image, no text.`;
       }
 
       const aiResult = await aiResponse.json();
-
-      // Check for embedded errors in the response (gateway returns 200 but with error in choices)
       const choice = aiResult.choices?.[0];
       if (choice?.error) {
         const embeddedCode = choice.error.code;
         const embeddedMsg = choice.error.message || "";
         console.error(`Embedded AI error (code ${embeddedCode}):`, embeddedMsg);
 
-        // Retry on all 502 errors (gateway/upstream issues) and rate limits
         if (embeddedCode === 502 || embeddedCode === 429) {
           lastError = "AI service temporarily busy";
           if (attempt < MAX_RETRIES) {
-            console.log(`Transient AI error, waiting ${RETRY_DELAY_MS * attempt}ms before retry...`);
             await sleep(RETRY_DELAY_MS * attempt);
             continue;
           }
@@ -162,18 +211,13 @@ Output ONLY the converted image, no text.`;
         break;
       }
 
-      // Check for content filtering
       const finishReason = choice?.native_finish_reason;
       if (finishReason === "IMAGE_PROHIBITED_CONTENT") {
-        console.error("Content filter blocked this image");
         lastError = "This photo was blocked by the AI content filter. Try a different photo.";
         break;
       }
 
-      // Extract image from response
       const message = choice?.message;
-
-      // Primary: check message.images array
       if (message?.images && Array.isArray(message.images) && message.images.length > 0) {
         const imgUrl = message.images[0]?.image_url?.url;
         if (imgUrl && imgUrl.startsWith("data:image")) {
@@ -182,7 +226,6 @@ Output ONLY the converted image, no text.`;
         }
       }
 
-      // Fallback: check content for inline base64
       if (!imageBase64 && typeof message?.content === "string") {
         const base64Match = message.content.match(/data:image\/[^;]+;base64,([^\s"]+)/);
         if (base64Match) imageBase64 = base64Match[1];
@@ -193,7 +236,6 @@ Output ONLY the converted image, no text.`;
         break;
       }
 
-      // No image but no clear error — retry
       console.warn(`Attempt ${attempt}: No image in response. finish_reason: ${finishReason}`);
       lastError = "AI did not return an image. Please try again.";
       if (attempt < MAX_RETRIES) {
@@ -210,7 +252,6 @@ Output ONLY the converted image, no text.`;
       );
     }
 
-    // Decode base64 and upload
     const binaryString = atob(imageBase64);
     const imageBuffer = new Uint8Array(binaryString.length);
     for (let i = 0; i < binaryString.length; i++) {
@@ -229,18 +270,21 @@ Output ONLY the converted image, no text.`;
       conversion_status: "completed",
     }).eq("id", photoId);
 
-    const { data: convertedUrlData } = supabase.storage
+    // Return signed URL instead of public URL (bucket is now private)
+    const { data: signedUrlData, error: signedUrlError } = await supabase.storage
       .from("order-files")
-      .getPublicUrl(convertedPath);
+      .createSignedUrl(convertedPath, 3600);
+
+    const convertedUrl = signedUrlError ? "" : signedUrlData.signedUrl;
 
     return new Response(
-      JSON.stringify({ success: true, convertedUrl: convertedUrlData.publicUrl, convertedPath }),
+      JSON.stringify({ success: true, convertedUrl, convertedPath }),
       { headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
   } catch (error) {
     console.error("Conversion error:", error);
     return new Response(
-      JSON.stringify({ error: error.message }),
+      JSON.stringify({ error: "An unexpected error occurred" }),
       { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
   }

@@ -73,6 +73,7 @@ export type Database = {
           title_page_enabled: boolean
           title_page_text: string
           unique_photos: boolean
+          user_id: string | null
         }
         Insert: {
           cover_image_id?: string | null
@@ -88,6 +89,7 @@ export type Database = {
           title_page_enabled?: boolean
           title_page_text?: string
           unique_photos?: boolean
+          user_id?: string | null
         }
         Update: {
           cover_image_id?: string | null
@@ -103,6 +105,7 @@ export type Database = {
           title_page_enabled?: boolean
           title_page_text?: string
           unique_photos?: boolean
+          user_id?: string | null
         }
         Relationships: []
       }

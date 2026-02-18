@@ -209,26 +209,29 @@ const UploadStep = ({ orderId, onImagesUploaded, maxImages = 20 }: UploadStepPro
     [images]
   );
 
-  const handleContinue = () => {
+  const handleContinue = async () => {
     const readyImages = images.filter((img) => img.status === "ready" && img.dbId && img.storagePath);
 
-    const photos: OrderPhoto[] = readyImages.map((img, index) => {
-      const { data } = supabase.storage
-        .from("order-files")
-        .getPublicUrl(img.storagePath!);
+    // Use signed URLs since bucket is now private
+    const photos: OrderPhoto[] = await Promise.all(
+      readyImages.map(async (img, index) => {
+        const { data } = await supabase.storage
+          .from("order-files")
+          .createSignedUrl(img.storagePath!, 3600);
 
-      return {
-        id: img.dbId!,
-        originalPath: img.storagePath!,
-        convertedPath: null,
-        pagePosition: index + 1,
-        isApproved: false,
-        conversionStatus: "pending",
-        originalUrl: data.publicUrl,
-        convertedUrl: null,
-        isLandscape: img.isLandscape ?? false,
-      };
-    });
+        return {
+          id: img.dbId!,
+          originalPath: img.storagePath!,
+          convertedPath: null,
+          pagePosition: index + 1,
+          isApproved: false,
+          conversionStatus: "pending",
+          originalUrl: data?.signedUrl || "",
+          convertedUrl: null,
+          isLandscape: img.isLandscape ?? false,
+        };
+      })
+    );
 
     onImagesUploaded(photos);
   };
