@@ -200,7 +200,7 @@ const Navbar = () => {
                 Admin
               </Link>
             )}
-            {isLoggedIn && !isAdmin && (
+            {isLoggedIn && (
               <Link
                 to="/my-orders"
                 className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors flex items-center gap-1"
@@ -260,7 +260,7 @@ const Navbar = () => {
                   Admin
                 </Link>
               )}
-              {isLoggedIn && !isAdmin && (
+              {isLoggedIn && (
                 <Link
                   to="/my-orders"
                   className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors px-2 py-2 flex items-center gap-1"

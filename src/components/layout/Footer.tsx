@@ -43,6 +43,11 @@ const Footer = () => {
                   Contact
                 </Link>
               </li>
+              <li>
+                <Link to="/my-orders" className="text-sm text-muted-foreground hover:text-foreground transition-colors">
+                  Track My Order
+                </Link>
+              </li>
             </ul>
           </div>
 
