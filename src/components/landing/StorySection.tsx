@@ -1,10 +1,13 @@
 import { Heart } from "lucide-react";
+import { PinkSplash, LavenderSplash } from "./ColorSplash";
 
 const StorySection = () => {
   return (
-    <section className="py-20 bg-background">
+    <section className="relative py-20 bg-background overflow-hidden">
+      <PinkSplash size={150} className="top-10 right-[8%] opacity-40" />
+      <LavenderSplash size={120} className="bottom-10 left-[5%] opacity-40" />
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="max-w-3xl mx-auto">
+        <div className="max-w-3xl mx-auto relative z-10">
           <div className="text-center mb-12">
             <div className="inline-flex items-center justify-center w-12 h-12 rounded-full bg-primary/20 mb-6">
               <Heart className="w-6 h-6 text-primary" />
