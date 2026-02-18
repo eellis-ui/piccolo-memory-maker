@@ -69,13 +69,15 @@ const Admin = () => {
   const { isAdmin, loading: roleLoading } = useIsAdmin();
   const [orders, setOrders] = useState<OrderRow[]>([]);
   const [loading, setLoading] = useState(true);
+  const [selected, setSelected] = useState<Set<string>>(new Set());
 
   // Edit dialog
   const [editOrder, setEditOrder] = useState<OrderRow | null>(null);
   const [editForm, setEditForm] = useState<Partial<OrderRow>>({});
 
-  // Delete dialog
+  // Delete dialog (single or bulk)
   const [deleteId, setDeleteId] = useState<string | null>(null);
+  const [bulkDeleteOpen, setBulkDeleteOpen] = useState(false);
 
   // Photos dialog
   const [photosOrderId, setPhotosOrderId] = useState<string | null>(null);
@@ -93,6 +95,7 @@ const Admin = () => {
       .order("created_at", { ascending: false });
     if (!error && data) setOrders(data as OrderRow[]);
     setLoading(false);
+    setSelected(new Set());
   };
 
   useEffect(() => {
@@ -152,7 +155,6 @@ const Admin = () => {
   // Delete order
   const confirmDelete = async () => {
     if (!deleteId) return;
-    // Delete photos first
     await supabase.from("order_photos").delete().eq("order_id", deleteId);
     const { error } = await supabase.from("orders").delete().eq("id", deleteId);
     if (error) {
@@ -162,6 +164,34 @@ const Admin = () => {
       fetchOrders();
     }
     setDeleteId(null);
+  };
+
+  // Bulk delete
+  const confirmBulkDelete = async () => {
+    const ids = Array.from(selected);
+    let failed = 0;
+    for (const id of ids) {
+      await supabase.from("order_photos").delete().eq("order_id", id);
+      const { error } = await supabase.from("orders").delete().eq("id", id);
+      if (error) failed++;
+    }
+    if (failed > 0) toast.error(`Failed to delete ${failed} order(s)`);
+    else toast.success(`Deleted ${ids.length} order(s)`);
+    setBulkDeleteOpen(false);
+    fetchOrders();
+  };
+
+  const toggleSelect = (id: string) => {
+    setSelected((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id); else next.add(id);
+      return next;
+    });
+  };
+
+  const toggleSelectAll = () => {
+    if (selected.size === orders.length) setSelected(new Set());
+    else setSelected(new Set(orders.map((o) => o.id)));
   };
 
   if (roleLoading || (!isAdmin && !roleLoading)) {
@@ -182,9 +212,22 @@ const Admin = () => {
               <h1 className="font-display text-3xl font-bold text-foreground">Admin Dashboard</h1>
               <p className="text-muted-foreground">Manage all orders and uploads</p>
             </div>
-            <Badge variant="outline" className="text-sm py-1 px-3">
-              {orders.length} orders
-            </Badge>
+            <div className="flex items-center gap-2">
+              {selected.size > 0 && (
+                <Button
+                  variant="destructive"
+                  size="sm"
+                  className="rounded-xl"
+                  onClick={() => setBulkDeleteOpen(true)}
+                >
+                  <Trash2 className="w-4 h-4 mr-1" />
+                  Delete {selected.size} selected
+                </Button>
+              )}
+              <Badge variant="outline" className="text-sm py-1 px-3">
+                {orders.length} orders
+              </Badge>
+            </div>
           </div>
 
           {loading ? (
@@ -203,6 +246,14 @@ const Admin = () => {
               <Table>
                 <TableHeader>
                   <TableRow>
+                    <TableHead className="w-10">
+                      <input
+                        type="checkbox"
+                        checked={orders.length > 0 && selected.size === orders.length}
+                        onChange={toggleSelectAll}
+                        className="rounded border-border"
+                      />
+                    </TableHead>
                     <TableHead>Title</TableHead>
                     <TableHead>Date</TableHead>
                     <TableHead>Status</TableHead>
@@ -213,7 +264,15 @@ const Admin = () => {
                 </TableHeader>
                 <TableBody>
                   {orders.map((order) => (
-                    <TableRow key={order.id}>
+                    <TableRow key={order.id} data-state={selected.has(order.id) ? "selected" : undefined}>
+                      <TableCell>
+                        <input
+                          type="checkbox"
+                          checked={selected.has(order.id)}
+                          onChange={() => toggleSelect(order.id)}
+                          className="rounded border-border"
+                        />
+                      </TableCell>
                       <TableCell className="font-medium">
                         {order.title_page_text || "Untitled Book"}
                         <span className="block text-xs text-muted-foreground">{order.id.slice(0, 8)}…</span>
@@ -350,6 +409,24 @@ const Admin = () => {
             <AlertDialogCancel>Cancel</AlertDialogCancel>
             <AlertDialogAction onClick={confirmDelete} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
               Delete
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      {/* Bulk Delete Confirmation */}
+      <AlertDialog open={bulkDeleteOpen} onOpenChange={(o) => !o && setBulkDeleteOpen(false)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete {selected.size} Order{selected.size !== 1 ? "s" : ""}?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This will permanently delete the selected orders and all associated photos. This cannot be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={confirmBulkDelete} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
+              Delete {selected.size} Order{selected.size !== 1 ? "s" : ""}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
