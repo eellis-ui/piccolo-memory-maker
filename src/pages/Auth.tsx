@@ -16,6 +16,7 @@ const Auth = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
+  const [forgotPassword, setForgotPassword] = useState(false);
   const [checkingSession, setCheckingSession] = useState(true);
 
   useEffect(() => {
@@ -41,7 +42,14 @@ const Auth = () => {
     setLoading(true);
 
     try {
-      if (isLogin) {
+      if (forgotPassword) {
+        const { error } = await supabase.auth.resetPasswordForEmail(email, {
+          redirectTo: `${window.location.origin}/reset-password`,
+        });
+        if (error) throw error;
+        toast.success("Check your email for a password reset link!");
+        setForgotPassword(false);
+      } else if (isLogin) {
         const { error } = await supabase.auth.signInWithPassword({ email, password });
         if (error) throw error;
         toast.success("Signed in successfully!");
@@ -76,12 +84,14 @@ const Auth = () => {
         <Card className="w-full max-w-md rounded-3xl">
           <CardHeader className="text-center">
             <CardTitle className="font-display text-2xl">
-              {isLogin ? "Welcome Back" : "Create Account"}
+              {forgotPassword ? "Reset Password" : isLogin ? "Welcome Back" : "Create Account"}
             </CardTitle>
             <CardDescription>
-              {isLogin
-                ? "Sign in to access your coloring books"
-                : "Sign up to start creating your coloring book"}
+              {forgotPassword
+                ? "Enter your email and we'll send you a reset link"
+                : isLogin
+                  ? "Sign in to access your coloring books"
+                  : "Sign up to start creating your coloring book"}
             </CardDescription>
           </CardHeader>
           <CardContent>
@@ -98,30 +108,44 @@ const Auth = () => {
                   className="rounded-xl"
                 />
               </div>
-              <div className="space-y-2">
-                <Label htmlFor="password">Password</Label>
-                <Input
-                  id="password"
-                  type="password"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  placeholder="••••••••"
-                  required
-                  minLength={6}
-                  className="rounded-xl"
-                />
-              </div>
+              {!forgotPassword && (
+                <div className="space-y-2">
+                  <Label htmlFor="password">Password</Label>
+                  <Input
+                    id="password"
+                    type="password"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    placeholder="••••••••"
+                    required
+                    minLength={6}
+                    className="rounded-xl"
+                  />
+                </div>
+              )}
               <Button type="submit" className="w-full rounded-2xl" disabled={loading}>
                 {loading && <Loader2 className="w-4 h-4 mr-2 animate-spin" />}
-                {isLogin ? "Sign In" : "Sign Up"}
+                {forgotPassword ? "Send Reset Link" : isLogin ? "Sign In" : "Sign Up"}
               </Button>
             </form>
-            <div className="mt-4 text-center">
+            <div className="mt-4 text-center space-y-2">
+              {isLogin && !forgotPassword && (
+                <button
+                  onClick={() => setForgotPassword(true)}
+                  className="text-sm text-muted-foreground hover:text-foreground transition-colors block mx-auto"
+                >
+                  Forgot your password?
+                </button>
+              )}
               <button
-                onClick={() => setIsLogin(!isLogin)}
+                onClick={() => { setIsLogin(!isLogin); setForgotPassword(false); }}
                 className="text-sm text-muted-foreground hover:text-foreground transition-colors"
               >
-                {isLogin ? "Don't have an account? Sign up" : "Already have an account? Sign in"}
+                {forgotPassword
+                  ? "Back to Sign In"
+                  : isLogin
+                    ? "Don't have an account? Sign up"
+                    : "Already have an account? Sign in"}
               </button>
             </div>
           </CardContent>
