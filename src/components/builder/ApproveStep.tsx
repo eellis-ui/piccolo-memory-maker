@@ -6,6 +6,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import BookOptionsPanel from "./BookOptionsPanel";
 import BookPreview from "./BookPreview";
+import DigitalUpsellBanner from "./DigitalUpsellBanner";
 import type { OrderPhoto } from "@/pages/Builder";
 
 interface ApproveStepProps {
@@ -303,6 +304,9 @@ const ApproveStep = ({
           );
         })}
       </div>
+
+      {/* Digital Download Upsell */}
+      {allApproved && <DigitalUpsellBanner variant="compact" />}
 
       {/* Navigation */}
       <div className="flex justify-between pt-4">
