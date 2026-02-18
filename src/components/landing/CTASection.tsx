@@ -16,7 +16,7 @@ const CTASection = () => {
           </p>
           
           <Button asChild size="lg" className="rounded-2xl px-8 py-6 text-lg shadow-soft-lg">
-            <Link to="/builder">
+            <Link to="/pricing">
               Start Creating Now
               <ArrowRight className="ml-2 h-5 w-5" />
             </Link>
