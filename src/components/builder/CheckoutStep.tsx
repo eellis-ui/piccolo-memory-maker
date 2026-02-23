@@ -178,8 +178,8 @@ const CheckoutStep = ({ pageCount, extraPages, convertedUrls, onBack }: Checkout
 
               {uniquePhotos && (
                 <div className="flex justify-between">
-                  <span className="text-muted-foreground">Unique Photos{bookCount > 1 ? ` × ${bookCount}` : ""}</span>
-                  <span>${(uniquePhotosPrice * bookCount).toFixed(2)}</span>
+                  <span className="text-muted-foreground">Unique Photos Per Book</span>
+                  <span>${uniquePhotosPrice.toFixed(2)}</span>
                 </div>
               )}
 
