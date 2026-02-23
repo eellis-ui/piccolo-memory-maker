@@ -8,11 +8,6 @@ export interface BasketItem {
   originalTotalPrice: number;
 }
 
-export interface DigitalDownload {
-  pages: 10 | 20 | 30;
-  price: number;
-}
-
 export interface BookAddOns {
   titlePageEnabled: boolean;
   titlePageText: string;
@@ -22,6 +17,7 @@ export interface BookAddOns {
 }
 
 const ADD_ON_PRICE = 1.99;
+export const DIGITAL_DOWNLOAD_PRICE = 5.99;
 
 const PRICING_TIERS = [
   { quantity: 1, pricePerBook: 35, originalPricePerBook: 42 },
@@ -29,19 +25,15 @@ const PRICING_TIERS = [
   { quantity: 3, pricePerBook: 29, originalPricePerBook: 42 },
 ];
 
-export const DIGITAL_TIERS = [
-  { pages: 10 as const, price: 5 },
-  { pages: 20 as const, price: 10 },
-  { pages: 30 as const, price: 15 },
-];
-
 interface BasketContextType {
   item: BasketItem | null;
   setQuantity: (quantity: number) => void;
   clear: () => void;
   pricingTiers: typeof PRICING_TIERS;
-  digitalDownload: DigitalDownload | null;
-  setDigitalDownload: (download: DigitalDownload | null) => void;
+  // Digital download: how many copies (0 = not added)
+  digitalCopies: number;
+  setDigitalCopies: (copies: number) => void;
+  digitalPrice: number;
   addOns: BookAddOns;
   setAddOns: (addOns: BookAddOns) => void;
   addOnPrice: number;
@@ -52,7 +44,7 @@ const BasketContext = createContext<BasketContextType | undefined>(undefined);
 
 export const BasketProvider = ({ children }: { children: ReactNode }) => {
   const [item, setItem] = useState<BasketItem | null>(null);
-  const [digitalDownload, setDigitalDownload] = useState<DigitalDownload | null>(null);
+  const [digitalCopies, setDigitalCopies] = useState<number>(0);
   const [addOns, setAddOns] = useState<BookAddOns>({
     titlePageEnabled: false,
     titlePageText: "",
@@ -64,6 +56,8 @@ export const BasketProvider = ({ children }: { children: ReactNode }) => {
   const addOnsTotal =
     (addOns.titlePageEnabled ? ADD_ON_PRICE : 0) +
     (addOns.dedicationPageEnabled ? ADD_ON_PRICE : 0);
+
+  const digitalPrice = digitalCopies * DIGITAL_DOWNLOAD_PRICE;
 
   const setQuantity = (quantity: number) => {
     if (quantity <= 0) {
@@ -82,7 +76,7 @@ export const BasketProvider = ({ children }: { children: ReactNode }) => {
 
   const clear = () => {
     setItem(null);
-    setDigitalDownload(null);
+    setDigitalCopies(0);
     setAddOns({
       titlePageEnabled: false,
       titlePageText: "",
@@ -97,7 +91,7 @@ export const BasketProvider = ({ children }: { children: ReactNode }) => {
       value={{
         item, setQuantity, clear,
         pricingTiers: PRICING_TIERS,
-        digitalDownload, setDigitalDownload,
+        digitalCopies, setDigitalCopies, digitalPrice,
         addOns, setAddOns,
         addOnPrice: ADD_ON_PRICE,
         addOnsTotal,
