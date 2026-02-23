@@ -3,6 +3,7 @@ import { Check } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useBasket } from "@/contexts/BasketContext";
+
 import Navbar from "@/components/layout/Navbar";
 import Footer from "@/components/layout/Footer";
 import UploadStep from "@/components/builder/UploadStep";
