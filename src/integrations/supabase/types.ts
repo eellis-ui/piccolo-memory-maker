@@ -60,6 +60,8 @@ export type Database = {
       }
       orders: {
         Row: {
+          builder_session_id: string | null
+          builder_step: string
           cover_image_id: string | null
           cover_position_x: number
           cover_position_y: number
@@ -78,6 +80,8 @@ export type Database = {
           user_id: string | null
         }
         Insert: {
+          builder_session_id?: string | null
+          builder_step?: string
           cover_image_id?: string | null
           cover_position_x?: number
           cover_position_y?: number
@@ -96,6 +100,8 @@ export type Database = {
           user_id?: string | null
         }
         Update: {
+          builder_session_id?: string | null
+          builder_step?: string
           cover_image_id?: string | null
           cover_position_x?: number
           cover_position_y?: number

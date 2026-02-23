@@ -20,6 +20,7 @@ interface OrderRow {
   tracking_number: string | null;
   shipped_at: string | null;
   extra_pages: number;
+  builder_session_id: string | null;
 }
 
 const STEPS = [
@@ -53,7 +54,7 @@ const MyOrders = () => {
   const fetchOrders = async () => {
     const { data } = await supabase
       .from("orders")
-      .select("id, status, title_page_text, created_at, tracking_number, shipped_at, extra_pages")
+      .select("id, status, title_page_text, created_at, tracking_number, shipped_at, extra_pages, builder_session_id")
       .order("created_at", { ascending: false });
     if (data) setOrders(data as OrderRow[]);
   };
@@ -72,7 +73,19 @@ const MyOrders = () => {
     init();
   }, [navigate]);
 
-  const filteredOrders = orders.filter((o) => {
+  // Group draft orders by session so multi-book drafts appear as one entry
+  const groupedOrders = (() => {
+    const sessionSeen = new Set<string>();
+    return orders.filter((o) => {
+      if (o.status === "draft" && o.builder_session_id) {
+        if (sessionSeen.has(o.builder_session_id)) return false;
+        sessionSeen.add(o.builder_session_id);
+      }
+      return true;
+    });
+  })();
+
+  const filteredOrders = groupedOrders.filter((o) => {
     if (activeTab === "all") return true;
     if (activeTab === "draft") return o.status === "draft";
     if (activeTab === "active") return ["paid", "converted", "sent_to_print"].includes(o.status);
@@ -80,13 +93,25 @@ const MyOrders = () => {
     return true;
   });
 
-  const handleDeleteOrder = async (orderId: string) => {
+  // Count books in a session for display
+  const sessionBookCount = (sessionId: string | null) => {
+    if (!sessionId) return 1;
+    return orders.filter((o) => o.builder_session_id === sessionId).length;
+  };
+
+  const handleDeleteOrder = async (orderId: string, sessionId?: string | null) => {
     setDeleting(orderId);
     try {
-      // Delete photos first
-      await supabase.from("order_photos").delete().eq("order_id", orderId);
-      await supabase.from("orders").delete().eq("id", orderId);
-      setOrders((prev) => prev.filter((o) => o.id !== orderId));
+      // If it's a draft with a session, delete all books in the session
+      const idsToDelete = sessionId
+        ? orders.filter((o) => o.builder_session_id === sessionId).map((o) => o.id)
+        : [orderId];
+
+      for (const id of idsToDelete) {
+        await supabase.from("order_photos").delete().eq("order_id", id);
+        await supabase.from("orders").delete().eq("id", id);
+      }
+      setOrders((prev) => prev.filter((o) => !idsToDelete.includes(o.id)));
       toast.success("Order removed");
     } catch {
       toast.error("Failed to remove order");
@@ -209,6 +234,7 @@ const MyOrders = () => {
                 const isShipped = order.status === "shipped";
                 const current = stepIndex(order.status);
                 const progress = isDraft ? 0 : ((current + 1) / STEPS.length) * 100;
+                const booksInSession = isDraft ? sessionBookCount(order.builder_session_id) : 1;
 
                 return (
                   <Card key={order.id} className={`rounded-3xl overflow-hidden ${isDraft ? "border-dashed border-2" : ""}`}>
@@ -220,6 +246,9 @@ const MyOrders = () => {
                             <h3 className="font-display text-lg font-semibold">
                               {order.title_page_text || "Untitled Book"}
                             </h3>
+                            {isDraft && booksInSession > 1 && (
+                              <Badge variant="outline" className="text-[10px]">{booksInSession} books</Badge>
+                            )}
                           </div>
                           <p className="text-xs text-muted-foreground">
                             {isDraft ? "Started" : "Ordered"} {new Date(order.created_at).toLocaleDateString()}
@@ -245,7 +274,7 @@ const MyOrders = () => {
                               <AlertDialogFooter>
                                 <AlertDialogCancel>Cancel</AlertDialogCancel>
                                 <AlertDialogAction
-                                  onClick={() => handleDeleteOrder(order.id)}
+                                  onClick={() => handleDeleteOrder(order.id, isDraft ? order.builder_session_id : null)}
                                   disabled={deleting === order.id}
                                   className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
                                 >
@@ -287,8 +316,17 @@ const MyOrders = () => {
                       {/* Action buttons */}
                       <div className="flex items-center gap-2 flex-wrap">
                         {isDraft && (
-                          <Button asChild className="rounded-2xl">
-                            <Link to="/builder">Continue</Link>
+                          <Button
+                            className="rounded-2xl"
+                            onClick={() => {
+                              if (order.builder_session_id) {
+                                navigate(`/builder?sessionId=${order.builder_session_id}`);
+                              } else {
+                                navigate("/builder");
+                              }
+                            }}
+                          >
+                            Continue Creating
                           </Button>
                         )}
 

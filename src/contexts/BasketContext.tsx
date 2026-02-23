@@ -31,7 +31,6 @@ interface BasketContextType {
   setQuantity: (quantity: number) => void;
   clear: () => void;
   pricingTiers: typeof PRICING_TIERS;
-  // Digital download: how many copies (0 = not added)
   digitalCopies: number;
   setDigitalCopies: (copies: number) => void;
   digitalPrice: number;
@@ -39,10 +38,12 @@ interface BasketContextType {
   setAddOns: (addOns: BookAddOns) => void;
   addOnPrice: number;
   addOnsTotal: number;
-  // Unique photos per book upsell
   uniquePhotos: boolean;
   setUniquePhotos: (val: boolean) => void;
   uniquePhotosPrice: number;
+  // Active builder session for resume
+  activeSessionId: string | null;
+  setActiveSessionId: (id: string | null) => void;
 }
 
 const BasketContext = createContext<BasketContextType | undefined>(undefined);
@@ -51,6 +52,7 @@ export const BasketProvider = ({ children }: { children: ReactNode }) => {
   const [item, setItem] = useState<BasketItem | null>(null);
   const [digitalCopies, setDigitalCopies] = useState<number>(0);
   const [uniquePhotos, setUniquePhotos] = useState<boolean>(false);
+  const [activeSessionId, setActiveSessionId] = useState<string | null>(null);
   const [addOns, setAddOns] = useState<BookAddOns>({
     titlePageEnabled: false,
     titlePageText: "",
@@ -84,6 +86,7 @@ export const BasketProvider = ({ children }: { children: ReactNode }) => {
     setItem(null);
     setDigitalCopies(0);
     setUniquePhotos(false);
+    setActiveSessionId(null);
     setAddOns({
       titlePageEnabled: false,
       titlePageText: "",
@@ -104,6 +107,7 @@ export const BasketProvider = ({ children }: { children: ReactNode }) => {
         addOnsTotal,
         uniquePhotos, setUniquePhotos,
         uniquePhotosPrice: uniquePhotos ? UNIQUE_PHOTOS_PRICE : 0,
+        activeSessionId, setActiveSessionId,
       }}
     >
       {children}
