@@ -13,6 +13,7 @@ interface ApproveStepProps {
   orderId: string;
   photos: OrderPhoto[];
   onApprovalComplete: (photos: OrderPhoto[]) => void;
+  onPhotosChange: (photos: OrderPhoto[]) => void;
   onBack: () => void;
 }
 
@@ -20,6 +21,7 @@ const ApproveStep = ({
   orderId,
   photos: initialPhotos,
   onApprovalComplete,
+  onPhotosChange,
   onBack,
 }: ApproveStepProps) => {
   const { item, uniquePhotos } = useBasket();
@@ -27,6 +29,15 @@ const ApproveStep = ({
 
   const [photos, setPhotos] = useState<OrderPhoto[]>(initialPhotos);
   const [convertingIds, setConvertingIds] = useState<Set<string>>(new Set());
+
+  // Helper: update local state AND bubble up to parent so navigating away preserves conversions
+  const updatePhotos = useCallback((updater: (prev: OrderPhoto[]) => OrderPhoto[]) => {
+    setPhotos((prev) => {
+      const next = updater(prev);
+      onPhotosChange(next);
+      return next;
+    });
+  }, [onPhotosChange]);
 
   const approvedCount = photos.filter((p) => p.isApproved).length;
   const allApproved = approvedCount === photos.length && photos.length > 0;
@@ -46,7 +57,7 @@ const ApproveStep = ({
       if (error) throw error;
 
       if (data?.success) {
-        setPhotos((prev) =>
+        updatePhotos((prev) =>
           prev.map((p) =>
             p.id === photoId
               ? {
@@ -64,7 +75,7 @@ const ApproveStep = ({
       }
     } catch (err: any) {
       toast.error(`Conversion failed: ${err.message}`);
-      setPhotos((prev) =>
+      updatePhotos((prev) =>
         prev.map((p) =>
           p.id === photoId ? { ...p, conversionStatus: "failed" } : p
         )
@@ -93,7 +104,7 @@ const ApproveStep = ({
     if (!photo) return;
 
     const newApproved = !photo.isApproved;
-    setPhotos((prev) =>
+    updatePhotos((prev) =>
       prev.map((p) => (p.id === id ? { ...p, isApproved: newApproved } : p))
     );
 
@@ -104,7 +115,7 @@ const ApproveStep = ({
   };
 
   const approveAll = async () => {
-    setPhotos((prev) => prev.map((p) => ({ ...p, isApproved: true })));
+    updatePhotos((prev) => prev.map((p) => ({ ...p, isApproved: true })));
     const ids = photos.map((p) => p.id);
     for (const id of ids) {
       await supabase
@@ -115,13 +126,13 @@ const ApproveStep = ({
   };
 
   const deletePhoto = async (id: string) => {
-    setPhotos((prev) => prev.filter((p) => p.id !== id));
+    updatePhotos((prev) => prev.filter((p) => p.id !== id));
     await supabase.from("order_photos").delete().eq("id", id);
     toast.success("Photo removed");
   };
 
   const handleReorder = async (reorderedPhotos: OrderPhoto[]) => {
-    setPhotos(reorderedPhotos);
+    updatePhotos(() => reorderedPhotos);
     // Persist new positions to database
     for (let i = 0; i < reorderedPhotos.length; i++) {
       await supabase

@@ -292,6 +292,7 @@ const Builder = () => {
                     orderId={activeBook.orderId}
                     photos={activeBook.photos}
                     onApprovalComplete={handleApprovalComplete}
+                    onPhotosChange={(photos) => updateBook(activeBookIndex, { photos })}
                     onBack={() => updateBook(activeBookIndex, { step: "upload" })}
                   />
                 )}
