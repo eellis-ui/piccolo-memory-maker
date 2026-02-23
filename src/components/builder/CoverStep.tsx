@@ -9,8 +9,17 @@ import { useBasket } from "@/contexts/BasketContext";
 import logoImg from "@/assets/piccoload-logo.png";
 
 const PROFANITY_LIST = [
-  "fuck","shit","cunt","bitch","asshole","bastard","dick","cock","pussy","whore",
-  "slut","fag","faggot","nigger","nigga","retard","spastic","twat","wanker","prick",
+  // Core profanity
+  "fuck","shit","cunt","bitch","asshole","bastard","arse","arsehole","bollocks","bugger",
+  "bloody hell","damn","crap","piss","pissed","wank","wanker","twat","tosser","git",
+  // Sexualized words
+  "dick","cock","penis","vagina","pussy","boobs","boob","tits","tit","ass","butt",
+  "butthole","anus","anal","whore","slut","hoe","cum","cumshot","orgasm","erection",
+  "boner","dildo","vibrator","porn","porno","pornography","sex","sexy","nude","naked",
+  "blowjob","handjob","masturbat","horny","kinky","fetish","nipple","genitals",
+  // Slurs
+  "fag","faggot","nigger","nigga","retard","spastic","tranny","dyke","kike","chink",
+  "spic","wetback","cracker","honky","gook","raghead","towelhead",
 ];
 
 const containsProfanity = (text: string) => {
