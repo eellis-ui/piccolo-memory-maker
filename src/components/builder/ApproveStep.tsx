@@ -302,7 +302,7 @@ const ApproveStep = ({
       </div>
 
       {/* Digital Download Upsell */}
-      {allApproved && <DigitalUpsellBanner variant="compact" />}
+      {allApproved && <DigitalUpsellBanner variant="compact" maxCopies={1} />}
 
       {/* Navigation */}
       <div className="flex justify-between pt-4">

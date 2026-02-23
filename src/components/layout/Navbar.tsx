@@ -2,7 +2,7 @@ import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Menu, X, ShoppingCart, Minus, Plus, Trash2, Download, Shield, ClipboardList } from "lucide-react";
 import { useState, useEffect } from "react";
-import { useBasket, DIGITAL_TIERS } from "@/contexts/BasketContext";
+import { useBasket, DIGITAL_DOWNLOAD_PRICE } from "@/contexts/BasketContext";
 import { useIsAdmin } from "@/hooks/use-admin";
 import { supabase } from "@/integrations/supabase/client";
 import { Badge } from "@/components/ui/badge";
@@ -17,7 +17,7 @@ import { Separator } from "@/components/ui/separator";
 
 const Navbar = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const { item, setQuantity, pricingTiers, digitalDownload, setDigitalDownload, addOnsTotal: basketAddOnsTotal } = useBasket();
+  const { item, setQuantity, pricingTiers, digitalCopies, setDigitalCopies, digitalPrice, addOnsTotal: basketAddOnsTotal } = useBasket();
   const { isAdmin } = useIsAdmin();
   const [isLoggedIn, setIsLoggedIn] = useState(false);
 
@@ -37,12 +37,11 @@ const Navbar = () => {
   ];
 
   const maxQuantity = Math.max(...pricingTiers.map((t) => t.quantity));
-  const hasItems = !!(item || digitalDownload);
-  const itemCount = (item?.quantity ?? 0) + (digitalDownload ? 1 : 0);
+  const hasItems = !!(item || digitalCopies > 0);
+  const itemCount = (item?.quantity ?? 0) + (digitalCopies > 0 ? 1 : 0);
 
   const bookTotal = item ? item.totalPrice : 0;
-  const digitalTotal = digitalDownload?.price ?? 0;
-  const grandTotal = bookTotal + digitalTotal + basketAddOnsTotal;
+  const grandTotal = bookTotal + digitalPrice + basketAddOnsTotal;
 
   const BasketContent = () => (
     <div className="flex flex-col h-full">
@@ -93,41 +92,27 @@ const Navbar = () => {
           </div>
         )}
 
-        {digitalDownload && (
+        {digitalCopies > 0 && (
           <div className="space-y-3 p-4 rounded-2xl border border-border bg-background">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
                 <Download className="w-4 h-4 text-primary" />
                 <span className="font-semibold text-foreground text-sm">
-                  Digital Download
+                  Digital PDF Download
                 </span>
               </div>
               <button
-                onClick={() => setDigitalDownload(null)}
+                onClick={() => setDigitalCopies(0)}
                 className="text-destructive hover:text-destructive/80 transition-colors"
               >
                 <Trash2 className="w-4 h-4" />
               </button>
             </div>
             <div className="flex justify-between text-sm">
-              <span className="text-muted-foreground">{digitalDownload.pages} pages (PDF)</span>
-              <span className="font-semibold">${digitalDownload.price.toFixed(2)}</span>
-            </div>
-            {/* Change tier */}
-            <div className="flex gap-2">
-              {DIGITAL_TIERS.map((tier) => (
-                <button
-                  key={tier.pages}
-                  onClick={() => setDigitalDownload({ pages: tier.pages, price: tier.price })}
-                  className={`flex-1 text-xs py-1.5 rounded-lg border transition-colors ${
-                    digitalDownload.pages === tier.pages
-                      ? "border-primary bg-primary/10 text-foreground font-semibold"
-                      : "border-border text-muted-foreground hover:border-primary/40"
-                  }`}
-                >
-                  {tier.pages}pg
-                </button>
-              ))}
+              <span className="text-muted-foreground">
+                {digitalCopies} {digitalCopies === 1 ? "copy" : "copies"} · 20 pages · ${DIGITAL_DOWNLOAD_PRICE.toFixed(2)} each
+              </span>
+              <span className="font-semibold">${digitalPrice.toFixed(2)}</span>
             </div>
           </div>
         )}
@@ -135,6 +120,7 @@ const Navbar = () => {
 
       {hasItems && (
         <div className="border-t border-border pt-4 space-y-4">
+          <Separator />
           <div className="flex justify-between font-semibold text-foreground">
             <span>Total</span>
             <span>${grandTotal.toFixed(2)}</span>
