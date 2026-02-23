@@ -2,7 +2,7 @@ import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Menu, X, ShoppingCart, Minus, Plus, Trash2, Download, Shield, ClipboardList } from "lucide-react";
 import { useState, useEffect } from "react";
-import { useBasket, DIGITAL_DOWNLOAD_PRICE } from "@/contexts/BasketContext";
+import { useBasket, DIGITAL_DOWNLOAD_PRICE, UNIQUE_PHOTOS_PRICE } from "@/contexts/BasketContext";
 import { useIsAdmin } from "@/hooks/use-admin";
 import { supabase } from "@/integrations/supabase/client";
 import { Badge } from "@/components/ui/badge";
@@ -17,7 +17,7 @@ import { Separator } from "@/components/ui/separator";
 
 const Navbar = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const { item, setQuantity, pricingTiers, digitalCopies, setDigitalCopies, digitalPrice, addOnsTotal: basketAddOnsTotal } = useBasket();
+  const { item, setQuantity, pricingTiers, digitalCopies, setDigitalCopies, digitalPrice, addOns, addOnsTotal: basketAddOnsTotal, addOnPrice, uniquePhotos, setUniquePhotos, uniquePhotosPrice } = useBasket();
   const { isAdmin } = useIsAdmin();
   const [isLoggedIn, setIsLoggedIn] = useState(false);
 
@@ -38,10 +38,10 @@ const Navbar = () => {
 
   const maxQuantity = Math.max(...pricingTiers.map((t) => t.quantity));
   const hasItems = !!(item || digitalCopies > 0);
-  const itemCount = (item?.quantity ?? 0) + (digitalCopies > 0 ? 1 : 0);
+  const itemCount = (item?.quantity ?? 0) + (digitalCopies > 0 ? 1 : 0) + (uniquePhotos ? 1 : 0);
 
   const bookTotal = item ? item.totalPrice : 0;
-  const grandTotal = bookTotal + digitalPrice + basketAddOnsTotal;
+  const grandTotal = bookTotal + digitalPrice + basketAddOnsTotal + uniquePhotosPrice;
 
   const BasketContent = () => (
     <div className="flex flex-col h-full">
@@ -113,6 +113,40 @@ const Navbar = () => {
                 {digitalCopies} {digitalCopies === 1 ? "copy" : "copies"} · 20 pages · ${DIGITAL_DOWNLOAD_PRICE.toFixed(2)} each
               </span>
               <span className="font-semibold">${digitalPrice.toFixed(2)}</span>
+            </div>
+          </div>
+        )}
+
+        {uniquePhotos && (
+          <div className="space-y-3 p-4 rounded-2xl border border-border bg-background">
+            <div className="flex items-center justify-between">
+              <span className="font-semibold text-foreground text-sm">
+                Unique Photos Per Book
+              </span>
+              <button
+                onClick={() => setUniquePhotos(false)}
+                className="text-destructive hover:text-destructive/80 transition-colors"
+              >
+                <Trash2 className="w-4 h-4" />
+              </button>
+            </div>
+            <div className="flex justify-between text-sm">
+              <span className="text-muted-foreground">Different photos for each book</span>
+              <span className="font-semibold">${UNIQUE_PHOTOS_PRICE.toFixed(2)}</span>
+            </div>
+          </div>
+        )}
+
+        {addOns.dedicationPageEnabled && (
+          <div className="space-y-3 p-4 rounded-2xl border border-border bg-background">
+            <div className="flex items-center justify-between">
+              <span className="font-semibold text-foreground text-sm">
+                Personalized Cover
+              </span>
+            </div>
+            <div className="flex justify-between text-sm">
+              <span className="text-muted-foreground">Custom cover text</span>
+              <span className="font-semibold">${addOnPrice.toFixed(2)}</span>
             </div>
           </div>
         )}
