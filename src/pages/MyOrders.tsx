@@ -74,7 +74,7 @@ const MyOrders = () => {
       <main className="pt-24 pb-16">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8 max-w-3xl">
           <h1 className="font-display text-3xl font-bold text-foreground mb-2">My Orders</h1>
-          <p className="text-muted-foreground mb-8">Track the progress of your colouring books</p>
+          <p className="text-muted-foreground mb-8">Track the progress of your coloring books</p>
 
           {orders.length === 0 ? (
             <Card className="rounded-3xl">

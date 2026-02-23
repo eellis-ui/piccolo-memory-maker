@@ -56,7 +56,7 @@ export const BasketProvider = ({ children }: { children: ReactNode }) => {
   const [addOns, setAddOns] = useState<BookAddOns>({
     titlePageEnabled: false,
     titlePageText: "",
-    bottomTitle: "colour in your memories",
+    bottomTitle: "color your memories",
     dedicationPageEnabled: false,
     dedicationPageText: "",
   });
@@ -86,7 +86,7 @@ export const BasketProvider = ({ children }: { children: ReactNode }) => {
     setAddOns({
       titlePageEnabled: false,
       titlePageText: "",
-      bottomTitle: "colour in your memories",
+      bottomTitle: "color your memories",
       dedicationPageEnabled: false,
       dedicationPageText: "",
     });

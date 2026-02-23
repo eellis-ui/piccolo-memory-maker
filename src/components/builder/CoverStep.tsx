@@ -147,7 +147,7 @@ const CoverStep = ({ availableImages, onCoverComplete, onBack }: CoverStepProps)
                       color: "hsl(var(--foreground))",
                     }}
                   >
-                    {addOns.bottomTitle || "colour your memories"}
+                    {addOns.bottomTitle || "color your memories"}
                   </p>
                 </div>
               </div>
@@ -207,7 +207,7 @@ const CoverStep = ({ availableImages, onCoverComplete, onBack }: CoverStepProps)
               Cover Options
             </h3>
 
-            {/* Title Page — "From Pic to Pen" title */}
+            {/* Title Page */}
             <div className="space-y-3">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
@@ -264,7 +264,7 @@ const CoverStep = ({ availableImages, onCoverComplete, onBack }: CoverStepProps)
                 />
               </div>
               <p className="text-xs text-muted-foreground">
-                Replaces "colour your memories" with your own text on the cover
+                Replaces "color your memories" with your own text on the cover
               </p>
               {addOns.dedicationPageEnabled && (
                 <Input
@@ -272,7 +272,7 @@ const CoverStep = ({ availableImages, onCoverComplete, onBack }: CoverStepProps)
                   onChange={(e) =>
                     setAddOns({ ...addOns, dedicationPageText: e.target.value })
                   }
-                  placeholder="e.g. Colour your world"
+                  placeholder="e.g. Color your world"
                   maxLength={100}
                   className="rounded-xl"
                 />

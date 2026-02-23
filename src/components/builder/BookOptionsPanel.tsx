@@ -53,7 +53,7 @@ const BookOptionsPanel = () => {
               onChange={(e) =>
                 setAddOns({ ...addOns, bottomTitle: e.target.value })
               }
-              placeholder="colour in your memories"
+              placeholder="color your memories"
               maxLength={100}
               className="rounded-xl"
             />

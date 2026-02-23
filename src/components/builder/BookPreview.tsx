@@ -121,7 +121,7 @@ const CoverPage = () => {
           className="text-sm sm:text-base italic font-semibold text-foreground leading-tight mt-0.5"
           style={{ fontFamily: "'Bristol', serif" }}
         >
-          colour in your memories
+          color your memories
         </h3>
       </div>
     </div>
