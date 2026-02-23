@@ -261,6 +261,7 @@ const Builder = () => {
 
                 {activeBook.step === "upload" && activeBook.orderId && (
                   <UploadStep
+                    key={activeBook.orderId}
                     orderId={activeBook.orderId}
                     onImagesUploaded={handleImagesUploaded}
                     maxImages={20}
@@ -269,6 +270,7 @@ const Builder = () => {
 
                 {activeBook.step === "approve" && activeBook.orderId && (
                   <ApproveStep
+                    key={`approve-${activeBook.orderId}`}
                     orderId={activeBook.orderId}
                     photos={activeBook.photos}
                     onApprovalComplete={handleApprovalComplete}
