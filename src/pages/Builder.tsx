@@ -322,6 +322,11 @@ const Builder = () => {
                 onToggleBookDigitalDownload={(bookIndex) =>
                   updateBook(bookIndex, { digitalDownload: !books[bookIndex].digitalDownload })
                 }
+                bookAddOnsList={books.map((b, i) => ({
+                  bookIndex: i,
+                  titlePageEnabled: b.bookAddOns.bottomTitle !== "color your memories",
+                  dedicationPageEnabled: b.bookAddOns.dedicationPageEnabled,
+                }))}
                 onBack={() => {
                   setShowingCheckout(false);
                   setActiveBookIndex(bookCount - 1);

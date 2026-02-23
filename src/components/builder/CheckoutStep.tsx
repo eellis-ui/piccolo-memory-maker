@@ -11,6 +11,12 @@ interface BookDigitalDownload {
   enabled: boolean;
 }
 
+interface BookAddOnsInfo {
+  bookIndex: number;
+  titlePageEnabled: boolean;
+  dedicationPageEnabled: boolean;
+}
+
 interface CheckoutStepProps {
   pageCount: number;
   extraPages: number;
@@ -18,10 +24,11 @@ interface CheckoutStepProps {
   onBack: () => void;
   bookDigitalDownloads: BookDigitalDownload[];
   onToggleBookDigitalDownload: (bookIndex: number) => void;
+  bookAddOnsList: BookAddOnsInfo[];
 }
 
-const CheckoutStep = ({ pageCount, extraPages, convertedUrls, onBack, bookDigitalDownloads, onToggleBookDigitalDownload }: CheckoutStepProps) => {
-  const { item, setQuantity, pricingTiers, addOns, addOnsTotal, addOnPrice, uniquePhotos, uniquePhotosPrice } = useBasket();
+const CheckoutStep = ({ pageCount, extraPages, convertedUrls, onBack, bookDigitalDownloads, onToggleBookDigitalDownload, bookAddOnsList }: CheckoutStepProps) => {
+  const { item, setQuantity, pricingTiers, addOnPrice, uniquePhotos, uniquePhotosPrice } = useBasket();
 
   const bookCount = item?.quantity ?? 1;
   const basePrice = item?.pricePerBook ?? 35;
@@ -29,8 +36,12 @@ const CheckoutStep = ({ pageCount, extraPages, convertedUrls, onBack, bookDigita
   const extraPagesPrice = extraPages === 10 ? 6 : extraPages === 20 ? 10 : extraPages === 40 ? 18 : 0;
   const digitalCount = bookDigitalDownloads.filter(b => b.enabled).length;
   const digitalPrice = digitalCount * DIGITAL_DOWNLOAD_PRICE;
-  const totalPrice = (basePrice + extraPagesPrice) * bookCount + (uniquePhotos ? uniquePhotosPrice : 0) + digitalPrice + addOnsTotal;
-  const originalTotalPrice = (originalBasePrice + extraPagesPrice) * bookCount + (uniquePhotos ? uniquePhotosPrice : 0) + digitalPrice + addOnsTotal;
+  // Count per-book add-ons
+  const titlePageCount = bookAddOnsList.filter(b => b.titlePageEnabled).length;
+  const coverPersonalizeCount = bookAddOnsList.filter(b => b.dedicationPageEnabled).length;
+  const perBookAddOnsTotal = (titlePageCount + coverPersonalizeCount) * addOnPrice;
+  const totalPrice = (basePrice + extraPagesPrice) * bookCount + (uniquePhotos ? uniquePhotosPrice : 0) + digitalPrice + perBookAddOnsTotal;
+  const originalTotalPrice = (originalBasePrice + extraPagesPrice) * bookCount + (uniquePhotos ? uniquePhotosPrice : 0) + digitalPrice + perBookAddOnsTotal;
 
   const maxQuantity = Math.max(...pricingTiers.map((t) => t.quantity));
   const handleDecrement = () => { if (bookCount > 1) setQuantity(bookCount - 1); };
@@ -77,11 +88,11 @@ const CheckoutStep = ({ pageCount, extraPages, convertedUrls, onBack, bookDigita
                 <Check className="w-5 h-5 text-primary" />
                 <span>US delivery included</span>
               </div>
-              {addOns.dedicationPageEnabled && (
+              {coverPersonalizeCount > 0 && (
                 <div className="flex items-center gap-3">
                   <Check className="w-5 h-5 text-primary" />
-                  <span>Personalized cover: "{addOns.dedicationPageText}"</span>
-                  <Badge variant="secondary">+${addOnPrice.toFixed(2)}</Badge>
+                  <span>Personalized cover × {coverPersonalizeCount} {coverPersonalizeCount === 1 ? "book" : "books"}</span>
+                  <Badge variant="secondary">+${(coverPersonalizeCount * addOnPrice).toFixed(2)}</Badge>
                 </div>
               )}
               {uniquePhotos && bookCount > 1 && (
@@ -216,10 +227,10 @@ const CheckoutStep = ({ pageCount, extraPages, convertedUrls, onBack, bookDigita
                 </div>
               </div>
 
-              {addOns.dedicationPageEnabled && (
+              {coverPersonalizeCount > 0 && (
                 <div className="flex justify-between">
-                  <span className="text-muted-foreground">Personalized Cover</span>
-                  <span>${addOnPrice.toFixed(2)}</span>
+                  <span className="text-muted-foreground">Personalized Cover × {coverPersonalizeCount}</span>
+                  <span>${(coverPersonalizeCount * addOnPrice).toFixed(2)}</span>
                 </div>
               )}
 
