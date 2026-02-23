@@ -11,7 +11,7 @@ const BackCoverPage = () => {
       <div className="flex-[3]" />
 
       {/* Bottom 25% — all content */}
-      <div className="flex-1 flex flex-col items-center justify-start" style={{ paddingBottom: 20 }}>
+      <div className="flex-1 flex flex-col items-center justify-start" style={{ paddingBottom: 100 }}>
         {/* Logo */}
         <img src={logoImg} alt="Piccoload" style={{ width: "40%" }} />
 
@@ -20,7 +20,7 @@ const BackCoverPage = () => {
           className="flex items-center justify-center"
           style={{
             gap: 20,
-            paddingTop: 12,
+            paddingTop: 30,
             fontFamily: "'Yuji Syuku', serif",
             fontSize: 10,
             color: "#000",
