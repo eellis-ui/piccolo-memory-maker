@@ -5,7 +5,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useBasket } from "@/contexts/BasketContext";
 import Navbar from "@/components/layout/Navbar";
 import Footer from "@/components/layout/Footer";
-import UploadStep from "@/components/builder/UploadStep";
+import UploadStep, { type LocalImage } from "@/components/builder/UploadStep";
 import ApproveStep from "@/components/builder/ApproveStep";
 import CoverStep from "@/components/builder/CoverStep";
 import CheckoutStep from "@/components/builder/CheckoutStep";
@@ -29,6 +29,7 @@ interface BookState {
   orderId: string | null;
   step: BuilderStep;
   photos: OrderPhoto[];
+  uploadImages: LocalImage[];
   coverData: {
     imageIds: [string, string];
     title: string;
@@ -79,6 +80,7 @@ const Builder = () => {
           orderId: error ? null : data.id,
           step: "upload",
           photos: [],
+          uploadImages: [],
           coverData: null,
           completed: false,
         });
@@ -265,10 +267,12 @@ const Builder = () => {
 
                 {activeBook.step === "upload" && activeBook.orderId && (
                   <UploadStep
-                    key={activeBook.orderId}
+                    key={`upload-${activeBookIndex}`}
                     orderId={activeBook.orderId}
                     onImagesUploaded={handleImagesUploaded}
                     maxImages={20}
+                    initialImages={activeBook.uploadImages}
+                    onImagesChanged={(imgs) => updateBook(activeBookIndex, { uploadImages: imgs })}
                   />
                 )}
 
