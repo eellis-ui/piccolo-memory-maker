@@ -115,7 +115,7 @@ const CoverStep = ({ availableImages, onCoverComplete, onBack }: CoverStepProps)
                             <img
                               src={isReversed ? (photo.convertedUrl || photo.originalUrl) : photo.originalUrl}
                               alt={isReversed ? `Line art ${idx + 1}` : `Cover photo ${idx + 1}`}
-                              className="w-full h-full object-cover object-top"
+                              className="w-full h-full object-cover object-center"
                             />
                           </div>
                           <div className="overflow-hidden bg-white">
@@ -123,13 +123,13 @@ const CoverStep = ({ availableImages, onCoverComplete, onBack }: CoverStepProps)
                               <img
                                 src={photo.originalUrl}
                                 alt={`Cover photo ${idx + 1}`}
-                                className="w-full h-full object-cover object-top"
+                                className="w-full h-full object-cover object-center"
                               />
                             ) : photo.convertedUrl ? (
                               <img
                                 src={photo.convertedUrl}
                                 alt={`Line art ${idx + 1}`}
-                                className="w-full h-full object-cover object-top"
+                                className="w-full h-full object-cover object-center"
                               />
                             ) : (
                               <div className="w-full h-full flex items-center justify-center text-xs text-muted-foreground">
