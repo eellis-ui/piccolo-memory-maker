@@ -36,7 +36,8 @@ interface CoverStepProps {
 const CoverStep = ({ availableImages, onCoverComplete, onBack }: CoverStepProps) => {
   const { addOns } = useBasket();
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
-  const [coverTitle, setCoverTitle] = useState("colour in your memories");
+  const [topTitle, setTopTitle] = useState("");
+  const [bottomTitle, setBottomTitle] = useState("colour in your memories");
   const [titleFont, setTitleFont] = useState<string>(FONT_OPTIONS[0].value);
 
   const toggleImage = (id: string) => {
@@ -58,14 +59,16 @@ const CoverStep = ({ availableImages, onCoverComplete, onBack }: CoverStepProps)
     ? addOns.dedicationPageText.trim()
     : "FOR KIDS AND ADULTS ALIKE";
 
-  // Title on cover only shows if title page is enabled and text is provided
-  const showTitle = addOns.titlePageEnabled && addOns.titlePageText.trim();
+  // Top title on cover only shows if title page is enabled and text is provided
+  const showTopTitle = addOns.titlePageEnabled && topTitle.trim();
+  // Bottom title only shows if title page is enabled
+  const showBottomTitle = addOns.titlePageEnabled;
 
   const handleContinue = () => {
     if (canContinue) {
       onCoverComplete({
         imageIds: [selectedIds[0], selectedIds[1]],
-        title: coverTitle,
+        title: bottomTitle,
         subtitle,
       });
     }
@@ -94,10 +97,10 @@ const CoverStep = ({ availableImages, onCoverComplete, onBack }: CoverStepProps)
               </div>
 
               {/* Title – only when enabled */}
-              {showTitle && (
+              {showTopTitle && (
                 <div className="px-6 pb-1 text-center shrink-0">
                   <h3 className="text-sm sm:text-base font-semibold text-foreground leading-tight">
-                    {addOns.titlePageText}
+                    {topTitle}
                   </h3>
                 </div>
               )}
@@ -153,21 +156,33 @@ const CoverStep = ({ availableImages, onCoverComplete, onBack }: CoverStepProps)
                 <p className="text-[8px] sm:text-[9px] tracking-[0.25em] uppercase text-muted-foreground font-medium" style={{ fontFamily: "'Yuji Syuku', serif" }}>
                   {subtitle}
                 </p>
-                <h3 className="text-lg sm:text-xl italic font-semibold text-foreground leading-tight mt-1.5" style={{ fontFamily: titleFont }}>
-                  {coverTitle}
-                </h3>
+                {showBottomTitle && (
+                  <h3 className="text-lg sm:text-xl italic font-semibold text-foreground leading-tight mt-1.5" style={{ fontFamily: titleFont }}>
+                    {bottomTitle}
+                  </h3>
+                )}
               </div>
             </div>
           </div>
 
           {/* Editable text fields – only when Title Page add-on is enabled */}
           {addOns.titlePageEnabled && (
-            <div className="mt-6 space-y-3">
+            <div className="mt-6 space-y-4">
               <div>
-                <label className="text-sm font-medium text-foreground">Cover Title</label>
+                <label className="text-sm font-medium text-foreground">Cover Title (top)</label>
                 <Input
-                  value={coverTitle}
-                  onChange={(e) => setCoverTitle(e.target.value)}
+                  value={topTitle}
+                  onChange={(e) => setTopTitle(e.target.value)}
+                  className="mt-1 rounded-xl"
+                  placeholder="e.g. Emma's Coloring Book"
+                  maxLength={80}
+                />
+              </div>
+              <div>
+                <label className="text-sm font-medium text-foreground">Bottom Title</label>
+                <Input
+                  value={bottomTitle}
+                  onChange={(e) => setBottomTitle(e.target.value)}
                   className="mt-1 rounded-xl"
                   placeholder="colour in your memories"
                   maxLength={80}
