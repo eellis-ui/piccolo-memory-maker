@@ -89,8 +89,8 @@ const CoverStep = ({ availableImages, onCoverComplete, onBack }: CoverStepProps)
           <div className="bg-cream rounded-3xl p-6 shadow-soft">
             <div className="aspect-[3/4] bg-cream rounded-2xl shadow-soft-lg overflow-hidden flex flex-col">
               {/* Logo header */}
-              <div className="pt-6 pb-2 flex justify-center px-6 shrink-0">
-                <img src={logoImg} alt="Piccoload – From Pic to Pen" className="w-[50%]" />
+              <div className="pt-8 pb-3 flex justify-center px-6 shrink-0">
+                <img src={logoImg} alt="Piccoload – From Pic to Pen" className="w-[55%]" />
               </div>
 
               {/* Title – only when enabled */}
@@ -103,19 +103,19 @@ const CoverStep = ({ availableImages, onCoverComplete, onBack }: CoverStepProps)
               )}
 
               {/* Two photo pairs */}
-              <div className="flex-1 grid grid-rows-2 gap-[3px] px-[3px] w-full min-h-0">
+              <div className="flex-1 grid grid-rows-2 gap-[2px] mx-[2px] w-auto min-h-0">
                 {[0, 1].map((idx) => {
                   const photo = selectedPhotos[idx];
                   const isReversed = idx === 1;
                   return (
-                    <div key={idx} className="grid grid-cols-2 gap-[3px] min-h-0 overflow-hidden">
+                    <div key={idx} className="grid grid-cols-2 gap-[2px] min-h-0 overflow-hidden">
                       {photo ? (
                         <>
-                          <div className="overflow-hidden">
+                          <div className="overflow-hidden bg-white">
                             <img
                               src={isReversed ? (photo.convertedUrl || photo.originalUrl) : photo.originalUrl}
                               alt={isReversed ? `Line art ${idx + 1}` : `Cover photo ${idx + 1}`}
-                              className="w-full h-full object-cover"
+                              className="w-full h-full object-contain"
                             />
                           </div>
                           <div className="overflow-hidden bg-white">
@@ -123,13 +123,13 @@ const CoverStep = ({ availableImages, onCoverComplete, onBack }: CoverStepProps)
                               <img
                                 src={photo.originalUrl}
                                 alt={`Cover photo ${idx + 1}`}
-                                className="w-full h-full object-cover"
+                                className="w-full h-full object-contain"
                               />
                             ) : photo.convertedUrl ? (
                               <img
                                 src={photo.convertedUrl}
                                 alt={`Line art ${idx + 1}`}
-                                className="w-full h-full object-cover"
+                                className="w-full h-full object-contain"
                               />
                             ) : (
                               <div className="w-full h-full flex items-center justify-center text-xs text-muted-foreground">
@@ -149,11 +149,11 @@ const CoverStep = ({ availableImages, onCoverComplete, onBack }: CoverStepProps)
               </div>
 
               {/* Bottom text */}
-              <div className="px-6 pt-4 pb-5 text-center shrink-0">
+              <div className="px-6 pt-5 pb-6 text-center shrink-0">
                 <p className="text-[8px] sm:text-[9px] tracking-[0.25em] uppercase text-muted-foreground font-medium" style={{ fontFamily: "'Yuji Syuku', serif" }}>
                   {subtitle}
                 </p>
-                <h3 className="text-lg sm:text-xl italic font-semibold text-foreground leading-tight mt-1" style={{ fontFamily: titleFont }}>
+                <h3 className="text-lg sm:text-xl italic font-semibold text-foreground leading-tight mt-1.5" style={{ fontFamily: titleFont }}>
                   {coverTitle}
                 </h3>
               </div>
