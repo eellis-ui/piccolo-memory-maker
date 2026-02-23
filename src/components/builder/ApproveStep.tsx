@@ -219,14 +219,14 @@ const ApproveStep = ({
               </button>
 
               {/* Image display */}
-              <div className={`relative bg-cream ${photo.isLandscape ? "aspect-[4/3]" : "aspect-[3/4]"}`}>
+              <div className="relative bg-cream aspect-[3/4]">
                 {hasConverted ? (
                   <div className="absolute inset-0 flex">
                     <div className="w-1/2 h-full border-r border-border/50 relative">
                       <img
                         src={photo.originalUrl}
                         alt={`Original ${index + 1}`}
-                        className="w-full h-full object-cover opacity-50"
+                        className={`w-full h-full object-cover opacity-50 ${photo.isLandscape ? "rotate-90" : ""}`}
                       />
                       <span className="absolute bottom-2 left-2 text-xs text-muted-foreground bg-background/80 px-2 py-1 rounded">
                         Original
@@ -236,7 +236,7 @@ const ApproveStep = ({
                       <img
                         src={photo.convertedUrl!}
                         alt={`Line art ${index + 1}`}
-                        className="w-full h-full object-cover"
+                        className={`w-full h-full object-cover ${photo.isLandscape ? "rotate-90" : ""}`}
                       />
                       <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
                         <span className="text-4xl font-display text-foreground/25 rotate-[-30deg] font-bold tracking-widest select-none">
@@ -253,7 +253,7 @@ const ApproveStep = ({
                     <img
                       src={photo.originalUrl}
                       alt={`Original ${index + 1}`}
-                      className="w-full h-full object-cover"
+                      className={`w-full h-full object-cover ${photo.isLandscape ? "rotate-90" : ""}`}
                     />
                     {isConverting && (
                       <div className="absolute inset-0 bg-background/70 flex flex-col items-center justify-center gap-2">
