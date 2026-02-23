@@ -26,6 +26,7 @@ import type { OrderPhoto } from "@/pages/Builder";
 interface BookPreviewProps {
   photos: OrderPhoto[];
   onReorder: (photos: OrderPhoto[]) => void;
+  coverImageIds?: [string, string] | null;
 }
 
 /* ── Sortable thumbnail (draggable) ── */
@@ -78,59 +79,95 @@ const SortableThumb = ({
 };
 
 /* ── Cover page renderer ── */
-const CoverPage = () => {
+const CoverPage = ({ photos, coverImageIds }: { photos: OrderPhoto[]; coverImageIds?: [string, string] | null }) => {
   const { addOns } = useBasket();
 
   const subtitle =
     addOns.dedicationPageEnabled && addOns.dedicationPageText.trim()
-      ? addOns.dedicationPageText.trim()
+      ? addOns.dedicationPageText.trim().toUpperCase()
       : "FOR KIDS AND ADULTS ALIKE";
 
-  const showTitle = addOns.titlePageEnabled && addOns.titlePageText.trim();
+  const bottomTitle = addOns.dedicationPageEnabled && addOns.dedicationPageText.trim()
+    ? addOns.dedicationPageText.trim()
+    : (addOns.titlePageEnabled && addOns.titlePageText.trim()) || "color your memories";
+
+  const photo1 = coverImageIds ? photos.find((p) => p.id === coverImageIds[0]) ?? null : null;
+  const photo2 = coverImageIds ? photos.find((p) => p.id === coverImageIds[1]) ?? null : null;
+
+  const gridCells = [
+    photo1 ? photo1.originalUrl : null,
+    photo1 ? photo1.convertedUrl : null,
+    photo2 ? photo2.convertedUrl : null,
+    photo2 ? photo2.originalUrl : null,
+  ];
 
   return (
-    <div className="w-full h-full bg-cream rounded-2xl flex flex-col overflow-hidden">
+    <div
+      className="w-full h-full flex flex-col overflow-hidden"
+      style={{ backgroundColor: "#fffaf3" }}
+    >
       {/* Logo */}
-      <div className="pt-6 pb-2 flex justify-center px-8 shrink-0">
-        <img src={logoImg} alt="Piccoload" className="w-[55%]" />
+      <div className="flex-1 flex items-center justify-center min-h-0">
+        <img src={logoImg} alt="Piccoload" style={{ width: "50%" }} />
       </div>
 
-      {showTitle && (
-        <div className="px-6 text-center shrink-0 pb-2">
-          <h3 className="text-sm sm:text-lg font-semibold text-foreground leading-tight">
-            {addOns.titlePageText}
-          </h3>
+      {/* 2×2 photo grid */}
+      <div
+        className="shrink-0 grid grid-cols-2"
+        style={{ margin: "0 8.75%", gap: 0 }}
+      >
+        {gridCells.map((url, idx) => (
+          <div key={idx} className="aspect-square overflow-hidden" style={{ backgroundColor: "#ede8e0" }}>
+            {url ? (
+              <img
+                src={url}
+                alt={`Cover cell ${idx + 1}`}
+                className="w-full h-full object-cover object-center"
+              />
+            ) : (
+              <div className="w-full h-full flex items-center justify-center text-muted-foreground" style={{ fontSize: "1.2vw" }}>
+                {idx + 1}
+              </div>
+            )}
+          </div>
+        ))}
+      </div>
+
+      {/* Bottom text — right-aligned flush to grid edge */}
+      <div
+        className="flex-1 flex flex-col justify-start min-h-0"
+        style={{ paddingRight: "8.75%" }}
+      >
+        <div className="flex flex-col items-end" style={{ paddingTop: "2.5%" }}>
+          <p
+            className="uppercase text-foreground leading-none"
+            style={{
+              fontFamily: "'Yuji Syuku', serif",
+              fontSize: "clamp(6px, 1.59vw, 12px)",
+              letterSpacing: 0,
+            }}
+          >
+            {subtitle}
+          </p>
+          <p
+            className="leading-none"
+            style={{
+              fontFamily: "Bristol, serif",
+              fontSize: "clamp(8px, 1.875vw, 14px)",
+              marginTop: "2.5%",
+              color: "hsl(var(--foreground))",
+            }}
+          >
+            {bottomTitle}
+          </p>
         </div>
-      )}
-
-      {/* Placeholder photos area */}
-      <div className="flex-1 mx-6 mb-2 bg-muted/40 rounded-xl flex items-center justify-center min-h-0">
-        <p className="text-xs text-muted-foreground text-center px-4">
-          Cover photos will be selected in the next step
-        </p>
-      </div>
-
-      {/* Bottom text */}
-      <div className="px-6 py-3 text-center shrink-0">
-        <p
-          className="text-[8px] sm:text-[10px] tracking-[0.2em] uppercase text-muted-foreground font-medium"
-          style={{ fontFamily: "'Yuji Syuku', serif" }}
-        >
-          {subtitle}
-        </p>
-        <h3
-          className="text-sm sm:text-base italic font-semibold text-foreground leading-tight mt-0.5"
-          style={{ fontFamily: "'Bristol', serif" }}
-        >
-          color your memories
-        </h3>
       </div>
     </div>
   );
 };
 
 /* ── Main BookPreview ── */
-const BookPreview = ({ photos, onReorder }: BookPreviewProps) => {
+const BookPreview = ({ photos, onReorder, coverImageIds }: BookPreviewProps) => {
   // page 0 = cover, pages 1..N = line-art pages, last page = back cover
   const totalPages = photos.length + 2;
   const [currentPage, setCurrentPage] = useState(0);
@@ -207,7 +244,7 @@ const BookPreview = ({ photos, onReorder }: BookPreviewProps) => {
       <div className="flex justify-center">
         <div className="aspect-[3/4] w-full max-w-sm bg-muted rounded-2xl overflow-hidden shadow-inner transition-all duration-300">
           {currentPage === 0 ? (
-            <CoverPage />
+            <CoverPage photos={photos} coverImageIds={coverImageIds} />
           ) : currentPage === totalPages - 1 ? (
             <BackCoverPage />
           ) : (
