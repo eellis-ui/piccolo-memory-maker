@@ -160,31 +160,33 @@ const CoverStep = ({ availableImages, onCoverComplete, onBack }: CoverStepProps)
             </div>
           </div>
 
-          {/* Editable text fields */}
-          <div className="mt-6 space-y-3">
-            <div>
-              <label className="text-sm font-medium text-foreground">Cover Title</label>
-              <Input
-                value={coverTitle}
-                onChange={(e) => setCoverTitle(e.target.value)}
-                className="mt-1 rounded-xl"
-                placeholder="colour in your memories"
-                maxLength={80}
-              />
-              <Select value={titleFont} onValueChange={setTitleFont}>
-                <SelectTrigger className="mt-1.5 rounded-xl">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  {FONT_OPTIONS.map((f) => (
-                    <SelectItem key={f.value} value={f.value}>
-                      <span style={{ fontFamily: f.value }}>{f.label}</span>
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+          {/* Editable text fields – only when Title Page add-on is enabled */}
+          {addOns.titlePageEnabled && (
+            <div className="mt-6 space-y-3">
+              <div>
+                <label className="text-sm font-medium text-foreground">Cover Title</label>
+                <Input
+                  value={coverTitle}
+                  onChange={(e) => setCoverTitle(e.target.value)}
+                  className="mt-1 rounded-xl"
+                  placeholder="colour in your memories"
+                  maxLength={80}
+                />
+                <Select value={titleFont} onValueChange={setTitleFont}>
+                  <SelectTrigger className="mt-1.5 rounded-xl">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {FONT_OPTIONS.map((f) => (
+                      <SelectItem key={f.value} value={f.value}>
+                        <span style={{ fontFamily: f.value }}>{f.label}</span>
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
             </div>
-          </div>
+          )}
         </div>
 
         {/* Image Selection */}
