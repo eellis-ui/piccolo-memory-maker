@@ -16,6 +16,7 @@ export interface DigitalDownload {
 export interface BookAddOns {
   titlePageEnabled: boolean;
   titlePageText: string;
+  bottomTitle: string;
   dedicationPageEnabled: boolean;
   dedicationPageText: string;
 }
@@ -55,6 +56,7 @@ export const BasketProvider = ({ children }: { children: ReactNode }) => {
   const [addOns, setAddOns] = useState<BookAddOns>({
     titlePageEnabled: false,
     titlePageText: "",
+    bottomTitle: "colour in your memories",
     dedicationPageEnabled: false,
     dedicationPageText: "",
   });
@@ -84,6 +86,7 @@ export const BasketProvider = ({ children }: { children: ReactNode }) => {
     setAddOns({
       titlePageEnabled: false,
       titlePageText: "",
+      bottomTitle: "colour in your memories",
       dedicationPageEnabled: false,
       dedicationPageText: "",
     });
