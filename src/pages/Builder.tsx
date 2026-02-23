@@ -9,6 +9,7 @@ import UploadStep from "@/components/builder/UploadStep";
 import ApproveStep from "@/components/builder/ApproveStep";
 import CoverStep from "@/components/builder/CoverStep";
 import CheckoutStep from "@/components/builder/CheckoutStep";
+import UniquePhotosUpsellBanner from "@/components/builder/UniquePhotosUpsellBanner";
 
 type BuilderStep = "upload" | "approve" | "cover" | "checkout";
 
@@ -45,7 +46,7 @@ const BUILDER_STEPS: { key: BuilderStep; label: string }[] = [
 
 const Builder = () => {
   const navigate = useNavigate();
-  const { item, addOns } = useBasket();
+  const { item, addOns, uniquePhotos } = useBasket();
   const bookCount = item?.quantity ?? 1;
 
   // Each book has independent state; checkout is a shared final step
@@ -93,7 +94,14 @@ const Builder = () => {
 
   // ── Step handlers for the active book ──────────────────────────────────────
   const handleImagesUploaded = (photos: OrderPhoto[]) => {
-    updateBook(activeBookIndex, { photos, step: "approve" });
+    if (!uniquePhotos && bookCount > 1) {
+      // Share the same photos across all books
+      setBooks((prev) =>
+        prev.map((b) => ({ ...b, photos, step: "approve" as const }))
+      );
+    } else {
+      updateBook(activeBookIndex, { photos, step: "approve" });
+    }
   };
 
   const handleApprovalComplete = (photos: OrderPhoto[]) => {
@@ -150,8 +158,8 @@ const Builder = () => {
       <main className="pt-24 pb-16">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
 
-          {/* ── Multi-book tabs (only when ordering >1 book and not at checkout) ── */}
-          {bookCount > 1 && !showingCheckout && (
+          {/* ── Multi-book tabs (only when unique photos and not at checkout) ── */}
+          {bookCount > 1 && uniquePhotos && !showingCheckout && (
             <div className="max-w-2xl mx-auto mb-8">
               <div className="flex gap-2 p-1 bg-muted rounded-2xl">
                 {books.map((book, i) => (
@@ -228,7 +236,7 @@ const Builder = () => {
               </div>
 
               {/* Book label under progress bar */}
-              {bookCount > 1 && (
+              {bookCount > 1 && uniquePhotos && (
                 <p className="text-center text-sm text-muted-foreground mt-4 flex items-center justify-center gap-1.5">
                   <Copy className="w-3.5 h-3.5" />
                   Customising{" "}
@@ -244,6 +252,13 @@ const Builder = () => {
           <div className="max-w-5xl mx-auto">
             {!showingCheckout && activeBook && (
               <>
+                {/* Unique photos upsell — shown only on upload step for multi-book orders */}
+                {activeBook.step === "upload" && bookCount > 1 && (
+                  <div className="mb-6">
+                    <UniquePhotosUpsellBanner />
+                  </div>
+                )}
+
                 {activeBook.step === "upload" && activeBook.orderId && (
                   <UploadStep
                     orderId={activeBook.orderId}
@@ -278,7 +293,6 @@ const Builder = () => {
             {showingCheckout && (
               <CheckoutStep
                 pageCount={books[0].photos.length}
-                hasUniquePhotos={false}
                 extraPages={0}
                 convertedUrls={books[0].photos.map((p) => p.convertedUrl)}
                 onBack={() => {

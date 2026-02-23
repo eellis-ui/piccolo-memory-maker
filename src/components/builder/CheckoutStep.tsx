@@ -8,25 +8,23 @@ import DigitalUpsellBanner from "./DigitalUpsellBanner";
 
 interface CheckoutStepProps {
   pageCount: number;
-  hasUniquePhotos: boolean;
   extraPages: number;
   convertedUrls: (string | null)[];
   onBack: () => void;
 }
 
-const CheckoutStep = ({ pageCount, hasUniquePhotos, extraPages, convertedUrls, onBack }: CheckoutStepProps) => {
-  const { item, setQuantity, pricingTiers, digitalCopies, setDigitalCopies, digitalPrice, addOns, addOnsTotal, addOnPrice } = useBasket();
+const CheckoutStep = ({ pageCount, extraPages, convertedUrls, onBack }: CheckoutStepProps) => {
+  const { item, setQuantity, pricingTiers, digitalCopies, setDigitalCopies, digitalPrice, addOns, addOnsTotal, addOnPrice, uniquePhotos, uniquePhotosPrice } = useBasket();
 
   const bookCount = item?.quantity ?? 1;
   const basePrice = item?.pricePerBook ?? 35;
   const originalBasePrice = item?.originalPricePerBook ?? 42;
-  const uniquePhotosPrice = hasUniquePhotos ? 5 : 0;
   const extraPagesPrice = extraPages === 10 ? 6 : extraPages === 20 ? 10 : extraPages === 40 ? 18 : 0;
-  const totalPrice = (basePrice + uniquePhotosPrice + extraPagesPrice) * bookCount + digitalPrice + addOnsTotal;
-  const originalTotalPrice = (originalBasePrice + uniquePhotosPrice + extraPagesPrice) * bookCount + digitalPrice + addOnsTotal;
+  const totalPrice = (basePrice + extraPagesPrice) * bookCount + (uniquePhotos ? uniquePhotosPrice : 0) + digitalPrice + addOnsTotal;
+  const originalTotalPrice = (originalBasePrice + extraPagesPrice) * bookCount + (uniquePhotos ? uniquePhotosPrice : 0) + digitalPrice + addOnsTotal;
 
   // Max digital copies: if unique photos per book, each book can have its own PDF; otherwise only 1
-  const maxDigitalCopies = hasUniquePhotos ? bookCount : 1;
+  const maxDigitalCopies = uniquePhotos ? bookCount : 1;
 
   const maxQuantity = Math.max(...pricingTiers.map((t) => t.quantity));
   const handleDecrement = () => { if (bookCount > 1) setQuantity(bookCount - 1); };
@@ -80,7 +78,7 @@ const CheckoutStep = ({ pageCount, hasUniquePhotos, extraPages, convertedUrls, o
                   <Badge variant="secondary">+${addOnPrice.toFixed(2)}</Badge>
                 </div>
               )}
-              {hasUniquePhotos && bookCount > 1 && (
+              {uniquePhotos && bookCount > 1 && (
                 <div className="flex items-center gap-3">
                   <Check className="w-5 h-5 text-primary" />
                   <span>20 unique photos per book (no repeats across books)</span>
@@ -178,7 +176,7 @@ const CheckoutStep = ({ pageCount, hasUniquePhotos, extraPages, convertedUrls, o
                 </div>
               )}
 
-              {hasUniquePhotos && (
+              {uniquePhotos && (
                 <div className="flex justify-between">
                   <span className="text-muted-foreground">Unique Photos{bookCount > 1 ? ` × ${bookCount}` : ""}</span>
                   <span>${(uniquePhotosPrice * bookCount).toFixed(2)}</span>
