@@ -4,7 +4,7 @@ import { Input } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
-import { BookOpen, Heart } from "lucide-react";
+import { Heart } from "lucide-react";
 import { useBasket } from "@/contexts/BasketContext";
 import logoImg from "@/assets/piccoload-logo.png";
 
@@ -207,49 +207,13 @@ const CoverStep = ({ availableImages, onCoverComplete, onBack }: CoverStepProps)
               Cover Options
             </h3>
 
-            {/* Title Page */}
-            <div className="space-y-3">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-2">
-                  <BookOpen className="w-4 h-4 text-primary" />
-                  <Label htmlFor="title-page" className="font-medium cursor-pointer">
-                    Title Page
-                  </Label>
-                  <Badge variant="outline" className="text-xs">
-                    +${addOnPrice.toFixed(2)}
-                  </Badge>
-                </div>
-                <Switch
-                  id="title-page"
-                  checked={addOns.titlePageEnabled}
-                  onCheckedChange={() =>
-                    setAddOns({ ...addOns, titlePageEnabled: !addOns.titlePageEnabled })
-                  }
-                />
-              </div>
-              <p className="text-xs text-muted-foreground">
-                Adds a printed title page inside your book
-              </p>
-              {addOns.titlePageEnabled && (
-                <Input
-                  value={addOns.titlePageText}
-                  onChange={(e) =>
-                    setAddOns({ ...addOns, titlePageText: e.target.value })
-                  }
-                  placeholder="e.g. Emma's Coloring Book"
-                  maxLength={100}
-                  className="rounded-xl"
-                />
-              )}
-            </div>
-
-            {/* Bottom Title upsell */}
+            {/* Personalize Cover upsell */}
             <div className="space-y-3">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
                   <Heart className="w-4 h-4 text-primary" />
                   <Label htmlFor="bottom-title" className="font-medium cursor-pointer">
-                    Bottom Title
+                    Personalize Cover
                   </Label>
                   <Badge variant="outline" className="text-xs">
                     +${addOnPrice.toFixed(2)}
@@ -264,7 +228,7 @@ const CoverStep = ({ availableImages, onCoverComplete, onBack }: CoverStepProps)
                 />
               </div>
               <p className="text-xs text-muted-foreground">
-                Replaces "color your memories" with your own text on the cover
+                Replaces "color your memories" with your own custom text on the cover
               </p>
               {addOns.dedicationPageEnabled && (
                 <Input
