@@ -20,6 +20,7 @@ import { ChevronLeft, ChevronRight, BookOpen } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useBasket } from "@/contexts/BasketContext";
 import logoImg from "@/assets/piccoload-logo.png";
+import BackCoverPage from "@/components/builder/BackCoverPage";
 import type { OrderPhoto } from "@/pages/Builder";
 
 interface BookPreviewProps {
@@ -130,8 +131,8 @@ const CoverPage = () => {
 
 /* ── Main BookPreview ── */
 const BookPreview = ({ photos, onReorder }: BookPreviewProps) => {
-  // page 0 = cover, pages 1..N = line-art pages
-  const totalPages = photos.length + 1;
+  // page 0 = cover, pages 1..N = line-art pages, last page = back cover
+  const totalPages = photos.length + 2;
   const [currentPage, setCurrentPage] = useState(0);
   const filmstripRef = useRef<HTMLDivElement>(null);
 
@@ -189,7 +190,7 @@ const BookPreview = ({ photos, onReorder }: BookPreviewProps) => {
           <ChevronLeft className="w-5 h-5" />
         </Button>
         <span className="text-sm font-medium text-foreground min-w-[120px] text-center">
-          {currentPage === 0 ? "Cover" : `Page ${currentPage}`} of {totalPages - 1}
+          {currentPage === 0 ? "Cover" : currentPage === totalPages - 1 ? "Back Cover" : `Page ${currentPage}`} of {totalPages - 2}
         </span>
         <Button
           variant="ghost"
@@ -207,6 +208,8 @@ const BookPreview = ({ photos, onReorder }: BookPreviewProps) => {
         <div className="aspect-[3/4] w-full max-w-sm bg-muted rounded-2xl overflow-hidden shadow-inner transition-all duration-300">
           {currentPage === 0 ? (
             <CoverPage />
+          ) : currentPage === totalPages - 1 ? (
+            <BackCoverPage />
           ) : (
             <div className="relative w-full h-full">
               <img
@@ -261,6 +264,23 @@ const BookPreview = ({ photos, onReorder }: BookPreviewProps) => {
                 onClick={() => goTo(index + 1)}
               />
             ))}
+
+            {/* Back cover thumbnail (fixed, not draggable) */}
+            <button
+              onClick={() => goTo(totalPages - 1)}
+              className={`relative flex-shrink-0 w-16 h-22 sm:w-20 sm:h-28 rounded-xl border-2 overflow-hidden transition-all ${
+                currentPage === totalPages - 1
+                  ? "border-primary ring-2 ring-primary/30 shadow-md"
+                  : "border-border hover:border-primary/40"
+              }`}
+            >
+              <div className="w-full h-full flex flex-col items-center justify-center gap-1 p-1" style={{ backgroundColor: "#fffaf3" }}>
+                <img src={logoImg} alt="Back Cover" className="w-10 opacity-70" draggable={false} />
+              </div>
+              <div className="absolute bottom-0 inset-x-0 bg-background/80 text-center py-0.5">
+                <span className="text-[9px] font-medium text-foreground">Back</span>
+              </div>
+            </button>
           </div>
         </SortableContext>
       </DndContext>
