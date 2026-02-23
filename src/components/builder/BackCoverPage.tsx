@@ -1,8 +1,5 @@
 import logoImg from "@/assets/piccoload-logo.png";
-
-interface BackCoverPageProps {
-  qrCodeSrc?: string;
-}
+import qrCodeImg from "@/assets/qr-code.jpg";
 
 /**
  * Back cover of the book.
@@ -10,7 +7,7 @@ interface BackCoverPageProps {
  * Logo sits just above the bottom-quarter line.
  * Bottom quarter contains website/social, QR + affiliate text.
  */
-const BackCoverPage = ({ qrCodeSrc }: BackCoverPageProps) => {
+const BackCoverPage = () => {
   return (
     <div
       className="relative w-full h-full flex flex-col items-center"
@@ -55,20 +52,11 @@ const BackCoverPage = ({ qrCodeSrc }: BackCoverPageProps) => {
             className="flex-shrink-0"
             style={{ width: 60, height: 60 }}
           >
-            {qrCodeSrc ? (
-              <img
-                src={qrCodeSrc}
-                alt="QR Code"
-                className="w-full h-full object-contain"
-              />
-            ) : (
-              <div
-                className="w-full h-full border border-border rounded flex items-center justify-center"
-                style={{ backgroundColor: "#ede8e0" }}
-              >
-                <span style={{ fontSize: 7, color: "#999" }}>QR</span>
-              </div>
-            )}
+            <img
+              src={qrCodeImg}
+              alt="QR Code"
+              className="w-full h-full object-contain"
+            />
           </div>
 
           {/* 4-line text */}
