@@ -1,4 +1,4 @@
-import { useState, useCallback } from "react";
+import { useState, useCallback, useEffect } from "react";
 import { Upload, X, Image as ImageIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
@@ -10,9 +10,11 @@ interface UploadStepProps {
   orderId: string;
   onImagesUploaded: (photos: OrderPhoto[]) => void;
   maxImages?: number;
+  initialImages?: LocalImage[];
+  onImagesChanged?: (images: LocalImage[]) => void;
 }
 
-interface LocalImage {
+export interface LocalImage {
   id: string;
   file: File;
   preview: string;
@@ -23,10 +25,15 @@ interface LocalImage {
   isLandscape?: boolean;
 }
 
-const UploadStep = ({ orderId, onImagesUploaded, maxImages = 20 }: UploadStepProps) => {
-  const [images, setImages] = useState<LocalImage[]>([]);
+const UploadStep = ({ orderId, onImagesUploaded, maxImages = 20, initialImages, onImagesChanged }: UploadStepProps) => {
+  const [images, setImages] = useState<LocalImage[]>(initialImages ?? []);
   const [isDragging, setIsDragging] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
+
+  // Sync images back to parent so they persist across tab switches
+  useEffect(() => {
+    onImagesChanged?.(images);
+  }, [images, onImagesChanged]);
 
   // Convert HEIC to JPEG blob using heic-to (supports newer iPhone HEIC formats)
   const convertHeicToJpeg = async (file: File): Promise<Blob> => {
