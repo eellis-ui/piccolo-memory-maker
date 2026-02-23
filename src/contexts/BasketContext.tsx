@@ -21,7 +21,7 @@ export interface BookAddOns {
   dedicationPageText: string;
 }
 
-const ADD_ON_PRICE = 2;
+const ADD_ON_PRICE = 1.99;
 
 const PRICING_TIERS = [
   { quantity: 1, pricePerBook: 35, originalPricePerBook: 42 },

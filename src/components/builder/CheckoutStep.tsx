@@ -80,8 +80,8 @@ const CheckoutStep = ({ pageCount, hasUniquePhotos, extraPages, convertedUrls, o
               {addOns.dedicationPageEnabled && (
                 <div className="flex items-center gap-3">
                   <Check className="w-5 h-5 text-primary" />
-                  <span>Dedication Note on cover</span>
-                  <Badge variant="secondary">+${addOnPrice}</Badge>
+                  <span>Bottom Title on cover</span>
+                  <Badge variant="secondary">+${addOnPrice.toFixed(2)}</Badge>
                 </div>
               )}
               {hasUniquePhotos && bookCount > 1 && (
@@ -212,7 +212,7 @@ const CheckoutStep = ({ pageCount, hasUniquePhotos, extraPages, convertedUrls, o
 
               {addOns.dedicationPageEnabled && (
                 <div className="flex justify-between">
-                  <span className="text-muted-foreground">Dedication Note</span>
+                  <span className="text-muted-foreground">Bottom Title</span>
                   <span>${addOnPrice.toFixed(2)}</span>
                 </div>
               )}
