@@ -2,7 +2,10 @@ import Navbar from "@/components/layout/Navbar";
 import Footer from "@/components/layout/Footer";
 import ReviewsBanner from "@/components/landing/ReviewsBanner";
 import HeroSection from "@/components/landing/HeroSection";
+import HeroVideoSection from "@/components/landing/HeroVideoSection";
+import BeforeAfterSection from "@/components/landing/BeforeAfterSection";
 import HowItWorksSection from "@/components/landing/HowItWorksSection";
+import GallerySection from "@/components/landing/GallerySection";
 import PricingSection from "@/components/landing/PricingSection";
 import StorySection from "@/components/landing/StorySection";
 import CTASection from "@/components/landing/CTASection";
@@ -14,7 +17,10 @@ const Index = () => {
       <Navbar />
       <main className="pt-16">
         <HeroSection />
+        <HeroVideoSection />
+        <BeforeAfterSection />
         <HowItWorksSection />
+        <GallerySection />
         <PricingSection />
         <StorySection />
         <CTASection />
