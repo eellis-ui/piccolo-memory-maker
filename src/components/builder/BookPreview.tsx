@@ -66,7 +66,7 @@ const SortableThumb = ({
       <img
         src={photo.convertedUrl || photo.originalUrl}
         alt={`Page ${index + 1}`}
-        className="w-full h-full object-cover"
+        className={`w-full h-full object-cover ${photo.isLandscape ? "rotate-90" : ""}`}
         draggable={false}
       />
       <div className="absolute bottom-0 inset-x-0 bg-background/80 text-center py-0.5">
@@ -212,7 +212,7 @@ const BookPreview = ({ photos, onReorder }: BookPreviewProps) => {
               <img
                 src={photos[currentPage - 1]?.convertedUrl || photos[currentPage - 1]?.originalUrl}
                 alt={`Page ${currentPage}`}
-                className="w-full h-full object-contain bg-white"
+                className={`w-full h-full object-contain bg-white ${photos[currentPage - 1]?.isLandscape ? "rotate-90" : ""}`}
               />
               <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
                 <span className="text-5xl font-display text-foreground/20 rotate-[-30deg] font-bold tracking-widest select-none">
