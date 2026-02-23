@@ -1,38 +1,26 @@
 import logoImg from "@/assets/piccoload-logo.png";
 import qrCodeImg from "@/assets/qr-code.jpg";
 
-/**
- * Back cover of the book.
- * Background matches front cover (#fffaf3).
- * Logo sits just above the bottom-quarter line.
- * Bottom quarter contains website/social, QR + affiliate text.
- */
 const BackCoverPage = () => {
   return (
     <div
-      className="relative w-full h-full flex flex-col items-center"
+      className="relative w-full h-full flex flex-col"
       style={{ backgroundColor: "#fffaf3" }}
     >
-      {/* ── Upper 75 %: logo sitting just above the 75 % line ── */}
-      <div className="flex-[3] flex items-end justify-center w-full pb-0">
-        <img
-          src={logoImg}
-          alt="Piccoload"
-          style={{ width: "40%" }}
-        />
-      </div>
+      {/* Top 75% — empty */}
+      <div className="flex-[3]" />
 
-      {/* ── Bottom 25 % ── */}
-      <div
-        className="flex-1 flex flex-col items-center w-full"
-        style={{ paddingBottom: 100 }}
-      >
-        {/* Website + Social handle */}
+      {/* Bottom 25% — all content */}
+      <div className="flex-1 flex flex-col items-center justify-start" style={{ paddingBottom: 20 }}>
+        {/* Logo */}
+        <img src={logoImg} alt="Piccoload" style={{ width: "40%" }} />
+
+        {/* Website + Social */}
         <div
           className="flex items-center justify-center"
           style={{
             gap: 20,
-            paddingTop: 30,
+            paddingTop: 12,
             fontFamily: "'Yuji Syuku', serif",
             fontSize: 10,
             color: "#000",
@@ -42,24 +30,17 @@ const BackCoverPage = () => {
           <span>@officialpiccoload</span>
         </div>
 
-        {/* QR code + Affiliate text */}
+        {/* QR + Affiliate text */}
         <div
           className="flex items-center justify-center"
-          style={{ paddingTop: 30 }}
+          style={{ paddingTop: 12 }}
         >
-          {/* QR Code */}
-          <div
-            className="flex-shrink-0"
-            style={{ width: 60, height: 60 }}
-          >
-            <img
-              src={qrCodeImg}
-              alt="QR Code"
-              className="w-full h-full object-contain"
-            />
-          </div>
-
-          {/* 4-line text */}
+          <img
+            src={qrCodeImg}
+            alt="QR Code"
+            style={{ width: 50, height: 50, flexShrink: 0 }}
+            className="object-contain"
+          />
           <div
             style={{
               marginLeft: 20,
