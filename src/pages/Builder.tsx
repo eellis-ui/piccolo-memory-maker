@@ -1,6 +1,6 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { Check, BookOpen, Copy } from "lucide-react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useBasket } from "@/contexts/BasketContext";
 import Navbar from "@/components/layout/Navbar";
@@ -55,17 +55,28 @@ const BUILDER_STEPS: { key: BuilderStep; label: string }[] = [
 
 const Builder = () => {
   const navigate = useNavigate();
-  const { item, addOns, uniquePhotos } = useBasket();
+  const [searchParams] = useSearchParams();
+  const resumeSessionId = searchParams.get("sessionId");
+
+  const { item, addOns, uniquePhotos, setQuantity, setActiveSessionId } = useBasket();
   const bookCount = item?.quantity ?? 1;
 
-  // Each book has independent state; checkout is a shared final step
   const [books, setBooks] = useState<BookState[]>([]);
   const [activeBookIndex, setActiveBookIndex] = useState(0);
   const [showingCheckout, setShowingCheckout] = useState(false);
   const [userId, setUserId] = useState<string | null>(null);
+  const [sessionId, setSessionId] = useState<string | null>(null);
 
-  // Auth check + create order records (only runs once on mount)
   const [initialized, setInitialized] = useState(false);
+
+  // Save step to DB whenever it changes
+  const persistStep = useCallback(async (orderId: string, step: BuilderStep) => {
+    await supabase
+      .from("orders")
+      .update({ builder_step: step })
+      .eq("id", orderId);
+  }, []);
+
   useEffect(() => {
     if (initialized) return;
     const init = async () => {
@@ -76,12 +87,105 @@ const Builder = () => {
       }
       setUserId(user.id);
 
-      // Create one order record per book
+      // ── Resume existing session ──
+      if (resumeSessionId) {
+        const { data: existingOrders } = await supabase
+          .from("orders")
+          .select("*")
+          .eq("builder_session_id", resumeSessionId)
+          .eq("user_id", user.id)
+          .order("created_at", { ascending: true });
+
+        if (existingOrders && existingOrders.length > 0) {
+          // Restore basket quantity
+          setQuantity(existingOrders.length);
+          setSessionId(resumeSessionId);
+          setActiveSessionId(resumeSessionId);
+
+          const restoredBooks: BookState[] = await Promise.all(
+            existingOrders.map(async (order) => {
+              // Load photos for this order
+              const { data: photoRows } = await supabase
+                .from("order_photos")
+                .select("*")
+                .eq("order_id", order.id)
+                .order("page_position", { ascending: true });
+
+              // Generate signed URLs for photos
+              const photos: OrderPhoto[] = await Promise.all(
+                (photoRows || []).map(async (row) => {
+                  const { data: origSigned } = await supabase.storage
+                    .from("order-files")
+                    .createSignedUrl(row.original_path, 3600);
+
+                  let convertedUrl: string | null = null;
+                  if (row.converted_path) {
+                    const { data: convSigned } = await supabase.storage
+                      .from("order-files")
+                      .createSignedUrl(row.converted_path, 3600);
+                    convertedUrl = convSigned?.signedUrl || null;
+                  }
+
+                  return {
+                    id: row.id,
+                    originalPath: row.original_path,
+                    convertedPath: row.converted_path,
+                    pagePosition: row.page_position,
+                    isApproved: row.is_approved,
+                    conversionStatus: row.conversion_status,
+                    originalUrl: origSigned?.signedUrl || "",
+                    convertedUrl,
+                    isLandscape: row.is_landscape,
+                  };
+                })
+              );
+
+              const step = (order.builder_step || "upload") as BuilderStep;
+
+              return {
+                orderId: order.id,
+                step,
+                photos,
+                uploadImages: [] as LocalImage[],
+                bookAddOns: {
+                  dedicationPageEnabled: order.dedication_page_enabled,
+                  dedicationPageText: order.dedication_page_text || "",
+                  bottomTitle: order.title_page_text === "My Piccolo'd Colouring Book" ? "color your memories" : order.title_page_text,
+                },
+                digitalDownload: false,
+                coverData: null,
+                completed: step === "cover" && !!order.cover_image_id,
+              } as BookState;
+            })
+          );
+
+          setBooks(restoredBooks);
+
+          // If all books completed, show checkout
+          if (restoredBooks.every((b) => b.completed)) {
+            setShowingCheckout(true);
+          }
+
+          setInitialized(true);
+          return;
+        }
+      }
+
+      // ── Create new session ──
+      const newSessionId = crypto.randomUUID();
+      setSessionId(newSessionId);
+      setActiveSessionId(newSessionId);
+
       const newBooks: BookState[] = [];
       for (let i = 0; i < bookCount; i++) {
         const { data, error } = await supabase
           .from("orders")
-          .insert({ status: "draft", user_id: user.id })
+          .insert({
+            status: "draft",
+            user_id: user.id,
+            builder_session_id: newSessionId,
+            builder_step: "upload",
+          })
           .select("id")
           .single();
         newBooks.push({
@@ -103,14 +207,21 @@ const Builder = () => {
   }, []);
 
   const updateBook = (index: number, patch: Partial<BookState>) => {
-    setBooks((prev) => prev.map((b, i) => (i === index ? { ...b, ...patch } : b)));
+    setBooks((prev) => prev.map((b, i) => {
+      if (i !== index) return b;
+      const updated = { ...b, ...patch };
+      // Persist step changes to DB
+      if (patch.step && b.orderId) {
+        persistStep(b.orderId, patch.step);
+      }
+      return updated;
+    }));
   };
 
   const activeBook = books[activeBookIndex];
 
-  // ── Step handlers for the active book ──────────────────────────────────────
+  // ── Step handlers ──
   const handleImagesUploaded = (newPhotos: OrderPhoto[]) => {
-    // Merge with existing conversion data so going back to upload doesn't wipe conversions
     const mergeWithExisting = (existingPhotos: OrderPhoto[]) => {
       const existingMap = new Map(existingPhotos.map((p) => [p.id, p]));
       return newPhotos.map((np) => {
@@ -130,7 +241,11 @@ const Builder = () => {
 
     if (!uniquePhotos && bookCount > 1) {
       setBooks((prev) =>
-        prev.map((b) => ({ ...b, photos: mergeWithExisting(b.photos), step: "approve" as const }))
+        prev.map((b) => {
+          const merged = mergeWithExisting(b.photos);
+          if (b.orderId) persistStep(b.orderId, "approve");
+          return { ...b, photos: merged, step: "approve" as const };
+        })
       );
     } else {
       const merged = mergeWithExisting(books[activeBookIndex].photos);
@@ -157,13 +272,13 @@ const Builder = () => {
           title_page_text: addOns.titlePageText,
           dedication_page_enabled: addOns.dedicationPageEnabled,
           dedication_page_text: addOns.dedicationPageText,
+          builder_step: "cover",
         })
         .eq("id", book.orderId);
     }
 
     updateBook(activeBookIndex, { coverData: data, completed: true, step: "cover" });
 
-    // Move to next incomplete book, or go to checkout
     const nextIncomplete = books.findIndex((b, i) => i !== activeBookIndex && !b.completed);
     if (nextIncomplete !== -1) {
       setActiveBookIndex(nextIncomplete);
@@ -172,7 +287,6 @@ const Builder = () => {
     }
   };
 
-  // Step index for progress bar
   const currentStepIndex = activeBook
     ? BUILDER_STEPS.findIndex((s) => s.key === activeBook.step)
     : 0;
@@ -192,7 +306,7 @@ const Builder = () => {
       <main className="pt-24 pb-16">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
 
-          {/* ── Multi-book tabs (only when unique photos and not at checkout) ── */}
+          {/* ── Multi-book tabs ── */}
           {bookCount > 1 && uniquePhotos && !showingCheckout && (
             <div className="max-w-2xl mx-auto mb-8">
               <div className="flex gap-2 p-1 bg-muted rounded-2xl">
@@ -218,7 +332,6 @@ const Builder = () => {
                   </button>
                 ))}
               </div>
-              {/* Progress hint */}
               <p className="text-xs text-center text-muted-foreground mt-2">
                 {books.filter((b) => b.completed).length} of {bookCount} books ready
                 {books.every((b) => b.completed) && " — proceed to checkout!"}
@@ -226,7 +339,7 @@ const Builder = () => {
             </div>
           )}
 
-          {/* ── Progress Steps (per book) ── */}
+          {/* ── Progress Steps ── */}
           {!showingCheckout && (
             <div className="max-w-2xl mx-auto mb-12">
               <div className="flex items-center justify-between">
@@ -269,7 +382,6 @@ const Builder = () => {
                 ))}
               </div>
 
-              {/* Book label under progress bar */}
               {bookCount > 1 && uniquePhotos && (
                 <p className="text-center text-sm text-muted-foreground mt-4 flex items-center justify-center gap-1.5">
                   <Copy className="w-3.5 h-3.5" />
@@ -286,7 +398,6 @@ const Builder = () => {
           <div className="max-w-5xl mx-auto">
             {!showingCheckout && activeBook && (
               <>
-                {/* Unique photos upsell — shown only on upload step for multi-book orders */}
                 {activeBook.step === "upload" && bookCount > 1 && (
                   <div className="mb-6">
                     <UniquePhotosUpsellBanner />

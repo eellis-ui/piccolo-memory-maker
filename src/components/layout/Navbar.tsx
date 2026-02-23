@@ -17,7 +17,7 @@ import { Separator } from "@/components/ui/separator";
 
 const Navbar = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const { item, setQuantity, pricingTiers, digitalCopies, setDigitalCopies, digitalPrice, addOns, addOnsTotal: basketAddOnsTotal, addOnPrice, uniquePhotos, setUniquePhotos, uniquePhotosPrice } = useBasket();
+  const { item, setQuantity, pricingTiers, digitalCopies, setDigitalCopies, digitalPrice, addOns, addOnsTotal: basketAddOnsTotal, addOnPrice, uniquePhotos, setUniquePhotos, uniquePhotosPrice, activeSessionId } = useBasket();
   const { isAdmin } = useIsAdmin();
   const [isLoggedIn, setIsLoggedIn] = useState(false);
 
@@ -160,9 +160,9 @@ const Navbar = () => {
             <span>${grandTotal.toFixed(2)}</span>
           </div>
           <Button asChild className="w-full rounded-2xl py-5" size="lg">
-            <Link to="/builder">
+            <Link to={activeSessionId ? `/builder?sessionId=${activeSessionId}` : "/builder"}>
               <ShoppingCart className="w-4 h-4 mr-2" />
-              Continue to Builder
+              {activeSessionId ? "Resume Creating" : "Continue to Builder"}
             </Link>
           </Button>
         </div>
