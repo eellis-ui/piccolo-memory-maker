@@ -37,6 +37,7 @@ interface BookState {
   photos: OrderPhoto[];
   uploadImages: LocalImage[];
   bookAddOns: BookAddOnsLocal;
+  digitalDownload: boolean;
   coverData: {
     imageIds: [string, string];
     title: string;
@@ -89,6 +90,7 @@ const Builder = () => {
           photos: [],
           uploadImages: [],
           bookAddOns: { dedicationPageEnabled: false, dedicationPageText: "", bottomTitle: "color your memories" },
+          digitalDownload: false,
           coverData: null,
           completed: false,
         });
@@ -316,9 +318,12 @@ const Builder = () => {
                 pageCount={books[0].photos.length}
                 extraPages={0}
                 convertedUrls={books[0].photos.map((p) => p.convertedUrl)}
+                bookDigitalDownloads={books.map((b, i) => ({ bookIndex: i, enabled: b.digitalDownload }))}
+                onToggleBookDigitalDownload={(bookIndex) =>
+                  updateBook(bookIndex, { digitalDownload: !books[bookIndex].digitalDownload })
+                }
                 onBack={() => {
                   setShowingCheckout(false);
-                  // Go back to last book's cover step
                   setActiveBookIndex(bookCount - 1);
                   updateBook(bookCount - 1, { completed: false, step: "cover" });
                 }}

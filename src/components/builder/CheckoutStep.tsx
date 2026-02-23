@@ -3,28 +3,34 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
+import { Switch } from "@/components/ui/switch";
 import { useBasket, DIGITAL_DOWNLOAD_PRICE } from "@/contexts/BasketContext";
-import DigitalUpsellBanner from "./DigitalUpsellBanner";
+
+interface BookDigitalDownload {
+  bookIndex: number;
+  enabled: boolean;
+}
 
 interface CheckoutStepProps {
   pageCount: number;
   extraPages: number;
   convertedUrls: (string | null)[];
   onBack: () => void;
+  bookDigitalDownloads: BookDigitalDownload[];
+  onToggleBookDigitalDownload: (bookIndex: number) => void;
 }
 
-const CheckoutStep = ({ pageCount, extraPages, convertedUrls, onBack }: CheckoutStepProps) => {
-  const { item, setQuantity, pricingTiers, digitalCopies, setDigitalCopies, digitalPrice, addOns, addOnsTotal, addOnPrice, uniquePhotos, uniquePhotosPrice } = useBasket();
+const CheckoutStep = ({ pageCount, extraPages, convertedUrls, onBack, bookDigitalDownloads, onToggleBookDigitalDownload }: CheckoutStepProps) => {
+  const { item, setQuantity, pricingTiers, addOns, addOnsTotal, addOnPrice, uniquePhotos, uniquePhotosPrice } = useBasket();
 
   const bookCount = item?.quantity ?? 1;
   const basePrice = item?.pricePerBook ?? 35;
   const originalBasePrice = item?.originalPricePerBook ?? 42;
   const extraPagesPrice = extraPages === 10 ? 6 : extraPages === 20 ? 10 : extraPages === 40 ? 18 : 0;
+  const digitalCount = bookDigitalDownloads.filter(b => b.enabled).length;
+  const digitalPrice = digitalCount * DIGITAL_DOWNLOAD_PRICE;
   const totalPrice = (basePrice + extraPagesPrice) * bookCount + (uniquePhotos ? uniquePhotosPrice : 0) + digitalPrice + addOnsTotal;
   const originalTotalPrice = (originalBasePrice + extraPagesPrice) * bookCount + (uniquePhotos ? uniquePhotosPrice : 0) + digitalPrice + addOnsTotal;
-
-  // Max digital copies: if unique photos per book, each book can have its own PDF; otherwise only 1
-  const maxDigitalCopies = uniquePhotos ? bookCount : 1;
 
   const maxQuantity = Math.max(...pricingTiers.map((t) => t.quantity));
   const handleDecrement = () => { if (bookCount > 1) setQuantity(bookCount - 1); };
@@ -85,12 +91,11 @@ const CheckoutStep = ({ pageCount, extraPages, convertedUrls, onBack }: Checkout
                   <Badge variant="secondary">Add-on</Badge>
                 </div>
               )}
-              {digitalCopies > 0 && (
+              {digitalCount > 0 && (
                 <div className="flex items-center gap-3">
                   <Check className="w-5 h-5 text-primary" />
                   <span>
-                    Digital PDF download
-                    {digitalCopies > 1 ? ` × ${digitalCopies} copies` : ""} (20 pages each)
+                    Digital PDF download × {digitalCount} {digitalCount === 1 ? "book" : "books"} (20 pages each)
                   </span>
                   <Badge variant="secondary">Add-on</Badge>
                 </div>
@@ -98,8 +103,50 @@ const CheckoutStep = ({ pageCount, extraPages, convertedUrls, onBack }: Checkout
             </CardContent>
           </Card>
 
-          {/* Digital Download Upsell */}
-          <DigitalUpsellBanner variant="full" maxCopies={maxDigitalCopies} />
+          {/* Per-Book Digital Download Upsell */}
+          <Card className="rounded-3xl border-dashed border-2 border-primary/30 bg-primary/5 overflow-hidden">
+            <CardContent className="p-6">
+              <div className="flex items-start gap-4 mb-4">
+                <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center shrink-0">
+                  <Download className="w-5 h-5 text-primary" />
+                </div>
+                <div>
+                  <h3 className="font-display text-base font-semibold text-foreground">
+                    Add a Digital PDF Download
+                  </h3>
+                  <p className="text-sm text-muted-foreground mt-1">
+                    Get a printable PDF of your coloring book — print extra copies at home anytime!
+                  </p>
+                </div>
+              </div>
+              <div className="space-y-2">
+                {bookDigitalDownloads.map((bd) => (
+                  <div
+                    key={bd.bookIndex}
+                    className="flex items-center justify-between p-3 rounded-xl border border-border bg-background"
+                  >
+                    <div className="flex items-center gap-3">
+                      <Switch
+                        checked={bd.enabled}
+                        onCheckedChange={() => onToggleBookDigitalDownload(bd.bookIndex)}
+                      />
+                      <div>
+                        <span className="font-semibold text-foreground text-sm">
+                          Book {bd.bookIndex + 1}
+                        </span>
+                        <span className="text-xs text-muted-foreground ml-2">
+                          Instantly downloadable copy
+                        </span>
+                      </div>
+                    </div>
+                    <span className="font-bold text-foreground">
+                      ${DIGITAL_DOWNLOAD_PRICE.toFixed(2)}
+                    </span>
+                  </div>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
 
           {/* Preview */}
           <Card className="rounded-3xl">
@@ -190,20 +237,13 @@ const CheckoutStep = ({ pageCount, extraPages, convertedUrls, onBack }: Checkout
                 </div>
               )}
 
-              {digitalCopies > 0 && (
+              {digitalCount > 0 && (
                 <div className="flex justify-between items-center">
                   <div className="flex items-center gap-2">
                     <Download className="w-3.5 h-3.5 text-primary" />
                     <span className="text-muted-foreground">
-                      PDF Download{digitalCopies > 1 ? ` × ${digitalCopies}` : ""}
+                      PDF Download × {digitalCount}
                     </span>
-                    <button
-                      onClick={() => setDigitalCopies(0)}
-                      className="text-destructive hover:text-destructive/80 transition-colors"
-                      title="Remove digital download"
-                    >
-                      <X className="w-3.5 h-3.5" />
-                    </button>
                   </div>
                   <span>${digitalPrice.toFixed(2)}</span>
                 </div>
