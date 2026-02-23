@@ -29,7 +29,7 @@ const faqs = [
   },
   {
     question: "What size is the Piccoload book?",
-    answer: "Each book is a beautiful 8.5\" × 8.5\" square format, perfect for coloring and displaying. The compact size makes it easy to gift and enjoy anywhere.",
+    answer: "Each book is a generous 8.3\" × 11.7\" (A4) format — close to standard US letter size. The large pages give you plenty of room to color and add detail, and they look great on display.",
   },
   {
     question: "How many photos can I include in my book?",
