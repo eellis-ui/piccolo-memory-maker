@@ -109,14 +109,32 @@ const Builder = () => {
   const activeBook = books[activeBookIndex];
 
   // ── Step handlers for the active book ──────────────────────────────────────
-  const handleImagesUploaded = (photos: OrderPhoto[]) => {
+  const handleImagesUploaded = (newPhotos: OrderPhoto[]) => {
+    // Merge with existing conversion data so going back to upload doesn't wipe conversions
+    const mergeWithExisting = (existingPhotos: OrderPhoto[]) => {
+      const existingMap = new Map(existingPhotos.map((p) => [p.id, p]));
+      return newPhotos.map((np) => {
+        const existing = existingMap.get(np.id);
+        if (existing && existing.convertedUrl) {
+          return {
+            ...np,
+            convertedUrl: existing.convertedUrl,
+            convertedPath: existing.convertedPath,
+            conversionStatus: existing.conversionStatus,
+            isApproved: existing.isApproved,
+          };
+        }
+        return np;
+      });
+    };
+
     if (!uniquePhotos && bookCount > 1) {
-      // Share the same photos across all books
       setBooks((prev) =>
-        prev.map((b) => ({ ...b, photos, step: "approve" as const }))
+        prev.map((b) => ({ ...b, photos: mergeWithExisting(b.photos), step: "approve" as const }))
       );
     } else {
-      updateBook(activeBookIndex, { photos, step: "approve" });
+      const merged = mergeWithExisting(books[activeBookIndex].photos);
+      updateBook(activeBookIndex, { photos: merged, step: "approve" });
     }
   };
 
