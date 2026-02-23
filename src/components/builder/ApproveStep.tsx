@@ -239,7 +239,7 @@ const ApproveStep = ({
                         className="w-full h-full object-cover"
                       />
                       <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-                        <span className="text-2xl font-display text-foreground/10 rotate-[-30deg]">
+                        <span className="text-4xl font-display text-foreground/25 rotate-[-30deg] font-bold tracking-widest select-none">
                           PREVIEW
                         </span>
                       </div>

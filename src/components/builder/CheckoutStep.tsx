@@ -174,7 +174,7 @@ const CheckoutStep = ({ pageCount, extraPages, convertedUrls, onBack, bookDigita
                       <span className="text-xs text-muted-foreground">Page {i + 1}</span>
                     )}
                     <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-                      <span className="text-lg font-display text-foreground/5 rotate-[-30deg]">
+                      <span className="text-2xl font-display text-foreground/25 rotate-[-30deg] font-bold tracking-widest select-none">
                         PREVIEW
                       </span>
                     </div>

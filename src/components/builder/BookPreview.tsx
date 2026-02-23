@@ -208,11 +208,18 @@ const BookPreview = ({ photos, onReorder }: BookPreviewProps) => {
           {currentPage === 0 ? (
             <CoverPage />
           ) : (
-            <img
-              src={photos[currentPage - 1]?.convertedUrl || photos[currentPage - 1]?.originalUrl}
-              alt={`Page ${currentPage}`}
-              className="w-full h-full object-contain bg-white"
-            />
+            <div className="relative w-full h-full">
+              <img
+                src={photos[currentPage - 1]?.convertedUrl || photos[currentPage - 1]?.originalUrl}
+                alt={`Page ${currentPage}`}
+                className="w-full h-full object-contain bg-white"
+              />
+              <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+                <span className="text-5xl font-display text-foreground/20 rotate-[-30deg] font-bold tracking-widest select-none">
+                  PREVIEW
+                </span>
+              </div>
+            </div>
           )}
         </div>
       </div>
