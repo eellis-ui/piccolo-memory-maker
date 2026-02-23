@@ -38,15 +38,27 @@ const BookOptionsPanel = () => {
           />
         </div>
         {addOns.titlePageEnabled && (
-          <Input
-            value={addOns.titlePageText}
-            onChange={(e) =>
-              setAddOns({ ...addOns, titlePageText: e.target.value })
-            }
-            placeholder="My Piccoload Coloring Book"
-            maxLength={100}
-            className="rounded-xl"
-          />
+          <>
+            <Input
+              value={addOns.titlePageText}
+              onChange={(e) =>
+                setAddOns({ ...addOns, titlePageText: e.target.value })
+              }
+              placeholder="Cover Title (top)"
+              maxLength={100}
+              className="rounded-xl"
+            />
+            <Input
+              value={addOns.bottomTitle}
+              onChange={(e) =>
+                setAddOns({ ...addOns, bottomTitle: e.target.value })
+              }
+              placeholder="colour in your memories"
+              maxLength={100}
+              className="rounded-xl"
+            />
+            <p className="text-xs text-muted-foreground">Bottom title shown on cover</p>
+          </>
         )}
       </div>
 

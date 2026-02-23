@@ -37,7 +37,6 @@ const CoverStep = ({ availableImages, onCoverComplete, onBack }: CoverStepProps)
   const { addOns } = useBasket();
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
   const [topTitle, setTopTitle] = useState("");
-  const [bottomTitle, setBottomTitle] = useState("colour in your memories");
   const [titleFont, setTitleFont] = useState<string>(FONT_OPTIONS[0].value);
 
   const toggleImage = (id: string) => {
@@ -68,7 +67,7 @@ const CoverStep = ({ availableImages, onCoverComplete, onBack }: CoverStepProps)
     if (canContinue) {
       onCoverComplete({
         imageIds: [selectedIds[0], selectedIds[1]],
-        title: bottomTitle,
+        title: addOns.bottomTitle,
         subtitle,
       });
     }
@@ -158,14 +157,14 @@ const CoverStep = ({ availableImages, onCoverComplete, onBack }: CoverStepProps)
                 </p>
                 {showBottomTitle && (
                   <h3 className="text-lg sm:text-xl italic font-semibold text-foreground leading-tight mt-1.5" style={{ fontFamily: titleFont }}>
-                    {bottomTitle}
+                    {addOns.bottomTitle}
                   </h3>
                 )}
               </div>
             </div>
           </div>
 
-          {/* Editable text fields – only when Title Page add-on is enabled */}
+          {/* Cover Title (top) – only when Title Page add-on is enabled */}
           {addOns.titlePageEnabled && (
             <div className="mt-6 space-y-4">
               <div>
@@ -177,28 +176,6 @@ const CoverStep = ({ availableImages, onCoverComplete, onBack }: CoverStepProps)
                   placeholder="e.g. Emma's Coloring Book"
                   maxLength={80}
                 />
-              </div>
-              <div>
-                <label className="text-sm font-medium text-foreground">Bottom Title</label>
-                <Input
-                  value={bottomTitle}
-                  onChange={(e) => setBottomTitle(e.target.value)}
-                  className="mt-1 rounded-xl"
-                  placeholder="colour in your memories"
-                  maxLength={80}
-                />
-                <Select value={titleFont} onValueChange={setTitleFont}>
-                  <SelectTrigger className="mt-1.5 rounded-xl">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {FONT_OPTIONS.map((f) => (
-                      <SelectItem key={f.value} value={f.value}>
-                        <span style={{ fontFamily: f.value }}>{f.label}</span>
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
               </div>
             </div>
           )}
