@@ -28,18 +28,28 @@ const CoverStep = ({ availableImages, onCoverComplete, onBack }: CoverStepProps)
   const toggleImage = (id: string) => {
     setSelectedIds((prev) => {
       if (prev.includes(id)) return prev.filter((i) => i !== id);
-      if (prev.length >= 4) return [...prev.slice(1), id];
+      if (prev.length >= 2) return [...prev.slice(1), id];
       return [...prev, id];
     });
   };
 
-  const selectedPhotos = selectedIds
-    .map((id) => availableImages.find((img) => img.id === id))
-    .filter(Boolean) as CoverPhoto[];
+  const photo1 = selectedIds[0] ? availableImages.find((img) => img.id === selectedIds[0]) ?? null : null;
+  const photo2 = selectedIds[1] ? availableImages.find((img) => img.id === selectedIds[1]) ?? null : null;
 
-  const canContinue = selectedIds.length === 4;
+  // Grid cells:
+  // [0] top-left:     photo1 original
+  // [1] top-right:    photo1 converted
+  // [2] bottom-left:  photo2 converted
+  // [3] bottom-right: photo2 original
+  const gridCells = [
+    photo1 ? photo1.originalUrl : null,
+    photo1 ? photo1.convertedUrl : null,
+    photo2 ? photo2.convertedUrl : null,
+    photo2 ? photo2.originalUrl : null,
+  ];
 
-  // Subtitle: dedication note replaces default if enabled
+  const canContinue = selectedIds.length === 2;
+
   const subtitle = addOns.dedicationPageEnabled && addOns.dedicationPageText.trim()
     ? addOns.dedicationPageText.trim().toUpperCase()
     : "FOR KIDS AND ADULTS ALIKE";
@@ -65,7 +75,7 @@ const CoverStep = ({ availableImages, onCoverComplete, onBack }: CoverStepProps)
           Design Your Cover
         </h2>
         <p className="text-muted-foreground">
-          Select 4 photos for your cover grid
+          Select 2 photos — each will appear alongside its line-art drawing
         </p>
       </div>
 
@@ -73,12 +83,6 @@ const CoverStep = ({ availableImages, onCoverComplete, onBack }: CoverStepProps)
         {/* Cover Preview */}
         <div className="order-2 lg:order-1">
           <div className="bg-[#fffaf3] rounded-3xl p-4 shadow-soft">
-            {/*
-              Cover canvas: fixed width reference of 800px → scaled via container.
-              Margins: 50px each side ≈ 6.25% of 800px.
-              Grid: 700px wide (87.5%), each cell square.
-              Logo: 500px wide ≈ 62.5%.
-            */}
             <div
               className="relative bg-[#fffaf3] rounded-2xl shadow-soft-lg overflow-hidden flex flex-col"
               style={{ aspectRatio: "3 / 4" }}
@@ -88,13 +92,13 @@ const CoverStep = ({ availableImages, onCoverComplete, onBack }: CoverStepProps)
                 <img
                   src={logoImg}
                   alt="Piccoload – From Pic to Pen"
-                  style={{ width: "62.5%" }}
+                  style={{ width: "50%" }}
                 />
               </div>
 
               {/* ── Optional cover title above grid ── */}
               {showTopTitle && (
-                <div className="text-center shrink-0 pb-1 px-[6.25%]">
+                <div className="text-center shrink-0 pb-1 px-[8.75%]">
                   <p className="text-[1.4vw] font-semibold text-foreground leading-tight truncate">
                     {topTitle}
                   </p>
@@ -102,39 +106,40 @@ const CoverStep = ({ availableImages, onCoverComplete, onBack }: CoverStepProps)
               )}
 
               {/* ── 2×2 photo grid ── */}
+              {/* margins: 8.75% each side ≈ 70px on 800px canvas */}
               <div
                 className="shrink-0 grid grid-cols-2"
-                style={{ margin: "0 6.25%", gap: 0 }}
+                style={{ margin: "0 8.75%", gap: 0 }}
               >
-                {[0, 1, 2, 3].map((idx) => {
-                  const photo = selectedPhotos[idx];
-                  return (
-                    <div key={idx} className="aspect-square overflow-hidden bg-[#ede8e0]">
-                      {photo ? (
-                        <img
-                          src={photo.originalUrl}
-                          alt={`Cover photo ${idx + 1}`}
-                          className="w-full h-full object-cover object-center"
-                        />
-                      ) : (
-                        <div className="w-full h-full flex items-center justify-center text-[1.2vw] text-muted-foreground">
-                          {idx + 1}
-                        </div>
-                      )}
-                    </div>
-                  );
-                })}
+                {gridCells.map((url, idx) => (
+                  <div key={idx} className="aspect-square overflow-hidden bg-[#ede8e0]">
+                    {url ? (
+                      <img
+                        src={url}
+                        alt={`Cover cell ${idx + 1}`}
+                        className="w-full h-full object-cover object-center"
+                      />
+                    ) : (
+                      <div className="w-full h-full flex items-center justify-center text-[1.2vw] text-muted-foreground">
+                        {idx + 1}
+                      </div>
+                    )}
+                  </div>
+                ))}
               </div>
 
-              {/* ── Bottom space: right-aligned text flush to grid right edge ── */}
-              <div className="flex-1 flex flex-col justify-start min-h-0" style={{ paddingRight: "6.25%" }}>
+              {/* ── Bottom text: right-aligned flush to right grid edge ── */}
+              <div
+                className="flex-1 flex flex-col justify-start min-h-0"
+                style={{ paddingRight: "8.75%" }}
+              >
                 <div className="flex flex-col items-end" style={{ paddingTop: "2.5%" }}>
                   {/* "FOR KIDS AND ADULTS ALIKE" */}
                   <p
                     className="uppercase text-foreground leading-none"
                     style={{
                       fontFamily: "'Yuji Syuku', serif",
-                      fontSize: "1.96vw",
+                      fontSize: "1.59vw",
                       letterSpacing: 0,
                     }}
                   >
@@ -142,19 +147,17 @@ const CoverStep = ({ availableImages, onCoverComplete, onBack }: CoverStepProps)
                   </p>
 
                   {/* "colour your memories" */}
-                  {showBottomTitle && (
-                    <p
-                      className="leading-none"
-                      style={{
-                        fontFamily: "Bristol, serif",
-                        fontSize: "4.69vw",
-                        marginTop: "2.5%",
-                        color: "hsl(var(--foreground))",
-                      }}
-                    >
-                      {addOns.bottomTitle || "colour your memories"}
-                    </p>
-                  )}
+                  <p
+                    className="leading-none"
+                    style={{
+                      fontFamily: "Bristol, serif",
+                      fontSize: "1.875vw",
+                      marginTop: "2.5%",
+                      color: "hsl(var(--foreground))",
+                    }}
+                  >
+                    {addOns.bottomTitle || "colour your memories"}
+                  </p>
                 </div>
               </div>
             </div>
@@ -178,11 +181,16 @@ const CoverStep = ({ availableImages, onCoverComplete, onBack }: CoverStepProps)
         {/* Image Selection */}
         <div className="order-1 lg:order-2">
           <h3 className="font-medium text-foreground mb-2">
-            Select 4 Cover Photos{" "}
+            Select 2 Photos{" "}
             <span className="text-muted-foreground font-normal">
-              ({selectedIds.length}/4 selected)
+              ({selectedIds.length}/2 selected)
             </span>
           </h3>
+          <p className="text-sm text-muted-foreground mb-3">
+            Photo 1 → top-left (original) &amp; top-right (drawing)
+            <br />
+            Photo 2 → bottom-right (original) &amp; bottom-left (drawing)
+          </p>
           <div className="grid grid-cols-3 sm:grid-cols-4 gap-3 max-h-[500px] overflow-y-auto p-1">
             {availableImages.map((image) => {
               const isSelected = selectedIds.includes(image.id);
@@ -226,7 +234,7 @@ const CoverStep = ({ availableImages, onCoverComplete, onBack }: CoverStepProps)
         >
           {canContinue
             ? "Continue to Checkout"
-            : `Select ${4 - selectedIds.length} more photo${4 - selectedIds.length === 1 ? "" : "s"}`}
+            : `Select ${2 - selectedIds.length} more photo${2 - selectedIds.length === 1 ? "" : "s"}`}
         </Button>
       </div>
     </div>
