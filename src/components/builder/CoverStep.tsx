@@ -5,6 +5,7 @@ import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { Heart } from "lucide-react";
+import type { BookAddOnsLocal } from "@/pages/Builder";
 import { useBasket } from "@/contexts/BasketContext";
 import logoImg from "@/assets/piccoload-logo.png";
 
@@ -35,6 +36,8 @@ interface CoverPhoto {
 
 interface CoverStepProps {
   availableImages: CoverPhoto[];
+  bookAddOns: BookAddOnsLocal;
+  onBookAddOnsChange: (addOns: BookAddOnsLocal) => void;
   onCoverComplete: (coverData: {
     imageIds: [string, string];
     title: string;
@@ -43,8 +46,8 @@ interface CoverStepProps {
   onBack: () => void;
 }
 
-const CoverStep = ({ availableImages, onCoverComplete, onBack }: CoverStepProps) => {
-  const { addOns, setAddOns, addOnPrice } = useBasket();
+const CoverStep = ({ availableImages, bookAddOns, onBookAddOnsChange, onCoverComplete, onBack }: CoverStepProps) => {
+  const { addOnPrice } = useBasket();
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
 
   const toggleImage = (id: string) => {
@@ -70,19 +73,19 @@ const CoverStep = ({ availableImages, onCoverComplete, onBack }: CoverStepProps)
     photo2 ? photo2.originalUrl : null,
   ];
 
-  const hasProfanity = addOns.dedicationPageEnabled && containsProfanity(addOns.dedicationPageText);
+  const hasProfanity = bookAddOns.dedicationPageEnabled && containsProfanity(bookAddOns.dedicationPageText);
   const canContinue = selectedIds.length === 2 && !hasProfanity;
 
   // Subtitle: "bottom title" custom text if dedication enabled, else default
-  const subtitle = addOns.dedicationPageEnabled && addOns.dedicationPageText.trim()
-    ? addOns.dedicationPageText.trim().toUpperCase()
+  const subtitle = bookAddOns.dedicationPageEnabled && bookAddOns.dedicationPageText.trim()
+    ? bookAddOns.dedicationPageText.trim().toUpperCase()
     : "FOR KIDS AND ADULTS ALIKE";
 
   const handleContinue = () => {
     if (canContinue) {
       onCoverComplete({
         imageIds: [selectedIds[0], selectedIds[1]],
-        title: addOns.bottomTitle,
+        title: bookAddOns.bottomTitle,
         subtitle,
       });
     }
@@ -167,7 +170,7 @@ const CoverStep = ({ availableImages, onCoverComplete, onBack }: CoverStepProps)
                       color: "hsl(var(--foreground))",
                     }}
                   >
-                    {addOns.bottomTitle || "color your memories"}
+                    {bookAddOns.bottomTitle || "color your memories"}
                   </p>
                 </div>
               </div>
@@ -241,35 +244,35 @@ const CoverStep = ({ availableImages, onCoverComplete, onBack }: CoverStepProps)
                 </div>
                 <Switch
                   id="bottom-title"
-                  checked={addOns.dedicationPageEnabled}
+                  checked={bookAddOns.dedicationPageEnabled}
                   onCheckedChange={() =>
-                    setAddOns({ ...addOns, dedicationPageEnabled: !addOns.dedicationPageEnabled })
+                    onBookAddOnsChange({ ...bookAddOns, dedicationPageEnabled: !bookAddOns.dedicationPageEnabled })
                   }
                 />
               </div>
               <p className="text-xs text-muted-foreground">
                 Replaces "color your memories" with your own custom text on the cover. Max 25 characters — must be family-friendly.
               </p>
-              {addOns.dedicationPageEnabled && (
+              {bookAddOns.dedicationPageEnabled && (
                 <>
                   <Input
-                    value={addOns.dedicationPageText}
+                    value={bookAddOns.dedicationPageText}
                     onChange={(e) => {
                       const val = e.target.value.slice(0, 25);
-                      setAddOns({ ...addOns, dedicationPageText: val });
+                      onBookAddOnsChange({ ...bookAddOns, dedicationPageText: val });
                     }}
                     placeholder="e.g. Color your world"
                     maxLength={25}
-                    className={`rounded-xl ${containsProfanity(addOns.dedicationPageText) ? "border-destructive focus-visible:ring-destructive" : ""}`}
+                    className={`rounded-xl ${containsProfanity(bookAddOns.dedicationPageText) ? "border-destructive focus-visible:ring-destructive" : ""}`}
                   />
                   <div className="flex justify-between items-center">
-                    {containsProfanity(addOns.dedicationPageText) ? (
+                    {containsProfanity(bookAddOns.dedicationPageText) ? (
                       <p className="text-xs text-destructive">Please use family-friendly language.</p>
                     ) : (
                       <span />
                     )}
                     <p className="text-xs text-muted-foreground ml-auto">
-                      {addOns.dedicationPageText.length}/25
+                      {bookAddOns.dedicationPageText.length}/25
                     </p>
                   </div>
                 </>

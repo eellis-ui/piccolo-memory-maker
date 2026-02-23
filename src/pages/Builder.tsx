@@ -25,11 +25,18 @@ export interface OrderPhoto {
   isLandscape: boolean;
 }
 
+export interface BookAddOnsLocal {
+  dedicationPageEnabled: boolean;
+  dedicationPageText: string;
+  bottomTitle: string;
+}
+
 interface BookState {
   orderId: string | null;
   step: BuilderStep;
   photos: OrderPhoto[];
   uploadImages: LocalImage[];
+  bookAddOns: BookAddOnsLocal;
   coverData: {
     imageIds: [string, string];
     title: string;
@@ -81,6 +88,7 @@ const Builder = () => {
           step: "upload",
           photos: [],
           uploadImages: [],
+          bookAddOns: { dedicationPageEnabled: false, dedicationPageText: "", bottomTitle: "color your memories" },
           coverData: null,
           completed: false,
         });
@@ -288,11 +296,14 @@ const Builder = () => {
 
                 {activeBook.step === "cover" && (
                   <CoverStep
+                    key={`cover-${activeBookIndex}`}
                     availableImages={activeBook.photos.map((p) => ({
                       id: p.id,
                       originalUrl: p.originalUrl,
                       convertedUrl: p.convertedUrl,
                     }))}
+                    bookAddOns={activeBook.bookAddOns}
+                    onBookAddOnsChange={(a) => updateBook(activeBookIndex, { bookAddOns: a })}
                     onCoverComplete={handleCoverComplete}
                     onBack={() => updateBook(activeBookIndex, { step: "approve" })}
                   />
