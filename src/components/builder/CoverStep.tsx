@@ -89,13 +89,13 @@ const CoverStep = ({ availableImages, onCoverComplete, onBack }: CoverStepProps)
           <div className="bg-cream rounded-3xl p-6 shadow-soft">
             <div className="aspect-[3/4] bg-cream rounded-2xl shadow-soft-lg overflow-hidden flex flex-col">
               {/* Logo header */}
-              <div className="pt-4 pb-1 flex justify-center px-6 shrink-0">
-                <img src={logoImg} alt="Piccoload – From Pic to Pen" className="w-[45%]" />
+              <div className="pt-6 pb-2 flex justify-center px-6 shrink-0">
+                <img src={logoImg} alt="Piccoload – From Pic to Pen" className="w-[50%]" />
               </div>
 
               {/* Title – only when enabled */}
               {showTitle && (
-                <div className="px-6 text-center shrink-0">
+                <div className="px-6 pb-1 text-center shrink-0">
                   <h3 className="text-sm sm:text-base font-semibold text-foreground leading-tight">
                     {addOns.titlePageText}
                   </h3>
@@ -103,12 +103,12 @@ const CoverStep = ({ availableImages, onCoverComplete, onBack }: CoverStepProps)
               )}
 
               {/* Two photo pairs */}
-              <div className="flex-1 grid grid-rows-2 w-full min-h-0">
+              <div className="flex-1 grid grid-rows-2 gap-[3px] px-[3px] w-full min-h-0">
                 {[0, 1].map((idx) => {
                   const photo = selectedPhotos[idx];
                   const isReversed = idx === 1;
                   return (
-                    <div key={idx} className="grid grid-cols-2 min-h-0 overflow-hidden">
+                    <div key={idx} className="grid grid-cols-2 gap-[3px] min-h-0 overflow-hidden">
                       {photo ? (
                         <>
                           <div className="overflow-hidden">
@@ -149,11 +149,11 @@ const CoverStep = ({ availableImages, onCoverComplete, onBack }: CoverStepProps)
               </div>
 
               {/* Bottom text */}
-              <div className="px-6 py-3 text-center shrink-0">
-                <p className="text-[8px] sm:text-[9px] tracking-[0.2em] uppercase text-muted-foreground font-medium" style={{ fontFamily: "'Yuji Syuku', serif" }}>
+              <div className="px-6 pt-4 pb-5 text-center shrink-0">
+                <p className="text-[8px] sm:text-[9px] tracking-[0.25em] uppercase text-muted-foreground font-medium" style={{ fontFamily: "'Yuji Syuku', serif" }}>
                   {subtitle}
                 </p>
-                <h3 className="text-base sm:text-lg italic font-semibold text-foreground leading-tight mt-0.5" style={{ fontFamily: titleFont }}>
+                <h3 className="text-lg sm:text-xl italic font-semibold text-foreground leading-tight mt-1" style={{ fontFamily: titleFont }}>
                   {coverTitle}
                 </h3>
               </div>
