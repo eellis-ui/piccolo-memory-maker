@@ -8,6 +8,16 @@ import { Heart } from "lucide-react";
 import { useBasket } from "@/contexts/BasketContext";
 import logoImg from "@/assets/piccoload-logo.png";
 
+const PROFANITY_LIST = [
+  "fuck","shit","cunt","bitch","asshole","bastard","dick","cock","pussy","whore",
+  "slut","fag","faggot","nigger","nigga","retard","spastic","twat","wanker","prick",
+];
+
+const containsProfanity = (text: string) => {
+  const lower = text.toLowerCase();
+  return PROFANITY_LIST.some((word) => lower.includes(word));
+};
+
 interface CoverPhoto {
   id: string;
   originalUrl: string;
@@ -51,7 +61,8 @@ const CoverStep = ({ availableImages, onCoverComplete, onBack }: CoverStepProps)
     photo2 ? photo2.originalUrl : null,
   ];
 
-  const canContinue = selectedIds.length === 2;
+  const hasProfanity = addOns.dedicationPageEnabled && containsProfanity(addOns.dedicationPageText);
+  const canContinue = selectedIds.length === 2 && !hasProfanity;
 
   // Subtitle: "bottom title" custom text if dedication enabled, else default
   const subtitle = addOns.dedicationPageEnabled && addOns.dedicationPageText.trim()
@@ -228,18 +239,31 @@ const CoverStep = ({ availableImages, onCoverComplete, onBack }: CoverStepProps)
                 />
               </div>
               <p className="text-xs text-muted-foreground">
-                Replaces "color your memories" with your own custom text on the cover
+                Replaces "color your memories" with your own custom text on the cover. Max 25 characters — must be family-friendly.
               </p>
               {addOns.dedicationPageEnabled && (
-                <Input
-                  value={addOns.dedicationPageText}
-                  onChange={(e) =>
-                    setAddOns({ ...addOns, dedicationPageText: e.target.value })
-                  }
-                  placeholder="e.g. Color your world"
-                  maxLength={100}
-                  className="rounded-xl"
-                />
+                <>
+                  <Input
+                    value={addOns.dedicationPageText}
+                    onChange={(e) => {
+                      const val = e.target.value.slice(0, 25);
+                      setAddOns({ ...addOns, dedicationPageText: val });
+                    }}
+                    placeholder="e.g. Color your world"
+                    maxLength={25}
+                    className={`rounded-xl ${containsProfanity(addOns.dedicationPageText) ? "border-destructive focus-visible:ring-destructive" : ""}`}
+                  />
+                  <div className="flex justify-between items-center">
+                    {containsProfanity(addOns.dedicationPageText) ? (
+                      <p className="text-xs text-destructive">Please use family-friendly language.</p>
+                    ) : (
+                      <span />
+                    )}
+                    <p className="text-xs text-muted-foreground ml-auto">
+                      {addOns.dedicationPageText.length}/25
+                    </p>
+                  </div>
+                </>
               )}
             </div>
           </div>
