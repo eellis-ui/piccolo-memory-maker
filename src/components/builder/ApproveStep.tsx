@@ -6,6 +6,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import BookPreview from "./BookPreview";
 import DigitalUpsellBanner from "./DigitalUpsellBanner";
+import { useBasket } from "@/contexts/BasketContext";
 import type { OrderPhoto } from "@/pages/Builder";
 
 interface ApproveStepProps {
@@ -21,11 +22,18 @@ const ApproveStep = ({
   onApprovalComplete,
   onBack,
 }: ApproveStepProps) => {
+  const { item, uniquePhotos } = useBasket();
+  const bookCount = item?.quantity ?? 1;
+
   const [photos, setPhotos] = useState<OrderPhoto[]>(initialPhotos);
   const [convertingIds, setConvertingIds] = useState<Set<string>>(new Set());
 
   const approvedCount = photos.filter((p) => p.isApproved).length;
   const allApproved = approvedCount === photos.length && photos.length > 0;
+
+  // Total pages across all books for display
+  const totalPages = uniquePhotos ? photos.length : photos.length * bookCount;
+  const totalApproved = uniquePhotos ? approvedCount : approvedCount * bookCount;
 
   const convertPhoto = useCallback(async (photoId: string) => {
     setConvertingIds((prev) => new Set(prev).add(photoId));
@@ -146,7 +154,7 @@ const ApproveStep = ({
 
         <div className="flex items-center gap-3">
           <Badge variant="secondary" className="text-sm py-1 px-3">
-            {approvedCount} of {photos.length} approved
+            {totalApproved} of {totalPages} pages approved
           </Badge>
           {hasUnconverted && (
             <Button
@@ -175,7 +183,7 @@ const ApproveStep = ({
       <div className="w-full h-2 bg-muted rounded-full overflow-hidden">
         <div
           className="h-full bg-primary transition-all duration-300"
-          style={{ width: `${(approvedCount / Math.max(photos.length, 1)) * 100}%` }}
+          style={{ width: `${(totalApproved / Math.max(totalPages, 1)) * 100}%` }}
         />
       </div>
 
