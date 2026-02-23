@@ -1,6 +1,10 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Switch } from "@/components/ui/switch";
+import { Label } from "@/components/ui/label";
+import { Badge } from "@/components/ui/badge";
+import { BookOpen, Heart } from "lucide-react";
 import { useBasket } from "@/contexts/BasketContext";
 import logoImg from "@/assets/piccoload-logo.png";
 
@@ -21,9 +25,8 @@ interface CoverStepProps {
 }
 
 const CoverStep = ({ availableImages, onCoverComplete, onBack }: CoverStepProps) => {
-  const { addOns } = useBasket();
+  const { addOns, setAddOns, addOnPrice } = useBasket();
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
-  const [topTitle, setTopTitle] = useState("");
 
   const toggleImage = (id: string) => {
     setSelectedIds((prev) => {
@@ -50,12 +53,10 @@ const CoverStep = ({ availableImages, onCoverComplete, onBack }: CoverStepProps)
 
   const canContinue = selectedIds.length === 2;
 
+  // Subtitle: "bottom title" custom text if dedication enabled, else default
   const subtitle = addOns.dedicationPageEnabled && addOns.dedicationPageText.trim()
     ? addOns.dedicationPageText.trim().toUpperCase()
     : "FOR KIDS AND ADULTS ALIKE";
-
-  const showTopTitle = addOns.titlePageEnabled && topTitle.trim();
-  const showBottomTitle = addOns.titlePageEnabled;
 
   const handleContinue = () => {
     if (canContinue) {
@@ -96,17 +97,7 @@ const CoverStep = ({ availableImages, onCoverComplete, onBack }: CoverStepProps)
                 />
               </div>
 
-              {/* ── Optional cover title above grid ── */}
-              {showTopTitle && (
-                <div className="text-center shrink-0 pb-1 px-[8.75%]">
-                  <p className="text-[1.4vw] font-semibold text-foreground leading-tight truncate">
-                    {topTitle}
-                  </p>
-                </div>
-              )}
-
               {/* ── 2×2 photo grid ── */}
-              {/* margins: 8.75% each side ≈ 70px on 800px canvas */}
               <div
                 className="shrink-0 grid grid-cols-2"
                 style={{ margin: "0 8.75%", gap: 0 }}
@@ -162,62 +153,131 @@ const CoverStep = ({ availableImages, onCoverComplete, onBack }: CoverStepProps)
               </div>
             </div>
           </div>
-
-          {/* Cover Title input – only when Title Page add-on is enabled */}
-          {addOns.titlePageEnabled && (
-            <div className="mt-6">
-              <label className="text-sm font-medium text-foreground">Cover Title (top)</label>
-              <Input
-                value={topTitle}
-                onChange={(e) => setTopTitle(e.target.value)}
-                className="mt-1 rounded-xl"
-                placeholder="e.g. Emma's Coloring Book"
-                maxLength={80}
-              />
-            </div>
-          )}
         </div>
 
-        {/* Image Selection */}
-        <div className="order-1 lg:order-2">
-          <h3 className="font-medium text-foreground mb-2">
-            Select 2 Photos{" "}
-            <span className="text-muted-foreground font-normal">
-              ({selectedIds.length}/2 selected)
-            </span>
-          </h3>
-          <p className="text-sm text-muted-foreground mb-3">
-            Photo 1 → top-left (original) &amp; top-right (drawing)
-            <br />
-            Photo 2 → bottom-right (original) &amp; bottom-left (drawing)
-          </p>
-          <div className="grid grid-cols-3 sm:grid-cols-4 gap-3 max-h-[500px] overflow-y-auto p-1">
-            {availableImages.map((image) => {
-              const isSelected = selectedIds.includes(image.id);
-              const selectionIndex = selectedIds.indexOf(image.id);
-              return (
-                <button
-                  key={image.id}
-                  onClick={() => toggleImage(image.id)}
-                  className={`aspect-square rounded-xl overflow-hidden border-2 transition-all relative ${
-                    isSelected
-                      ? "border-primary shadow-soft ring-2 ring-primary/20"
-                      : "border-transparent hover:border-border"
-                  }`}
-                >
-                  <img
-                    src={image.originalUrl}
-                    alt="Option"
-                    className="w-full h-full object-cover"
-                  />
-                  {isSelected && (
-                    <div className="absolute top-1 right-1 w-6 h-6 rounded-full bg-primary text-primary-foreground flex items-center justify-center text-xs font-bold">
-                      {selectionIndex + 1}
-                    </div>
-                  )}
-                </button>
-              );
-            })}
+        {/* Right column: image selection + add-ons */}
+        <div className="order-1 lg:order-2 space-y-6">
+
+          {/* Image Selection */}
+          <div>
+            <h3 className="font-medium text-foreground mb-1">
+              Select 2 Photos{" "}
+              <span className="text-muted-foreground font-normal">
+                ({selectedIds.length}/2 selected)
+              </span>
+            </h3>
+            <p className="text-sm text-muted-foreground mb-3">
+              Photo 1 → top-left (original) &amp; top-right (drawing)
+              <br />
+              Photo 2 → bottom-right (original) &amp; bottom-left (drawing)
+            </p>
+            <div className="grid grid-cols-3 sm:grid-cols-4 gap-3 max-h-[320px] overflow-y-auto p-1">
+              {availableImages.map((image) => {
+                const isSelected = selectedIds.includes(image.id);
+                const selectionIndex = selectedIds.indexOf(image.id);
+                return (
+                  <button
+                    key={image.id}
+                    onClick={() => toggleImage(image.id)}
+                    className={`aspect-square rounded-xl overflow-hidden border-2 transition-all relative ${
+                      isSelected
+                        ? "border-primary shadow-soft ring-2 ring-primary/20"
+                        : "border-transparent hover:border-border"
+                    }`}
+                  >
+                    <img
+                      src={image.originalUrl}
+                      alt="Option"
+                      className="w-full h-full object-cover"
+                    />
+                    {isSelected && (
+                      <div className="absolute top-1 right-1 w-6 h-6 rounded-full bg-primary text-primary-foreground flex items-center justify-center text-xs font-bold">
+                        {selectionIndex + 1}
+                      </div>
+                    )}
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+
+          {/* Cover Add-ons */}
+          <div className="rounded-3xl border border-border bg-card p-5 space-y-5">
+            <h3 className="font-display text-base font-semibold text-foreground">
+              Cover Options
+            </h3>
+
+            {/* Title Page — "From Pic to Pen" title */}
+            <div className="space-y-3">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <BookOpen className="w-4 h-4 text-primary" />
+                  <Label htmlFor="title-page" className="font-medium cursor-pointer">
+                    Title Page
+                  </Label>
+                  <Badge variant="outline" className="text-xs">
+                    +${addOnPrice.toFixed(2)}
+                  </Badge>
+                </div>
+                <Switch
+                  id="title-page"
+                  checked={addOns.titlePageEnabled}
+                  onCheckedChange={() =>
+                    setAddOns({ ...addOns, titlePageEnabled: !addOns.titlePageEnabled })
+                  }
+                />
+              </div>
+              <p className="text-xs text-muted-foreground">
+                Adds a printed title page inside your book
+              </p>
+              {addOns.titlePageEnabled && (
+                <Input
+                  value={addOns.titlePageText}
+                  onChange={(e) =>
+                    setAddOns({ ...addOns, titlePageText: e.target.value })
+                  }
+                  placeholder="e.g. Emma's Coloring Book"
+                  maxLength={100}
+                  className="rounded-xl"
+                />
+              )}
+            </div>
+
+            {/* Bottom Title upsell */}
+            <div className="space-y-3">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <Heart className="w-4 h-4 text-primary" />
+                  <Label htmlFor="bottom-title" className="font-medium cursor-pointer">
+                    Bottom Title
+                  </Label>
+                  <Badge variant="outline" className="text-xs">
+                    +${addOnPrice.toFixed(2)}
+                  </Badge>
+                </div>
+                <Switch
+                  id="bottom-title"
+                  checked={addOns.dedicationPageEnabled}
+                  onCheckedChange={() =>
+                    setAddOns({ ...addOns, dedicationPageEnabled: !addOns.dedicationPageEnabled })
+                  }
+                />
+              </div>
+              <p className="text-xs text-muted-foreground">
+                Replaces "colour your memories" with your own text on the cover
+              </p>
+              {addOns.dedicationPageEnabled && (
+                <Input
+                  value={addOns.dedicationPageText}
+                  onChange={(e) =>
+                    setAddOns({ ...addOns, dedicationPageText: e.target.value })
+                  }
+                  placeholder="e.g. Colour your world"
+                  maxLength={100}
+                  className="rounded-xl"
+                />
+              )}
+            </div>
           </div>
         </div>
       </div>

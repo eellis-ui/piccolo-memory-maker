@@ -4,7 +4,6 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import BookOptionsPanel from "./BookOptionsPanel";
 import BookPreview from "./BookPreview";
 import DigitalUpsellBanner from "./DigitalUpsellBanner";
 import type { OrderPhoto } from "@/pages/Builder";
@@ -179,9 +178,6 @@ const ApproveStep = ({
           style={{ width: `${(approvedCount / Math.max(photos.length, 1)) * 100}%` }}
         />
       </div>
-
-      {/* Book Options Panel */}
-      <BookOptionsPanel />
 
       {/* Interactive Book Preview (when all approved) */}
       {allApproved && (
