@@ -55,8 +55,10 @@ const Builder = () => {
   const [showingCheckout, setShowingCheckout] = useState(false);
   const [userId, setUserId] = useState<string | null>(null);
 
-  // Auth check + create order records
+  // Auth check + create order records (only runs once on mount)
+  const [initialized, setInitialized] = useState(false);
   useEffect(() => {
+    if (initialized) return;
     const init = async () => {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) {
@@ -82,9 +84,11 @@ const Builder = () => {
         });
       }
       setBooks(newBooks);
+      setInitialized(true);
     };
     init();
-  }, [navigate, bookCount]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const updateBook = (index: number, patch: Partial<BookState>) => {
     setBooks((prev) => prev.map((b, i) => (i === index ? { ...b, ...patch } : b)));
