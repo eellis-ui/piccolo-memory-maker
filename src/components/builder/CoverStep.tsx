@@ -156,7 +156,7 @@ const CoverStep = ({ availableImages, onCoverComplete, onBack }: CoverStepProps)
                   {subtitle}
                 </p>
                 {showBottomTitle && (
-                  <h3 className="text-lg sm:text-xl italic font-semibold text-foreground leading-tight mt-1.5" style={{ fontFamily: titleFont }}>
+                  <h3 className="text-lg sm:text-xl italic font-semibold text-foreground leading-tight mt-1.5" style={{ fontFamily: "Bristol, serif" }}>
                     {addOns.bottomTitle}
                   </h3>
                 )}
