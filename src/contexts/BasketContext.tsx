@@ -18,6 +18,7 @@ export interface BookAddOns {
 
 const ADD_ON_PRICE = 1.99;
 export const DIGITAL_DOWNLOAD_PRICE = 5.99;
+export const UNIQUE_PHOTOS_PRICE = 4.99;
 
 const PRICING_TIERS = [
   { quantity: 1, pricePerBook: 35, originalPricePerBook: 42 },
@@ -38,6 +39,10 @@ interface BasketContextType {
   setAddOns: (addOns: BookAddOns) => void;
   addOnPrice: number;
   addOnsTotal: number;
+  // Unique photos per book upsell
+  uniquePhotos: boolean;
+  setUniquePhotos: (val: boolean) => void;
+  uniquePhotosPrice: number;
 }
 
 const BasketContext = createContext<BasketContextType | undefined>(undefined);
@@ -45,6 +50,7 @@ const BasketContext = createContext<BasketContextType | undefined>(undefined);
 export const BasketProvider = ({ children }: { children: ReactNode }) => {
   const [item, setItem] = useState<BasketItem | null>(null);
   const [digitalCopies, setDigitalCopies] = useState<number>(0);
+  const [uniquePhotos, setUniquePhotos] = useState<boolean>(false);
   const [addOns, setAddOns] = useState<BookAddOns>({
     titlePageEnabled: false,
     titlePageText: "",
@@ -77,6 +83,7 @@ export const BasketProvider = ({ children }: { children: ReactNode }) => {
   const clear = () => {
     setItem(null);
     setDigitalCopies(0);
+    setUniquePhotos(false);
     setAddOns({
       titlePageEnabled: false,
       titlePageText: "",
@@ -95,6 +102,8 @@ export const BasketProvider = ({ children }: { children: ReactNode }) => {
         addOns, setAddOns,
         addOnPrice: ADD_ON_PRICE,
         addOnsTotal,
+        uniquePhotos, setUniquePhotos,
+        uniquePhotosPrice: uniquePhotos ? UNIQUE_PHOTOS_PRICE : 0,
       }}
     >
       {children}
