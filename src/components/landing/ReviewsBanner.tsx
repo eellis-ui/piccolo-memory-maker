@@ -1,32 +1,29 @@
-import { Star } from "lucide-react";
+import { Pencil } from "lucide-react";
 
-const reviews = [
-  { name: "Sarah M.", text: "My daughter absolutely loved it! The best birthday gift ever." },
-  { name: "James R.", text: "Incredible quality — the line art looks amazing." },
-  { name: "Emily T.", text: "So easy to make. Ordered 3 for my kids and they can't stop coloring!" },
-  { name: "David K.", text: "A truly unique gift. Everyone at the party wanted one." },
-  { name: "Laura P.", text: "Beautiful paper quality and the cover turned out perfect." },
-  { name: "Mike W.", text: "Bought one for my wife's birthday — she cried happy tears!" },
-  { name: "Jessica H.", text: "Fast delivery and stunning results. Will order again." },
-  { name: "Chris B.", text: "Turned our vacation photos into the coolest coloring book." },
+const items = [
+  { type: "quote" as const, text: "Love it SOO much", name: "Ellie, UK" },
+  { type: "promo" as const, text: "Buy Three, Save 40%!" },
+  { type: "quote" as const, text: "Mums Birthday is complete!", name: "Georgie, USA" },
+  { type: "quote" as const, text: "Really enjoyed colouring my London Marathon run!", name: "Ewan, UK" },
+  { type: "promo" as const, text: "Buy Three, Save 40%!" },
+  { type: "quote" as const, text: "Exactly what I didn't know I needed", name: "Matilda, UK" },
 ];
 
 const ReviewsBanner = () => {
   return (
     <div className="bg-foreground text-cream overflow-hidden py-2.5">
       <div className="flex animate-[scroll_30s_linear_infinite] w-max">
-        {[...reviews, ...reviews].map((review, i) => (
-          <div key={i} className="flex items-center gap-2 px-6 whitespace-nowrap">
-            <div className="flex gap-0.5">
-              {Array.from({ length: 5 }).map((_, j) => (
-                <Star key={j} className="w-3 h-3 fill-current text-yellow-400" />
-              ))}
-            </div>
-            <span className="text-xs font-sans">
-              "{review.text}"
-            </span>
-            <span className="text-cream/50">— {review.name}</span>
-            <span className="text-cream/20 mx-4">•</span>
+        {[...items, ...items].map((item, i) => (
+          <div key={i} className="flex items-center gap-3 px-6 whitespace-nowrap">
+            <Pencil className="w-3 h-3 text-cream/40 shrink-0" />
+            {item.type === "quote" ? (
+              <>
+                <span className="text-xs font-sans">"{item.text}"</span>
+                <span className="text-cream/50 text-xs">— {item.name}</span>
+              </>
+            ) : (
+              <span className="text-xs font-sans font-bold">{item.text}</span>
+            )}
           </div>
         ))}
       </div>
