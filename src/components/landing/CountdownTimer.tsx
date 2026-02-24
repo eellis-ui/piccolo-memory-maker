@@ -22,7 +22,7 @@ const CountdownTimer = () => {
   }, []);
 
   return (
-    <div className="w-full bg-foreground text-background rounded-xl px-4 py-3 flex items-center justify-center gap-2 text-sm font-medium">
+    <div className="w-full bg-foreground text-background rounded-lg px-4 py-3 flex items-center justify-center gap-2 text-sm font-medium">
       <span>⏰</span>
       <span>
         Hurry! Offer expires in{" "}

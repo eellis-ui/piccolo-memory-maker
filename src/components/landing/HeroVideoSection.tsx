@@ -22,7 +22,7 @@ const HeroVideoSection = () => {
 
         {/* Main video area */}
         <div className="max-w-4xl mx-auto">
-          <div className="relative aspect-video rounded-3xl overflow-hidden bg-foreground/5 border border-border shadow-soft-lg">
+          <div className="relative aspect-video rounded-lg overflow-hidden bg-foreground/5 border border-border shadow-soft-lg">
             {/* Placeholder – replace src with your actual video URL */}
             <video
               className="w-full h-full object-cover"

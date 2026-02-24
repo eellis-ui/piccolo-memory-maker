@@ -44,7 +44,7 @@ const GallerySection = () => {
             <button
               key={item.id}
               onClick={() => setLightbox(item)}
-              className="relative aspect-square rounded-2xl overflow-hidden bg-foreground/5 border border-border group focus:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+              className="relative aspect-square rounded-lg overflow-hidden bg-foreground/5 border border-border group focus:outline-none focus-visible:ring-2 focus-visible:ring-ring"
             >
               <img
                 src={item.type === "video" ? item.poster ?? "/placeholder.svg" : item.src}
@@ -78,7 +78,7 @@ const GallerySection = () => {
           </button>
 
           <div
-            className="max-w-4xl w-full max-h-[85vh] rounded-2xl overflow-hidden"
+            className="max-w-4xl w-full max-h-[85vh] rounded-lg overflow-hidden"
             onClick={(e) => e.stopPropagation()}
           >
             {lightbox.type === "image" ? (

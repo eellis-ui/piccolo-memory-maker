@@ -18,7 +18,7 @@ const CTASection = () => {
             in just a few minutes. It's the perfect gift for any occasion.
           </p>
           
-          <Button asChild size="lg" className="rounded-2xl px-8 py-6 text-lg shadow-soft-lg">
+          <Button asChild size="lg" className="rounded-lg px-8 py-6 text-lg shadow-soft-lg">
             <Link to="/pricing">
               Start Creating Now
               <ArrowRight className="ml-2 h-5 w-5" />

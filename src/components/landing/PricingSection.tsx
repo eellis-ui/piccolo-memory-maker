@@ -140,7 +140,7 @@ const PricingSection = () => {
                   <button
                     key={tier.quantity}
                     onClick={() => setSelectedQuantity(tier.quantity)}
-                    className={`w-full relative flex items-center gap-4 p-4 rounded-2xl border-2 transition-all text-left ${
+                    className={`w-full relative flex items-center gap-4 p-4 rounded-lg border-2 transition-all text-left ${
                       isSelected
                         ? "border-primary bg-primary/5 shadow-sm"
                         : "border-border bg-background hover:border-muted-foreground/30"
@@ -187,7 +187,7 @@ const PricingSection = () => {
 
             {/* Unique photos upsell */}
             {selectedQuantity > 1 && (
-              <label className="flex items-start gap-3 p-4 rounded-2xl border border-border bg-background mb-5 cursor-pointer">
+              <label className="flex items-start gap-3 p-4 rounded-lg border border-border bg-background mb-5 cursor-pointer">
                 <Checkbox
                   checked={uniquePhotos}
                   onCheckedChange={(checked) => setUniquePhotos(!!checked)}
@@ -206,7 +206,7 @@ const PricingSection = () => {
             )}
 
             {/* Add to basket */}
-            <Button onClick={handleAddToBasket} className="w-full rounded-2xl py-6 text-base font-semibold mb-5" size="lg">
+            <Button onClick={handleAddToBasket} className="w-full rounded-lg py-6 text-base font-semibold mb-5" size="lg">
               <ShoppingCart className="w-5 h-5 mr-2" />
               Start Creating — ${totalPrice.toFixed(2)}
             </Button>
@@ -217,7 +217,7 @@ const PricingSection = () => {
             </div>
 
             {/* Process note */}
-            <div className="bg-primary/10 border border-primary/20 rounded-xl p-4 mb-10">
+            <div className="bg-primary/10 border border-primary/20 rounded-lg p-4 mb-10">
               <p className="text-sm text-foreground leading-relaxed">
                 <strong>Next step:</strong> Upload your photos, preview each line-art conversion, customize your cover, and checkout — all in our easy builder.
               </p>

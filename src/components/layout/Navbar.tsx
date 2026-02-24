@@ -52,7 +52,7 @@ const Navbar = () => {
     <div className="flex flex-col h-full">
       <div className="flex-1 overflow-y-auto space-y-4 py-4">
         {/* Next steps banner */}
-        <div className="bg-foreground text-background rounded-xl p-4 text-xs leading-relaxed">
+        <div className="bg-foreground text-background rounded-lg p-4 text-xs leading-relaxed">
           <div className="flex gap-2">
             <Sparkles className="w-4 h-4 flex-shrink-0 mt-0.5" />
             <p>
@@ -81,7 +81,7 @@ const Navbar = () => {
 
         {/* Main item card */}
         {item && (
-          <div className="rounded-xl border border-border bg-background p-3 space-y-3">
+          <div className="rounded-lg border border-border bg-background p-3 space-y-3">
             <div className="flex gap-3">
               <img
                 src="/lovable-uploads/d741aeb9-21af-45e1-9863-e350da643d42.png"
@@ -137,7 +137,7 @@ const Navbar = () => {
         )}
 
         {/* Digital copies upsell */}
-        <div className="rounded-xl border border-border bg-background p-3 space-y-2">
+        <div className="rounded-lg border border-border bg-background p-3 space-y-2">
           <div className="flex gap-3">
             <img
               src="/lovable-uploads/d741aeb9-21af-45e1-9863-e350da643d42.png"
@@ -168,7 +168,7 @@ const Navbar = () => {
 
         {/* Unique photos upsell */}
         {uniquePhotos && (
-          <div className="space-y-3 p-3 rounded-xl border border-border bg-background">
+          <div className="space-y-3 p-3 rounded-lg border border-border bg-background">
             <div className="flex items-center justify-between">
               <span className="font-semibold text-foreground text-sm">Unique Photos Per Book</span>
               <button onClick={() => setUniquePhotos(false)} className="text-muted-foreground hover:text-destructive transition-colors">
@@ -183,7 +183,7 @@ const Navbar = () => {
         )}
 
         {addOns.dedicationPageEnabled && (
-          <div className="space-y-3 p-3 rounded-xl border border-border bg-background">
+          <div className="space-y-3 p-3 rounded-lg border border-border bg-background">
             <div className="flex items-center justify-between">
               <span className="font-semibold text-foreground text-sm">Personalized Cover</span>
             </div>
@@ -213,7 +213,7 @@ const Navbar = () => {
 
           <Separator />
 
-          <Button asChild className="w-full rounded-xl py-5 text-base font-semibold" size="lg">
+          <Button asChild className="w-full rounded-lg py-5 text-base font-semibold" size="lg">
             <Link to={activeSessionId ? `/builder?sessionId=${activeSessionId}` : "/builder"}>
               Checkout · ${grandTotal.toFixed(2)}
             </Link>
@@ -238,7 +238,7 @@ const Navbar = () => {
   const CartButton = () => (
     <Sheet>
       <SheetTrigger asChild>
-        <button className="relative p-2 hover:bg-muted rounded-xl transition-colors">
+        <button className="relative p-2 hover:bg-muted rounded-lg transition-colors">
           <ShoppingCart className="w-5 h-5 text-foreground" />
           {hasItems && (
             <Badge className="absolute -top-1 -right-1 h-5 w-5 p-0 flex items-center justify-center text-[10px] bg-primary text-primary-foreground rounded-full">
@@ -357,7 +357,7 @@ const Navbar = () => {
                   My Orders
                 </Link>
               )}
-              <Button asChild className="rounded-2xl mx-2">
+              <Button asChild className="rounded-lg mx-2">
                 <Link to="/builder" onClick={() => setIsMenuOpen(false)}>
                   Start Creating
                 </Link>
