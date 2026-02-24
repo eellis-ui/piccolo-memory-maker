@@ -80,7 +80,7 @@ const WhyPiccoloSection = () => {
           {/* Right column - image */}
           <div className="relative">
             <img
-              src="/images/before-family.jpg"
+              src="/images/why-piccolo-family.webp"
               alt="A happy family laughing together"
               className="w-full rounded-lg object-cover aspect-[4/5]"
               loading="lazy"
