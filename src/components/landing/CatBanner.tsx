@@ -1,7 +1,7 @@
 const CatBanner = () => {
   return (
     <section className="relative w-full">
-      <div className="relative w-full h-[50vh] md:h-[70vh] overflow-hidden">
+      <div className="relative w-full h-[30vh] md:h-[45vh] overflow-hidden">
         <img
           src="/images/banner-cat.png"
           alt="Woman photographing a cat, with the photo converted to a coloring page line art"
