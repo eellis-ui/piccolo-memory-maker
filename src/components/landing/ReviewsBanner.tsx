@@ -11,18 +11,18 @@ const items = [
 
 const ReviewsBanner = () => {
   return (
-    <div className="bg-foreground text-cream overflow-hidden py-2.5">
-      <div className="flex animate-[scroll_30s_linear_infinite] w-max">
+    <div className="bg-foreground overflow-hidden py-3">
+      <div className="flex animate-[scroll_40s_linear_infinite] w-max">
         {[...items, ...items].map((item, i) => (
-          <div key={i} className="flex items-center gap-3 px-6 whitespace-nowrap">
-            <Pencil className="w-3 h-3 text-cream/40 shrink-0" />
+          <div key={i} className="flex items-center gap-3.5 px-7 whitespace-nowrap">
+            <Pencil className="w-3.5 h-3.5 text-white/40 shrink-0" />
             {item.type === "quote" ? (
               <>
-                <span className="text-xs font-sans">"{item.text}"</span>
-                <span className="text-cream/50 text-xs">— {item.name}</span>
+                <span className="text-sm font-sans text-white">"{item.text}"</span>
+                <span className="text-white/50 text-sm">— {item.name}</span>
               </>
             ) : (
-              <span className="text-xs font-sans font-bold">{item.text}</span>
+              <span className="text-sm font-sans font-bold text-white">{item.text}</span>
             )}
           </div>
         ))}
