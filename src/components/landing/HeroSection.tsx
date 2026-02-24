@@ -51,7 +51,7 @@ const HeroSection = () => {
           </div>
 
           {/* Right column - 3x3 image grid */}
-          <div className="grid grid-cols-3 gap-[3px] bg-background rounded-xl overflow-hidden">
+          <div className="grid grid-cols-3 gap-[6px] bg-background rounded-xl overflow-hidden">
             {gridImages.map((img, i) => (
               <div key={i} className="aspect-[10/8] overflow-hidden">
                 <img
