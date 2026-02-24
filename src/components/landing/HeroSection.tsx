@@ -43,7 +43,7 @@ const HeroSection = () => {
             </p>
 
             {/* CTA */}
-            <Button asChild size="lg" className="rounded-lg px-8 py-6 text-base font-semibold">
+            <Button asChild size="lg" className="rounded-lg px-8 py-6 text-base font-semibold bg-foreground text-background hover:bg-foreground/90">
               <Link to="/pricing">
                 Create My Book
               </Link>
