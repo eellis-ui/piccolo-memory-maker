@@ -79,7 +79,7 @@ const HappyCustomersSection = () => {
           {visibleReviews.map((review, i) => (
             <div
               key={startIndex + i}
-              className="border border-border rounded-lg p-6 bg-card flex flex-col"
+              className="border border-border rounded-lg p-6 bg-cream flex flex-col"
             >
               {/* Top row: name + stars */}
               <div className="flex items-start justify-between mb-3">
