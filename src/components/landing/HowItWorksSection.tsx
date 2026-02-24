@@ -5,7 +5,7 @@ const steps = [
   {
     icon: Upload,
     title: "Upload Photos",
-    description: "Select your favourite memories. Drag and drop up to 20 photos to include in your book.",
+    description: "Pick your favourite photos — family moments, holidays, pets, anything you love.",
   },
   {
     icon: Sparkles,
