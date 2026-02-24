@@ -7,7 +7,7 @@ import HeroVideoSection from "@/components/landing/HeroVideoSection";
 import LifestyleBanner from "@/components/landing/LifestyleBanner";
 import BeforeAfterSection from "@/components/landing/BeforeAfterSection";
 import HowItWorksSection from "@/components/landing/HowItWorksSection";
-import GallerySection from "@/components/landing/GallerySection";
+
 import PricingSection from "@/components/landing/PricingSection";
 import StorySection from "@/components/landing/StorySection";
 import CTASection from "@/components/landing/CTASection";
@@ -25,7 +25,7 @@ const Index = () => {
         <BeforeAfterSection />
         <LifestyleBanner />
         <HowItWorksSection />
-        <GallerySection />
+        
         <PricingSection />
         <StorySection />
         <CTASection />
