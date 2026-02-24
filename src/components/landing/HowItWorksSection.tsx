@@ -54,7 +54,9 @@ const HowItWorksSection = () => {
                 </span>
                 
                 {/* Icon */}
-                <step.icon className="w-8 h-8 text-primary mb-6" />
+                <div className="inline-flex items-center justify-center w-16 h-16 mb-6">
+                  <step.icon className="w-8 h-8 text-primary" />
+                </div>
                 
                 <h3 className="font-display text-xl font-semibold text-foreground mb-3">
                   {step.title}
