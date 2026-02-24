@@ -32,6 +32,18 @@ const reviews = [
     text: "Got this for our 5th anniversary with photos from our relationship. My wife was blown away by the detail in each drawing. We've been colouring them in together on date nights!",
     stars: 5,
   },
+  {
+    name: "Ewan",
+    title: "The best gift ever",
+    text: "I bought this as an anniversary present and it was perfect. We spent the evening colouring our memories together. So unique compared to flowers or chocolates.",
+    stars: 5,
+  },
+  {
+    name: "Tom",
+    title: "Quality!",
+    text: "I wasn't sure what to expect, but the quality blew me away. Thick paper, clear drawings, and the photos are transformed beautifully. Definitely ordering again for Christmas gifts.",
+    stars: 5,
+  },
 ];
 
 const HappyCustomersSection = () => {
