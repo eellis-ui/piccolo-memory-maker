@@ -79,19 +79,19 @@ const HappyCustomersSection = () => {
           {visibleReviews.map((review, i) => (
             <div
               key={startIndex + i}
-              className="border border-border rounded-lg p-6 bg-cream flex flex-col"
+              className="border border-border rounded-lg p-6 bg-cream flex flex-col aspect-[5/2.5]"
             >
               {/* Top row: name + stars */}
-              <div className="flex items-start justify-between mb-3">
+              <div className="flex items-start justify-between mb-2">
                 <div>
-                  <p className="font-semibold text-foreground text-sm">
+                  <p className="font-medium text-foreground text-xs">
                     {review.name}
                   </p>
                   <div className="flex items-center gap-0.5 mt-1">
                     {Array.from({ length: review.stars }).map((_, s) => (
                       <Star
                         key={s}
-                        className="w-4 h-4 fill-amber-400 text-amber-400"
+                        className="w-3.5 h-3.5 fill-foreground text-foreground"
                       />
                     ))}
                   </div>
@@ -104,7 +104,7 @@ const HappyCustomersSection = () => {
               </h3>
 
               {/* Review text */}
-              <p className="text-sm text-muted-foreground leading-relaxed">
+              <p className="text-xs text-muted-foreground leading-relaxed">
                 {review.text}
               </p>
             </div>
