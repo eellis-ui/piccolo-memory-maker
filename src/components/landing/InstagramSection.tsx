@@ -11,7 +11,7 @@ const instagramImages = [
   "/images/hero-grid-7.jpg",
 ];
 
-const INSTAGRAM_URL = "https://www.instagram.com/officialpiccload";
+const INSTAGRAM_URL = "https://www.instagram.com/officialpiccoload/";
 
 const InstagramSection = () => {
   const [startIndex, setStartIndex] = useState(0);
@@ -35,7 +35,7 @@ const InstagramSection = () => {
         <h2 className="font-display text-3xl sm:text-4xl lg:text-5xl font-semibold text-foreground uppercase mb-4">
           Follow Us Instagram
         </h2>
-        <p className="text-muted-foreground text-base sm:text-lg max-w-2xl mx-auto">
+        <p className="text-muted-foreground text-sm sm:text-base max-w-2xl mx-auto">
           We love to see you using your Piccoload book! Please tag us on instagram{" "}
           <a
             href={INSTAGRAM_URL}
@@ -43,7 +43,7 @@ const InstagramSection = () => {
             rel="noopener noreferrer"
             className="underline text-foreground font-medium hover:text-primary transition-colors"
           >
-            @officialpiccload
+            @officialpiccoload
           </a>{" "}
           for a chance to be featured!
         </p>
