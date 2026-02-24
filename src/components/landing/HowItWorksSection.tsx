@@ -10,7 +10,7 @@ const steps = [
   {
     icon: Sparkles,
     title: "Magic Conversion",
-    description: "Our AI transforms each photo into a beautiful, high-quality line drawing ready for coloring.",
+    description: "We transform each photo into a beautiful, high-quality line drawing, ready for coloring!",
   },
   {
     icon: BookOpen,
