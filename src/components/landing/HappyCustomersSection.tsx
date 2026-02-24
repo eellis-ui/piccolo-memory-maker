@@ -28,7 +28,7 @@ const reviews = [
     title: "The best gift ever",
     text: "I bought this as an anniversary present and it was perfect. We spent the evening colouring our memories together. So unique compared to flowers or chocolates.",
     stars: 5,
-    avatar: "",
+    avatar: "/images/review-ewan.png",
   },
   {
     name: "Tom",
