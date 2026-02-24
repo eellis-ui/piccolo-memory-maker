@@ -17,6 +17,7 @@ const Index = () => {
       <Navbar />
       <main className="pt-16">
         <HeroSection />
+        <ReviewsBanner />
         <HeroVideoSection />
         <BeforeAfterSection />
         <HowItWorksSection />
