@@ -22,10 +22,10 @@ const Index = () => {
         <HappyCustomersSection />
         <HeroVideoSection />
         <BeforeAfterSection />
+        <CatBanner />
         <LifestyleBanner />
         <HowItWorksSection />
         <WhyPiccoloSection />
-        <CatBanner />
         <CTASection />
       </main>
       <Footer />
