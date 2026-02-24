@@ -7,42 +7,49 @@ const reviews = [
     title: "Love it so much",
     text: "Absolutely love this gift idea, it makes colouring so much more personal and fun!! My sister had her first baby so I got her one – she loved how it turned out. Such a cute surprise.",
     stars: 5,
+    avatar: "",
   },
   {
     name: "Matilda",
     title: "Exactly what I didn't know I needed.",
     text: "My boyfriend bought this for me during a rough patch. It was so comforting. It's like a little visual journal of joy, and colouring each page was really grounding. A treat well received 🥹",
     stars: 5,
+    avatar: "",
   },
   {
     name: "Georgie",
     title: "Most thoughtful gift ever",
     text: "I ordered a Piccolo'd book for my mum's birthday with all her favourite family photos. She cried happy tears when she saw the line drawings. The most thoughtful gift I've ever given.",
     stars: 5,
+    avatar: "",
   },
   {
     name: "Sophie",
     title: "Perfect for my daughter",
     text: "My 6 year old loves colouring in pictures of our family holidays. It's become our Sunday morning ritual – she colours while I have my coffee. Such a lovely keepsake to treasure.",
     stars: 5,
+    avatar: "",
   },
   {
     name: "James",
     title: "Brilliant anniversary gift",
     text: "Got this for our 5th anniversary with photos from our relationship. My wife was blown away by the detail in each drawing. We've been colouring them in together on date nights!",
     stars: 5,
+    avatar: "",
   },
   {
     name: "Ewan",
     title: "The best gift ever",
     text: "I bought this as an anniversary present and it was perfect. We spent the evening colouring our memories together. So unique compared to flowers or chocolates. Highly recommend!",
     stars: 5,
+    avatar: "",
   },
   {
     name: "Tom",
     title: "Quality!",
     text: "I wasn't sure what to expect, but the quality blew me away. Thick paper, clear drawings, and the photos are transformed beautifully. Definitely ordering again for Christmas gifts.",
     stars: 5,
+    avatar: "",
   },
 ];
 
@@ -93,7 +100,7 @@ const HappyCustomersSection = () => {
               key={startIndex + i}
               className="border border-border rounded-lg p-6 bg-cream flex flex-col aspect-[5/2.5]"
             >
-              {/* Top row: name + stars */}
+              {/* Top row: name + stars + avatar */}
               <div className="flex items-start justify-between mb-2">
                 <div>
                   <p className="font-medium text-foreground text-xs">
@@ -107,6 +114,13 @@ const HappyCustomersSection = () => {
                       />
                     ))}
                   </div>
+                </div>
+                <div className="w-14 h-14 rounded-lg bg-muted flex items-center justify-center text-muted-foreground font-semibold text-sm flex-shrink-0 overflow-hidden">
+                  {review.avatar ? (
+                    <img src={review.avatar} alt={review.name} className="w-full h-full object-cover" />
+                  ) : (
+                    review.name.charAt(0)
+                  )}
                 </div>
               </div>
 
