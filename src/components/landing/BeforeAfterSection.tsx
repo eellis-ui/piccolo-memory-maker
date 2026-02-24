@@ -13,8 +13,8 @@ const comparisons: ComparisonItem[] = [
   {
     id: "1",
     label: "Family Portrait",
-    beforeSrc: "/placeholder.svg",
-    afterSrc: "/placeholder.svg",
+    beforeSrc: "/images/before-family.jpg",
+    afterSrc: "/images/after-family.jpg",
   },
   {
     id: "2",
