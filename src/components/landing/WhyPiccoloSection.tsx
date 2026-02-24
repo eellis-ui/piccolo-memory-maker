@@ -12,7 +12,7 @@ const items = [
     number: "02",
     title: "Custom-Made for Every Order",
     description:
-      "No two books are the same. Every coloring book is uniquely created from your personal photos, making it a truly one-of-a-kind keepsake.",
+      "No templates. No repeats. Each book is made from your own photos, creating a completely unique keepsake.",
   },
   {
     number: "03",
