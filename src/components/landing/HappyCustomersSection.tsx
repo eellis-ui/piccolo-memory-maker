@@ -7,7 +7,7 @@ const reviews = [
     title: "Love it so much",
     text: "Absolutely love this gift idea, it makes colouring so much more personal and fun!! My sister had her first baby so i got her one after her daughter turned 1 and she loved how this turned out - was such a cute surprise",
     stars: 5,
-    avatar: "",
+    avatar: "/images/review-ellie.png",
   },
   {
     name: "Matilda",
