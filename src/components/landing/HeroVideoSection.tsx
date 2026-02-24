@@ -6,7 +6,7 @@ const HeroVideoSection = () => {
           {/* Left – Lifestyle image */}
           <div className="rounded-lg overflow-hidden aspect-[4/5]">
             <img
-              src="/images/lifestyle-book-table.jpg"
+              src="/images/lifestyle-book-table.jpg?v=2"
               alt="Piccoload coloring book on a coffee table in a cozy living room"
               className="w-full h-full object-cover"
               loading="lazy"
