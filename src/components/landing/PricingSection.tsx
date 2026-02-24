@@ -11,6 +11,7 @@ import ProductImageGallery from "./ProductImageGallery";
 import CountdownTimer from "./CountdownTimer";
 import CustomerTestimonials from "./CustomerTestimonials";
 import TrustBadges from "./TrustBadges";
+import CustomerReviewsSection from "./CustomerReviewsSection";
 
 const physicalPricing = [
   {
@@ -243,6 +244,9 @@ const PricingSection = () => {
 
             {/* Testimonials */}
             <CustomerTestimonials />
+
+            {/* Customer Reviews */}
+            <CustomerReviewsSection />
           </div>
         </div>
       </div>
