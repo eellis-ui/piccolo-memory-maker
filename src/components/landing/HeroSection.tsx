@@ -22,7 +22,7 @@ const HeroSection = () => {
           {/* Left column */}
           <div className="space-y-8">
             {/* Review badge */}
-            <div className="inline-flex items-center gap-2.5 bg-foreground text-background rounded-full px-4 py-2.5">
+            <div className="inline-flex items-center gap-2.5 bg-foreground text-background rounded-lg px-4 py-2.5">
               <Award className="w-5 h-5 text-amber-400" />
               <div className="text-left">
                 <p className="text-[10px] font-semibold leading-none text-amber-400">Rated 5 star</p>
