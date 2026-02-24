@@ -9,7 +9,7 @@ import BeforeAfterSection from "@/components/landing/BeforeAfterSection";
 import HowItWorksSection from "@/components/landing/HowItWorksSection";
 import WhyPiccoloSection from "@/components/landing/WhyPiccoloSection";
 
-import PricingSection from "@/components/landing/PricingSection";
+
 import StorySection from "@/components/landing/StorySection";
 import CTASection from "@/components/landing/CTASection";
 
@@ -28,7 +28,7 @@ const Index = () => {
         <HowItWorksSection />
         <WhyPiccoloSection />
         
-        <PricingSection />
+        
         <StorySection />
         <CTASection />
       </main>
