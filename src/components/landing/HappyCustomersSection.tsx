@@ -99,7 +99,7 @@ const HappyCustomersSection = () => {
               </div>
 
               {/* Review title */}
-              <h3 className="font-semibold text-foreground text-base mb-2">
+              <h3 className="font-sans font-bold text-foreground text-base mb-2">
                 {review.title}
               </h3>
 
