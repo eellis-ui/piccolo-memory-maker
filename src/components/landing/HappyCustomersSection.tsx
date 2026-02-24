@@ -35,7 +35,7 @@ const reviews = [
     title: "Quality!",
     text: "I wasn't sure what to expect, but the quality blew me away. Thick paper, clear drawings, and the photos are transformed beautifully. Definitely ordering again for Christmas gifts.",
     stars: 5,
-    avatar: "",
+    avatar: "/images/review-tom.png",
   },
 ];
 
