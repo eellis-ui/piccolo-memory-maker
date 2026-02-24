@@ -1,69 +1,29 @@
 
-# Redesigned Book Preview
 
-## Problem
-The current book preview is basic -- small spread view with tiny thumbnails, no cover page shown, and limited interactivity. Users can't visualize their finished book properly.
+## Scrolling Quote Banners (matching piccoload.com)
 
-## Solution
-Replace the current BookPreview with a polished, single-page-at-a-time flipbook experience that includes the cover as the first page and allows drag-to-reorder in a filmstrip below.
+Update the existing `ReviewsBanner` component and add a second instance to match the piccoload.com homepage layout.
 
-## What Changes
+### What changes
 
-### 1. Redesigned BookPreview Component
-- **Cover as Page 1**: The first "page" in the preview shows the actual cover design (logo, photos, title, dedication/subtitle) matching what CoverStep renders.
-- **Single-page view**: Instead of a two-page spread, show one page at a time at a larger size so users can clearly see each line art drawing.
-- **Page counter**: "Page 1 of 14" with previous/next navigation arrows.
-- **Smooth transitions**: CSS transition when flipping between pages.
-- **Current page highlight**: The active thumbnail in the filmstrip is highlighted with a ring.
+**1. Update `ReviewsBanner.tsx`**
+- Replace the current review quotes with the exact ones from piccoload.com:
+  - "Love it SOO much" - Ellie, UK
+  - "Mums Birthday is complete!" - Georgie, USA
+  - "Really enjoyed colouring my London Marathon run!" - Ewan, UK
+  - "Exactly what I didn't know I needed" - Matilda, UK
+- Mix in a promotional message: "Buy Three, Save 40%!"
+- Replace the star icons with a small sketchbook/pencil icon separator (matching the piccoload.com style)
+- Keep the same dark background with light text, continuous scrolling animation
 
-### 2. Improved Filmstrip (Reorder Strip)
-- Larger thumbnails (wider, taller) with clear page numbers.
-- The cover thumbnail is shown first but is NOT draggable (fixed position).
-- All other thumbnails remain drag-to-reorder using the existing dnd-kit setup.
-- Scroll indicator when thumbnails overflow horizontally.
-- Active page thumbnail gets a coloured border/ring so users know where they are.
+**2. Add a second scrolling banner below the hero section**
+- The piccoload.com site has a second identical banner that appears below the hero/gallery area
+- Add `ReviewsBanner` a second time in `Index.tsx`, placed after the hero section
 
-### 3. Integration with Add-ons
-- The BookPreview component receives `addOns` data from BasketContext so it can render the cover preview inline.
-- It also receives the cover's selected photo data (passed down from ApproveStep or parent).
+**3. No animation changes needed**
+- The existing `@keyframes scroll` in `index.css` already handles the infinite horizontal scroll -- it will be reused as-is
 
-### 4. Show Preview Earlier
-- Currently the BookPreview only appears when ALL photos are approved. This stays the same but the experience inside is much better.
+### Technical details
 
-## Technical Details
-
-### Files Modified
-
-**`src/components/builder/BookPreview.tsx`** -- Full rewrite:
-- Accept new props: `coverTitle`, `coverSubtitle`, `coverPhotos` (the 2 selected cover images), `addOns` from basket context.
-- Page 0 = Cover preview (rendered inline with logo, photos grid, title text, subtitle).
-- Pages 1-N = The line art pages from `photos` array.
-- Single large page view with aspect-ratio 3:4.
-- Filmstrip below with dnd-kit sortable thumbnails (cover thumbnail locked, others draggable).
-- Clicking a thumbnail jumps to that page.
-
-**`src/components/builder/ApproveStep.tsx`** -- Minor updates:
-- Pass additional cover-related props to BookPreview (or have BookPreview pull from BasketContext directly).
-- Since cover photos aren't selected yet at the approve step, show a placeholder cover page using the logo and current add-on text.
-
-### UI Layout
-
-```text
-+------------------------------------------+
-|          [<]  Page 3 of 12  [>]           |
-|                                           |
-|  +------------------------------------+  |
-|  |                                    |  |
-|  |        (Large page view)           |  |
-|  |     Shows converted line art       |  |
-|  |     or cover on page 1             |  |
-|  |                                    |  |
-|  +------------------------------------+  |
-|                                           |
-|  [Cover] [1] [2] [3] [4] [5] [6] ...     |
-|  ^filmstrip - drag to reorder^            |
-+------------------------------------------+
-```
-
-### No database changes needed
-All data is already available from existing state and BasketContext.
+- **File: `src/components/landing/ReviewsBanner.tsx`** -- Update the quotes array, replace star separators with a small icon, and match the text-only style (quote + name/location, no stars)
+- **File: `src/pages/Index.tsx`** -- Add a second `<ReviewsBanner />` after `<HeroSection />`
