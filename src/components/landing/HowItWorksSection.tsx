@@ -36,35 +36,48 @@ const HowItWorksSection = () => {
           </p>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-0">
           {steps.map((step, index) => (
             <div
               key={step.title}
-              className="relative group"
+              className="text-center"
             >
-              {/* Connector line */}
-              {index < steps.length - 1 && (
-                <div className="hidden lg:block absolute top-12 left-[60%] w-[70%] border-t-2 border-dashed border-border" />
-              )}
-              
-              <div className="text-center">
+              {/* Number + Icon row with connector lines */}
+              <div className="flex items-center justify-center mb-6">
+                {/* Line from previous icon to this number */}
+                {index > 0 ? (
+                  <div className="hidden lg:block flex-1 h-0.5 bg-border" />
+                ) : (
+                  <div className="hidden lg:block flex-1" />
+                )}
+                
                 {/* Step number */}
-                <span className="inline-flex items-center justify-center w-8 h-8 rounded-full bg-primary text-primary-foreground text-sm font-semibold mb-4">
+                <span className="inline-flex items-center justify-center w-8 h-8 rounded-full bg-primary text-primary-foreground text-sm font-semibold shrink-0">
                   {index + 1}
                 </span>
                 
+                {/* Line from number to icon */}
+                <div className="hidden lg:block w-4 h-0.5 bg-border" />
+                
                 {/* Icon */}
-                <div className="inline-flex items-center justify-center w-16 h-16 mb-6">
+                <div className="inline-flex items-center justify-center w-10 h-10 shrink-0">
                   <step.icon className="w-8 h-8 text-primary" />
                 </div>
                 
-                <h3 className="font-display text-xl font-semibold text-foreground mb-3">
-                  {step.title}
-                </h3>
-                <p className="text-muted-foreground text-sm">
-                  {step.description}
-                </p>
+                {/* Line from icon to next number */}
+                {index < steps.length - 1 ? (
+                  <div className="hidden lg:block flex-1 h-0.5 bg-border" />
+                ) : (
+                  <div className="hidden lg:block flex-1" />
+                )}
               </div>
+              
+              <h3 className="font-display text-xl font-semibold text-foreground mb-3">
+                {step.title}
+              </h3>
+              <p className="text-muted-foreground text-sm">
+                {step.description}
+              </p>
             </div>
           ))}
         </div>
