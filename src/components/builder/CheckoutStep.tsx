@@ -1,10 +1,12 @@
-import { Check, ShoppingCart, Lock, Minus, Plus, Download, X } from "lucide-react";
+import { useState } from "react";
+import { Check, ShoppingCart, Lock, Minus, Plus, Download, X, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { Switch } from "@/components/ui/switch";
 import { useBasket, DIGITAL_DOWNLOAD_PRICE } from "@/contexts/BasketContext";
+import { createShopifyCheckout, SHOPIFY_VARIANTS, type CartLineInput } from "@/lib/shopify";
 
 interface BookDigitalDownload {
   bookIndex: number;
@@ -29,6 +31,7 @@ interface CheckoutStepProps {
 
 const CheckoutStep = ({ pageCount, extraPages, convertedUrls, onBack, bookDigitalDownloads, onToggleBookDigitalDownload, bookAddOnsList }: CheckoutStepProps) => {
   const { item, setQuantity, pricingTiers, addOnPrice, uniquePhotos, uniquePhotosPrice } = useBasket();
+  const [isCheckingOut, setIsCheckingOut] = useState(false);
 
   const bookCount = item?.quantity ?? 1;
   const basePrice = item?.pricePerBook ?? 35;
@@ -46,6 +49,36 @@ const CheckoutStep = ({ pageCount, extraPages, convertedUrls, onBack, bookDigita
   const maxQuantity = Math.max(...pricingTiers.map((t) => t.quantity));
   const handleDecrement = () => { if (bookCount > 1) setQuantity(bookCount - 1); };
   const handleIncrement = () => { if (bookCount < maxQuantity) setQuantity(bookCount + 1); };
+
+  const handleCheckout = async () => {
+    setIsCheckingOut(true);
+    try {
+      const lines: CartLineInput[] = [];
+
+      // Add coloring books
+      lines.push({ merchandiseId: SHOPIFY_VARIANTS.COLORING_BOOK, quantity: bookCount });
+
+      // Add digital downloads
+      const digitalCount2 = bookDigitalDownloads.filter(b => b.enabled).length;
+      if (digitalCount2 > 0) {
+        lines.push({ merchandiseId: SHOPIFY_VARIANTS.DIGITAL_DOWNLOAD, quantity: digitalCount2 });
+      }
+
+      // Add unique photos add-on
+      if (uniquePhotos && bookCount > 1) {
+        lines.push({ merchandiseId: SHOPIFY_VARIANTS.UNIQUE_PHOTOS, quantity: 1 });
+      }
+
+      const checkoutUrl = await createShopifyCheckout(lines);
+      if (checkoutUrl) {
+        window.open(checkoutUrl, '_blank');
+      }
+    } catch (error) {
+      console.error('Checkout error:', error);
+    } finally {
+      setIsCheckingOut(false);
+    }
+  };
 
   return (
     <div className="space-y-8">
@@ -270,9 +303,18 @@ const CheckoutStep = ({ pageCount, extraPages, convertedUrls, onBack, bookDigita
                 </div>
               </div>
 
-              <Button className="w-full rounded-2xl py-6 text-base mt-4" size="lg">
-                <ShoppingCart className="w-5 h-5 mr-2 shrink-0" />
-                <span className="truncate">Secure Checkout</span>
+              <Button 
+                className="w-full rounded-2xl py-6 text-base mt-4" 
+                size="lg"
+                onClick={handleCheckout}
+                disabled={isCheckingOut}
+              >
+                {isCheckingOut ? (
+                  <Loader2 className="w-5 h-5 mr-2 animate-spin shrink-0" />
+                ) : (
+                  <ShoppingCart className="w-5 h-5 mr-2 shrink-0" />
+                )}
+                <span className="truncate">{isCheckingOut ? "Creating Checkout…" : "Secure Checkout"}</span>
               </Button>
 
               <div className="flex items-center justify-center gap-2 text-sm text-muted-foreground">
