@@ -4,7 +4,7 @@ import { Link } from "react-router-dom";
 import { CoralSplash, BlueSplash } from "./ColorSplash";
 
 const CTASection = () => {
-  return;
+  return null;
 
 
 

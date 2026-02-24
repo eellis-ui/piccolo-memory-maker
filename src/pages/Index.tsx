@@ -8,7 +8,7 @@ import LifestyleBanner from "@/components/landing/LifestyleBanner";
 import BeforeAfterSection from "@/components/landing/BeforeAfterSection";
 import HowItWorksSection from "@/components/landing/HowItWorksSection";
 import WhyPiccoloSection from "@/components/landing/WhyPiccoloSection";
-
+import CatBanner from "@/components/landing/CatBanner";
 import CTASection from "@/components/landing/CTASection";
 
 const Index = () => {
@@ -25,9 +25,7 @@ const Index = () => {
         <LifestyleBanner />
         <HowItWorksSection />
         <WhyPiccoloSection />
-        
-        
-        
+        <CatBanner />
         <CTASection />
       </main>
       <Footer />
