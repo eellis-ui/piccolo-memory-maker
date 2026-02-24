@@ -4,6 +4,7 @@ import ReviewsBanner from "@/components/landing/ReviewsBanner";
 import HeroSection from "@/components/landing/HeroSection";
 import HappyCustomersSection from "@/components/landing/HappyCustomersSection";
 import HeroVideoSection from "@/components/landing/HeroVideoSection";
+import LifestyleBanner from "@/components/landing/LifestyleBanner";
 import BeforeAfterSection from "@/components/landing/BeforeAfterSection";
 import HowItWorksSection from "@/components/landing/HowItWorksSection";
 import GallerySection from "@/components/landing/GallerySection";
@@ -21,6 +22,7 @@ const Index = () => {
         <ReviewsBanner />
         <HappyCustomersSection />
         <HeroVideoSection />
+        <LifestyleBanner />
         <BeforeAfterSection />
         <HowItWorksSection />
         <GallerySection />
