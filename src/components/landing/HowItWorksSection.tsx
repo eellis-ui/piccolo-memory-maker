@@ -44,7 +44,7 @@ const HowItWorksSection = () => {
             >
               {/* Connector line */}
               {index < steps.length - 1 && (
-                <div className="hidden lg:block absolute top-12 left-[60%] w-full h-0.5 bg-border" />
+                <div className="hidden lg:block absolute top-12 left-[60%] w-[70%] border-t-2 border-dashed border-border" />
               )}
               
               <div className="text-center">
