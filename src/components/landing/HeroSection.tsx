@@ -1,6 +1,6 @@
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { Award } from "lucide-react";
+import { Medal } from "lucide-react";
 
 const gridImages = [
   { src: "/images/hero-grid-1.png", alt: "Coloring book open on cozy bed with tea" },
@@ -23,7 +23,7 @@ const HeroSection = () => {
           <div className="space-y-8">
             {/* Review badge */}
             <div className="inline-flex items-center gap-2.5 bg-foreground text-background rounded-lg px-4 py-2.5">
-              <Award className="w-5 h-5 text-amber-400" />
+              <Medal className="w-5 h-5 text-amber-400" />
               <div className="text-left">
                 <p className="text-[10px] font-semibold leading-none text-amber-400">Rated 5 star</p>
                 <p className="text-sm font-medium leading-tight">Based on 100+ Reviews</p>
