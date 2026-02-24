@@ -52,7 +52,7 @@ const HappyCustomersSection = () => {
   const visibleReviews = reviews.slice(startIndex, startIndex + 3);
 
   return (
-    <section className="py-16 md:py-20 bg-background">
+    <section className="py-16 md:py-20 bg-white">
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
         {/* Header */}
         <div className="flex items-center justify-between mb-10">
