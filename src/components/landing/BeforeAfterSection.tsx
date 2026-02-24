@@ -50,7 +50,7 @@ const BeforeAfterSection = () => {
           {comparisons.map((item) => (
             <div
               key={item.id}
-              className="bg-cream rounded-3xl p-6 shadow-soft hover:shadow-soft-lg transition-all"
+              className="bg-cream rounded-lg p-6 shadow-soft hover:shadow-soft-lg transition-all"
             >
               <p className="font-display text-lg font-semibold text-foreground mb-4 text-center">
                 {item.label}
@@ -59,7 +59,7 @@ const BeforeAfterSection = () => {
               <div className="flex items-center gap-3">
                 {/* Before */}
                 <div className="flex-1">
-                  <div className="aspect-[3/4] rounded-2xl overflow-hidden bg-foreground/5 border border-border">
+                  <div className="aspect-[3/4] rounded-lg overflow-hidden bg-foreground/5 border border-border">
                     <img
                       src={item.beforeSrc}
                       alt={`${item.label} — original photo`}
@@ -75,7 +75,7 @@ const BeforeAfterSection = () => {
 
                 {/* After */}
                 <div className="flex-1">
-                  <div className="aspect-[3/4] rounded-2xl overflow-hidden bg-foreground/5 border border-border">
+                  <div className="aspect-[3/4] rounded-lg overflow-hidden bg-foreground/5 border border-border">
                     <img
                       src={item.afterSrc}
                       alt={`${item.label} — line-art conversion`}

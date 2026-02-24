@@ -48,14 +48,14 @@ const HowItWorksSection = () => {
                 <div className="hidden lg:block absolute top-12 left-[60%] w-full h-0.5 bg-border" />
               )}
               
-              <div className="bg-cream rounded-3xl p-8 text-center hover:shadow-soft-lg transition-all duration-300">
+              <div className="bg-cream rounded-lg p-8 text-center hover:shadow-soft-lg transition-all duration-300">
                 {/* Step number */}
                 <span className="inline-flex items-center justify-center w-8 h-8 rounded-full bg-primary text-primary-foreground text-sm font-semibold mb-4">
                   {index + 1}
                 </span>
                 
                 {/* Icon with color splash */}
-                <div className="relative inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-background shadow-soft mb-6">
+                <div className="relative inline-flex items-center justify-center w-16 h-16 rounded-lg bg-background shadow-soft mb-6">
                   {index === 0 && <GreenSplash size={80} className="-top-3 -left-3" />}
                   {index === 1 && <PinkSplash size={80} className="-top-3 -right-3" />}
                   {index === 2 && <BlueSplash size={80} className="-top-3 -left-3" />}

@@ -36,7 +36,7 @@ const CustomerTestimonials = () => {
         {testimonials.map((t) => (
           <div
             key={t.name}
-            className="min-w-[280px] max-w-[320px] flex-shrink-0 snap-start bg-card border border-border rounded-2xl p-5"
+            className="min-w-[280px] max-w-[320px] flex-shrink-0 snap-start bg-card border border-border rounded-lg p-5"
           >
             <div className="flex items-center gap-1 mb-2 text-amber-400 text-sm">
               {"★★★★★"}

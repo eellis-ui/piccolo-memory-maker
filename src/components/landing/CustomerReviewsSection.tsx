@@ -70,7 +70,7 @@ const CustomerReviewsSection = () => {
       </h3>
 
       {/* Summary */}
-      <div className="bg-card border border-border rounded-2xl p-6 mb-6">
+      <div className="bg-card border border-border rounded-lg p-6 mb-6">
         <div className="flex flex-col sm:flex-row sm:items-center gap-4 mb-5">
           <div className="text-center sm:text-left">
             <div className="text-3xl font-bold text-foreground">{overallRating}</div>
@@ -102,7 +102,7 @@ const CustomerReviewsSection = () => {
       {/* Individual reviews */}
       <div className="space-y-4">
         {reviews.map((review, i) => (
-          <div key={i} className="bg-card border border-border rounded-2xl p-5">
+          <div key={i} className="bg-card border border-border rounded-lg p-5">
             <div className="flex items-center justify-between mb-2">
               <div className="flex items-center gap-2">
                 <span className="font-semibold text-sm text-foreground">{review.name}</span>

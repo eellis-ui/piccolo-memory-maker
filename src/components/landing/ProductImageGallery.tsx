@@ -12,7 +12,7 @@ const ProductImageGallery = () => {
   return (
     <div className="w-full">
       {/* Main image */}
-      <div className="aspect-square w-full overflow-hidden rounded-2xl bg-muted mb-3">
+      <div className="aspect-square w-full overflow-hidden rounded-lg bg-muted mb-3">
         <img
           src={images[selected]}
           alt="Personalised coloring book"
@@ -26,7 +26,7 @@ const ProductImageGallery = () => {
           <button
             key={i}
             onClick={() => setSelected(i)}
-            className={`w-20 h-20 rounded-xl overflow-hidden border-2 transition-all flex-shrink-0 ${
+            className={`w-20 h-20 rounded-lg overflow-hidden border-2 transition-all flex-shrink-0 ${
               selected === i
                 ? "border-primary ring-2 ring-primary/30"
                 : "border-border hover:border-muted-foreground/40"
