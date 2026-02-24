@@ -17,7 +17,7 @@ const LifestyleBanner = () => {
             <p className="font-display text-base sm:text-lg md:text-2xl lg:text-3xl uppercase text-foreground">
               Your People
             </p>
-            <p className="font-display text-2xl sm:text-3xl md:text-5xl lg:text-6xl uppercase text-foreground">
+            <p className="font-display text-base sm:text-lg md:text-2xl lg:text-3xl uppercase text-foreground">
               Your Story
             </p>
             <p className="font-display text-2xl sm:text-3xl md:text-5xl lg:text-6xl uppercase mt-2 md:mt-4">
