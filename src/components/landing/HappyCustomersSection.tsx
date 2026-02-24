@@ -5,25 +5,25 @@ const reviews = [
   {
     name: "Ellie",
     title: "Love it so much",
-    text: "Absolutely love this gift idea, it makes colouring so much more personal and fun!! My sister had her first baby so i got her one after her daughter turned 1 and she loved how this turned out – was such a cute surprise",
+    text: "Absolutely love this gift idea, it makes colouring so much more personal and fun!! My sister had her first baby so I got her one – she loved how it turned out. Such a cute surprise.",
     stars: 5,
   },
   {
     name: "Matilda",
     title: "Exactly what I didn't know I needed.",
-    text: "My boyfriend bought this for me during a really rough patch. It was so comforting in a way I wasn't expecting. It's like having a little visual journal of joy, and spending time colouring each page was grounding. It was a treat well received 🥹",
+    text: "My boyfriend bought this for me during a rough patch. It was so comforting. It's like a little visual journal of joy, and colouring each page was really grounding. A treat well received 🥹",
     stars: 5,
   },
   {
     name: "Georgie",
     title: "Most thoughtful gift ever",
-    text: "I ordered a Piccolo'd book for my mum's birthday with all her favourite family photos. She cried happy tears when she saw the line drawings. Honestly the most thoughtful gift I've ever given.",
+    text: "I ordered a Piccolo'd book for my mum's birthday with all her favourite family photos. She cried happy tears when she saw the line drawings. The most thoughtful gift I've ever given.",
     stars: 5,
   },
   {
     name: "Sophie",
     title: "Perfect for my daughter",
-    text: "My 6 year old absolutely loves colouring in pictures of our family holidays. It's become our Sunday morning ritual – she colours while I have my coffee. Such a lovely keepsake.",
+    text: "My 6 year old loves colouring in pictures of our family holidays. It's become our Sunday morning ritual – she colours while I have my coffee. Such a lovely keepsake to treasure.",
     stars: 5,
   },
   {
@@ -35,7 +35,7 @@ const reviews = [
   {
     name: "Ewan",
     title: "The best gift ever",
-    text: "I bought this as an anniversary present and it was perfect. We spent the evening colouring our memories together. So unique compared to flowers or chocolates.",
+    text: "I bought this as an anniversary present and it was perfect. We spent the evening colouring our memories together. So unique compared to flowers or chocolates. Highly recommend!",
     stars: 5,
   },
   {
