@@ -1,5 +1,4 @@
 import { Upload, Sparkles, BookOpen, Gift } from "lucide-react";
-import { GreenSplash, PinkSplash, BlueSplash, PeachSplash } from "./ColorSplash";
 
 const steps = [
   {
@@ -48,19 +47,15 @@ const HowItWorksSection = () => {
                 <div className="hidden lg:block absolute top-12 left-[60%] w-full h-0.5 bg-border" />
               )}
               
-              <div className="bg-cream rounded-lg p-8 text-center hover:shadow-soft-lg transition-all duration-300">
+              <div className="text-center">
                 {/* Step number */}
                 <span className="inline-flex items-center justify-center w-8 h-8 rounded-full bg-primary text-primary-foreground text-sm font-semibold mb-4">
                   {index + 1}
                 </span>
                 
-                {/* Icon with color splash */}
-                <div className="relative inline-flex items-center justify-center w-16 h-16 rounded-lg bg-background shadow-soft mb-6">
-                  {index === 0 && <GreenSplash size={80} className="-top-3 -left-3" />}
-                  {index === 1 && <PinkSplash size={80} className="-top-3 -right-3" />}
-                  {index === 2 && <BlueSplash size={80} className="-top-3 -left-3" />}
-                  {index === 3 && <PeachSplash size={80} className="-top-3 -right-3" />}
-                  <step.icon className="w-8 h-8 text-primary relative z-10" />
+                {/* Icon */}
+                <div className="inline-flex items-center justify-center w-16 h-16 rounded-lg bg-background shadow-soft mb-6">
+                  <step.icon className="w-8 h-8 text-primary" />
                 </div>
                 
                 <h3 className="font-display text-xl font-semibold text-foreground mb-3">
