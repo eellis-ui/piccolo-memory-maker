@@ -1,5 +1,5 @@
 import { useState, useCallback } from "react";
-import { Check, RefreshCw, Loader2, Trash2, GripVertical } from "lucide-react";
+import { Check, RefreshCw, Loader2, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { supabase } from "@/integrations/supabase/client";
@@ -8,9 +8,14 @@ import BookPreview from "./BookPreview";
 import DigitalUpsellBanner from "./DigitalUpsellBanner";
 import { useBasket } from "@/contexts/BasketContext";
 import type { OrderPhoto } from "@/pages/Builder";
+import {
+  updateGuestPhoto,
+  deleteGuestPhoto,
+} from "@/lib/guest-api";
 
 interface ApproveStepProps {
   orderId: string;
+  sessionId: string;
   photos: OrderPhoto[];
   onApprovalComplete: (photos: OrderPhoto[]) => void;
   onPhotosChange: (photos: OrderPhoto[]) => void;
@@ -19,6 +24,7 @@ interface ApproveStepProps {
 
 const ApproveStep = ({
   orderId,
+  sessionId,
   photos: initialPhotos,
   onApprovalComplete,
   onPhotosChange,
@@ -30,7 +36,6 @@ const ApproveStep = ({
   const [photos, setPhotos] = useState<OrderPhoto[]>(initialPhotos);
   const [convertingIds, setConvertingIds] = useState<Set<string>>(new Set());
 
-  // Helper: update local state AND bubble up to parent so navigating away preserves conversions
   const updatePhotos = useCallback((updater: (prev: OrderPhoto[]) => OrderPhoto[]) => {
     setPhotos((prev) => {
       const next = updater(prev);
@@ -42,7 +47,6 @@ const ApproveStep = ({
   const approvedCount = photos.filter((p) => p.isApproved).length;
   const allApproved = approvedCount === photos.length && photos.length > 0;
 
-  // Total pages across all books for display
   const totalPages = uniquePhotos ? photos.length : photos.length * bookCount;
   const totalApproved = uniquePhotos ? approvedCount : approvedCount * bookCount;
 
@@ -50,6 +54,7 @@ const ApproveStep = ({
     setConvertingIds((prev) => new Set(prev).add(photoId));
 
     try {
+      // convert-to-lineart uses service role internally, still callable without auth
       const { data, error } = await supabase.functions.invoke("convert-to-lineart", {
         body: { photoId },
       });
@@ -87,15 +92,13 @@ const ApproveStep = ({
         return next;
       });
     }
-  }, []);
+  }, [updatePhotos]);
 
   const convertAll = async () => {
     const unconverted = photos.filter(
       (p) => p.conversionStatus === "pending" || p.conversionStatus === "failed"
     );
     if (unconverted.length === 0) return;
-
-    // Fire all conversions in parallel
     await Promise.allSettled(unconverted.map((photo) => convertPhoto(photo.id)));
   };
 
@@ -108,38 +111,30 @@ const ApproveStep = ({
       prev.map((p) => (p.id === id ? { ...p, isApproved: newApproved } : p))
     );
 
-    await supabase
-      .from("order_photos")
-      .update({ is_approved: newApproved })
-      .eq("id", id);
+    await updateGuestPhoto(sessionId, orderId, id, { is_approved: newApproved });
   };
 
   const approveAll = async () => {
     updatePhotos((prev) => prev.map((p) => ({ ...p, isApproved: true })));
-    const ids = photos.map((p) => p.id);
-    for (const id of ids) {
-      await supabase
-        .from("order_photos")
-        .update({ is_approved: true })
-        .eq("id", id);
-    }
+    await Promise.all(
+      photos.map((p) => updateGuestPhoto(sessionId, orderId, p.id, { is_approved: true }))
+    );
   };
 
   const deletePhoto = async (id: string) => {
+    const photo = photos.find((p) => p.id === id);
     updatePhotos((prev) => prev.filter((p) => p.id !== id));
-    await supabase.from("order_photos").delete().eq("id", id);
+    await deleteGuestPhoto(sessionId, orderId, id, photo?.originalPath);
     toast.success("Photo removed");
   };
 
   const handleReorder = async (reorderedPhotos: OrderPhoto[]) => {
     updatePhotos(() => reorderedPhotos);
-    // Persist new positions to database
-    for (let i = 0; i < reorderedPhotos.length; i++) {
-      await supabase
-        .from("order_photos")
-        .update({ page_position: i })
-        .eq("id", reorderedPhotos[i].id);
-    }
+    await Promise.all(
+      reorderedPhotos.map((p, i) =>
+        updateGuestPhoto(sessionId, orderId, p.id, { page_position: i })
+      )
+    );
   };
 
   const handleContinue = () => {
@@ -216,12 +211,10 @@ const ApproveStep = ({
                 photo.isApproved ? "border-primary shadow-soft" : "border-border"
               }`}
             >
-              {/* Page Number */}
               <div className="absolute top-3 left-3 z-10">
                 <Badge variant="secondary">Page {index + 1}</Badge>
               </div>
 
-              {/* Delete button */}
               <button
                 onClick={() => deletePhoto(photo.id)}
                 className="absolute top-3 right-3 z-10 w-7 h-7 rounded-full bg-destructive/90 text-destructive-foreground flex items-center justify-center hover:bg-destructive transition-colors"
@@ -229,7 +222,6 @@ const ApproveStep = ({
                 <Trash2 className="w-3.5 h-3.5" />
               </button>
 
-              {/* Image display */}
               <div className="relative bg-cream aspect-[3/4]">
                 {hasConverted ? (
                   <div className="absolute inset-0 flex">
@@ -276,7 +268,6 @@ const ApproveStep = ({
                 )}
               </div>
 
-              {/* Actions */}
               <div className="p-4 flex items-center justify-between bg-background">
                 <div className="flex gap-2">
                   {!hasConverted && !isConverting && (
