@@ -2,6 +2,7 @@ import Navbar from "@/components/layout/Navbar";
 import Footer from "@/components/layout/Footer";
 import ReviewsBanner from "@/components/landing/ReviewsBanner";
 import HeroSection from "@/components/landing/HeroSection";
+import HappyCustomersSection from "@/components/landing/HappyCustomersSection";
 import HeroVideoSection from "@/components/landing/HeroVideoSection";
 import BeforeAfterSection from "@/components/landing/BeforeAfterSection";
 import HowItWorksSection from "@/components/landing/HowItWorksSection";
@@ -18,6 +19,7 @@ const Index = () => {
       <main>
         <HeroSection />
         <ReviewsBanner />
+        <HappyCustomersSection />
         <HeroVideoSection />
         <BeforeAfterSection />
         <HowItWorksSection />
