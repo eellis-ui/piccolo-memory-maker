@@ -33,7 +33,7 @@ const comparisons: ComparisonItem[] = [
 const BeforeAfterSection = () => {
   return (
     <section className="relative py-20 bg-background overflow-hidden">
-      <BlueSplash size={130} className="top-12 left-[6%] opacity-30" />
+      
       <PinkSplash size={120} className="bottom-12 right-[6%] opacity-30" />
 
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
