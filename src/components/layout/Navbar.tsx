@@ -1,11 +1,13 @@
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { Menu, X, ShoppingCart, Minus, Plus, Trash2, Download, Shield, ClipboardList } from "lucide-react";
+import { Menu, X, ShoppingCart, Minus, Plus, Trash2, Download, Shield, ClipboardList, Sparkles, Check, Truck } from "lucide-react";
 import { useState, useEffect } from "react";
 import { useBasket, DIGITAL_DOWNLOAD_PRICE, UNIQUE_PHOTOS_PRICE } from "@/contexts/BasketContext";
 import { useIsAdmin } from "@/hooks/use-admin";
 import { supabase } from "@/integrations/supabase/client";
 import { Badge } from "@/components/ui/badge";
+import { Switch } from "@/components/ui/switch";
+import { Progress } from "@/components/ui/progress";
 import {
   Sheet,
   SheetContent,
@@ -43,90 +45,133 @@ const Navbar = () => {
   const bookTotal = item ? item.totalPrice : 0;
   const grandTotal = bookTotal + digitalPrice + basketAddOnsTotal + uniquePhotosPrice;
 
+  const savings = item ? (item.originalTotalPrice - item.totalPrice) : 0;
+  const totalDiscount = savings;
+
   const BasketContent = () => (
     <div className="flex flex-col h-full">
       <div className="flex-1 overflow-y-auto space-y-4 py-4">
+        {/* Next steps banner */}
+        <div className="bg-foreground text-background rounded-xl p-4 text-xs leading-relaxed">
+          <div className="flex gap-2">
+            <Sparkles className="w-4 h-4 flex-shrink-0 mt-0.5" />
+            <p>
+              <span className="font-semibold">You're in good hands!</span> After your purchase, we'll email you clear, easy-to-follow steps to upload your photos for your one-of-a-kind coloring book.
+            </p>
+          </div>
+        </div>
+
+        {/* Free shipping bar */}
+        <div className="space-y-1.5">
+          <div className="flex items-center justify-between text-xs">
+            <div className="flex items-center gap-1.5 text-green-600 font-semibold">
+              <Truck className="w-3.5 h-3.5" />
+              Free shipping unlocked!
+            </div>
+            <Check className="w-4 h-4 text-green-600" />
+          </div>
+          <Progress value={100} className="h-2 bg-muted [&>div]:bg-green-500" />
+        </div>
+
         {!hasItems && (
           <p className="text-center text-muted-foreground py-12 text-sm">
             Your basket is empty
           </p>
         )}
 
+        {/* Main item card */}
         {item && (
-          <div className="space-y-3 p-4 rounded-2xl border border-border bg-background">
-            <div className="flex items-center justify-between">
-              <span className="font-semibold text-foreground text-sm">
-                Coloring {item.quantity === 1 ? "Book" : "Books"}
-              </span>
-              <button
-                onClick={() => setQuantity(0)}
-                className="text-destructive hover:text-destructive/80 transition-colors"
-              >
-                <Trash2 className="w-4 h-4" />
-              </button>
-            </div>
-            <div className="flex items-center justify-between">
-              <span className="text-xs text-muted-foreground">Quantity</span>
-              <div className="flex items-center gap-2">
-                <button
-                  onClick={() => { if (item.quantity > 1) setQuantity(item.quantity - 1); }}
-                  disabled={item.quantity <= 1}
-                  className="w-7 h-7 rounded-full border border-border flex items-center justify-center hover:bg-muted transition-colors disabled:opacity-30"
-                >
-                  <Minus className="w-3 h-3" />
-                </button>
-                <span className="font-semibold text-foreground w-5 text-center text-sm">{item.quantity}</span>
-                <button
-                  onClick={() => { if (item.quantity < maxQuantity) setQuantity(item.quantity + 1); }}
-                  disabled={item.quantity >= maxQuantity}
-                  className="w-7 h-7 rounded-full border border-border flex items-center justify-center hover:bg-muted transition-colors disabled:opacity-30"
-                >
-                  <Plus className="w-3 h-3" />
-                </button>
+          <div className="rounded-xl border border-border bg-background p-3 space-y-3">
+            <div className="flex gap-3">
+              <img
+                src="/lovable-uploads/d741aeb9-21af-45e1-9863-e350da643d42.png"
+                alt="Personalised Coloring Book"
+                className="w-20 h-20 rounded-lg object-cover flex-shrink-0"
+              />
+              <div className="flex-1 min-w-0 space-y-1">
+                <div className="flex items-start justify-between">
+                  <span className="font-semibold text-foreground text-sm leading-tight">Personalised Coloring Book</span>
+                  <button
+                    onClick={() => setQuantity(0)}
+                    className="text-muted-foreground hover:text-destructive transition-colors p-0.5"
+                  >
+                    <Trash2 className="w-4 h-4" />
+                  </button>
+                </div>
+                {/* Quantity controls */}
+                <div className="flex items-center gap-2 pt-1">
+                  <button
+                    onClick={() => { if (item.quantity > 1) setQuantity(item.quantity - 1); }}
+                    disabled={item.quantity <= 1}
+                    className="w-7 h-7 rounded-md border border-border flex items-center justify-center hover:bg-muted transition-colors disabled:opacity-30 text-xs"
+                  >
+                    <Minus className="w-3 h-3" />
+                  </button>
+                  <span className="font-semibold text-foreground w-5 text-center text-sm">{item.quantity}</span>
+                  <button
+                    onClick={() => { if (item.quantity < maxQuantity) setQuantity(item.quantity + 1); }}
+                    disabled={item.quantity >= maxQuantity}
+                    className="w-7 h-7 rounded-md border border-border flex items-center justify-center hover:bg-muted transition-colors disabled:opacity-30 text-xs"
+                  >
+                    <Plus className="w-3 h-3" />
+                  </button>
+                </div>
+                {/* Pricing */}
+                <div className="flex items-center gap-2 text-sm pt-0.5">
+                  <span className="line-through text-muted-foreground">${item.originalTotalPrice.toFixed(2)}</span>
+                  <span className="font-bold text-foreground">${item.totalPrice.toFixed(2)}</span>
+                  {savings > 0 && (
+                    <span className="text-green-600 text-xs font-medium">(Save ${savings.toFixed(2)})</span>
+                  )}
+                </div>
               </div>
             </div>
-            <div className="flex justify-between text-sm">
-              <span className="text-muted-foreground">${item.pricePerBook.toFixed(2)} each</span>
-              <span className="font-semibold">${item.totalPrice.toFixed(2)}</span>
+            {/* Sale badge */}
+            <div className="flex items-center gap-1.5">
+              <Badge variant="secondary" className="text-[10px] font-bold uppercase tracking-wider bg-primary/10 text-primary border-0 px-2 py-0.5">
+                <Sparkles className="w-3 h-3 mr-1" />
+                February Sale
+              </Badge>
             </div>
           </div>
         )}
 
-        {digitalCopies > 0 && (
-          <div className="space-y-3 p-4 rounded-2xl border border-border bg-background">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                <Download className="w-4 h-4 text-primary" />
-                <span className="font-semibold text-foreground text-sm">
-                  Digital PDF Download
-                </span>
+        {/* Digital copies upsell */}
+        <div className="rounded-xl border border-border bg-background p-3 space-y-2">
+          <div className="flex gap-3">
+            <img
+              src="/lovable-uploads/d741aeb9-21af-45e1-9863-e350da643d42.png"
+              alt="Digital Copies"
+              className="w-16 h-16 rounded-lg object-cover flex-shrink-0"
+            />
+            <div className="flex-1 min-w-0">
+              <div className="flex items-start justify-between gap-2">
+                <div className="space-y-0.5">
+                  <p className="font-semibold text-foreground text-sm leading-tight">Get Digital Copies Delivered within 24 hours!</p>
+                  <div className="flex items-center gap-2 text-sm">
+                    <span className="line-through text-muted-foreground">${(9.99).toFixed(2)}</span>
+                    <span className="font-bold text-foreground">${DIGITAL_DOWNLOAD_PRICE.toFixed(2)}</span>
+                  </div>
+                </div>
+                <Switch
+                  checked={digitalCopies > 0}
+                  onCheckedChange={(checked) => setDigitalCopies(checked ? (item?.quantity ?? 1) : 0)}
+                  className="flex-shrink-0"
+                />
               </div>
-              <button
-                onClick={() => setDigitalCopies(0)}
-                className="text-destructive hover:text-destructive/80 transition-colors"
-              >
-                <Trash2 className="w-4 h-4" />
-              </button>
-            </div>
-            <div className="flex justify-between text-sm">
-              <span className="text-muted-foreground">
-                {digitalCopies} {digitalCopies === 1 ? "copy" : "copies"} · 20 pages · ${DIGITAL_DOWNLOAD_PRICE.toFixed(2)} each
-              </span>
-              <span className="font-semibold">${digitalPrice.toFixed(2)}</span>
             </div>
           </div>
-        )}
+          <p className="text-xs text-muted-foreground">
+            Receive a printable PDF version of your coloring book within 24 hours.
+          </p>
+        </div>
 
+        {/* Unique photos upsell */}
         {uniquePhotos && (
-          <div className="space-y-3 p-4 rounded-2xl border border-border bg-background">
+          <div className="space-y-3 p-3 rounded-xl border border-border bg-background">
             <div className="flex items-center justify-between">
-              <span className="font-semibold text-foreground text-sm">
-                Unique Photos Per Book
-              </span>
-              <button
-                onClick={() => setUniquePhotos(false)}
-                className="text-destructive hover:text-destructive/80 transition-colors"
-              >
+              <span className="font-semibold text-foreground text-sm">Unique Photos Per Book</span>
+              <button onClick={() => setUniquePhotos(false)} className="text-muted-foreground hover:text-destructive transition-colors">
                 <Trash2 className="w-4 h-4" />
               </button>
             </div>
@@ -138,11 +183,9 @@ const Navbar = () => {
         )}
 
         {addOns.dedicationPageEnabled && (
-          <div className="space-y-3 p-4 rounded-2xl border border-border bg-background">
+          <div className="space-y-3 p-3 rounded-xl border border-border bg-background">
             <div className="flex items-center justify-between">
-              <span className="font-semibold text-foreground text-sm">
-                Personalized Cover
-              </span>
+              <span className="font-semibold text-foreground text-sm">Personalized Cover</span>
             </div>
             <div className="flex justify-between text-sm">
               <span className="text-muted-foreground">Custom cover text</span>
@@ -152,19 +195,41 @@ const Navbar = () => {
         )}
       </div>
 
+      {/* Footer */}
       {hasItems && (
-        <div className="border-t border-border pt-4 space-y-4">
+        <div className="border-t border-border pt-4 space-y-3 flex-shrink-0">
+          {/* Discounts line */}
+          {totalDiscount > 0 && (
+            <div className="flex items-center justify-between text-sm">
+              <div className="flex items-center gap-2">
+                <span className="text-muted-foreground">Discounts</span>
+                <Badge variant="secondary" className="text-[10px] font-bold uppercase tracking-wider bg-primary/10 text-primary border-0 px-1.5 py-0">
+                  February Sale
+                </Badge>
+              </div>
+              <span className="text-green-600 font-medium">-${totalDiscount.toFixed(2)}</span>
+            </div>
+          )}
+
           <Separator />
-          <div className="flex justify-between font-semibold text-foreground">
-            <span>Total</span>
-            <span>${grandTotal.toFixed(2)}</span>
-          </div>
-          <Button asChild className="w-full rounded-2xl py-5" size="lg">
+
+          <Button asChild className="w-full rounded-xl py-5 text-base font-semibold" size="lg">
             <Link to={activeSessionId ? `/builder?sessionId=${activeSessionId}` : "/builder"}>
-              <ShoppingCart className="w-4 h-4 mr-2" />
-              {activeSessionId ? "Resume Creating" : "Continue to Builder"}
+              Checkout · ${grandTotal.toFixed(2)}
             </Link>
           </Button>
+
+          {/* Payment trust badges */}
+          <div className="flex items-center justify-center gap-2 flex-wrap pt-1 pb-2">
+            {["Apple Pay", "Google Pay", "PayPal", "AMEX", "VISA", "MC", "Shop Pay"].map((method) => (
+              <span
+                key={method}
+                className="text-[9px] font-bold tracking-wide border border-muted-foreground/30 rounded px-1.5 py-0.5 text-muted-foreground/60"
+              >
+                {method}
+              </span>
+            ))}
+          </div>
         </div>
       )}
     </div>
