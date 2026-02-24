@@ -1,80 +1,126 @@
 import { Link } from "react-router-dom";
-import piccoloadLogo from "@/assets/piccoload-logo.png";
+import { Instagram } from "lucide-react";
+
+const TikTokIcon = ({ className }: { className?: string }) => (
+  <svg viewBox="0 0 24 24" fill="currentColor" className={className} xmlns="http://www.w3.org/2000/svg">
+    <path d="M19.59 6.69a4.83 4.83 0 0 1-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 0 1-2.88 2.5 2.89 2.89 0 0 1-2.89-2.89 2.89 2.89 0 0 1 2.89-2.89c.28 0 .54.04.79.1v-3.5a6.37 6.37 0 0 0-.79-.05A6.34 6.34 0 0 0 3.15 15a6.34 6.34 0 0 0 6.34 6.34 6.34 6.34 0 0 0 6.34-6.34V8.7a8.16 8.16 0 0 0 4.76 1.52v-3.4a4.85 4.85 0 0 1-1-.13z" />
+  </svg>
+);
+
+const paymentMethods = [
+  "Apple Pay", "Google Pay", "PayPal", "Amex", "Visa", "Mastercard", "Maestro", "Shop Pay"
+];
 
 const Footer = () => {
   return (
     <footer className="bg-cream border-t border-border">
-      <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-12">
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
-          {/* Brand */}
-          <div className="col-span-1 md:col-span-2">
-            <Link to="/" className="inline-block">
-              <img src={piccoloadLogo} alt="Piccoload – From pic to pen" className="h-10 w-auto" />
-            </Link>
-            <p className="mt-4 text-muted-foreground text-sm max-w-md">
-              Transform your cherished photos into beautiful, personalized coloring books. 
-              A meaningful gift that brings memories to life through art.
-            </p>
-          </div>
-
-          {/* Quick Links */}
+      <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-16">
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-10">
+          {/* Links */}
           <div>
-            <h4 className="font-display text-sm font-semibold text-foreground mb-4">
-              Quick Links
+            <h4 className="font-display text-base font-semibold text-foreground mb-5">
+              Links!
             </h4>
             <ul className="space-y-3">
               <li>
-                <Link to="/how-it-works" className="text-sm text-muted-foreground hover:text-foreground transition-colors">
-                  How It Works
+                <Link to="/" className="text-sm text-muted-foreground hover:text-foreground transition-colors">
+                  Home
                 </Link>
               </li>
               <li>
                 <Link to="/pricing" className="text-sm text-muted-foreground hover:text-foreground transition-colors">
-                  Pricing
+                  Shop
                 </Link>
               </li>
-              <li>
-                <Link to="/faq" className="text-sm text-muted-foreground hover:text-foreground transition-colors">
-                  FAQs
-                </Link>
-              </li>
-              <li>
-                <Link to="/contact" className="text-sm text-muted-foreground hover:text-foreground transition-colors">
-                  Contact
-                </Link>
-              </li>
-              <li>
-                <Link to="/my-orders" className="text-sm text-muted-foreground hover:text-foreground transition-colors">
-                  Track My Order
-                </Link>
-              </li>
-            </ul>
-          </div>
-
-          {/* Support */}
-          <div>
-            <h4 className="font-display text-sm font-semibold text-foreground mb-4">
-              Support
-            </h4>
-            <ul className="space-y-3">
               <li>
                 <Link to="/about" className="text-sm text-muted-foreground hover:text-foreground transition-colors">
                   Our Story
                 </Link>
               </li>
               <li>
-                <a href="mailto:hello@piccoload.com" className="text-sm text-muted-foreground hover:text-foreground transition-colors">
-                  hello@piccoload.com
-                </a>
+                <Link to="/contact" className="text-sm text-muted-foreground hover:text-foreground transition-colors">
+                  Contact Us
+                </Link>
               </li>
             </ul>
           </div>
+
+          {/* Legals */}
+          <div>
+            <h4 className="font-display text-base font-semibold text-foreground mb-5">
+              Legals
+            </h4>
+            <ul className="space-y-3">
+              <li>
+                <Link to="/privacy-policy" className="text-sm text-muted-foreground hover:text-foreground transition-colors">
+                  Privacy Policy
+                </Link>
+              </li>
+              <li>
+                <Link to="/refund-policy" className="text-sm text-muted-foreground hover:text-foreground transition-colors">
+                  Refund Policy
+                </Link>
+              </li>
+              <li>
+                <Link to="/terms-of-service" className="text-sm text-muted-foreground hover:text-foreground transition-colors">
+                  Terms of Service
+                </Link>
+              </li>
+              <li>
+                <Link to="/affiliates" className="text-sm text-muted-foreground hover:text-foreground transition-colors">
+                  Become an Affiliate!
+                </Link>
+              </li>
+            </ul>
+          </div>
+
+          {/* Our Store / Socials */}
+          <div>
+            <h4 className="font-display text-base font-semibold text-foreground mb-5">
+              Our store
+            </h4>
+            <div className="flex gap-3">
+              <a
+                href="https://www.instagram.com/officialpiccoload/"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="w-11 h-11 rounded-full bg-muted flex items-center justify-center text-foreground hover:bg-muted-foreground/20 transition-colors"
+                aria-label="Instagram"
+              >
+                <Instagram className="w-5 h-5" />
+              </a>
+              <a
+                href="https://www.tiktok.com/@piccoload"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="w-11 h-11 rounded-full bg-muted flex items-center justify-center text-foreground hover:bg-muted-foreground/20 transition-colors"
+                aria-label="TikTok"
+              >
+                <TikTokIcon className="w-5 h-5" />
+              </a>
+            </div>
+          </div>
         </div>
 
-        <div className="mt-12 pt-8 border-t border-border">
-          <p className="text-sm text-muted-foreground text-center">
-            © {new Date().getFullYear()} Piccoload. All rights reserved. Made with love in the USA.
+        {/* Bottom bar */}
+        <div className="mt-16 pt-8 border-t border-border flex flex-col sm:flex-row items-center justify-between gap-4">
+          <p className="text-sm text-muted-foreground">
+            © Piccolo'd {new Date().getFullYear()}. All Rights Reserved.
           </p>
+
+          {/* Payment icons */}
+          <div className="flex items-center gap-1.5 bg-background rounded-lg px-4 py-2">
+            {paymentMethods.map((method) => (
+              <div
+                key={method}
+                className="w-10 h-7 rounded border border-border bg-background flex items-center justify-center"
+              >
+                <span className="text-[8px] font-semibold text-muted-foreground leading-tight text-center">
+                  {method}
+                </span>
+              </div>
+            ))}
+          </div>
         </div>
       </div>
     </footer>
