@@ -11,10 +11,10 @@ const LifestyleBanner = () => {
         {/* Text overlay */}
         <div className="absolute inset-0 flex items-end justify-center pb-[8%]">
           <div className="text-center space-y-1 md:space-y-2">
-            <p className="font-display text-2xl sm:text-3xl md:text-5xl lg:text-6xl uppercase text-foreground">
+            <p className="font-display text-base sm:text-lg md:text-2xl lg:text-3xl uppercase text-foreground">
               Your Calm
             </p>
-            <p className="font-display text-2xl sm:text-3xl md:text-5xl lg:text-6xl uppercase text-foreground">
+            <p className="font-display text-base sm:text-lg md:text-2xl lg:text-3xl uppercase text-foreground">
               Your People
             </p>
             <p className="font-display text-2xl sm:text-3xl md:text-5xl lg:text-6xl uppercase text-foreground">
