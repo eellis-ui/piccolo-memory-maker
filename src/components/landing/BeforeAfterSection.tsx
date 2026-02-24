@@ -25,8 +25,8 @@ const comparisons: ComparisonItem[] = [
   {
     id: "3",
     label: "Vacation Memory",
-    beforeSrc: "/placeholder.svg",
-    afterSrc: "/placeholder.svg",
+    beforeSrc: "/images/before-vacation.jpg",
+    afterSrc: "/images/after-vacation.png",
   },
 ];
 
