@@ -317,7 +317,7 @@ const Navbar = () => {
           {/* Right: Cart + CTA */}
           <div className="ml-auto flex items-center gap-3">
             <CartButton />
-            <Button asChild className="hidden md:inline-flex rounded-2xl px-6">
+            <Button asChild className="hidden md:inline-flex rounded-lg px-6 bg-foreground text-background hover:bg-foreground/90">
               <Link to="/builder">Start Creating</Link>
             </Button>
           </div>
