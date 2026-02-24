@@ -22,8 +22,8 @@ const Index = () => {
         <ReviewsBanner />
         <HappyCustomersSection />
         <HeroVideoSection />
-        <LifestyleBanner />
         <BeforeAfterSection />
+        <LifestyleBanner />
         <HowItWorksSection />
         <GallerySection />
         <PricingSection />
