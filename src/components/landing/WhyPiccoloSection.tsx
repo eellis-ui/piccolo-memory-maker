@@ -6,7 +6,7 @@ const items = [
     number: "01",
     title: "Premium Quality Printing",
     description:
-      "Each book is printed on thick, high-quality paper with vibrant covers and a professional spiral binding — made to last and made to love.",
+      "Crisp, high-resolution line work printed on smooth, durable paper — made to be colored, cherished, and kept.",
   },
   {
     number: "02",
