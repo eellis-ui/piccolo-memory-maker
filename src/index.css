@@ -123,6 +123,7 @@
 @layer utilities {
   .font-display {
     font-family: 'Bristol', serif;
+    text-transform: uppercase;
   }
   
   .font-sans {
