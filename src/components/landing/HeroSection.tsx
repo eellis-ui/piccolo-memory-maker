@@ -4,14 +4,14 @@ import { Award } from "lucide-react";
 
 const gridImages = [
   { src: "/images/hero-grid-1.jpg", alt: "Personalized coloring book with family portrait" },
-  { src: "/images/hero-grid-2.jpg", alt: "Colored pencils and coloring book workspace" },
-  { src: "/images/hero-grid-3.jpg", alt: "Cat with personalized coloring book" },
-  { src: "/images/hero-grid-4.jpg", alt: "Hands coloring a personalized page" },
-  { src: "/images/hero-grid-5.jpg", alt: "Line art landscape in coloring book" },
-  { src: "/images/hero-grid-6.jpg", alt: "Detailed coloring book on desk" },
-  { src: "/images/hero-grid-7.jpg", alt: "Coloring book on green sofa" },
-  { src: "/images/hero-grid-8.jpg", alt: "Kids enjoying personalized coloring book" },
-  { src: "/images/hero-grid-9.jpg", alt: "Piccoload coloring book product" },
+  { src: "/images/hero-grid-2.png", alt: "Coloring book with pens and novel" },
+  { src: "/images/hero-grid-3.jpg", alt: "Coloring book on wooden desk with pens" },
+  { src: "/images/hero-grid-4.png", alt: "Hands colouring a personalized page" },
+  { src: "/images/hero-grid-5.webp", alt: "Before and after coloring book comparison" },
+  { src: "/images/hero-grid-6.png", alt: "Coloured pencils in a tin" },
+  { src: "/images/hero-grid-1.jpg", alt: "Personalized coloring book product" },
+  { src: "/images/hero-grid-3.jpg", alt: "Coloring book open on table" },
+  { src: "/images/hero-grid-4.png", alt: "Colouring a detailed page" },
 ];
 
 const HeroSection = () => {
@@ -51,9 +51,9 @@ const HeroSection = () => {
           </div>
 
           {/* Right column - 3x3 image grid */}
-          <div className="grid grid-cols-3 gap-2.5 sm:gap-3">
+          <div className="grid grid-cols-3 gap-[3px] bg-background rounded-xl overflow-hidden">
             {gridImages.map((img, i) => (
-              <div key={i} className="aspect-square overflow-hidden rounded-xl">
+              <div key={i} className="aspect-[10/8] overflow-hidden">
                 <img
                   src={img.src}
                   alt={img.alt}
