@@ -1,76 +1,72 @@
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { ArrowRight } from "lucide-react";
-import { GreenSplash, PinkSplash, BlueSplash, PeachSplash, LavenderSplash } from "./ColorSplash";
+import { Award } from "lucide-react";
+
+const gridImages = [
+  { src: "/images/hero-grid-1.jpg", alt: "Personalized coloring book with family portrait" },
+  { src: "/images/hero-grid-2.jpg", alt: "Colored pencils and coloring book workspace" },
+  { src: "/images/hero-grid-3.jpg", alt: "Cat with personalized coloring book" },
+  { src: "/images/hero-grid-4.jpg", alt: "Hands coloring a personalized page" },
+  { src: "/images/hero-grid-5.jpg", alt: "Line art landscape in coloring book" },
+  { src: "/images/hero-grid-6.jpg", alt: "Detailed coloring book on desk" },
+  { src: "/images/hero-grid-7.jpg", alt: "Coloring book on green sofa" },
+  { src: "/images/hero-grid-8.jpg", alt: "Kids enjoying personalized coloring book" },
+  { src: "/images/hero-grid-9.jpg", alt: "Piccoload coloring book product" },
+];
 
 const HeroSection = () => {
   return (
-    <section className="relative min-h-[90vh] flex items-center justify-center bg-cream overflow-hidden">
-      {/* Background decoration */}
-      <div className="absolute inset-0 opacity-30">
-        <div className="absolute top-20 left-10 w-64 h-64 bg-primary/20 rounded-full blur-3xl" />
-        <div className="absolute bottom-20 right-10 w-96 h-96 bg-primary/10 rounded-full blur-3xl" />
-      </div>
-      
-      {/* Color splashes */}
-      <GreenSplash size={140} className="top-16 left-[8%] opacity-60" />
-      <PinkSplash size={120} className="top-32 right-[10%] opacity-50" />
-      <BlueSplash size={100} className="bottom-24 left-[15%] opacity-50" />
-      <PeachSplash size={130} className="bottom-16 right-[20%] opacity-50" />
-      <LavenderSplash size={90} className="top-[40%] left-[5%] opacity-40" />
+    <section className="bg-background py-16 md:py-24">
+      <div className="container mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-16 items-center">
+          {/* Left column */}
+          <div className="space-y-8">
+            {/* Review badge */}
+            <div className="inline-flex items-center gap-2.5 bg-foreground text-background rounded-full px-4 py-2.5">
+              <Award className="w-5 h-5 text-amber-400" />
+              <div className="text-left">
+                <p className="text-[10px] font-semibold leading-none text-amber-400">Rated 5 star</p>
+                <p className="text-sm font-medium leading-tight">Based on 100+ Reviews</p>
+              </div>
+            </div>
 
+            {/* Heading */}
+            <h1 className="font-display text-5xl sm:text-6xl md:text-7xl font-semibold text-foreground leading-[1.05] tracking-tight">
+              Big Memories.<br />
+              Little Lines.
+            </h1>
 
-      <div className="container mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
-        <div className="max-w-4xl mx-auto text-center">
-          
-          <div className="flex justify-center mb-8 animate-fade-in">
-            <img alt="Piccoload logo" className="h-36 sm:h-48 w-auto" src="/lovable-uploads/piccoload-logo-main.png" />
-          </div>
-          <h1 className="font-display text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-semibold text-foreground leading-tight mb-6 animate-fade-in" style={{ animationDelay: "0.1s" }}>
-            Turn Your Memories Into{" "}
-            <span className="text-primary">Beautiful</span>{" "}
-            Coloring Books
-          </h1>
-          
-          <p className="text-lg sm:text-xl text-muted-foreground max-w-2xl mx-auto mb-8 animate-fade-in" style={{ animationDelay: "0.2s" }}>
-            Upload your favorite photos and watch them transform into stunning 
-            line drawings. Create personalized coloring books that make 
-            meaningful gifts for loved ones.
-          </p>
+            {/* Subtitle */}
+            <p className="text-base sm:text-lg text-foreground/70 max-w-lg leading-relaxed">
+              Your favourite photos, transformed into hand-drawn line art, and
+              bound into a Personalized colouring book you'll treasure forever.
+            </p>
 
-          <div className="flex flex-col sm:flex-row items-center justify-center gap-4 animate-fade-in" style={{ animationDelay: "0.3s" }}>
-            <Button asChild size="lg" className="rounded-2xl px-8 py-6 text-lg shadow-soft-lg hover:shadow-xl transition-all">
+            {/* CTA */}
+            <Button asChild size="lg" className="rounded-lg px-8 py-6 text-base font-semibold">
               <Link to="/pricing">
-                Start Creating
-                <ArrowRight className="ml-2 h-5 w-5" />
-              </Link>
-            </Button>
-            <Button asChild variant="outline" size="lg" className="rounded-2xl px-8 py-6 text-lg">
-              <Link to="/how-it-works">
-                See How It Works
+                Create My Book
               </Link>
             </Button>
           </div>
 
-          {/* Trust badges */}
-          <div className="mt-12 flex flex-wrap items-center justify-center gap-6 text-muted-foreground text-sm animate-fade-in" style={{ animationDelay: "0.4s" }}>
-            <span className="flex items-center gap-2">
-              <span className="w-2 h-2 bg-primary rounded-full" />
-              Premium quality prints
-            </span>
-            
-
-
-
-            <span className="flex items-center gap-2">
-              <span className="w-2 h-2 bg-primary rounded-full" />
-              Satisfaction guaranteed
-            </span>
+          {/* Right column - 3x3 image grid */}
+          <div className="grid grid-cols-3 gap-2.5 sm:gap-3">
+            {gridImages.map((img, i) => (
+              <div key={i} className="aspect-square overflow-hidden rounded-xl">
+                <img
+                  src={img.src}
+                  alt={img.alt}
+                  className="w-full h-full object-cover"
+                  loading={i < 3 ? "eager" : "lazy"}
+                />
+              </div>
+            ))}
           </div>
         </div>
       </div>
-    </section>);
-
+    </section>
+  );
 };
 
 export default HeroSection;
