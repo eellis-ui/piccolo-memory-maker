@@ -1,40 +1,55 @@
 
 
-## Add Judge.me-Style Customer Reviews Section
+## Redesign Cart Drawer to Match Reference
 
-Add a full customer reviews section to the pricing/product page, replicating the judge.me review widget from your Shopify page. This goes below the existing testimonials section.
+Update the basket/cart drawer in the Navbar to match the Shopify cart design shown in the reference screenshot.
 
-### What it looks like
+### Elements to add (top to bottom)
 
-The section has two parts:
+**1. Next steps banner (top of cart)**
+- Sparkle emoji with reassuring message: "You're in good hands! After your purchase, we'll email you clear, easy-to-follow steps to upload your photos for your one-of-a-kind coloring book."
+- Dark background with white text, rounded corners
 
-**1. Review summary header**
-- "Customer Reviews" heading
-- Large "4.95 out of 5" rating with stars
-- "Based on 3,952 reviews" with a verified checkmark
-- Star distribution bars (5-star: 3814, 4-star: 85, 3-star: 52, 2-star: 1, 1-star: 0)
+**2. Free shipping progress bar**
+- "Free shipping unlocked!" text
+- Full progress bar with a checkmark/sparkle icon at the end
+- Since all orders qualify, this is always shown as "unlocked"
 
-**2. Individual review cards**
-- Each review shows: date, reviewer name, star rating, review text
-- Some have a "Verified" badge
-- Reviews pulled from the actual judge.me data on your Shopify page:
-  - Anonymous (02/23/2026): "These are absolutely amazing! We love them..."
-  - Makeba (02/08/2026): "Beautiful product just as advertised"
-  - Paul H (01/29/2026): "Fun project to have someone do..."
-  - Karen Ryan (01/28/2026): "Loved the product."
-  - Karina F. (01/28/2026): "Very happy with my order!..."
+**3. Redesigned cart item card**
+- Product image thumbnail (using the existing product image from lovable-uploads)
+- "Personalised Coloring Book" title with trash icon
+- Quantity controls (minus / number / plus) inline
+- Strikethrough original price + sale price + "(Save $X.XX)" in green
+- "FEBRUARY SALE" badge with sparkle icon
 
-### Changes
+**4. Digital copies upsell card**
+- Thumbnail image, title "Get Digital Copies Delivered within 24 hours!"
+- Strikethrough original price + sale price
+- Toggle switch to enable/disable
+- Description text below
 
-**New file: `src/components/landing/CustomerReviewsSection.tsx`**
-- Self-contained component with hardcoded review data matching the live site
-- Star distribution bar chart (horizontal bars showing count per star level)
-- Review cards with date, name, optional verified badge, star rating, and text
-- Clean, minimal styling matching the rest of the product page
+**5. Discounts line**
+- "Discounts" label with "FEBRUARY SALE" badge
+- Negative discount amount shown
 
-**Modified: `src/components/landing/PricingSection.tsx`**
-- Import and add `CustomerReviewsSection` below the existing `CustomerTestimonials` component (around line 245)
+**6. Checkout button**
+- Full-width dark button: "Checkout . $XX.XX"
 
-### No backend changes needed
-The reviews are hardcoded to match what's on the live Shopify page. This keeps it simple and fast-loading.
+**7. Payment trust badges (bottom)**
+- Row of payment method icons: Apple Pay, Google Pay, PayPal, AMEX, Visa, Mastercard, Maestro, Shop Pay
+- Using text-based badges similar to the existing TrustBadges component
+
+### Technical changes
+
+**Modified: `src/components/layout/Navbar.tsx`**
+- Rewrite the `BasketContent` component to include all the above elements
+- Add the reassurance banner at the top
+- Add the free shipping bar
+- Redesign the item card with product image, inline quantity controls, sale pricing, and FEBRUARY SALE badge
+- Add the digital copies upsell with toggle switch
+- Add discounts line showing the savings from the sale
+- Replace the "Continue to Builder" button with "Checkout" style button
+- Add payment method badges at the bottom
+
+No new files needed -- all changes are within the existing `BasketContent` component in Navbar.tsx.
 
