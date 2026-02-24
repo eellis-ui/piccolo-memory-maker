@@ -31,7 +31,7 @@ const HeroSection = () => {
             </div>
 
             {/* Heading */}
-            <h1 className="font-display text-5xl sm:text-6xl md:text-7xl font-semibold text-foreground leading-[1.05] tracking-tight">
+            <h1 className="font-display text-5xl sm:text-6xl md:text-7xl font-semibold text-foreground leading-[1.05] tracking-tight uppercase">
               Big Memories.<br />
               Little Lines.
             </h1>
