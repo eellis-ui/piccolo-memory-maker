@@ -50,7 +50,7 @@ const BeforeAfterSection = () => {
           {comparisons.map((item) => (
             <div
               key={item.id}
-              className="bg-cream rounded-lg p-6 shadow-soft hover:shadow-soft-lg transition-all"
+              className="border border-border rounded-lg p-6 bg-cream transition-transform duration-200 hover:scale-105"
             >
               <p className="font-display text-lg font-semibold text-foreground mb-4 text-center">
                 {item.label}
