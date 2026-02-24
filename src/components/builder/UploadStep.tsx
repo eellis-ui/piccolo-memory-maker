@@ -2,12 +2,17 @@ import { useState, useCallback, useEffect } from "react";
 import { Upload, X, Image as ImageIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
-import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import type { OrderPhoto } from "@/pages/Builder";
+import {
+  uploadGuestPhoto,
+  deleteGuestPhoto,
+  getSignedUrls,
+} from "@/lib/guest-api";
 
 interface UploadStepProps {
   orderId: string;
+  sessionId: string;
   onImagesUploaded: (photos: OrderPhoto[]) => void;
   maxImages?: number;
   initialImages?: LocalImage[];
@@ -25,7 +30,7 @@ export interface LocalImage {
   isLandscape?: boolean;
 }
 
-const UploadStep = ({ orderId, onImagesUploaded, maxImages = 20, initialImages, onImagesChanged }: UploadStepProps) => {
+const UploadStep = ({ orderId, sessionId, onImagesUploaded, maxImages = 20, initialImages, onImagesChanged }: UploadStepProps) => {
   const [images, setImages] = useState<LocalImage[]>(initialImages ?? []);
   const [isDragging, setIsDragging] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
@@ -35,15 +40,14 @@ const UploadStep = ({ orderId, onImagesUploaded, maxImages = 20, initialImages, 
     onImagesChanged?.(images);
   }, [images, onImagesChanged]);
 
-  // Convert HEIC to JPEG blob using heic-to (supports newer iPhone HEIC formats)
+  // Convert HEIC to JPEG blob using heic-to
   const convertHeicToJpeg = async (file: File): Promise<Blob> => {
     const { heicTo } = await import("heic-to");
     const result = await heicTo({ blob: file, type: "image/jpeg", quality: 0.92 });
     return result;
   };
 
-  // Normalize image orientation by drawing to canvas (strips EXIF rotation)
-  // Returns { blob, isLandscape }
+  // Normalize image orientation by drawing to canvas
   const normalizeImage = (blob: Blob): Promise<{ blob: Blob; isLandscape: boolean }> => {
     return new Promise((resolve, reject) => {
       const img = new window.Image();
@@ -68,18 +72,13 @@ const UploadStep = ({ orderId, onImagesUploaded, maxImages = 20, initialImages, 
   };
 
   const uploadFile = async (file: File, localId: string, position: number): Promise<LocalImage | null> => {
-    const fileName = `${crypto.randomUUID()}.jpg`;
-    const storagePath = `originals/${orderId}/${fileName}`;
-
     // Convert HEIC if needed
     let inputBlob: Blob = file;
     const nameLower = file.name.toLowerCase();
     const isHeic = nameLower.endsWith(".heic") || nameLower.endsWith(".heif") || file.type === "image/heic" || file.type === "image/heif";
     if (isHeic) {
       try {
-        console.log(`Converting HEIC file: ${file.name} (type: ${file.type}, size: ${file.size})`);
         inputBlob = await convertHeicToJpeg(file);
-        console.log(`HEIC conversion successful, output size: ${inputBlob.size}`);
       } catch (err) {
         console.error("HEIC conversion error:", err);
         toast.error(`Failed to convert HEIC file: ${file.name}. Please convert to JPG first.`);
@@ -90,44 +89,24 @@ const UploadStep = ({ orderId, onImagesUploaded, maxImages = 20, initialImages, 
     // Normalize orientation via canvas before uploading
     const { blob: normalizedBlob, isLandscape } = await normalizeImage(inputBlob);
 
-    // Upload to storage
-    const { error: uploadError } = await supabase.storage
-      .from("order-files")
-      .upload(storagePath, normalizedBlob, { contentType: "image/jpeg" });
+    try {
+      const result = await uploadGuestPhoto(sessionId, orderId, normalizedBlob, position, isLandscape);
 
-    if (uploadError) {
+      return {
+        id: localId,
+        file,
+        preview: URL.createObjectURL(normalizedBlob),
+        status: "ready",
+        progress: 100,
+        dbId: result.id,
+        storagePath: result.storagePath,
+        isLandscape,
+      };
+    } catch (err) {
+      console.error("Upload error:", err);
       toast.error(`Failed to upload ${file.name}`);
       return null;
     }
-
-    // Create DB record
-    const { data: photoRecord, error: dbError } = await supabase
-      .from("order_photos")
-      .insert({
-        order_id: orderId,
-        original_path: storagePath,
-        page_position: position,
-        conversion_status: "pending",
-        is_landscape: isLandscape,
-      })
-      .select("id")
-      .single();
-
-    if (dbError || !photoRecord) {
-      toast.error(`Failed to save record for ${file.name}`);
-      return null;
-    }
-
-    return {
-      id: localId,
-      file,
-      preview: URL.createObjectURL(normalizedBlob),
-      status: "ready",
-      progress: 100,
-      dbId: photoRecord.id,
-      storagePath,
-      isLandscape,
-    };
   };
 
   const handleFiles = useCallback(
@@ -142,7 +121,6 @@ const UploadStep = ({ orderId, onImagesUploaded, maxImages = 20, initialImages, 
 
       setIsUploading(true);
 
-      // Add placeholders (HEIC can't be previewed natively, use empty string)
       const placeholders: LocalImage[] = validFiles.map((file) => {
         const nameLower = file.name.toLowerCase();
         const isHeicFile = nameLower.endsWith(".heic") || nameLower.endsWith(".heif");
@@ -157,7 +135,6 @@ const UploadStep = ({ orderId, onImagesUploaded, maxImages = 20, initialImages, 
 
       setImages((prev) => [...prev, ...placeholders]);
 
-      // Upload each file
       const startPosition = images.length;
       const results = await Promise.all(
         placeholders.map((ph, i) => uploadFile(ph.file, ph.id, startPosition + i + 1))
@@ -176,7 +153,7 @@ const UploadStep = ({ orderId, onImagesUploaded, maxImages = 20, initialImages, 
 
       setIsUploading(false);
     },
-    [images.length, maxImages, orderId, isUploading]
+    [images.length, maxImages, orderId, sessionId, isUploading]
   );
 
   const handleDrop = useCallback(
@@ -203,42 +180,42 @@ const UploadStep = ({ orderId, onImagesUploaded, maxImages = 20, initialImages, 
       const img = images.find((i) => i.id === id);
       if (!img) return;
 
-      if (img.storagePath) {
-        await supabase.storage.from("order-files").remove([img.storagePath]);
-      }
-      if (img.dbId) {
-        await supabase.from("order_photos").delete().eq("id", img.dbId);
+      try {
+        await deleteGuestPhoto(sessionId, orderId, img.dbId, img.storagePath);
+      } catch (err) {
+        console.error("Delete error:", err);
       }
 
       URL.revokeObjectURL(img.preview);
       setImages((prev) => prev.filter((i) => i.id !== id));
     },
-    [images]
+    [images, sessionId, orderId]
   );
 
   const handleContinue = async () => {
     const readyImages = images.filter((img) => img.status === "ready" && img.dbId && img.storagePath);
 
-    // Use signed URLs since bucket is now private
-    const photos: OrderPhoto[] = await Promise.all(
-      readyImages.map(async (img, index) => {
-        const { data } = await supabase.storage
-          .from("order-files")
-          .createSignedUrl(img.storagePath!, 3600);
+    // Get signed URLs via edge function
+    const paths = readyImages.map((img) => img.storagePath!);
+    let urlMap: Record<string, string> = {};
+    try {
+      const urls = await getSignedUrls(sessionId, orderId, paths);
+      urlMap = Object.fromEntries(urls.map((u) => [u.path, u.signedUrl]));
+    } catch (err) {
+      console.error("Failed to get signed URLs:", err);
+    }
 
-        return {
-          id: img.dbId!,
-          originalPath: img.storagePath!,
-          convertedPath: null,
-          pagePosition: index + 1,
-          isApproved: false,
-          conversionStatus: "pending",
-          originalUrl: data?.signedUrl || "",
-          convertedUrl: null,
-          isLandscape: img.isLandscape ?? false,
-        };
-      })
-    );
+    const photos: OrderPhoto[] = readyImages.map((img, index) => ({
+      id: img.dbId!,
+      originalPath: img.storagePath!,
+      convertedPath: null,
+      pagePosition: index + 1,
+      isApproved: false,
+      conversionStatus: "pending",
+      originalUrl: urlMap[img.storagePath!] || "",
+      convertedUrl: null,
+      isLandscape: img.isLandscape ?? false,
+    }));
 
     onImagesUploaded(photos);
   };

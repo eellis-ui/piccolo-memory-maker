@@ -1,7 +1,6 @@
 import { useState, useEffect, useCallback } from "react";
 import { Check, BookOpen, Copy } from "lucide-react";
 import { useNavigate, useSearchParams } from "react-router-dom";
-import { supabase } from "@/integrations/supabase/client";
 import { useBasket } from "@/contexts/BasketContext";
 import Navbar from "@/components/layout/Navbar";
 import Footer from "@/components/layout/Footer";
@@ -10,6 +9,12 @@ import ApproveStep from "@/components/builder/ApproveStep";
 import CoverStep from "@/components/builder/CoverStep";
 import CheckoutStep from "@/components/builder/CheckoutStep";
 import UniquePhotosUpsellBanner from "@/components/builder/UniquePhotosUpsellBanner";
+import {
+  getOrCreateSessionId,
+  createGuestOrders,
+  getSessionOrders,
+  updateGuestOrder,
+} from "@/lib/guest-api";
 
 type BuilderStep = "upload" | "approve" | "cover" | "checkout";
 
@@ -64,81 +69,42 @@ const Builder = () => {
   const [books, setBooks] = useState<BookState[]>([]);
   const [activeBookIndex, setActiveBookIndex] = useState(0);
   const [showingCheckout, setShowingCheckout] = useState(false);
-  const [userId, setUserId] = useState<string | null>(null);
   const [sessionId, setSessionId] = useState<string | null>(null);
-
   const [initialized, setInitialized] = useState(false);
 
   // Save step to DB whenever it changes
   const persistStep = useCallback(async (orderId: string, step: BuilderStep) => {
-    await supabase
-      .from("orders")
-      .update({ builder_step: step })
-      .eq("id", orderId);
-  }, []);
+    const sid = sessionId || getOrCreateSessionId();
+    await updateGuestOrder(sid, orderId, { builder_step: step });
+  }, [sessionId]);
 
   useEffect(() => {
     if (initialized) return;
     const init = async () => {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) {
-        navigate("/auth");
-        return;
-      }
-      setUserId(user.id);
-
       // ── Resume existing session ──
+      const sid = resumeSessionId || getOrCreateSessionId();
+      setSessionId(sid);
+      setActiveSessionId(sid);
+
       if (resumeSessionId) {
-        const { data: existingOrders } = await supabase
-          .from("orders")
-          .select("*")
-          .eq("builder_session_id", resumeSessionId)
-          .eq("user_id", user.id)
-          .order("created_at", { ascending: true });
+        try {
+          const existingOrders = await getSessionOrders(resumeSessionId);
 
-        if (existingOrders && existingOrders.length > 0) {
-          // Restore basket quantity
-          setQuantity(existingOrders.length);
-          setSessionId(resumeSessionId);
-          setActiveSessionId(resumeSessionId);
+          if (existingOrders && existingOrders.length > 0) {
+            setQuantity(existingOrders.length);
 
-          const restoredBooks: BookState[] = await Promise.all(
-            existingOrders.map(async (order) => {
-              // Load photos for this order
-              const { data: photoRows } = await supabase
-                .from("order_photos")
-                .select("*")
-                .eq("order_id", order.id)
-                .order("page_position", { ascending: true });
-
-              // Generate signed URLs for photos
-              const photos: OrderPhoto[] = await Promise.all(
-                (photoRows || []).map(async (row) => {
-                  const { data: origSigned } = await supabase.storage
-                    .from("order-files")
-                    .createSignedUrl(row.original_path, 3600);
-
-                  let convertedUrl: string | null = null;
-                  if (row.converted_path) {
-                    const { data: convSigned } = await supabase.storage
-                      .from("order-files")
-                      .createSignedUrl(row.converted_path, 3600);
-                    convertedUrl = convSigned?.signedUrl || null;
-                  }
-
-                  return {
-                    id: row.id,
-                    originalPath: row.original_path,
-                    convertedPath: row.converted_path,
-                    pagePosition: row.page_position,
-                    isApproved: row.is_approved,
-                    conversionStatus: row.conversion_status,
-                    originalUrl: origSigned?.signedUrl || "",
-                    convertedUrl,
-                    isLandscape: row.is_landscape,
-                  };
-                })
-              );
+            const restoredBooks: BookState[] = existingOrders.map((order: any) => {
+              const photos: OrderPhoto[] = (order.photos || []).map((row: any) => ({
+                id: row.id,
+                originalPath: row.original_path,
+                convertedPath: row.converted_path,
+                pagePosition: row.page_position,
+                isApproved: row.is_approved,
+                conversionStatus: row.conversion_status,
+                originalUrl: row.originalUrl || "",
+                convertedUrl: row.convertedUrl || null,
+                isLandscape: row.is_landscape,
+              }));
 
               const step = (order.builder_step || "upload") as BuilderStep;
 
@@ -156,50 +122,45 @@ const Builder = () => {
                 coverData: null,
                 completed: step === "cover" && !!order.cover_image_id,
               } as BookState;
-            })
-          );
+            });
 
-          setBooks(restoredBooks);
+            setBooks(restoredBooks);
 
-          // If all books completed, show checkout
-          if (restoredBooks.every((b) => b.completed)) {
-            setShowingCheckout(true);
+            if (restoredBooks.every((b) => b.completed)) {
+              setShowingCheckout(true);
+            }
+
+            setInitialized(true);
+            return;
           }
-
-          setInitialized(true);
-          return;
+        } catch (err) {
+          console.error("Failed to resume session:", err);
         }
       }
 
       // ── Create new session ──
-      const newSessionId = crypto.randomUUID();
-      setSessionId(newSessionId);
-      setActiveSessionId(newSessionId);
+      try {
+        const newSessionId = crypto.randomUUID();
+        setSessionId(newSessionId);
+        setActiveSessionId(newSessionId);
+        localStorage.setItem("guest_session_id", newSessionId);
 
-      const newBooks: BookState[] = [];
-      for (let i = 0; i < bookCount; i++) {
-        const { data, error } = await supabase
-          .from("orders")
-          .insert({
-            status: "draft",
-            user_id: user.id,
-            builder_session_id: newSessionId,
-            builder_step: "upload",
-          })
-          .select("id")
-          .single();
-        newBooks.push({
-          orderId: error ? null : data.id,
-          step: "upload",
+        const orders = await createGuestOrders(newSessionId, bookCount);
+
+        const newBooks: BookState[] = orders.map((o) => ({
+          orderId: o.id,
+          step: "upload" as const,
           photos: [],
           uploadImages: [],
           bookAddOns: { dedicationPageEnabled: false, dedicationPageText: "", bottomTitle: "color your memories" },
           digitalDownload: false,
           coverData: null,
           completed: false,
-        });
+        }));
+        setBooks(newBooks);
+      } catch (err) {
+        console.error("Failed to create orders:", err);
       }
-      setBooks(newBooks);
       setInitialized(true);
     };
     init();
@@ -210,7 +171,6 @@ const Builder = () => {
     setBooks((prev) => prev.map((b, i) => {
       if (i !== index) return b;
       const updated = { ...b, ...patch };
-      // Persist step changes to DB
       if (patch.step && b.orderId) {
         persistStep(b.orderId, patch.step);
       }
@@ -263,18 +223,15 @@ const Builder = () => {
     subtitle: string;
   }) => {
     const book = books[activeBookIndex];
-    if (book.orderId) {
-      await supabase
-        .from("orders")
-        .update({
-          cover_image_id: data.imageIds[0],
-          title_page_enabled: addOns.titlePageEnabled,
-          title_page_text: addOns.titlePageText,
-          dedication_page_enabled: addOns.dedicationPageEnabled,
-          dedication_page_text: addOns.dedicationPageText,
-          builder_step: "cover",
-        })
-        .eq("id", book.orderId);
+    if (book.orderId && sessionId) {
+      await updateGuestOrder(sessionId, book.orderId, {
+        cover_image_id: data.imageIds[0],
+        title_page_enabled: addOns.titlePageEnabled,
+        title_page_text: addOns.titlePageText,
+        dedication_page_enabled: addOns.dedicationPageEnabled,
+        dedication_page_text: addOns.dedicationPageText,
+        builder_step: "cover",
+      });
     }
 
     updateBook(activeBookIndex, { coverData: data, completed: true, step: "cover" });
@@ -404,10 +361,11 @@ const Builder = () => {
                   </div>
                 )}
 
-                {activeBook.step === "upload" && activeBook.orderId && (
+                {activeBook.step === "upload" && activeBook.orderId && sessionId && (
                   <UploadStep
                     key={`upload-${activeBookIndex}`}
                     orderId={activeBook.orderId}
+                    sessionId={sessionId}
                     onImagesUploaded={handleImagesUploaded}
                     maxImages={20}
                     initialImages={activeBook.uploadImages}
@@ -415,10 +373,11 @@ const Builder = () => {
                   />
                 )}
 
-                {activeBook.step === "approve" && activeBook.orderId && (
+                {activeBook.step === "approve" && activeBook.orderId && sessionId && (
                   <ApproveStep
                     key={`approve-${activeBook.orderId}`}
                     orderId={activeBook.orderId}
+                    sessionId={sessionId}
                     photos={activeBook.photos}
                     onApprovalComplete={handleApprovalComplete}
                     onPhotosChange={(photos) => updateBook(activeBookIndex, { photos })}
