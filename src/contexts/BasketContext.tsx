@@ -21,9 +21,9 @@ export const DIGITAL_DOWNLOAD_PRICE = 5.99;
 export const UNIQUE_PHOTOS_PRICE = 4.99;
 
 const PRICING_TIERS = [
-  { quantity: 1, pricePerBook: 35, originalPricePerBook: 42 },
-  { quantity: 2, pricePerBook: 31.5, originalPricePerBook: 42 },
-  { quantity: 3, pricePerBook: 29, originalPricePerBook: 42 },
+  { quantity: 1, pricePerBook: 35, originalPricePerBook: 45 },
+  { quantity: 2, pricePerBook: 29.75, originalPricePerBook: 45 },
+  { quantity: 3, pricePerBook: 23.10, originalPricePerBook: 45 },
 ];
 
 interface BasketContextType {
