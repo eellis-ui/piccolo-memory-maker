@@ -15,7 +15,7 @@ export default {
     extend: {
       fontFamily: {
         display: ['Bristol', 'serif'],
-        sans: ['"Yuji Syuku"', 'serif'],
+        sans: ['Poppins', 'sans-serif'],
       },
       colors: {
         border: "hsl(var(--border))",

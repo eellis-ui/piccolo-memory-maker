@@ -259,65 +259,67 @@ const Navbar = () => {
   return (
     <nav className="sticky top-0 left-0 right-0 z-50 bg-background/80 backdrop-blur-md border-b border-border">
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex items-center justify-between h-16">
-          {/* Logo */}
-          <Link to="/" className="flex items-center">
+        <div className="relative flex items-center h-16">
+          {/* Left: Navigation (desktop) / Hamburger (mobile) */}
+          <div className="flex items-center gap-2">
+            {/* Mobile Menu Button */}
+            <div className="md:hidden">
+              <button
+                className="p-2"
+                onClick={() => setIsMenuOpen(!isMenuOpen)}
+                aria-label="Toggle menu"
+              >
+                {isMenuOpen ? (
+                  <X className="h-6 w-6 text-foreground" />
+                ) : (
+                  <Menu className="h-6 w-6 text-foreground" />
+                )}
+              </button>
+            </div>
+
+            {/* Desktop Navigation */}
+            <div className="hidden md:flex items-center space-x-6">
+              {navLinks.map((link) => (
+                <Link
+                  key={link.href}
+                  to={link.href}
+                  className="text-sm font-medium text-foreground hover:text-foreground/70 transition-colors"
+                >
+                  {link.label}
+                </Link>
+              ))}
+              {isAdmin && (
+                <Link
+                  to="/admin"
+                  className="text-sm font-medium text-foreground hover:text-foreground/70 transition-colors flex items-center gap-1"
+                >
+                  <Shield className="w-3.5 h-3.5" />
+                  Admin
+                </Link>
+              )}
+              {isLoggedIn && (
+                <Link
+                  to="/my-orders"
+                  className="text-sm font-medium text-foreground hover:text-foreground/70 transition-colors flex items-center gap-1"
+                >
+                  <ClipboardList className="w-3.5 h-3.5" />
+                  My Orders
+                </Link>
+              )}
+            </div>
+          </div>
+
+          {/* Center: Logo (absolutely centered) */}
+          <Link to="/" className="absolute left-1/2 -translate-x-1/2 flex items-center">
             <img alt="Piccoload – From pic to pen" className="h-10 w-auto" src="/lovable-uploads/bc0afa55-54e9-40fc-b263-333f5ed085bc.png" />
           </Link>
 
-          {/* Desktop Navigation */}
-          <div className="hidden md:flex items-center space-x-8">
-            {navLinks.map((link) => (
-              <Link
-                key={link.href}
-                to={link.href}
-                className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
-              >
-                {link.label}
-              </Link>
-            ))}
-            {isAdmin && (
-              <Link
-                to="/admin"
-                className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors flex items-center gap-1"
-              >
-                <Shield className="w-3.5 h-3.5" />
-                Admin
-              </Link>
-            )}
-            {isLoggedIn && (
-              <Link
-                to="/my-orders"
-                className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors flex items-center gap-1"
-              >
-                <ClipboardList className="w-3.5 h-3.5" />
-                My Orders
-              </Link>
-            )}
-          </div>
-
-          {/* CTA + Cart */}
-          <div className="hidden md:flex items-center space-x-4">
+          {/* Right: Cart + CTA */}
+          <div className="ml-auto flex items-center gap-3">
             <CartButton />
-            <Button asChild className="rounded-2xl px-6">
+            <Button asChild className="hidden md:inline-flex rounded-2xl px-6">
               <Link to="/builder">Start Creating</Link>
             </Button>
-          </div>
-
-          {/* Mobile Menu Button + Cart */}
-          <div className="md:hidden flex items-center gap-2">
-            <CartButton />
-            <button
-              className="p-2"
-              onClick={() => setIsMenuOpen(!isMenuOpen)}
-              aria-label="Toggle menu"
-            >
-              {isMenuOpen ? (
-                <X className="h-6 w-6 text-foreground" />
-              ) : (
-                <Menu className="h-6 w-6 text-foreground" />
-              )}
-            </button>
           </div>
         </div>
 

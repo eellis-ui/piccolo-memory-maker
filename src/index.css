@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Yuji+Syuku&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap');
 
 @font-face {
   font-family: 'Bristol';
@@ -126,7 +126,7 @@
   }
   
   .font-sans {
-    font-family: 'Yuji Syuku', serif;
+    font-family: 'Poppins', sans-serif;
   }
 }
 
