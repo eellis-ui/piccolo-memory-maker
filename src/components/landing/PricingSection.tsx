@@ -264,32 +264,35 @@ const PricingSection = () => {
                 <strong>Next step:</strong> Upload your photos, preview each line-art conversion, customize your cover, and checkout — all in our easy builder.
               </p>
             </div>
-
-            {/* FAQ accordion */}
-            <div className="mb-4">
-              <h3 className="font-display text-lg font-semibold text-foreground mb-4">
-                Frequently Asked Questions
-              </h3>
-              <Accordion type="single" collapsible className="w-full">
-                {faqs.map((faq, i) => (
-                  <AccordionItem key={i} value={`faq-${i}`}>
-                    <AccordionTrigger className="text-left text-sm font-medium font-sans">
-                      {faq.question}
-                    </AccordionTrigger>
-                    <AccordionContent className="text-sm text-muted-foreground leading-relaxed">
-                      {faq.answer}
-                    </AccordionContent>
-                  </AccordionItem>
-                ))}
-              </Accordion>
-            </div>
-
-            {/* Testimonials */}
-            <CustomerTestimonials />
-
-            {/* Customer Reviews */}
-            <CustomerReviewsSection />
           </div>
+        </div>
+
+        {/* FAQ — full width, centered below product section */}
+        <div className="max-w-3xl mx-auto mt-16 md:mt-24 text-center">
+          <h3 className="font-display text-2xl sm:text-3xl font-bold text-foreground mb-3">
+            Frequently Asked Questions
+          </h3>
+          <p className="text-sm text-muted-foreground mb-8">
+            Find answers to common questions about our Piccoload Books!
+          </p>
+          <Accordion type="single" collapsible className="w-full text-left">
+            {faqs.map((faq, i) => (
+              <AccordionItem key={i} value={`faq-${i}`} className="border rounded-lg px-5 mb-3 border-border">
+                <AccordionTrigger className="text-left text-sm font-semibold font-sans">
+                  {faq.question}
+                </AccordionTrigger>
+                <AccordionContent className="text-sm text-muted-foreground leading-relaxed">
+                  {faq.answer}
+                </AccordionContent>
+              </AccordionItem>
+            ))}
+          </Accordion>
+        </div>
+
+        {/* Testimonials & Reviews — full width */}
+        <div className="max-w-6xl mx-auto mt-16">
+          <CustomerTestimonials />
+          <CustomerReviewsSection />
         </div>
       </div>
     </section>
