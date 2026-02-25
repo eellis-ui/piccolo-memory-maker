@@ -114,7 +114,7 @@ const PricingSection = () => {
   const currentMonth = new Date().toLocaleString("default", { month: "long" }).toUpperCase();
 
   return (
-    <section className="py-12 md:py-20 bg-cream">
+    <section className="py-12 md:py-20 bg-background">
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
         <div className="max-w-6xl mx-auto grid grid-cols-1 lg:grid-cols-2 gap-10 lg:gap-16">
           {/* Left — Image Gallery */}
@@ -163,7 +163,7 @@ const PricingSection = () => {
                 <div className="w-full border-t border-border" />
               </div>
               <div className="relative flex justify-center">
-                <span className="bg-cream px-4 text-xs font-bold uppercase tracking-widest text-foreground">
+                <span className="bg-background px-4 text-xs font-bold uppercase tracking-widest text-foreground">
                   {currentMonth} Sale — Final Day!
                 </span>
               </div>
