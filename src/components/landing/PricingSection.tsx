@@ -273,7 +273,7 @@ const PricingSection = () => {
               <Accordion type="single" collapsible className="w-full">
                 {faqs.map((faq, i) => (
                   <AccordionItem key={i} value={`faq-${i}`}>
-                    <AccordionTrigger className="text-left text-sm font-medium">
+                    <AccordionTrigger className="text-left text-sm font-medium font-sans">
                       {faq.question}
                     </AccordionTrigger>
                     <AccordionContent className="text-sm text-muted-foreground leading-relaxed">
