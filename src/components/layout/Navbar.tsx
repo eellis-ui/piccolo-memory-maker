@@ -318,7 +318,7 @@ const Navbar = () => {
           <div className="ml-auto flex items-center gap-3">
             <CartButton />
             <Button asChild className="hidden md:inline-flex rounded-lg px-6 bg-foreground text-background hover:bg-foreground/90">
-              <Link to="/builder">Start Creating</Link>
+              <Link to="/pricing">Start Creating</Link>
             </Button>
           </div>
         </div>
@@ -358,7 +358,7 @@ const Navbar = () => {
                 </Link>
               )}
               <Button asChild className="rounded-lg mx-2">
-                <Link to="/builder" onClick={() => setIsMenuOpen(false)}>
+                <Link to="/pricing" onClick={() => setIsMenuOpen(false)}>
                   Start Creating
                 </Link>
               </Button>
