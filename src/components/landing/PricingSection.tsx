@@ -55,7 +55,7 @@ const faqs = [
   { question: "Can anyone make a Piccoload book, even if they're not tech-savvy?", answer: "Absolutely! Our builder walks you through every step — just upload your photos, approve the line-art conversions, customize your cover, and checkout. No design skills needed." },
   { question: "What kind of photos work best?", answer: "Photos with clear subjects and good contrast work best — think portraits, pets, landmarks, and nature shots. Avoid very dark, blurry, or overly busy images for the best line-art results." },
   
-  { question: "What size is the Piccoload book?", answer: "✨ Our Piccoload book is A4 size 8.3\" x 11.7\" (21 x 29.7 cm) in Portrait orientation.\n\nTo help you visualize it:\n\n👉 It's roughly the size of a standard magazine, similar to well-known U.S. titles like TIME, The New Yorker, or National Geographic.\n\nIt's easy to hold, fits in most backpacks, and gives plenty of room for photos, artwork, and stories." },
+  { question: "What size is the Piccoload book?", answer: "✨ Our Piccoload book is A4 size 8.3\" x 11.7\" (21 x 29.7 cm) in Portrait orientation.\n\nTo help you visualize it:\n\n👉 It's roughly the size of a standard magazine, similar to well-known U.S. titles like TIME, The New Yorker, or National Geographic.\n\nIt's easy to hold, fits in most backpacks, and gives plenty of room for photos, artwork, and stories.\n\nThe large pages give you plenty of room to color and add detail, and they look great on display." },
 ];
 
 const PRODUCT_IMAGES_QUERY = `
