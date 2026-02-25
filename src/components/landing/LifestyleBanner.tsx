@@ -23,7 +23,7 @@ const LifestyleBanner = () => {
               Spring Sale
             </h2>
             <p className="text-lg sm:text-xl md:text-2xl font-display uppercase tracking-wide text-background">
-              Up to <span className="text-amber-400">40% Off</span> All Books
+              Up to <span className="text-[#A8C686] drop-shadow-[0_0_12px_rgba(168,198,134,0.6)]">40% Off</span> All Books
             </p>
             <p className="text-sm sm:text-base text-background/70 max-w-md mx-auto">
               Turn your favourite spring memories into a personalised colouring book — at our best price of the year.
