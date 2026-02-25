@@ -31,14 +31,6 @@ const faqs = [
     question: "What size is the Piccoload book?",
     answer: "Each book is a generous 8.3\" × 11.7\" (A4) format — close to standard US letter size. The large pages give you plenty of room to color and add detail, and they look great on display.",
   },
-  {
-    question: "How many photos can I include in my book?",
-    answer: "Each book includes up to 20 photo conversions. Every photo is transformed into a beautiful line drawing ready for coloring. You can also add extra pages if you want more!",
-  },
-  {
-    question: "What if I order multiple books?",
-    answer: "By default, each additional book contains the same 20 images. If you'd like each book to have different photos, you can add the 'Unique Photos' add-on for $5, which gives each book its own set of 20 unique images.",
-  },
 ];
 
 const FAQ = () => {
