@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -7,8 +7,9 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { useBasket, UNIQUE_PHOTOS_PRICE } from "@/contexts/BasketContext";
 import { toast } from "sonner";
-import ProductImageGallery from "./ProductImageGallery";
+import ProductImageGallery, { type ProductImage } from "./ProductImageGallery";
 import CountdownTimer from "./CountdownTimer";
+import { storefrontApiRequest } from "@/lib/shopify";
 import CustomerTestimonials from "./CustomerTestimonials";
 import TrustBadges from "./TrustBadges";
 import CustomerReviewsSection from "./CustomerReviewsSection";
@@ -55,10 +56,51 @@ const faqs = [
   { question: "What if I order multiple books?", answer: "By default, each additional book contains the same 20 images. If you'd like each book to have different photos, you can add the 'Unique Photos' add-on for $4.99." },
 ];
 
+const PRODUCT_IMAGES_QUERY = `
+  query GetProductImages($handle: String!) {
+    product(handle: $handle) {
+      images(first: 20) {
+        edges {
+          node {
+            url
+            altText
+          }
+        }
+      }
+    }
+  }
+`;
+
 const PricingSection = () => {
   const [selectedQuantity, setSelectedQuantity] = useState(2);
   const { setQuantity, uniquePhotos, setUniquePhotos } = useBasket();
   const navigate = useNavigate();
+  const [productImages, setProductImages] = useState<ProductImage[]>([]);
+  const [imagesLoading, setImagesLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchImages = async () => {
+      try {
+        const data = await storefrontApiRequest(PRODUCT_IMAGES_QUERY, {
+          handle: "personalised-coloring-book",
+        });
+        const edges = data?.data?.product?.images?.edges;
+        if (edges && edges.length > 0) {
+          setProductImages(
+            edges.map((e: { node: { url: string; altText: string | null } }) => ({
+              url: e.node.url,
+              altText: e.node.altText,
+            }))
+          );
+        }
+      } catch (err) {
+        console.error("Failed to fetch product images:", err);
+      } finally {
+        setImagesLoading(false);
+      }
+    };
+    fetchImages();
+  }, []);
 
   const selectedTier = physicalPricing.find((t) => t.quantity === selectedQuantity)!;
   const totalPrice = selectedTier.price + (uniquePhotos && selectedQuantity > 1 ? UNIQUE_PHOTOS_PRICE : 0);
@@ -77,7 +119,7 @@ const PricingSection = () => {
         <div className="max-w-6xl mx-auto grid grid-cols-1 lg:grid-cols-2 gap-10 lg:gap-16">
           {/* Left — Image Gallery */}
           <div className="lg:sticky lg:top-24 lg:self-start">
-            <ProductImageGallery />
+            <ProductImageGallery images={productImages} isLoading={imagesLoading} />
           </div>
 
           {/* Right — Product Details */}
