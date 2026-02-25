@@ -253,16 +253,16 @@ const PricingSection = () => {
               Start Creating — ${totalPrice.toFixed(2)}
             </Button>
 
-            {/* Trust badges */}
-            <div className="mb-8">
-              <TrustBadges />
-            </div>
-
             {/* Process note */}
-            <div className="bg-primary/10 border border-primary/20 rounded-lg p-4 mb-10">
+            <div className="bg-primary/10 border border-primary/20 rounded-lg p-4 mb-5">
               <p className="text-sm text-foreground leading-relaxed">
                 <strong>Next step:</strong> Upload your photos, preview each line-art conversion, customize your cover, and checkout — all in our easy builder.
               </p>
+            </div>
+
+            {/* Trust badges */}
+            <div className="mb-8">
+              <TrustBadges />
             </div>
           </div>
         </div>
