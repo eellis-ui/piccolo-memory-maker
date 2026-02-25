@@ -49,7 +49,7 @@ const featureBullets = [
 ];
 
 const faqs = [
-  { question: "What quality and materials can I expect?", answer: "We use premium 170gsm uncoated paper, perfect for coloring with pencils, pens, or markers. The cover is printed on thick 350gsm card stock. Every book is professionally printed and bound to last." },
+  { question: "What quality and materials can I expect?", answer: "Each Piccoload book is printed on high-quality, durable paper with crisp line art converted from your photos. The binding and cover are designed to create a keepsake book you can colour, gift or treasure. The process is described on our \"How It Works\" page: upload your photos → we convert each photo into a unique colouring page → we craft & dispatch your book." },
   { question: "How long will it take from ordering to delivery?", answer: "Books are printed and dispatched within 3–5 business days. US delivery typically takes an additional 3–5 business days, so you can expect your book within 1–2 weeks of ordering." },
   { question: "What kind of photos work best?", answer: "Photos with clear subjects and good contrast work best — think portraits, pets, landmarks, and nature shots. Avoid very dark, blurry, or overly busy images for the best line-art results." },
   { question: "What size is the book?", answer: "Each book is a generous 8.3\" × 11.7\" (A4) format — close to standard US letter size. The large pages give you plenty of room to color." },
