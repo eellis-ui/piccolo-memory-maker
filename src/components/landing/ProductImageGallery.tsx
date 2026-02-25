@@ -1,38 +1,66 @@
 import { useState } from "react";
+import { Skeleton } from "@/components/ui/skeleton";
 
-const images = [
-  "/lovable-uploads/67e8bc18-d4da-4d1e-bb5c-8235ea57eb6d.png",
-  "/lovable-uploads/bc0afa55-54e9-40fc-b263-333f5ed085bc.png",
-  "/lovable-uploads/d741aeb9-21af-45e1-9863-e350da643d42.png",
+export interface ProductImage {
+  url: string;
+  altText: string | null;
+}
+
+const FALLBACK_IMAGES: ProductImage[] = [
+  { url: "/lovable-uploads/67e8bc18-d4da-4d1e-bb5c-8235ea57eb6d.png", altText: "Personalised coloring book" },
+  { url: "/lovable-uploads/bc0afa55-54e9-40fc-b263-333f5ed085bc.png", altText: "Personalised coloring book" },
+  { url: "/lovable-uploads/d741aeb9-21af-45e1-9863-e350da643d42.png", altText: "Personalised coloring book" },
 ];
 
-const ProductImageGallery = () => {
+interface Props {
+  images?: ProductImage[];
+  isLoading?: boolean;
+}
+
+const ProductImageGallery = ({ images, isLoading }: Props) => {
   const [selected, setSelected] = useState(0);
+  const displayImages = images && images.length > 0 ? images : FALLBACK_IMAGES;
+
+  // Reset selection if it's out of bounds
+  const safeSelected = selected >= displayImages.length ? 0 : selected;
+
+  if (isLoading) {
+    return (
+      <div className="w-full">
+        <Skeleton className="aspect-square w-full rounded-lg mb-3" />
+        <div className="flex gap-2">
+          {[0, 1, 2].map((i) => (
+            <Skeleton key={i} className="w-20 h-20 rounded-lg flex-shrink-0" />
+          ))}
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="w-full">
       {/* Main image */}
       <div className="aspect-square w-full overflow-hidden rounded-lg bg-muted mb-3">
         <img
-          src={images[selected]}
-          alt="Personalised coloring book"
+          src={displayImages[safeSelected].url}
+          alt={displayImages[safeSelected].altText || "Personalised coloring book"}
           className="w-full h-full object-cover"
         />
       </div>
 
       {/* Thumbnails */}
-      <div className="flex gap-2">
-        {images.map((src, i) => (
+      <div className="flex gap-2 overflow-x-auto">
+        {displayImages.map((img, i) => (
           <button
             key={i}
             onClick={() => setSelected(i)}
             className={`w-20 h-20 rounded-lg overflow-hidden border-2 transition-all flex-shrink-0 ${
-              selected === i
+              safeSelected === i
                 ? "border-primary ring-2 ring-primary/30"
                 : "border-border hover:border-muted-foreground/40"
             }`}
           >
-            <img src={src} alt={`Thumbnail ${i + 1}`} className="w-full h-full object-cover" />
+            <img src={img.url} alt={img.altText || `Thumbnail ${i + 1}`} className="w-full h-full object-cover" />
           </button>
         ))}
       </div>
