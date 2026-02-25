@@ -6,7 +6,7 @@ const Pricing = () => {
   return (
     <div className="min-h-screen bg-background">
       <Navbar />
-      <main className="pt-16 bg-white">
+      <main className="bg-white">
         <PricingSection />
       </main>
       <Footer />
