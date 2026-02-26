@@ -207,7 +207,7 @@ const PricingSection = () => {
 
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-2 flex-wrap">
-                          <span className="font-semibold text-foreground">
+                          <span className="font-extrabold text-foreground">
                             {tier.quantity} Coloring {tier.quantity === 1 ? "Book" : "Books"}
                           </span>
                           {tier.savingsBadge && (
