@@ -8,7 +8,7 @@ const comparisons = [
 
 const BeforeAfterStrip = () => {
   return (
-    <section className="py-12 md:py-16 bg-background">
+    <section className="pt-4 pb-12 md:pt-6 md:pb-16 bg-background">
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center mb-10">
           <h2 className="font-display text-2xl sm:text-3xl font-bold text-foreground mb-2">
