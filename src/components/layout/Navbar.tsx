@@ -1,6 +1,6 @@
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { Menu, X, ShoppingCart, Minus, Plus, Trash2, Shield, ClipboardList, Sparkles, Tag, Truck, User } from "lucide-react";
+import { Menu, X, ShoppingCart, Minus, Plus, Trash2, Shield, ClipboardList, Sparkles, Tag } from "lucide-react";
 import { useState, useEffect } from "react";
 import { useBasket, DIGITAL_DOWNLOAD_PRICE, UNIQUE_PHOTOS_PRICE } from "@/contexts/BasketContext";
 import { useIsAdmin } from "@/hooks/use-admin";
@@ -197,35 +197,36 @@ const Navbar = () => {
 
       {/* Footer */}
       {hasItems &&
-    <div className="border-t border-border pt-4 space-y-3 flex-shrink-0">
+    <div className="border-t border-border pt-4 space-y-4 flex-shrink-0">
           {/* Discounts line */}
           {totalDiscount > 0 &&
-      <div className="flex items-center justify-between text-sm">
-              <div className="flex items-center gap-2">
-                <span className="text-muted-foreground">Discounts</span>
-                <Badge variant="secondary" className="text-[10px] font-bold uppercase tracking-wider bg-primary/10 text-primary border-0 px-1.5 py-0">
+      <div className="flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <span className="text-foreground font-medium text-base">Discounts</span>
+                <Badge variant="secondary" className="text-[10px] font-bold uppercase tracking-wider bg-muted text-foreground border-0 px-2.5 py-1 flex items-center gap-1">
+                  <Tag className="w-3 h-3" />
                   February Sale
                 </Badge>
               </div>
-              <span className="text-green-600 font-medium">-${totalDiscount.toFixed(2)}</span>
+              <span className="text-foreground font-medium text-base">– ${totalDiscount.toFixed(2)}</span>
             </div>
       }
 
-          <Separator />
-
-          <Button asChild className="w-full rounded-lg py-5 text-base font-semibold" size="lg">
+          <Button asChild className="w-full rounded-lg py-6 text-base font-bold bg-foreground text-background hover:bg-foreground/90" size="lg">
             <Link to={activeSessionId ? `/builder?sessionId=${activeSessionId}` : "/builder"}>
-              Checkout · ${grandTotal.toFixed(2)}
+              Checkout • ${grandTotal.toFixed(2)}
             </Link>
           </Button>
 
           {/* Payment trust badges */}
-          <div className="flex items-center justify-center gap-2 flex-wrap pt-1 pb-2">
-            {["Apple Pay", "Google Pay", "PayPal", "AMEX", "VISA", "MC", "Shop Pay"].map((method) =>
+          <div className="flex items-center justify-center gap-2 flex-wrap pb-2">
+            {[
+              { name: "Apple Pay", svg: <svg viewBox="0 0 50 20" className="h-5 w-auto"><text x="3" y="15" fontSize="11" fontFamily="system-ui" fontWeight="600" fill="currentColor">Pay</text></svg> },
+            ].map(() => null)}
+            {["Apple Pay", "G Pay", "PayPal", "AMEX", "VISA", "Mastercard", "Maestro", "Shop Pay"].map((method) =>
         <span
           key={method}
-          className="text-[9px] font-bold tracking-wide border border-muted-foreground/30 rounded px-1.5 py-0.5 text-muted-foreground/60">
-
+          className="text-[9px] font-bold tracking-wide border border-border rounded-md px-2 py-1.5 text-muted-foreground">
                 {method}
               </span>
         )}
