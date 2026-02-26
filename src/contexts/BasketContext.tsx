@@ -41,9 +41,10 @@ interface BasketContextType {
   uniquePhotos: boolean;
   setUniquePhotos: (val: boolean) => void;
   uniquePhotosPrice: number;
-  // Active builder session for resume
   activeSessionId: string | null;
   setActiveSessionId: (id: string | null) => void;
+  isCartOpen: boolean;
+  setIsCartOpen: (open: boolean) => void;
 }
 
 const BasketContext = createContext<BasketContextType | undefined>(undefined);
@@ -53,6 +54,7 @@ export const BasketProvider = ({ children }: { children: ReactNode }) => {
   const [digitalCopies, setDigitalCopies] = useState<number>(0);
   const [uniquePhotos, setUniquePhotos] = useState<boolean>(false);
   const [activeSessionId, setActiveSessionId] = useState<string | null>(null);
+  const [isCartOpen, setIsCartOpen] = useState(false);
   const [addOns, setAddOns] = useState<BookAddOns>({
     titlePageEnabled: false,
     titlePageText: "",
@@ -108,6 +110,7 @@ export const BasketProvider = ({ children }: { children: ReactNode }) => {
         uniquePhotos, setUniquePhotos,
         uniquePhotosPrice: uniquePhotos ? UNIQUE_PHOTOS_PRICE : 0,
         activeSessionId, setActiveSessionId,
+        isCartOpen, setIsCartOpen,
       }}
     >
       {children}

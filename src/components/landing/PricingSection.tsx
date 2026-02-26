@@ -80,7 +80,7 @@ const PRODUCT_IMAGES_QUERY = `
 
 const PricingSection = () => {
   const [selectedQuantity, setSelectedQuantity] = useState(2);
-  const { setQuantity, uniquePhotos, setUniquePhotos } = useBasket();
+  const { setQuantity, uniquePhotos, setUniquePhotos, setIsCartOpen } = useBasket();
   const navigate = useNavigate();
   const [productImages, setProductImages] = useState<ProductImage[]>([]);
   const [imagesLoading, setImagesLoading] = useState(true);
@@ -115,9 +115,7 @@ const PricingSection = () => {
 
   const handleAddToBasket = () => {
     setQuantity(selectedQuantity);
-    toast.success(`${selectedQuantity} coloring ${selectedQuantity === 1 ? "book" : "books"} added to cart!`, {
-      description: "Open your cart to checkout.",
-    });
+    setIsCartOpen(true);
   };
 
   const currentMonth = new Date().toLocaleString("default", { month: "long" }).toUpperCase();
@@ -326,9 +324,8 @@ const PricingSection = () => {
 
       {/* 9. Final CTA Block */}
       <FinalCTABlock onCtaClick={() => {
-        setQuantity(1);
-        toast.success("1 coloring book added!");
-        navigate("/builder");
+        setQuantity(selectedQuantity);
+        setIsCartOpen(true);
       }} />
 
       {/* 10. Sticky Mobile CTA */}
