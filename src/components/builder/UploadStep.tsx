@@ -252,10 +252,10 @@ const UploadStep = ({ orderId, sessionId, onImagesUploaded, maxImages = 20, init
             <p className="text-lg font-medium text-foreground">
               Drop your photos here
             </p>
-            <p className="text-muted-foreground">or click to browse (JPG, PNG, HEIC)</p>
+            <p className="text-foreground">or click to browse (JPG, PNG, HEIC)</p>
           </div>
-          <p className="text-sm text-muted-foreground">
-            {readyCount} of {maxImages} photos uploaded
+           <p className="text-sm text-foreground">
+             {readyCount} of {maxImages} photos uploaded
           </p>
         </div>
       </div>
@@ -264,7 +264,7 @@ const UploadStep = ({ orderId, sessionId, onImagesUploaded, maxImages = 20, init
       {images.length > 0 && (
         <div className="space-y-2">
           <div className="flex justify-between text-sm">
-            <span className="text-muted-foreground">Upload progress</span>
+            <span className="text-foreground">Upload progress</span>
             <span className="font-medium">
               {readyCount}/{maxImages} photos
             </span>

@@ -23,7 +23,7 @@ const UniquePhotosUpsellBanner = () => {
                 20 Unique Photos Per Book
                 <Badge variant="secondary" className="text-xs">Added</Badge>
               </p>
-              <p className="text-xs text-muted-foreground">
+              <p className="text-xs text-foreground">
                 Each of your {bookCount} books will use different photos
               </p>
             </div>
@@ -52,9 +52,9 @@ const UniquePhotosUpsellBanner = () => {
             <h3 className="font-display text-base font-semibold text-foreground">
               Make each book unique!
             </h3>
-            <p className="text-sm text-muted-foreground mt-1">
-              You're ordering <strong>{bookCount} books</strong>. Without this upgrade, all {bookCount} books will contain the <strong>same 20 photos</strong>. Add this to upload 20 <em>different</em> photos for each book.
-            </p>
+             <p className="text-sm text-foreground mt-1">
+               You're ordering <strong>{bookCount} books</strong>. Without this upgrade, all {bookCount} books will contain the <strong>same 20 photos</strong>. Add this to upload 20 <em>different</em> photos for each book.
+             </p>
           </div>
         </div>
 
@@ -66,7 +66,7 @@ const UniquePhotosUpsellBanner = () => {
             <span className="font-semibold text-foreground text-sm">
               20 Different Photos Per Book
             </span>
-            <span className="text-xs text-muted-foreground ml-2">Upload unique photos for each of your {bookCount} books</span>
+            <span className="text-xs text-foreground ml-2">Upload unique photos for each of your {bookCount} books</span>
           </div>
           <span className="font-bold text-foreground shrink-0 ml-4">
             + ${UNIQUE_PHOTOS_PRICE.toFixed(2)}
