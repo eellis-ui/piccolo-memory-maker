@@ -94,6 +94,7 @@ const PricingSection = () => {
         const data = await storefrontApiRequest(PRODUCT_IMAGES_QUERY, {
           handle: "personalised-coloring-book",
         });
+        const edges = data?.data?.product?.images?.edges;
         if (edges && edges.length > 0) {
           const shopifyImages = edges.map((e: { node: { url: string; altText: string | null } }) => ({
             url: e.node.url,
