@@ -82,7 +82,9 @@ const PricingSection = () => {
   const [selectedQuantity, setSelectedQuantity] = useState(2);
   const { addToCart, uniquePhotos, setUniquePhotos, setIsCartOpen } = useBasket();
   const navigate = useNavigate();
-  const [productImages, setProductImages] = useState<ProductImage[]>([]);
+  const [productImages, setProductImages] = useState<ProductImage[]>([
+    { url: "/images/product-hero.png", altText: "Personalised Coloring Book" },
+  ]);
   const [imagesLoading, setImagesLoading] = useState(true);
   const ctaButtonRef = useRef<HTMLButtonElement>(null);
 
