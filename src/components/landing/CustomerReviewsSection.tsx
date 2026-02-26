@@ -54,7 +54,7 @@ const Stars = ({ count }: { count: number }) => (
     {[...Array(5)].map((_, i) => (
       <Star
         key={i}
-        className={`w-4 h-4 ${i < count ? "fill-[#A8C686] text-[#A8C686]" : "text-muted-foreground/30"}`}
+        className={`w-4 h-4 ${i < count ? "fill-primary text-primary" : "text-muted-foreground/30"}`}
       />
     ))}
   </div>
@@ -89,7 +89,7 @@ const CustomerReviewsSection = () => {
               <span className="w-12 text-right text-muted-foreground">{d.stars} star</span>
               <div className="flex-1 h-3 bg-secondary rounded-full overflow-hidden">
                 <div
-                  className="h-full bg-[#A8C686] rounded-full transition-all"
+                  className="h-full bg-primary rounded-full transition-all"
                   style={{ width: `${maxCount ? (d.count / maxCount) * 100 : 0}%` }}
                 />
               </div>
