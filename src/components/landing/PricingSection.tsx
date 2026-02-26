@@ -94,14 +94,12 @@ const PricingSection = () => {
         const data = await storefrontApiRequest(PRODUCT_IMAGES_QUERY, {
           handle: "personalised-coloring-book",
         });
-        const edges = data?.data?.product?.images?.edges;
         if (edges && edges.length > 0) {
-          setProductImages(
-            edges.map((e: { node: { url: string; altText: string | null } }) => ({
-              url: e.node.url,
-              altText: e.node.altText,
-            }))
-          );
+          const shopifyImages = edges.map((e: { node: { url: string; altText: string | null } }) => ({
+            url: e.node.url,
+            altText: e.node.altText,
+          }));
+          setProductImages((prev) => [prev[0], ...shopifyImages]);
         }
       } catch (err) {
         console.error("Failed to fetch product images:", err);
