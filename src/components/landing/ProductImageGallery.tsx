@@ -49,12 +49,12 @@ const ProductImageGallery = ({ images, isLoading }: Props) => {
       </div>
 
       {/* Thumbnails */}
-      <div className="flex gap-2 overflow-x-auto">
+      <div className="grid gap-2" style={{ gridTemplateColumns: `repeat(${displayImages.length}, 1fr)` }}>
         {displayImages.map((img, i) => (
           <button
             key={i}
             onClick={() => setSelected(i)}
-            className={`w-20 h-20 rounded-lg overflow-hidden border-2 transition-all flex-shrink-0 ${
+            className={`aspect-square rounded-lg overflow-hidden border-2 transition-all ${
               safeSelected === i
                 ? "border-primary ring-2 ring-primary/30"
                 : "border-border hover:border-muted-foreground/40"
