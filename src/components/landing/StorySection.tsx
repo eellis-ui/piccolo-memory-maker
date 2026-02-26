@@ -17,25 +17,15 @@ const StorySection = () => {
 
           <div className="prose prose-lg mx-auto text-center">
             <p className="text-muted-foreground text-lg leading-relaxed mb-6">
-              Piccoload was born during a hospital stay, where coloring became a 
-              source of calm and comfort during recovery. What started as a personal 
-              coping mechanism transformed into something bigger—a way to turn 
-              cherished memories into meaningful, therapeutic art.
+              At Piccolo'd, we believe that the most meaningful gifts come from the heart — and nothing is more personal than your own cherished memories, turned into something you can hold, colour, and treasure forever.
             </p>
             
             <p className="text-muted-foreground text-lg leading-relaxed mb-6">
-              We believe that coloring isn't just for children. It's a mindful 
-              practice that helps us slow down, be present, and reconnect with 
-              moments that matter. By transforming your photos into beautiful 
-              line drawings, we help you relive your happiest memories in a 
-              completely new way.
+              Our story began during a challenging chapter. While recovering from a chronic illness and spending long days in hospital, colouring became more than just a pastime — it was a comforting escape, a way to focus the mind and find calm in the middle of uncertainty. From that experience, the idea for Piccolo'd was born: to help others find joy, relaxation, and connection through personalised colouring books.
             </p>
             
             <p className="text-muted-foreground text-lg leading-relaxed">
-              Every Piccoload book is made with love in the USA, using premium 
-              materials that honor the memories within. Whether it's a gift for 
-              a loved one or a keepsake for yourself, each book is a unique 
-              celebration of life's precious moments.
+              Today, we transform your favourite photos — from silly selfies to treasured family moments — into beautifully hand-drawn line art, bound together in a bespoke colouring book. Whether it's a sentimental gift for someone special, a therapeutic activity to ease anxiety, or a creative keepsake for children, every page tells a story that's uniquely yours.
             </p>
           </div>
 
