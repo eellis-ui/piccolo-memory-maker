@@ -3,9 +3,7 @@ import { PinkSplash, LavenderSplash } from "./ColorSplash";
 
 const StorySection = () => {
   return (
-    <section className="relative py-20 bg-background overflow-hidden">
-      <PinkSplash size={150} className="top-10 right-[8%] opacity-40" />
-      <LavenderSplash size={120} className="bottom-10 left-[5%] opacity-40" />
+    <section className="relative py-20 bg-white overflow-hidden">
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
         <div className="max-w-3xl mx-auto relative z-10">
           <div className="text-center mb-12">
