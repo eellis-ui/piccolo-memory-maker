@@ -7,7 +7,7 @@ interface FinalCTABlockProps {
 
 const FinalCTABlock = ({ onCtaClick }: FinalCTABlockProps) => {
   return (
-    <section className="py-16 md:py-24 bg-primary/5">
+    <section className="pt-8 pb-16 md:pt-12 md:pb-24 bg-background">
       <div className="container mx-auto px-4 text-center max-w-2xl">
         <h2 className="font-display text-2xl sm:text-3xl font-bold text-foreground mb-4">
           Ready to Create Something Special?
