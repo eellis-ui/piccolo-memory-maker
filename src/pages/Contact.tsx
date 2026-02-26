@@ -75,7 +75,7 @@ const Contact = () => {
                     Save my name, email, and website in this browser for the next time I comment.
                   </label>
                 </div>
-                <Button type="submit" className="rounded-full px-10 py-5" size="lg">
+                <Button type="submit" className="px-10 py-5" size="lg">
                   Submit Now
                 </Button>
               </form>
