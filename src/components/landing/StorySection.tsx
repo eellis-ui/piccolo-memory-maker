@@ -11,19 +11,15 @@ const StorySection = () => {
           alt="Mother and daughter hiking together through green mountains"
           className="w-full h-full object-cover"
         />
+        <div className="absolute inset-0 bg-black/30 flex items-center justify-center">
+          <h2 className="font-display text-3xl sm:text-4xl md:text-5xl font-semibold text-white">
+            Our Story
+          </h2>
+        </div>
       </div>
 
       <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-20">
         <div className="max-w-3xl mx-auto relative z-10">
-          <div className="text-center mb-12">
-            
-
-
-            <h2 className="font-display text-3xl sm:text-4xl font-semibold text-foreground mb-4">
-              Our Story
-            </h2>
-          </div>
-
           <div className="prose prose-lg mx-auto text-center">
             <p className="text-muted-foreground text-lg leading-relaxed mb-6">
               At Piccolo'd, we believe that the most meaningful gifts come from the heart - and nothing is more personal than your own cherished memories, turned into something you can hold, colour, and treasure forever.
