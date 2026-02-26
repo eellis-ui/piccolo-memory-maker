@@ -217,7 +217,7 @@ const PricingSection = () => {
                             </Badge>
                           )}
                         </div>
-                        <p className="text-xs text-foreground font-semibold mt-0.5">
+                        <p className="text-xs text-primary font-bold mt-0.5">
                           You save {tier.savingsPercent}
                         </p>
                       </div>
