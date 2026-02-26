@@ -15,6 +15,7 @@ import TrustBadges from "./TrustBadges";
 import CustomerReviewsSection from "./CustomerReviewsSection";
 import HowItWorksSection from "./HowItWorksSection";
 import CatBanner from "./CatBanner";
+import InstagramSection from "./InstagramSection";
 
 const physicalPricing = [
   {
@@ -309,7 +310,10 @@ const PricingSection = () => {
         </div>
       </div>
     </section>
+
+    <InstagramSection />
     </>
+
   );
 };
 
