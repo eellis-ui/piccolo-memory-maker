@@ -322,7 +322,7 @@ const Builder = () => {
                         className={`mt-2 text-sm ${
                           index <= currentStepIndex
                             ? "text-foreground font-medium"
-                            : "text-muted-foreground"
+                            : "text-foreground"
                         }`}
                       >
                         {step.label}
