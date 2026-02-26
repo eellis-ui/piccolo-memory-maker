@@ -292,7 +292,7 @@ const PricingSection = () => {
       <HowItWorksSection />
 
       {/* 5. FAQ */}
-      <section className="py-12 md:py-16 bg-background">
+      <section className="py-12 md:py-16 bg-cream">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
           <div className="max-w-3xl mx-auto text-center">
             <h3 className="font-display text-2xl sm:text-3xl font-bold text-foreground mb-3">
