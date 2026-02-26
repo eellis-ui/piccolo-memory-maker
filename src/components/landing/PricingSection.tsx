@@ -84,6 +84,11 @@ const PricingSection = () => {
   const navigate = useNavigate();
   const [productImages, setProductImages] = useState<ProductImage[]>([
     { url: "/images/product-hero.png", altText: "Personalised Coloring Book" },
+    { url: "/images/product-gallery-2.png", altText: "Coloring book pages with pens" },
+    { url: "/images/product-gallery-3.png", altText: "Coloring book front cover" },
+    { url: "/images/product-gallery-4.png", altText: "Photo to coloring page conversion" },
+    { url: "/images/product-gallery-5.png", altText: "Coloring book page on sofa" },
+    { url: "/images/product-gallery-6.png", altText: "Coloring book on table with pencils" },
   ]);
   const [imagesLoading, setImagesLoading] = useState(true);
   const ctaButtonRef = useRef<HTMLButtonElement>(null);
