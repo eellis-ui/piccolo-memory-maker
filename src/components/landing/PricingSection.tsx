@@ -80,7 +80,7 @@ const PRODUCT_IMAGES_QUERY = `
 
 const PricingSection = () => {
   const [selectedQuantity, setSelectedQuantity] = useState(2);
-  const { setQuantity, uniquePhotos, setUniquePhotos, setIsCartOpen } = useBasket();
+  const { addToCart, uniquePhotos, setUniquePhotos, setIsCartOpen } = useBasket();
   const navigate = useNavigate();
   const [productImages, setProductImages] = useState<ProductImage[]>([]);
   const [imagesLoading, setImagesLoading] = useState(true);
@@ -114,7 +114,7 @@ const PricingSection = () => {
   const totalPrice = selectedTier.price + (uniquePhotos && selectedQuantity > 1 ? UNIQUE_PHOTOS_PRICE : 0);
 
   const handleAddToBasket = () => {
-    setQuantity(selectedQuantity);
+    addToCart(selectedQuantity);
     setIsCartOpen(true);
   };
 
@@ -324,7 +324,7 @@ const PricingSection = () => {
 
       {/* 9. Final CTA Block */}
       <FinalCTABlock onCtaClick={() => {
-        setQuantity(selectedQuantity);
+        addToCart(selectedQuantity);
         setIsCartOpen(true);
       }} />
 

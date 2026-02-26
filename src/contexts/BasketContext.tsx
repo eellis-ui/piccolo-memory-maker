@@ -1,6 +1,7 @@
 import { createContext, useContext, useState, ReactNode } from "react";
 
 export interface BasketItem {
+  id: string;
   quantity: number;
   pricePerBook: number;
   originalPricePerBook: number;
@@ -26,8 +27,20 @@ const PRICING_TIERS = [
   { quantity: 3, pricePerBook: 23.10, originalPricePerBook: 45 },
 ];
 
+let nextItemId = 1;
+
 interface BasketContextType {
+  /** @deprecated Use items array instead */
   item: BasketItem | null;
+  /** All line items in the cart */
+  items: BasketItem[];
+  /** Total book count across all line items */
+  totalBookCount: number;
+  /** Add a bundle to the cart (stacks as new line item) */
+  addToCart: (quantity: number) => void;
+  /** Remove a specific line item by id */
+  removeItem: (id: string) => void;
+  /** Legacy: set single item (used by builder for quantity changes) */
   setQuantity: (quantity: number) => void;
   clear: () => void;
   pricingTiers: typeof PRICING_TIERS;
@@ -49,8 +62,20 @@ interface BasketContextType {
 
 const BasketContext = createContext<BasketContextType | undefined>(undefined);
 
+function createBasketItem(quantity: number): BasketItem {
+  const tier = PRICING_TIERS.find((t) => t.quantity === quantity) ?? PRICING_TIERS[0];
+  return {
+    id: `item-${nextItemId++}`,
+    quantity: tier.quantity,
+    pricePerBook: tier.pricePerBook,
+    originalPricePerBook: tier.originalPricePerBook,
+    totalPrice: +(tier.pricePerBook * tier.quantity).toFixed(2),
+    originalTotalPrice: +(tier.originalPricePerBook * tier.quantity).toFixed(2),
+  };
+}
+
 export const BasketProvider = ({ children }: { children: ReactNode }) => {
-  const [item, setItem] = useState<BasketItem | null>(null);
+  const [items, setItems] = useState<BasketItem[]>([]);
   const [digitalCopies, setDigitalCopies] = useState<number>(0);
   const [uniquePhotos, setUniquePhotos] = useState<boolean>(false);
   const [activeSessionId, setActiveSessionId] = useState<string | null>(null);
@@ -69,23 +94,40 @@ export const BasketProvider = ({ children }: { children: ReactNode }) => {
 
   const digitalPrice = digitalCopies * DIGITAL_DOWNLOAD_PRICE;
 
+  const totalBookCount = items.reduce((sum, i) => sum + i.quantity, 0);
+
+  // Backward compat: first item or a synthesized aggregate
+  const item: BasketItem | null = items.length > 0
+    ? {
+        id: items[0].id,
+        quantity: totalBookCount,
+        pricePerBook: items[0].pricePerBook,
+        originalPricePerBook: items[0].originalPricePerBook,
+        totalPrice: +items.reduce((s, i) => s + i.totalPrice, 0).toFixed(2),
+        originalTotalPrice: +items.reduce((s, i) => s + i.originalTotalPrice, 0).toFixed(2),
+      }
+    : null;
+
+  const addToCart = (quantity: number) => {
+    if (quantity <= 0) return;
+    setItems((prev) => [...prev, createBasketItem(quantity)]);
+  };
+
+  const removeItem = (id: string) => {
+    setItems((prev) => prev.filter((i) => i.id !== id));
+  };
+
+  // Legacy: replaces all items with a single item (used by builder quantity controls)
   const setQuantity = (quantity: number) => {
     if (quantity <= 0) {
-      setItem(null);
+      setItems([]);
       return;
     }
-    const tier = PRICING_TIERS.find((t) => t.quantity === quantity) ?? PRICING_TIERS[0];
-    setItem({
-      quantity: tier.quantity,
-      pricePerBook: tier.pricePerBook,
-      originalPricePerBook: tier.originalPricePerBook,
-      totalPrice: +(tier.pricePerBook * tier.quantity).toFixed(2),
-      originalTotalPrice: +(tier.originalPricePerBook * tier.quantity).toFixed(2),
-    });
+    setItems([createBasketItem(quantity)]);
   };
 
   const clear = () => {
-    setItem(null);
+    setItems([]);
     setDigitalCopies(0);
     setUniquePhotos(false);
     setActiveSessionId(null);
@@ -101,7 +143,8 @@ export const BasketProvider = ({ children }: { children: ReactNode }) => {
   return (
     <BasketContext.Provider
       value={{
-        item, setQuantity, clear,
+        item, items, totalBookCount,
+        addToCart, removeItem, setQuantity, clear,
         pricingTiers: PRICING_TIERS,
         digitalCopies, setDigitalCopies, digitalPrice,
         addOns, setAddOns,

@@ -19,7 +19,7 @@ import { Separator } from "@/components/ui/separator";
 
 const Navbar = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const { item, setQuantity, pricingTiers, digitalCopies, setDigitalCopies, digitalPrice, addOns, addOnsTotal: basketAddOnsTotal, addOnPrice, uniquePhotos, setUniquePhotos, uniquePhotosPrice, activeSessionId, isCartOpen, setIsCartOpen } = useBasket();
+  const { item, items, totalBookCount, removeItem, setQuantity, pricingTiers, digitalCopies, setDigitalCopies, digitalPrice, addOns, addOnsTotal: basketAddOnsTotal, addOnPrice, uniquePhotos, setUniquePhotos, uniquePhotosPrice, activeSessionId, isCartOpen, setIsCartOpen } = useBasket();
   const { isAdmin } = useIsAdmin();
   const [isLoggedIn, setIsLoggedIn] = useState(false);
 
@@ -38,15 +38,14 @@ const Navbar = () => {
   { href: "/contact", label: "Contact Us" }];
 
 
-  const maxQuantity = Math.max(...pricingTiers.map((t) => t.quantity));
-  const hasItems = !!(item || digitalCopies > 0);
-  const itemCount = (item?.quantity ?? 0) + (digitalCopies > 0 ? 1 : 0) + (uniquePhotos ? 1 : 0);
+  const hasItems = items.length > 0 || digitalCopies > 0;
+  const itemCount = totalBookCount + (digitalCopies > 0 ? 1 : 0) + (uniquePhotos ? 1 : 0);
 
-  const bookTotal = item ? item.totalPrice : 0;
+  const bookTotal = items.reduce((s, i) => s + i.totalPrice, 0);
   const grandTotal = bookTotal + digitalPrice + basketAddOnsTotal + uniquePhotosPrice;
 
-  const savings = item ? item.originalTotalPrice - item.totalPrice : 0;
-  const totalDiscount = savings;
+  const totalOriginal = items.reduce((s, i) => s + i.originalTotalPrice, 0);
+  const totalDiscount = totalOriginal - bookTotal;
 
   const BasketContent = () =>
   <div className="flex flex-col h-full">
@@ -79,62 +78,48 @@ const Navbar = () => {
           </p>
       }
 
-        {/* Main item card */}
-        {item &&
-      <div className="rounded-lg border border-border bg-background p-3 space-y-3">
-            <div className="flex gap-3">
-              <img
-            src="/lovable-uploads/d741aeb9-21af-45e1-9863-e350da643d42.png"
-            alt="Personalised Coloring Book"
-            className="w-20 h-20 rounded-lg object-cover flex-shrink-0" />
-
-              <div className="flex-1 min-w-0 space-y-1">
-                <div className="flex items-start justify-between">
-                  <span className="font-semibold text-foreground text-sm leading-tight">Personalised Coloring Book</span>
-                  <button
-                onClick={() => setQuantity(0)}
-                className="text-muted-foreground hover:text-destructive transition-colors p-0.5">
-
-                    <Trash2 className="w-4 h-4" />
-                  </button>
-                </div>
-                {/* Quantity controls */}
-                <div className="flex items-center gap-2 pt-1">
-                  <button
-                onClick={() => {if (item.quantity > 1) setQuantity(item.quantity - 1);}}
-                disabled={item.quantity <= 1}
-                className="w-7 h-7 rounded-md border border-border flex items-center justify-center hover:bg-muted transition-colors disabled:opacity-30 text-xs">
-
-                    <Minus className="w-3 h-3" />
-                  </button>
-                  <span className="font-semibold text-foreground w-5 text-center text-sm">{item.quantity}</span>
-                  <button
-                onClick={() => {if (item.quantity < maxQuantity) setQuantity(item.quantity + 1);}}
-                disabled={item.quantity >= maxQuantity}
-                className="w-7 h-7 rounded-md border border-border flex items-center justify-center hover:bg-muted transition-colors disabled:opacity-30 text-xs">
-
-                    <Plus className="w-3 h-3" />
-                  </button>
-                </div>
-                {/* Pricing */}
-                <div className="flex items-center gap-2 text-sm pt-0.5">
-                  <span className="line-through text-muted-foreground">${item.originalTotalPrice.toFixed(2)}</span>
-                  <span className="font-bold text-foreground">${item.totalPrice.toFixed(2)}</span>
-                  {savings > 0 &&
-              <span className="text-green-600 text-xs font-medium">(Save ${savings.toFixed(2)})</span>
-              }
+        {/* Item cards */}
+        {items.map((lineItem) => {
+          const lineSavings = lineItem.originalTotalPrice - lineItem.totalPrice;
+          return (
+            <div key={lineItem.id} className="rounded-lg border border-border bg-background p-3 space-y-3">
+              <div className="flex gap-3">
+                <img
+                  src="/lovable-uploads/d741aeb9-21af-45e1-9863-e350da643d42.png"
+                  alt="Personalised Coloring Book"
+                  className="w-20 h-20 rounded-lg object-cover flex-shrink-0" />
+                <div className="flex-1 min-w-0 space-y-1">
+                  <div className="flex items-start justify-between">
+                    <span className="font-semibold text-foreground text-sm leading-tight">
+                      {lineItem.quantity === 1 ? 'Personalised Coloring Book' : `${lineItem.quantity}x Coloring Book Bundle`}
+                    </span>
+                    <button
+                      onClick={() => removeItem(lineItem.id)}
+                      className="text-muted-foreground hover:text-destructive transition-colors p-0.5">
+                      <Trash2 className="w-4 h-4" />
+                    </button>
+                  </div>
+                  <p className="text-xs text-muted-foreground">{lineItem.quantity} {lineItem.quantity === 1 ? 'book' : 'books'}</p>
+                  {/* Pricing */}
+                  <div className="flex items-center gap-2 text-sm pt-0.5">
+                    <span className="line-through text-muted-foreground">${lineItem.originalTotalPrice.toFixed(2)}</span>
+                    <span className="font-bold text-foreground">${lineItem.totalPrice.toFixed(2)}</span>
+                    {lineSavings > 0 &&
+                      <span className="text-green-600 text-xs font-medium">(Save ${lineSavings.toFixed(2)})</span>
+                    }
+                  </div>
                 </div>
               </div>
+              {/* Sale badge */}
+              <div className="flex items-center gap-1.5">
+                <Badge variant="secondary" className="text-[10px] font-bold uppercase tracking-wider bg-primary/10 text-primary border-0 px-2 py-0.5">
+                  <Sparkles className="w-3 h-3 mr-1" />
+                  February Sale
+                </Badge>
+              </div>
             </div>
-            {/* Sale badge */}
-            <div className="flex items-center gap-1.5">
-              <Badge variant="secondary" className="text-[10px] font-bold uppercase tracking-wider bg-primary/10 text-primary border-0 px-2 py-0.5">
-                <Sparkles className="w-3 h-3 mr-1" />
-                February Sale
-              </Badge>
-            </div>
-          </div>
-      }
+          );
+        })}
 
         {/* Digital copies upsell */}
         
@@ -214,7 +199,7 @@ const Navbar = () => {
 
           <Button asChild className="w-full rounded-lg py-6 text-base font-bold bg-foreground text-background hover:bg-foreground/90" size="lg">
             <Link to={activeSessionId ? `/builder?sessionId=${activeSessionId}` : "/builder"}>
-              Proceed to Create Your {item && item.quantity > 1 ? 'Books' : 'Book'}
+              Proceed to Create Your {totalBookCount > 1 ? 'Books' : 'Book'}
             </Link>
           </Button>
 
