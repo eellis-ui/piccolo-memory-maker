@@ -82,7 +82,9 @@ const PricingSection = () => {
   const [selectedQuantity, setSelectedQuantity] = useState(2);
   const { addToCart, uniquePhotos, setUniquePhotos, setIsCartOpen } = useBasket();
   const navigate = useNavigate();
-  const [productImages, setProductImages] = useState<ProductImage[]>([]);
+  const [productImages, setProductImages] = useState<ProductImage[]>([
+    { url: "/images/product-hero.png", altText: "Personalised Coloring Book" },
+  ]);
   const [imagesLoading, setImagesLoading] = useState(true);
   const ctaButtonRef = useRef<HTMLButtonElement>(null);
 
@@ -94,12 +96,11 @@ const PricingSection = () => {
         });
         const edges = data?.data?.product?.images?.edges;
         if (edges && edges.length > 0) {
-          setProductImages(
-            edges.map((e: { node: { url: string; altText: string | null } }) => ({
-              url: e.node.url,
-              altText: e.node.altText,
-            }))
-          );
+          const shopifyImages = edges.map((e: { node: { url: string; altText: string | null } }) => ({
+            url: e.node.url,
+            altText: e.node.altText,
+          }));
+          setProductImages((prev) => [prev[0], ...shopifyImages]);
         }
       } catch (err) {
         console.error("Failed to fetch product images:", err);
