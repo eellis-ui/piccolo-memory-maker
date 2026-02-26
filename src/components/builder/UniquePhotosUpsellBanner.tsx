@@ -42,7 +42,7 @@ const UniquePhotosUpsellBanner = () => {
   }
 
   return (
-    <Card className="rounded-3xl border-dashed border-2 border-secondary bg-secondary/20 overflow-hidden">
+    <Card className="rounded-3xl border-dashed border-2 border-primary/30 bg-primary/5 overflow-hidden">
       <CardContent className="p-6">
         <div className="flex items-start gap-4 mb-4">
           <div className="w-10 h-10 rounded-xl bg-secondary/40 flex items-center justify-center shrink-0">
