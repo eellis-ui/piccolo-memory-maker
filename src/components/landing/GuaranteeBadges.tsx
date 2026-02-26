@@ -8,11 +8,13 @@ const badges = [
 
 const GuaranteeBadges = () => {
   return (
-    <div className="flex items-center justify-center gap-6 sm:gap-10 py-4">
+    <div className="flex items-center justify-center gap-8 sm:gap-12 py-6 border-t border-border/40 mt-2">
       {badges.map((b) => (
-        <div key={b.label} className="flex flex-col items-center gap-1.5 text-center">
-          <b.icon className="w-6 h-6 text-primary" />
-          <span className="text-xs font-semibold text-foreground">{b.label}</span>
+        <div key={b.label} className="flex flex-col items-center gap-2 text-center">
+          <div className="bg-primary/10 rounded-full p-2.5">
+            <b.icon className="w-7 h-7 text-primary" />
+          </div>
+          <span className="text-sm font-semibold text-foreground">{b.label}</span>
         </div>
       ))}
     </div>
