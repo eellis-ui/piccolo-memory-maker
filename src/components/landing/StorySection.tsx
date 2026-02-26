@@ -3,8 +3,17 @@ import { PinkSplash, LavenderSplash } from "./ColorSplash";
 
 const StorySection = () => {
   return (
-    <section className="relative py-20 bg-white overflow-hidden">
-      <div className="container mx-auto px-4 sm:px-6 lg:px-8">
+    <section className="relative bg-white overflow-hidden">
+      {/* Banner Image */}
+      <div className="relative w-full h-[30vh] md:h-[45vh] overflow-hidden">
+        <img
+          src="/images/about-banner.png"
+          alt="Mother and daughter hiking together through green mountains"
+          className="w-full h-full object-cover"
+        />
+      </div>
+
+      <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-20">
         <div className="max-w-3xl mx-auto relative z-10">
           <div className="text-center mb-12">
             
