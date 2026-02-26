@@ -1,6 +1,9 @@
+import ReviewsBanner from "./ReviewsBanner";
+
 const CatBanner = () => {
   return (
     <section className="relative w-full">
+      <ReviewsBanner />
       <div className="relative w-full h-[40vh] md:h-[55vh] overflow-hidden">
         <img
           src="/images/banner-cat.png"
