@@ -260,7 +260,7 @@ const PricingSection = () => {
               {/* Add to basket */}
               <Button ref={ctaButtonRef} onClick={handleAddToBasket} className="w-full rounded-lg py-6 text-base font-semibold mb-5" size="lg">
                 <ShoppingCart className="w-5 h-5 mr-2" />
-                Start Creating — ${totalPrice.toFixed(2)}
+                Add to Cart — ${totalPrice.toFixed(2)}
               </Button>
 
               {/* 2. Guarantee Badges */}
