@@ -19,7 +19,7 @@ import { Separator } from "@/components/ui/separator";
 
 const Navbar = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const { item, setQuantity, pricingTiers, digitalCopies, setDigitalCopies, digitalPrice, addOns, addOnsTotal: basketAddOnsTotal, addOnPrice, uniquePhotos, setUniquePhotos, uniquePhotosPrice, activeSessionId } = useBasket();
+  const { item, setQuantity, pricingTiers, digitalCopies, setDigitalCopies, digitalPrice, addOns, addOnsTotal: basketAddOnsTotal, addOnPrice, uniquePhotos, setUniquePhotos, uniquePhotosPrice, activeSessionId, isCartOpen, setIsCartOpen } = useBasket();
   const { isAdmin } = useIsAdmin();
   const [isLoggedIn, setIsLoggedIn] = useState(false);
 
@@ -237,7 +237,7 @@ const Navbar = () => {
 
 
   const CartButton = () =>
-  <Sheet>
+  <Sheet open={isCartOpen} onOpenChange={setIsCartOpen}>
       <SheetTrigger asChild>
         <button className="relative p-2 hover:bg-muted rounded-lg transition-colors">
           <ShoppingCart className="w-5 h-5 text-foreground" />
