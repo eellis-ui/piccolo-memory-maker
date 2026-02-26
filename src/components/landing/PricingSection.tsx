@@ -118,6 +118,7 @@ const PricingSection = () => {
   const currentMonth = new Date().toLocaleString("default", { month: "long" }).toUpperCase();
 
   return (
+    <>
     <section className="py-12 md:py-20 bg-background">
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
         <div className="max-w-6xl mx-auto grid grid-cols-1 lg:grid-cols-2 gap-10 lg:gap-16">
@@ -292,16 +293,23 @@ const PricingSection = () => {
             ))}
           </Accordion>
         </div>
+      </div>
+    </section>
 
-        {/* Banner + How It Works + Testimonials & Reviews — full width */}
-        <div className="max-w-6xl mx-auto mt-16">
-          <CatBanner />
+    {/* Banner — true full width */}
+    <CatBanner />
+
+    {/* How It Works + Testimonials & Reviews */}
+    <section className="py-12 md:py-20 bg-background">
+      <div className="container mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="max-w-6xl mx-auto">
           <HowItWorksSection />
           <CustomerTestimonials />
           <CustomerReviewsSection />
         </div>
       </div>
     </section>
+    </>
   );
 };
 
