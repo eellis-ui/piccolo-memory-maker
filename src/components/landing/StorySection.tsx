@@ -7,9 +7,9 @@ const StorySection = () => {
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
         <div className="max-w-3xl mx-auto relative z-10">
           <div className="text-center mb-12">
-            <div className="inline-flex items-center justify-center w-12 h-12 rounded-full bg-primary/20 mb-6">
-              <Heart className="w-6 h-6 text-primary" />
-            </div>
+            
+
+
             <h2 className="font-display text-3xl sm:text-4xl font-semibold text-foreground mb-4">
               Our Story
             </h2>
@@ -45,8 +45,8 @@ const StorySection = () => {
           </div>
         </div>
       </div>
-    </section>
-  );
+    </section>);
+
 };
 
 export default StorySection;
