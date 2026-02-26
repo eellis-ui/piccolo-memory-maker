@@ -1,28 +1,57 @@
 
+# Highest-Converting Product Page Redesign
 
-# Pull Product Images from Shopify
+## What's Changing
 
-## What We'll Do
-Update the product image gallery on the pricing page to dynamically load all product photos from your Shopify store instead of the 3 hardcoded images it currently uses.
+A full restructure of the pricing/product page to follow proven high-converting e-commerce patterns. You can revert to the current version at any time using the Restore button in chat history.
 
-Your Shopify product ("Personalised Coloring Book") already has multiple images uploaded -- they'll all show up automatically, and any future image changes in Shopify will be reflected on the site.
+## New Components
 
-## Technical Approach
+### 1. Guarantee Badges Row
+A horizontal strip of three trust icons placed directly below the "Start Creating" button:
+- Truck icon -- "Free Shipping"
+- ShieldCheck icon -- "Money-Back Guarantee"  
+- Award icon -- "Premium Quality"
 
-### 1. Update `ProductImageGallery` to accept images as props
-- Change the component from using a hardcoded `images` array to accepting an `images` prop
-- Add a loading skeleton state for while images are fetching
+Replaces the current "process note" box position (process note moves lower).
 
-### 2. Fetch product images via Storefront API in `PricingSection`
-- Use the existing `storefrontApiRequest` helper from `src/lib/shopify.ts` to query the Storefront API for the "Personalised Coloring Book" product images
-- Query by handle (`personalized-coloring-book`) to get all image URLs and alt text
-- Pass the fetched images down to `ProductImageGallery`
+### 2. Before/After Preview Strip
+A compact 3-column comparison grid using existing before/after images (family, pet, vacation). Answers the key customer question visually: "What will my photos look like?"
 
-### 3. Fallback behaviour
-- While loading, show skeleton placeholders in the gallery
-- If the API call fails, fall back to the current 3 local images so the page never appears broken
+### 3. Sticky Mobile CTA Bar
+A fixed bottom bar (mobile only) showing the price and a compact "Start Creating" button. Appears when the user scrolls past the main CTA button using IntersectionObserver.
 
-### Files Changed
-- `src/components/landing/ProductImageGallery.tsx` -- accept `images` prop, add loading state
-- `src/components/landing/PricingSection.tsx` -- fetch product images from Shopify on mount, pass to gallery
+### 4. Final CTA Block
+A closing section after all social proof with a compelling headline and "Start Creating" button for users who scroll to the bottom.
 
+## New Page Section Order
+
+```text
+1. Product Hero (images + details + CTA)
+2. Guarantee Badges (new)
+3. Before/After Strip (new)
+4. How It Works (existing, moved up)
+5. FAQ (existing)
+6. Cat Banner (existing, full-width)
+7. Customer Reviews (existing)
+8. Instagram Feed (existing)
+9. Final CTA Block (new)
+10. Sticky Mobile CTA (new, fixed position)
+```
+
+## Bug Fix
+
+The `CustomerTestimonials` component currently returns `void` causing a build error. It will be fixed to return `null` (it's unused content-wise but imported).
+
+## Files to Create
+- `src/components/landing/GuaranteeBadges.tsx`
+- `src/components/landing/BeforeAfterStrip.tsx`
+- `src/components/landing/StickyMobileCTA.tsx`
+- `src/components/landing/FinalCTABlock.tsx`
+
+## Files to Modify
+- `src/components/landing/PricingSection.tsx` -- Reorder sections, add new components, move process note below guarantee badges
+- `src/components/landing/CustomerTestimonials.tsx` -- Fix return type
+
+## No New Dependencies
+Uses existing Lucide icons, Tailwind, and project assets.
