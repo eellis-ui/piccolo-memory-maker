@@ -256,25 +256,25 @@ const PricingSection = () => {
                 </label>
               )}
 
+              {/* 2. Guarantee Badges */}
+              <GuaranteeBadges />
+
               {/* Add to basket */}
-              <Button ref={ctaButtonRef} onClick={handleAddToBasket} className="w-full rounded-lg py-6 text-base font-semibold mb-5" size="lg">
+              <Button ref={ctaButtonRef} onClick={handleAddToBasket} className="w-full rounded-lg py-6 text-base font-semibold mt-5" size="lg">
                 <ShoppingCart className="w-5 h-5 mr-2" />
                 Add to Cart — ${totalPrice.toFixed(2)}
               </Button>
 
-              {/* 2. Guarantee Badges */}
-              <GuaranteeBadges />
+              {/* Trust badges */}
+              <div className="mt-4 mb-4">
+                <TrustBadges />
+              </div>
 
               {/* Process note */}
-              <div className="bg-primary/10 border border-primary/20 rounded-lg p-4 mt-4 mb-5">
+              <div className="bg-primary/10 border border-primary/20 rounded-lg p-4 mb-5">
                 <p className="text-sm text-foreground leading-relaxed">
                   <strong>Next step:</strong> Upload your photos, preview each line-art conversion, customize your cover, and checkout — all in our easy builder.
                 </p>
-              </div>
-
-              {/* Trust badges */}
-              <div className="mb-8">
-                <TrustBadges />
               </div>
             </div>
           </div>
