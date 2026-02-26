@@ -169,7 +169,7 @@ const Footer = () => {
           </p>
 
           {/* Payment icons */}
-          <div className="flex items-center gap-2 bg-background rounded-lg px-4 py-2.5">
+          <div className="flex items-center gap-2">
             <PaymentIcon label="Apple Pay"><ApplePayIcon /></PaymentIcon>
             <PaymentIcon label="Google Pay"><GooglePayIcon /></PaymentIcon>
             <PaymentIcon label="PayPal"><PayPalIcon /></PaymentIcon>
