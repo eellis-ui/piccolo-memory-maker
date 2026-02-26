@@ -3,7 +3,7 @@ import Footer from "@/components/layout/Footer";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { Mail, MessageSquare } from "lucide-react";
+import { Checkbox } from "@/components/ui/checkbox";
 import { useState } from "react";
 import { toast } from "sonner";
 
@@ -11,6 +11,7 @@ const Contact = () => {
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [message, setMessage] = useState("");
+  const [saveInfo, setSaveInfo] = useState(false);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -24,75 +25,60 @@ const Contact = () => {
     <div className="min-h-screen bg-background">
       <Navbar />
       <main className="pt-16">
-        <section className="py-20 bg-cream">
+        <section className="py-20 bg-background">
           <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="max-w-lg mx-auto">
-              <div className="flex items-center gap-3 mb-6">
-                <MessageSquare className="w-6 h-6 text-primary" />
-                <h1 className="font-display text-3xl sm:text-4xl font-bold text-foreground">
-                  Contact Us
-                </h1>
-              </div>
+            <div className="max-w-2xl mx-auto">
+              <h1 className="font-display text-3xl sm:text-4xl font-bold text-foreground mb-4">
+                WE WOULD LOVE TO HEAR FROM YOU.
+              </h1>
 
-              <p className="text-muted-foreground mb-8 leading-relaxed">
-                Have a question about your order, need help with your coloring book,
-                or just want to say hello? We'd love to hear from you.
+              <p className="text-muted-foreground mb-10 leading-relaxed">
+                We're here to help! Whether you have a question, need support, or just want to say hello, our team is ready to assist you.
               </p>
 
-              <form onSubmit={handleSubmit} className="space-y-5">
-                <div>
-                  <label htmlFor="name" className="block text-sm font-medium text-foreground mb-1.5">
-                    Name
-                  </label>
+              <form onSubmit={handleSubmit} className="space-y-6">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <Input
                     id="name"
                     value={name}
                     onChange={(e) => setName(e.target.value)}
-                    placeholder="Your name"
+                    placeholder="Name"
                     required
-                    className="rounded-xl"
+                    className="rounded-lg"
                   />
-                </div>
-                <div>
-                  <label htmlFor="email" className="block text-sm font-medium text-foreground mb-1.5">
-                    Email
-                  </label>
                   <Input
                     id="email"
                     type="email"
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
-                    placeholder="you@example.com"
+                    placeholder="Email"
                     required
-                    className="rounded-xl"
+                    className="rounded-lg"
                   />
                 </div>
-                <div>
-                  <label htmlFor="message" className="block text-sm font-medium text-foreground mb-1.5">
-                    Message
+                <Textarea
+                  id="message"
+                  value={message}
+                  onChange={(e) => setMessage(e.target.value)}
+                  placeholder="Message"
+                  required
+                  rows={8}
+                  className="rounded-lg"
+                />
+                <div className="flex items-start gap-3">
+                  <Checkbox
+                    id="save-info"
+                    checked={saveInfo}
+                    onCheckedChange={(checked) => setSaveInfo(checked === true)}
+                  />
+                  <label htmlFor="save-info" className="text-sm text-muted-foreground leading-snug cursor-pointer">
+                    Save my name, email, and website in this browser for the next time I comment.
                   </label>
-                  <Textarea
-                    id="message"
-                    value={message}
-                    onChange={(e) => setMessage(e.target.value)}
-                    placeholder="How can we help?"
-                    required
-                    rows={5}
-                    className="rounded-xl"
-                  />
                 </div>
-                <Button type="submit" className="w-full rounded-2xl py-5" size="lg">
-                  <Mail className="w-4 h-4 mr-2" />
-                  Send Message
+                <Button type="submit" className="rounded-full px-10 py-5" size="lg">
+                  Submit Now
                 </Button>
               </form>
-
-              <p className="text-xs text-muted-foreground text-center mt-6">
-                You can also reach us directly at{" "}
-                <a href="mailto:hello@piccoload.com" className="text-primary hover:underline">
-                  hello@piccoload.com
-                </a>
-              </p>
             </div>
           </div>
         </section>
