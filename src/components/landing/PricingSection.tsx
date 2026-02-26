@@ -285,6 +285,9 @@ const PricingSection = () => {
       {/* 3. Before/After Strip */}
       <BeforeAfterStrip />
 
+      {/* Cat Banner */}
+      <CatBanner />
+
       {/* 4. How It Works */}
       <HowItWorksSection />
 
@@ -313,9 +316,6 @@ const PricingSection = () => {
           </div>
         </div>
       </section>
-
-      {/* 6. Cat Banner */}
-      <CatBanner />
 
       {/* 7. Customer Reviews */}
       <CustomerReviewsSection />
