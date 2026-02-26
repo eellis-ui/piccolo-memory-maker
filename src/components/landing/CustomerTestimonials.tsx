@@ -27,7 +27,7 @@ const testimonials = [
 
 
 const CustomerTestimonials = () => {
-  return;
+  return null;
 
 
 
