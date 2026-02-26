@@ -13,6 +13,8 @@ import { storefrontApiRequest } from "@/lib/shopify";
 import CustomerTestimonials from "./CustomerTestimonials";
 import TrustBadges from "./TrustBadges";
 import CustomerReviewsSection from "./CustomerReviewsSection";
+import HowItWorksSection from "./HowItWorksSection";
+import CatBanner from "./CatBanner";
 
 const physicalPricing = [
   {
@@ -291,8 +293,10 @@ const PricingSection = () => {
           </Accordion>
         </div>
 
-        {/* Testimonials & Reviews — full width */}
+        {/* Banner + How It Works + Testimonials & Reviews — full width */}
         <div className="max-w-6xl mx-auto mt-16">
+          <CatBanner />
+          <HowItWorksSection />
           <CustomerTestimonials />
           <CustomerReviewsSection />
         </div>
