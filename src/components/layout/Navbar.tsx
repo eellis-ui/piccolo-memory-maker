@@ -214,7 +214,7 @@ const Navbar = () => {
 
           <Button asChild className="w-full rounded-lg py-6 text-base font-bold bg-foreground text-background hover:bg-foreground/90" size="lg">
             <Link to={activeSessionId ? `/builder?sessionId=${activeSessionId}` : "/builder"}>
-              Proceed to Create Your Book
+              Proceed to Create Your {item && item.quantity > 1 ? 'Books' : 'Book'}
             </Link>
           </Button>
 
