@@ -324,7 +324,11 @@ const PricingSection = () => {
       <InstagramSection />
 
       {/* 9. Final CTA Block */}
-      <FinalCTABlock onCtaClick={handleAddToBasket} />
+      <FinalCTABlock onCtaClick={() => {
+        setQuantity(1);
+        toast.success("1 coloring book added!");
+        navigate("/builder");
+      }} />
 
       {/* 10. Sticky Mobile CTA */}
       <StickyMobileCTA
