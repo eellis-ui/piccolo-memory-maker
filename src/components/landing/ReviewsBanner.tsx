@@ -19,7 +19,7 @@ const ReviewsBanner = () => {
             {item.type === "quote" ? (
               <>
                 <span className="text-sm font-sans text-white">"{item.text}"</span>
-                <span className="text-white/50 text-sm">— {item.name}</span>
+                <span className="text-white text-sm">— {item.name}</span>
               </>
             ) : (
               <span className="text-sm font-sans font-bold text-white">{item.text}</span>
