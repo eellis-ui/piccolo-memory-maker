@@ -258,7 +258,7 @@ const Builder = () => {
   }
 
   return (
-    <div className="min-h-screen bg-background animate-in fade-in duration-300">
+    <div className="min-h-screen bg-background">
       <Navbar />
 
       <main className="pt-24 pb-16">
