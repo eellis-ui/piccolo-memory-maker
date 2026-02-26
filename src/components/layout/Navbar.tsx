@@ -1,6 +1,6 @@
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { Menu, X, ShoppingCart, Minus, Plus, Trash2, Download, Shield, ClipboardList, Sparkles, Check, Truck } from "lucide-react";
+import { Menu, X, ShoppingCart, Minus, Plus, Trash2, Download, Shield, ClipboardList, Sparkles, Check, Truck, User } from "lucide-react";
 import { useState, useEffect } from "react";
 import { useBasket, DIGITAL_DOWNLOAD_PRICE, UNIQUE_PHOTOS_PRICE } from "@/contexts/BasketContext";
 import { useIsAdmin } from "@/hooks/use-admin";
@@ -317,6 +317,9 @@ const Navbar = () => {
           {/* Right: Cart + CTA */}
           <div className="ml-auto flex items-center gap-3">
             <CartButton />
+            <Link to="/auth" className="p-2 hover:bg-muted rounded-lg transition-colors">
+              <User className="w-5 h-5 text-foreground" />
+            </Link>
             <Button asChild className="hidden md:inline-flex rounded-lg px-6 bg-foreground text-background hover:bg-foreground/90">
               <Link to="/pricing">Start Creating</Link>
             </Button>
