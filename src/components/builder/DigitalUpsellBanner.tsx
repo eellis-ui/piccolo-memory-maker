@@ -32,7 +32,7 @@ const DigitalUpsellBanner = ({ variant = "full", maxCopies }: DigitalUpsellBanne
               <p className="font-display text-sm font-semibold text-foreground">
                 Add a Digital PDF Download
               </p>
-              <p className="text-xs text-muted-foreground truncate">
+              <p className="text-xs text-foreground truncate">
                 Print extra copies at home — {priceLabel} · 20 pages
               </p>
             </div>
@@ -61,7 +61,7 @@ const DigitalUpsellBanner = ({ variant = "full", maxCopies }: DigitalUpsellBanne
             <h3 className="font-display text-base font-semibold text-foreground">
               Add a Digital PDF Download
             </h3>
-            <p className="text-sm text-muted-foreground mt-1">
+            <p className="text-sm text-foreground mt-1">
               Get a printable PDF of your 20-page coloring book — print extra copies at home anytime!
             </p>
           </div>
@@ -79,7 +79,7 @@ const DigitalUpsellBanner = ({ variant = "full", maxCopies }: DigitalUpsellBanne
                   <span className="font-semibold text-foreground text-sm">
                     {n} PDF {n === 1 ? "Copy" : "Copies"}
                   </span>
-                  <span className="text-xs text-muted-foreground ml-2">20 pages each</span>
+                  <span className="text-xs text-foreground ml-2">20 pages each</span>
                 </div>
                 <span className="font-bold text-foreground">
                   + ${(n * DIGITAL_DOWNLOAD_PRICE).toFixed(2)}
@@ -94,7 +94,7 @@ const DigitalUpsellBanner = ({ variant = "full", maxCopies }: DigitalUpsellBanne
           >
             <div>
               <span className="font-semibold text-foreground text-sm">1 PDF Copy</span>
-              <span className="text-xs text-muted-foreground ml-2">20 pages</span>
+              <span className="text-xs text-foreground ml-2">20 pages</span>
             </div>
             <span className="font-bold text-foreground">
               + ${DIGITAL_DOWNLOAD_PRICE.toFixed(2)}
