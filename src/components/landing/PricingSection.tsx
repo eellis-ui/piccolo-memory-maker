@@ -115,8 +115,9 @@ const PricingSection = () => {
 
   const handleAddToBasket = () => {
     setQuantity(selectedQuantity);
-    toast.success(`${selectedQuantity} coloring ${selectedQuantity === 1 ? "book" : "books"} added!`);
-    navigate("/builder");
+    toast.success(`${selectedQuantity} coloring ${selectedQuantity === 1 ? "book" : "books"} added to cart!`, {
+      description: "Open your cart to checkout.",
+    });
   };
 
   const currentMonth = new Date().toLocaleString("default", { month: "long" }).toUpperCase();
