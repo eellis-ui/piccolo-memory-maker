@@ -1,6 +1,6 @@
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { Menu, X, ShoppingCart, Minus, Plus, Trash2, Download, Shield, ClipboardList, Sparkles, Check, Truck } from "lucide-react";
+import { Menu, X, ShoppingCart, Minus, Plus, Trash2, Shield, ClipboardList, Sparkles, Tag, Truck, User } from "lucide-react";
 import { useState, useEffect } from "react";
 import { useBasket, DIGITAL_DOWNLOAD_PRICE, UNIQUE_PHOTOS_PRICE } from "@/contexts/BasketContext";
 import { useIsAdmin } from "@/hooks/use-admin";
@@ -62,15 +62,15 @@ const Navbar = () => {
         </div>
 
         {/* Free shipping bar */}
-        <div className="space-y-1.5">
-          <div className="flex items-center justify-between text-xs">
-            <div className="flex items-center gap-1.5 text-green-600 font-semibold">
-              <Truck className="w-3.5 h-3.5" />
-              Free shipping unlocked!
+        <div className="space-y-2">
+          <p className="text-center font-semibold text-foreground text-base">Free shipping unlocked!</p>
+          <div className="relative">
+            <Progress value={100} className="h-3 bg-muted [&>div]:bg-foreground rounded-full" />
+            <div className="absolute -right-1 -top-1 bg-foreground text-background rounded-full w-5 h-5 flex items-center justify-center">
+              <Tag className="w-3 h-3" />
             </div>
-            <Check className="w-4 h-4 text-green-600" />
           </div>
-          <Progress value={100} className="h-2 bg-muted [&>div]:bg-green-500" />
+          <p className="text-right text-xs text-muted-foreground font-medium">Free Shipping</p>
         </div>
 
         {!hasItems &&
@@ -248,8 +248,8 @@ const Navbar = () => {
         </button>
       </SheetTrigger>
       <SheetContent className="w-[350px] sm:w-[400px]">
-        <SheetHeader>
-          <SheetTitle className="font-display">Your Basket</SheetTitle>
+      <SheetHeader>
+          <SheetTitle className="font-display text-lg font-bold">Cart {hasItems ? `• ${itemCount}` : ''}</SheetTitle>
         </SheetHeader>
         <BasketContent />
       </SheetContent>
