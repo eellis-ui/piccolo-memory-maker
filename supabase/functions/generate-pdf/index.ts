@@ -121,7 +121,7 @@ Deno.serve(async (req) => {
       doc.text(lines, A4_W / 2, A4_H / 2, { align: "center" });
     }
 
-    // 1. Cover page — use the cover image (photo marked as cover_image_id)
+    // 1. Front cover — use the selected cover image
     if (order?.cover_image_id) {
       const { data: coverPhoto } = await admin
         .from("order_photos")
@@ -135,19 +135,28 @@ Deno.serve(async (req) => {
       }
     }
 
-    // 2. Title page
+    // 2. Back cover — plain white page with branding
+    if (!firstPage) doc.addPage(); else firstPage = false;
+    doc.setFillColor(255, 255, 255);
+    doc.rect(0, 0, A4_W, A4_H, "F");
+    doc.setFontSize(10);
+    doc.setFont("helvetica", "normal");
+    doc.setTextColor(180, 180, 180);
+    doc.text("piccolo'd", A4_W / 2, A4_H - 10, { align: "center" });
+
+    // 3. Title page
     if (order?.title_page_enabled && order?.title_page_text) {
       addTextPage(order.title_page_text, 28, "bold");
     }
 
-    // 3. Dedication page
+    // 4. Dedication page
     if (order?.dedication_page_enabled && order?.dedication_page_text) {
       addTextPage(order.dedication_page_text, 16, "italic");
     }
 
-    // 4. One page per converted photo (prefer converted line-art, fallback original)
+    // 5. One page per converted photo (prefer converted line-art, fallback original)
     for (const photo of photos) {
-      // Skip the cover image if it's been included above
+      // Skip the cover image (already used as front cover)
       if (order?.cover_image_id && photo.id === order.cover_image_id) continue;
 
       const path = photo.converted_path || photo.original_path;
@@ -158,15 +167,6 @@ Deno.serve(async (req) => {
       }
       addImagePage(b64);
     }
-
-    // 5. Back cover — plain white page (or you could add branding text)
-    doc.addPage();
-    doc.setFillColor(255, 255, 255);
-    doc.rect(0, 0, A4_W, A4_H, "F");
-    doc.setFontSize(10);
-    doc.setFont("helvetica", "normal");
-    doc.setTextColor(180, 180, 180);
-    doc.text("piccolo'd", A4_W / 2, A4_H - 10, { align: "center" });
 
     const pdfBytes = doc.output("arraybuffer");
 
