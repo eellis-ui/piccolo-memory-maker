@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useIsAdmin } from "@/hooks/use-admin";
 import {
-  Loader2, Package, Trash2, Edit2, Truck, Download, ChevronDown, X, Save,
+  Loader2, Package, Trash2, Edit2, Truck, Download, ChevronDown, X, Save, FileText,
 } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -84,6 +84,9 @@ const Admin = () => {
   const [photos, setPhotos] = useState<PhotoRow[]>([]);
   const [photosLoading, setPhotosLoading] = useState(false);
 
+  // PDF generation
+  const [pdfGenerating, setPdfGenerating] = useState<string | null>(null);
+
   useEffect(() => {
     if (!roleLoading && !isAdmin) navigate("/auth");
   }, [roleLoading, isAdmin, navigate]);
@@ -115,6 +118,42 @@ const Admin = () => {
       .order("page_position");
     setPhotos((data as PhotoRow[]) || []);
     setPhotosLoading(false);
+  };
+
+  // Generate and download PDF for an order
+  const downloadPdf = async (orderId: string) => {
+    setPdfGenerating(orderId);
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      const res = await fetch(
+        `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/generate-pdf`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "Authorization": `Bearer ${session?.access_token}`,
+            "apikey": import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY,
+          },
+          body: JSON.stringify({ orderId }),
+        }
+      );
+      if (!res.ok) {
+        const err = await res.json();
+        toast.error(err.error || "Failed to generate PDF");
+        return;
+      }
+      const blob = await res.blob();
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `order-${orderId.slice(0, 8)}.pdf`;
+      a.click();
+      URL.revokeObjectURL(url);
+    } catch (e) {
+      toast.error("Failed to generate PDF");
+    } finally {
+      setPdfGenerating(null);
+    }
   };
 
   // Download a file from storage
@@ -293,12 +332,23 @@ const Admin = () => {
                         {order.extra_pages > 0 && <span>+{order.extra_pages} pages </span>}
                         {order.unique_photos && <span>· Unique </span>}
                       </TableCell>
-                      <TableCell className="text-right space-x-1">
+                       <TableCell className="text-right space-x-1">
+                        <Button
+                          size="sm"
+                          variant="ghost"
+                          onClick={() => downloadPdf(order.id)}
+                          title="Download PDF"
+                          disabled={pdfGenerating === order.id}
+                        >
+                          {pdfGenerating === order.id
+                            ? <Loader2 className="w-4 h-4 animate-spin" />
+                            : <FileText className="w-4 h-4" />}
+                        </Button>
                         <Button
                           size="sm"
                           variant="ghost"
                           onClick={() => openPhotos(order.id)}
-                          title="View photos"
+                          title="View individual photos"
                         >
                           <Download className="w-4 h-4" />
                         </Button>
