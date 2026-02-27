@@ -14,13 +14,29 @@ function adminClient() {
   );
 }
 
+async function downloadAsBase64(admin: ReturnType<typeof adminClient>, path: string): Promise<string | null> {
+  const { data: fileData, error } = await admin.storage.from("order-files").download(path);
+  if (error || !fileData) return null;
+  const arrayBuffer = await fileData.arrayBuffer();
+  const bytes = new Uint8Array(arrayBuffer);
+  let base64 = "";
+  const chunkSize = 32768;
+  for (let i = 0; i < bytes.length; i += chunkSize) {
+    base64 += String.fromCharCode(...bytes.subarray(i, i + chunkSize));
+  }
+  return btoa(base64);
+}
+
+// A4 dimensions in mm
+const A4_W = 210;
+const A4_H = 297;
+
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
   }
 
   try {
-    // Verify admin via JWT
     const authHeader = req.headers.get("Authorization");
     if (!authHeader) {
       return new Response(JSON.stringify({ error: "Unauthorized" }), {
@@ -43,7 +59,6 @@ Deno.serve(async (req) => {
       });
     }
 
-    // Check admin role
     const admin = adminClient();
     const { data: roleData } = await admin
       .from("user_roles")
@@ -70,7 +85,7 @@ Deno.serve(async (req) => {
     // Fetch order + photos
     const { data: order } = await admin
       .from("orders")
-      .select("title_page_text, title_page_enabled, dedication_page_text, dedication_page_enabled")
+      .select("title_page_text, title_page_enabled, dedication_page_text, dedication_page_enabled, cover_image_id")
       .eq("id", orderId)
       .single();
 
@@ -87,65 +102,71 @@ Deno.serve(async (req) => {
       });
     }
 
-    // A5 dimensions in mm
-    const A5_W = 148;
-    const A5_H = 210;
-
-    const doc = new jsPDF({ unit: "mm", format: "a5", orientation: "portrait" });
+    const doc = new jsPDF({ unit: "mm", format: "a4", orientation: "portrait" });
     let firstPage = true;
 
-    // Title page
+    function addImagePage(base64: string, mimeType = "JPEG") {
+      if (!firstPage) doc.addPage();
+      firstPage = false;
+      // Fill full A4 page
+      doc.addImage(`data:image/${mimeType.toLowerCase()};base64,${base64}`, mimeType, 0, 0, A4_W, A4_H);
+    }
+
+    function addTextPage(text: string, fontSize: number, fontStyle: string) {
+      if (!firstPage) doc.addPage();
+      firstPage = false;
+      doc.setFontSize(fontSize);
+      doc.setFont("helvetica", fontStyle);
+      const lines = doc.splitTextToSize(text, A4_W - 40);
+      doc.text(lines, A4_W / 2, A4_H / 2, { align: "center" });
+    }
+
+    // 1. Cover page — use the cover image (photo marked as cover_image_id)
+    if (order?.cover_image_id) {
+      const { data: coverPhoto } = await admin
+        .from("order_photos")
+        .select("converted_path, original_path")
+        .eq("id", order.cover_image_id)
+        .single();
+      if (coverPhoto) {
+        const path = coverPhoto.converted_path || coverPhoto.original_path;
+        const b64 = await downloadAsBase64(admin, path);
+        if (b64) addImagePage(b64);
+      }
+    }
+
+    // 2. Title page
     if (order?.title_page_enabled && order?.title_page_text) {
-      if (!firstPage) doc.addPage();
-      firstPage = false;
-      doc.setFontSize(24);
-      doc.setFont("helvetica", "bold");
-      const lines = doc.splitTextToSize(order.title_page_text, A5_W - 20);
-      doc.text(lines, A5_W / 2, A5_H / 2, { align: "center" });
+      addTextPage(order.title_page_text, 28, "bold");
     }
 
-    // Dedication page
+    // 3. Dedication page
     if (order?.dedication_page_enabled && order?.dedication_page_text) {
-      if (!firstPage) doc.addPage();
-      firstPage = false;
-      doc.setFontSize(14);
-      doc.setFont("helvetica", "italic");
-      const lines = doc.splitTextToSize(order.dedication_page_text, A5_W - 20);
-      doc.text(lines, A5_W / 2, A5_H / 2, { align: "center" });
+      addTextPage(order.dedication_page_text, 16, "italic");
     }
 
-    // Photo pages — prefer converted (line art), fallback to original
+    // 4. One page per converted photo (prefer converted line-art, fallback original)
     for (const photo of photos) {
-      const path = photo.converted_path || photo.original_path;
-      const { data: fileData, error: dlErr } = await admin.storage
-        .from("order-files")
-        .download(path);
+      // Skip the cover image if it's been included above
+      if (order?.cover_image_id && photo.id === order.cover_image_id) continue;
 
-      if (dlErr || !fileData) {
-        console.warn(`Skipping photo ${photo.id}: ${dlErr?.message}`);
+      const path = photo.converted_path || photo.original_path;
+      const b64 = await downloadAsBase64(admin, path);
+      if (!b64) {
+        console.warn(`Skipping photo ${photo.id}: download failed`);
         continue;
       }
-
-      const arrayBuffer = await fileData.arrayBuffer();
-      const bytes = new Uint8Array(arrayBuffer);
-      let base64 = "";
-      const chunkSize = 32768;
-      for (let i = 0; i < bytes.length; i += chunkSize) {
-        base64 += String.fromCharCode(...bytes.subarray(i, i + chunkSize));
-      }
-      const dataUrl = `data:image/jpeg;base64,${btoa(base64)}`;
-
-      if (!firstPage) doc.addPage();
-      firstPage = false;
-
-      // Fill page with image, maintaining aspect ratio
-      if (photo.is_landscape) {
-        // Landscape photo on portrait A5 — rotate or letterbox
-        doc.addImage(dataUrl, "JPEG", 0, (A5_H - (A5_W * 0.667)) / 2, A5_W, A5_W * 0.667);
-      } else {
-        doc.addImage(dataUrl, "JPEG", 0, 0, A5_W, A5_H);
-      }
+      addImagePage(b64);
     }
+
+    // 5. Back cover — plain white page (or you could add branding text)
+    doc.addPage();
+    doc.setFillColor(255, 255, 255);
+    doc.rect(0, 0, A4_W, A4_H, "F");
+    doc.setFontSize(10);
+    doc.setFont("helvetica", "normal");
+    doc.setTextColor(180, 180, 180);
+    doc.text("piccolo'd", A4_W / 2, A4_H - 10, { align: "center" });
 
     const pdfBytes = doc.output("arraybuffer");
 
