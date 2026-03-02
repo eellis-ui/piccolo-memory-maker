@@ -1,8 +1,9 @@
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { Menu, X, ShoppingCart, Minus, Plus, Trash2, Shield, ClipboardList, Sparkles, Tag, Check, Download } from "lucide-react";
-import { useState, useEffect } from "react";
-import { useBasket, UNIQUE_PHOTOS_PRICE, DIGITAL_DOWNLOAD_PRICE } from "@/contexts/BasketContext";
+import { Menu, X, ShoppingCart, Minus, Plus, Trash2, Shield, ClipboardList, Sparkles, Tag, Check, Download, Loader2, Lock } from "lucide-react";
+import { createShopifyCheckout, SHOPIFY_VARIANTS, type CartLineInput } from "@/lib/shopify";
+import { useState, useEffect, useCallback } from "react";
+import { useBasket, UNIQUE_PHOTOS_PRICE, DIGITAL_DOWNLOAD_PRICE, PERSONALIZE_COVER_PRICE } from "@/contexts/BasketContext";
 import { useIsAdmin } from "@/hooks/use-admin";
 import { supabase } from "@/integrations/supabase/client";
 import { Badge } from "@/components/ui/badge";
@@ -32,6 +33,9 @@ interface BasketContentProps {
   toggleItemUniquePhotos: (id: string) => void;
   digitalCopies: number;
   setDigitalCopies: (n: number) => void;
+  isCheckingOut: boolean;
+  onCheckout: () => void;
+  grandTotal: number;
 }
 
 const BasketContent = ({
@@ -47,7 +51,10 @@ const BasketContent = ({
   updateItemQuantity,
   toggleItemUniquePhotos,
   digitalCopies,
-  setDigitalCopies
+  setDigitalCopies,
+  isCheckingOut,
+  onCheckout,
+  grandTotal
 }: BasketContentProps) =>
 <div className="flex flex-col h-full">
     <div className="flex-1 overflow-y-auto overflow-x-hidden space-y-4 py-4">
@@ -229,10 +236,20 @@ const BasketContent = ({
           </div>
     }
 
-        <Button asChild className="w-full rounded-lg py-6 text-base font-bold bg-foreground text-background hover:bg-foreground/90" size="lg">
-          <Link to="/order-review" onClick={() => setIsCartOpen(false)}>
-            Proceed to Create Your {totalBookCount > 1 ? 'Books' : 'Book'}
-          </Link>
+        <Button
+          className="w-full rounded-lg py-6 text-base font-bold bg-foreground text-background hover:bg-foreground/90"
+          size="lg"
+          onClick={onCheckout}
+          disabled={isCheckingOut}
+        >
+          {isCheckingOut ? (
+            <><Loader2 className="w-5 h-5 mr-2 animate-spin" />Creating Checkout…</>
+          ) : (
+            <>
+              <Lock className="w-4 h-4 mr-2" />
+              Checkout · ${grandTotal.toFixed(2)}
+            </>
+          )}
         </Button>
 
         {/* Payment trust badges */}
@@ -347,10 +364,49 @@ const Navbar = () => {
   const itemCount = totalBookCount + (digitalCopies > 0 ? 1 : 0) + (uniquePhotos ? 1 : 0);
 
   const bookTotal = items.reduce((s, i) => s + i.totalPrice, 0);
-  const grandTotal = bookTotal + digitalPrice + basketAddOnsTotal + uniquePhotosPrice;
+  const uniquePhotosTotal = items.filter((i) => i.uniquePhotos).reduce((s) => s + UNIQUE_PHOTOS_PRICE, 0);
+  const personalizeCoverTotal = items.reduce((s, i) => {
+    if (!i.personalizeCover) return s;
+    return s + (i.uniquePhotos ? i.quantity * PERSONALIZE_COVER_PRICE : PERSONALIZE_COVER_PRICE);
+  }, 0);
+  const digitalTotal = digitalCopies > 0 ? DIGITAL_DOWNLOAD_PRICE : 0;
+  const grandTotal = bookTotal + uniquePhotosTotal + personalizeCoverTotal + digitalTotal;
 
   const totalOriginal = items.reduce((s, i) => s + i.originalTotalPrice, 0);
   const totalDiscount = totalOriginal - bookTotal;
+
+  const [isCheckingOut, setIsCheckingOut] = useState(false);
+
+  const handleCheckout = useCallback(async () => {
+    setIsCheckingOut(true);
+    try {
+      const lines: CartLineInput[] = [];
+      lines.push({ merchandiseId: SHOPIFY_VARIANTS.COLORING_BOOK, quantity: totalBookCount });
+      if (digitalCopies > 0) {
+        lines.push({ merchandiseId: SHOPIFY_VARIANTS.DIGITAL_DOWNLOAD, quantity: 1 });
+      }
+      const uniquePhotosItems = items.filter((i) => i.uniquePhotos);
+      if (uniquePhotosItems.length > 0) {
+        lines.push({ merchandiseId: SHOPIFY_VARIANTS.UNIQUE_PHOTOS, quantity: uniquePhotosItems.length });
+      }
+      const personalizeCount = items.reduce((s, i) => {
+        if (!i.personalizeCover) return s;
+        return s + (i.uniquePhotos ? i.quantity : 1);
+      }, 0);
+      if (personalizeCount > 0) {
+        lines.push({ merchandiseId: SHOPIFY_VARIANTS.PERSONALIZE_COVER, quantity: personalizeCount });
+      }
+      const checkoutUrl = await createShopifyCheckout(lines);
+      if (checkoutUrl) {
+        setIsCartOpen(false);
+        window.open(checkoutUrl, "_blank");
+      }
+    } catch (err) {
+      console.error("Checkout error:", err);
+    } finally {
+      setIsCheckingOut(false);
+    }
+  }, [items, totalBookCount, digitalCopies, setIsCartOpen]);
 
   const basketContentProps: BasketContentProps = {
     hasItems,
@@ -365,7 +421,10 @@ const Navbar = () => {
     updateItemQuantity,
     toggleItemUniquePhotos,
     digitalCopies,
-    setDigitalCopies
+    setDigitalCopies,
+    isCheckingOut,
+    onCheckout: handleCheckout,
+    grandTotal,
   };
 
   return (
