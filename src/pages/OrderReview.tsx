@@ -229,17 +229,17 @@ const OrderReview = () => {
                   <div className="flex items-center gap-3">
                     <Switch
                       checked={digitalCopies > 0}
-                      onCheckedChange={(checked) => setDigitalCopies(checked ? totalBookCount : 0)}
+                      onCheckedChange={(checked) => setDigitalCopies(checked ? 1 : 0)}
                     />
                     <div>
                       <span className="font-semibold text-foreground text-sm">
-                        Digital PDF {totalBookCount > 1 ? `× ${totalBookCount}` : "Copy"}
+                        Digital PDF
                       </span>
-                      <span className="text-xs text-muted-foreground ml-2">Instantly downloadable</span>
+                      <span className="text-xs text-muted-foreground ml-2">One-time download · all books included</span>
                     </div>
                   </div>
                   <span className="font-bold text-foreground">
-                    ${(totalBookCount * DIGITAL_DOWNLOAD_PRICE).toFixed(2)}
+                    ${DIGITAL_DOWNLOAD_PRICE.toFixed(2)}
                   </span>
                 </div>
               </CardContent>
@@ -278,9 +278,9 @@ const OrderReview = () => {
                   <div className="flex justify-between text-sm">
                     <div className="flex items-center gap-1.5">
                       <Download className="w-3.5 h-3.5 text-primary" />
-                      <span className="text-muted-foreground">Digital PDF × {digitalCopies}</span>
+                      <span className="text-muted-foreground">Digital PDF</span>
                     </div>
-                    <span className="font-medium">${digitalTotal.toFixed(2)}</span>
+                    <span className="font-medium">${DIGITAL_DOWNLOAD_PRICE.toFixed(2)}</span>
                   </div>
                 )}
 
