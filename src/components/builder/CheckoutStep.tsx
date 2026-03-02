@@ -44,7 +44,8 @@ const CheckoutStep = ({ pageCount, extraPages, convertedUrls, onBack, bookDigita
   const titlePageCount = bookAddOnsList.filter(b => b.titlePageEnabled).length;
   const coverPersonalizeCount = bookAddOnsList.filter(b => b.dedicationPageEnabled).length;
   const perBookAddOnsTotal = (titlePageCount + coverPersonalizeCount) * addOnPrice;
-  const totalPrice = (basePrice + extraPagesPrice) * bookCount + (uniquePhotos ? uniquePhotosPrice : 0) + digitalPrice + perBookAddOnsTotal;
+  const basketPersonalizeCoverCost = personalizeCoverFromBasket ? bookCount * 1.99 : 0;
+  const totalPrice = (basePrice + extraPagesPrice) * bookCount + (uniquePhotos ? uniquePhotosPrice : 0) + digitalPrice + perBookAddOnsTotal + basketPersonalizeCoverCost;
   const originalTotalPrice = (originalBasePrice + extraPagesPrice) * bookCount + (uniquePhotos ? uniquePhotosPrice : 0) + digitalPrice + perBookAddOnsTotal;
 
   const maxQuantity = Math.max(...pricingTiers.map((t) => t.quantity));
