@@ -180,7 +180,7 @@ const BasketContent = ({
                   <span className="text-[10px] font-bold uppercase bg-primary text-primary-foreground px-1.5 py-0.5 rounded-full leading-none">Added</span>
                 </span>
                 <span className="font-semibold text-foreground">
-                  ${(lineItem.quantity * 1.99).toFixed(2)}
+                  ${((lineItem.uniquePhotos ? lineItem.quantity : 1) * 1.99).toFixed(2)}
                 </span>
               </div>
             )}
