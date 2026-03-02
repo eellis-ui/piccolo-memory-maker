@@ -1,57 +1,22 @@
 
-# Highest-Converting Product Page Redesign
+# Dynamic Free Shipping Progress Bar
 
-## What's Changing
+## What Changes
+The cart drawer currently always shows "Free shipping unlocked!" with a full progress bar. This will be updated so:
 
-A full restructure of the pricing/product page to follow proven high-converting e-commerce patterns. You can revert to the current version at any time using the Restore button in chat history.
+- **Under $35**: Shows "You're $X.XX away from free shipping!" with a partially filled progress bar
+- **At or over $35**: Shows "Free shipping unlocked!" with a full progress bar and the tag icon
 
-## New Components
+## Where
+- **`src/components/layout/Navbar.tsx`** (BasketContent component, lines 60-70): Update the free shipping bar section to calculate cart total from `items` and render conditionally based on the $35 threshold.
 
-### 1. Guarantee Badges Row
-A horizontal strip of three trust icons placed directly below the "Start Creating" button:
-- Truck icon -- "Free Shipping"
-- ShieldCheck icon -- "Money-Back Guarantee"  
-- Award icon -- "Premium Quality"
+## Technical Details
 
-Replaces the current "process note" box position (process note moves lower).
-
-### 2. Before/After Preview Strip
-A compact 3-column comparison grid using existing before/after images (family, pet, vacation). Answers the key customer question visually: "What will my photos look like?"
-
-### 3. Sticky Mobile CTA Bar
-A fixed bottom bar (mobile only) showing the price and a compact "Start Creating" button. Appears when the user scrolls past the main CTA button using IntersectionObserver.
-
-### 4. Final CTA Block
-A closing section after all social proof with a compelling headline and "Start Creating" button for users who scroll to the bottom.
-
-## New Page Section Order
-
-```text
-1. Product Hero (images + details + CTA)
-2. Guarantee Badges (new)
-3. Before/After Strip (new)
-4. How It Works (existing, moved up)
-5. FAQ (existing)
-6. Cat Banner (existing, full-width)
-7. Customer Reviews (existing)
-8. Instagram Feed (existing)
-9. Final CTA Block (new)
-10. Sticky Mobile CTA (new, fixed position)
-```
-
-## Bug Fix
-
-The `CustomerTestimonials` component currently returns `void` causing a build error. It will be fixed to return `null` (it's unused content-wise but imported).
-
-## Files to Create
-- `src/components/landing/GuaranteeBadges.tsx`
-- `src/components/landing/BeforeAfterStrip.tsx`
-- `src/components/landing/StickyMobileCTA.tsx`
-- `src/components/landing/FinalCTABlock.tsx`
-
-## Files to Modify
-- `src/components/landing/PricingSection.tsx` -- Reorder sections, add new components, move process note below guarantee badges
-- `src/components/landing/CustomerTestimonials.tsx` -- Fix return type
-
-## No New Dependencies
-Uses existing Lucide icons, Tailwind, and project assets.
+1. Calculate the cart subtotal from the `items` array (sum of `totalPrice` for all line items)
+2. Define `FREE_SHIPPING_THRESHOLD = 35`
+3. Compute `progressPercent = Math.min(100, (subtotal / threshold) * 100)`
+4. Compute `amountRemaining = threshold - subtotal`
+5. Conditionally render:
+   - If `subtotal >= 35`: "Free shipping unlocked!" with 100% progress bar
+   - If `subtotal < 35`: "You're $X.XX away from free shipping!" with partial progress bar
+6. Also update the **GuaranteeBadges** component to show "Free Shipping over $35" instead of just "Free Shipping" for clarity on the product page
