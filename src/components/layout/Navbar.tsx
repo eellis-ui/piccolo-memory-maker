@@ -47,7 +47,7 @@ const BasketContent = ({
   updateItemQuantity,
   toggleItemUniquePhotos,
   digitalCopies,
-  setDigitalCopies,
+  setDigitalCopies
 }: BasketContentProps) =>
 <div className="flex flex-col h-full">
     <div className="flex-1 overflow-y-auto space-y-4 py-4">
@@ -213,10 +213,10 @@ const BasketContent = ({
         <div className="rounded-xl border border-dashed border-primary/30 bg-primary/5 p-3">
           <div className="flex items-start gap-3">
             <img
-              src="/lovable-uploads/d741aeb9-21af-45e1-9863-e350da643d42.png"
-              alt="Digital Download"
-              className="w-12 h-12 rounded-lg object-cover flex-shrink-0"
-            />
+          src="/lovable-uploads/d741aeb9-21af-45e1-9863-e350da643d42.png"
+          alt="Digital Download"
+          className="w-12 h-12 rounded-lg object-cover flex-shrink-0" />
+        
             <div className="flex-1 min-w-0">
               <div className="flex items-start justify-between gap-2">
                 <div>
@@ -231,14 +231,14 @@ const BasketContent = ({
                   </p>
                 </div>
                 <Switch
-                  checked={digitalCopies > 0}
-                  onCheckedChange={(checked) => setDigitalCopies(checked ? totalBookCount : 0)}
-                  className="shrink-0 mt-0.5"
-                />
+              checked={digitalCopies > 0}
+              onCheckedChange={(checked) => setDigitalCopies(checked ? totalBookCount : 0)}
+              className="shrink-0 mt-0.5" />
+            
               </div>
-              <p className="text-xs text-muted-foreground mt-1 leading-relaxed line-clamp-2">
-                Get all your line art drawings, delivered to your inbox as a downloadable PDF. So you can color them as much as you want!
-              </p>
+              <p className="text-xs text-muted-foreground mt-1 leading-relaxed line-clamp-2">Get all your line art drawings, delivered to your inbox as a downloadable PDF. 
+
+          </p>
             </div>
           </div>
         </div>
@@ -393,7 +393,7 @@ const Navbar = () => {
     updateItemQuantity,
     toggleItemUniquePhotos,
     digitalCopies,
-    setDigitalCopies,
+    setDigitalCopies
   };
 
   return (
