@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from "react";
-import { Check, BookOpen, Copy } from "lucide-react";
+import { Check, BookOpen, Copy, Link2, Sparkles } from "lucide-react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { useBasket } from "@/contexts/BasketContext";
 import Navbar from "@/components/layout/Navbar";
@@ -63,7 +63,7 @@ const Builder = () => {
   const [searchParams] = useSearchParams();
   const resumeSessionId = searchParams.get("sessionId");
 
-  const { item, addOns, uniquePhotos, totalBookCount, addToCart, clear, setActiveSessionId } = useBasket();
+  const { item, items, addOns, uniquePhotos, totalBookCount, addToCart, clear, setActiveSessionId } = useBasket();
   const bookCount = item?.quantity ?? 1;
 
   const [books, setBooks] = useState<BookState[]>([]);
@@ -274,37 +274,87 @@ const Builder = () => {
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
 
           {/* ── Multi-book tabs ── */}
-          {bookCount > 1 && !showingCheckout && (
-            <div className="max-w-2xl mx-auto mb-8">
-              <div className="flex gap-2 p-1 bg-muted rounded-2xl">
-                {books.map((book, i) => (
-                  <button
-                    key={i}
-                    onClick={() => setActiveBookIndex(i)}
-                    className={`flex-1 flex items-center justify-center gap-2 py-2.5 px-3 rounded-xl text-sm font-medium transition-all ${
-                      activeBookIndex === i
-                        ? "bg-background shadow-sm text-foreground"
-                        : "text-muted-foreground hover:text-foreground"
-                    }`}
-                  >
-                    {book.completed ? (
-                      <Check className="w-3.5 h-3.5 text-primary shrink-0" />
-                    ) : (
-                      <BookOpen className="w-3.5 h-3.5 shrink-0" />
-                    )}
-                    <span>Book {i + 1}</span>
-                    {book.completed && (
-                      <span className="text-[10px] text-primary font-semibold">✓</span>
-                    )}
-                  </button>
-                ))}
+          {bookCount > 1 && !showingCheckout && (() => {
+            // Build groups: consecutive non-unique books share photos
+            const groups: { start: number; end: number; unique: boolean }[] = [];
+            books.forEach((_, i) => {
+              const isUnique = items[i]?.uniquePhotos ?? false;
+              const last = groups[groups.length - 1];
+              if (last && last.unique === isUnique && !isUnique) {
+                last.end = i;
+              } else {
+                groups.push({ start: i, end: i, unique: isUnique });
+              }
+            });
+
+            return (
+              <div className="max-w-2xl mx-auto mb-8">
+                <div className="flex gap-2 p-1 bg-muted rounded-2xl">
+                  {books.map((book, i) => (
+                    <button
+                      key={i}
+                      onClick={() => setActiveBookIndex(i)}
+                      className={`flex-1 flex items-center justify-center gap-2 py-2.5 px-3 rounded-xl text-sm font-medium transition-all ${
+                        activeBookIndex === i
+                          ? "bg-background shadow-sm text-foreground"
+                          : "text-muted-foreground hover:text-foreground"
+                      }`}
+                    >
+                      {book.completed ? (
+                        <Check className="w-3.5 h-3.5 text-primary shrink-0" />
+                      ) : (
+                        <BookOpen className="w-3.5 h-3.5 shrink-0" />
+                      )}
+                      <span>Book {i + 1}</span>
+                    </button>
+                  ))}
+                </div>
+
+                {/* Shared / unique photo grouping brackets */}
+                <div className="flex gap-2 px-1 mt-1.5">
+                  {groups.map((group, gi) => {
+                    const span = group.end - group.start + 1;
+                    const widthPercent = `${(span / books.length) * 100}%`;
+
+                    if (group.unique) {
+                      return (
+                        <div key={gi} className="flex flex-col items-center" style={{ width: widthPercent }}>
+                          <Sparkles className="w-3 h-3 text-primary" />
+                          <span className="text-[10px] text-primary font-medium">Unique</span>
+                        </div>
+                      );
+                    }
+
+                    if (span === 1) {
+                      return (
+                        <div key={gi} className="flex flex-col items-center" style={{ width: widthPercent }}>
+                          <Link2 className="w-3 h-3 text-muted-foreground" />
+                          <span className="text-[10px] text-muted-foreground">Shared</span>
+                        </div>
+                      );
+                    }
+
+                    return (
+                      <div key={gi} className="flex flex-col items-center" style={{ width: widthPercent }}>
+                        <div className="w-full px-2">
+                          <div className="border-b-2 border-x-2 border-muted-foreground/30 rounded-b-lg h-2" />
+                        </div>
+                        <div className="flex items-center gap-1 mt-0.5">
+                          <Link2 className="w-3 h-3 text-muted-foreground" />
+                          <span className="text-[10px] text-muted-foreground">Shared photos</span>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+
+                <p className="text-xs text-center text-muted-foreground mt-2">
+                  {books.filter((b) => b.completed).length} of {bookCount} books ready
+                  {books.every((b) => b.completed) && " — proceed to checkout!"}
+                </p>
               </div>
-              <p className="text-xs text-center text-muted-foreground mt-2">
-                {books.filter((b) => b.completed).length} of {bookCount} books ready
-                {books.every((b) => b.completed) && " — proceed to checkout!"}
-              </p>
-            </div>
-          )}
+            );
+          })()}
 
           {/* ── Progress Steps ── */}
           {!showingCheckout && (
