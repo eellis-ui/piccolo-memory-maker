@@ -54,9 +54,8 @@ const ApproveStep = ({
     setConvertingIds((prev) => new Set(prev).add(photoId));
 
     try {
-      // convert-to-lineart uses service role internally, still callable without auth
       const { data, error } = await supabase.functions.invoke("convert-to-lineart", {
-        body: { photoId },
+        body: { photoId, sessionId },
       });
 
       if (error) throw error;

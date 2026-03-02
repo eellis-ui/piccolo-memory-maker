@@ -14,11 +14,11 @@ const RATE_LIMIT_WINDOW = 60000;
 const MAX_REQUESTS_PER_WINDOW = 10;
 const rateLimitMap = new Map<string, { count: number; resetAt: number }>();
 
-function checkRateLimit(userId: string): boolean {
+function checkRateLimit(key: string): boolean {
   const now = Date.now();
-  const entry = rateLimitMap.get(userId);
+  const entry = rateLimitMap.get(key);
   if (!entry || now > entry.resetAt) {
-    rateLimitMap.set(userId, { count: 1, resetAt: now + RATE_LIMIT_WINDOW });
+    rateLimitMap.set(key, { count: 1, resetAt: now + RATE_LIMIT_WINDOW });
     return true;
   }
   if (entry.count >= MAX_REQUESTS_PER_WINDOW) return false;
@@ -40,37 +40,9 @@ Deno.serve(async (req) => {
     const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
     const lovableApiKey = Deno.env.get("LOVABLE_API_KEY")!;
 
-    // --- Authentication ---
-    const authHeader = req.headers.get("Authorization");
-    if (!authHeader?.startsWith("Bearer ")) {
-      return new Response(JSON.stringify({ error: "Missing authorization" }), {
-        status: 401,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-      });
-    }
+    const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
-    const token = authHeader.replace("Bearer ", "");
-    const authClient = createClient(supabaseUrl, Deno.env.get("SUPABASE_ANON_KEY")!, {
-      global: { headers: { Authorization: authHeader } },
-    });
-    const { data: claimsData, error: claimsError } = await authClient.auth.getUser(token);
-    if (claimsError || !claimsData?.user) {
-      return new Response(JSON.stringify({ error: "Invalid or expired token" }), {
-        status: 401,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-      });
-    }
-    const userId = claimsData.user.id;
-
-    // --- Rate limiting ---
-    if (!checkRateLimit(userId)) {
-      return new Response(JSON.stringify({ error: "Rate limit exceeded. Please try again later." }), {
-        status: 429,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-      });
-    }
-
-    const { photoId } = await req.json() as { photoId: string };
+    const { photoId, sessionId } = await req.json() as { photoId: string; sessionId?: string };
     if (!photoId) {
       return new Response(JSON.stringify({ error: "photoId is required" }), {
         status: 400,
@@ -78,28 +50,89 @@ Deno.serve(async (req) => {
       });
     }
 
-    const supabase = createClient(supabaseUrl, supabaseServiceKey);
+    // --- Authentication: support both user tokens and guest sessions ---
+    let rateLimitKey: string;
 
-    // Get photo record and verify ownership
-    const { data: photo, error: photoError } = await supabase
-      .from("order_photos")
-      .select("*, orders!inner(id, user_id)")
-      .eq("id", photoId)
-      .single() as { data: any; error: any };
+    const authHeader = req.headers.get("Authorization");
+    const token = authHeader?.replace("Bearer ", "") ?? "";
 
-    if (photoError || !photo) {
-      return new Response(
-        JSON.stringify({ error: "Photo not found" }),
-        { status: 404, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-      );
+    // Try real user auth first
+    let isAuthed = false;
+    if (token && token !== Deno.env.get("SUPABASE_ANON_KEY")) {
+      const authClient = createClient(supabaseUrl, Deno.env.get("SUPABASE_ANON_KEY")!, {
+        global: { headers: { Authorization: authHeader! } },
+      });
+      const { data: claimsData, error: claimsError } = await authClient.auth.getUser(token);
+      if (!claimsError && claimsData?.user) {
+        const userId = claimsData.user.id;
+        // Verify ownership via user_id
+        const { data: photo, error: photoError } = await supabase
+          .from("order_photos")
+          .select("*, orders!inner(id, user_id)")
+          .eq("id", photoId)
+          .single() as { data: any; error: any };
+
+        if (photoError || !photo) {
+          return new Response(JSON.stringify({ error: "Photo not found" }), {
+            status: 404, headers: { ...corsHeaders, "Content-Type": "application/json" },
+          });
+        }
+        if (photo.orders.user_id !== userId) {
+          return new Response(JSON.stringify({ error: "Forbidden" }), {
+            status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" },
+          });
+        }
+        rateLimitKey = userId;
+        isAuthed = true;
+      }
     }
 
-    // --- Ownership check ---
-    if (photo.orders.user_id !== userId) {
-      return new Response(
-        JSON.stringify({ error: "Forbidden" }),
-        { status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-      );
+    // Fallback to guest session auth
+    if (!isAuthed) {
+      if (!sessionId) {
+        return new Response(JSON.stringify({ error: "Missing authorization" }), {
+          status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
+
+      // Verify photo belongs to an order with this sessionId
+      const { data: photo, error: photoError } = await supabase
+        .from("order_photos")
+        .select("*, orders!inner(id, builder_session_id)")
+        .eq("id", photoId)
+        .single() as { data: any; error: any };
+
+      if (photoError || !photo) {
+        return new Response(JSON.stringify({ error: "Photo not found" }), {
+          status: 404, headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
+      if (photo.orders.builder_session_id !== sessionId) {
+        return new Response(JSON.stringify({ error: "Forbidden" }), {
+          status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
+      rateLimitKey = `session:${sessionId}`;
+    }
+
+    // --- Rate limiting ---
+    if (!checkRateLimit(rateLimitKey!)) {
+      return new Response(JSON.stringify({ error: "Rate limit exceeded. Please try again later." }), {
+        status: 429, headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
+    // Get photo record (may already be fetched above, but fetch cleanly for conversion logic)
+    const { data: photo, error: photoError } = await supabase
+      .from("order_photos")
+      .select("*")
+      .eq("id", photoId)
+      .single();
+
+    if (photoError || !photo) {
+      return new Response(JSON.stringify({ error: "Photo not found" }), {
+        status: 404, headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
     }
 
     const isLandscape = photo?.is_landscape ?? false;
@@ -270,7 +303,7 @@ Output ONLY the converted image, no text.`;
       conversion_status: "completed",
     }).eq("id", photoId);
 
-    // Return signed URL instead of public URL (bucket is now private)
+    // Return signed URL (bucket is private)
     const { data: signedUrlData, error: signedUrlError } = await supabase.storage
       .from("order-files")
       .createSignedUrl(convertedPath, 3600);
