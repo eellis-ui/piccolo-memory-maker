@@ -15,6 +15,7 @@ import About from "./pages/About";
 import FAQ from "./pages/FAQ";
 import Contact from "./pages/Contact";
 import ResetPassword from "./pages/ResetPassword";
+import OrderReview from "./pages/OrderReview";
 import NotFound from "./pages/NotFound";
 import ScrollToTop from "./components/ScrollToTop";
 
@@ -40,6 +41,7 @@ const App = () => (
             <Route path="/admin" element={<Admin />} />
             <Route path="/my-orders" element={<MyOrders />} />
             <Route path="/reset-password" element={<ResetPassword />} />
+            <Route path="/order-review" element={<OrderReview />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Routes>
