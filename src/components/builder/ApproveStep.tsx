@@ -233,44 +233,59 @@ const ApproveStep = ({
                 <Trash2 className="w-3.5 h-3.5" />
               </button>
 
-              <div className="relative bg-cream aspect-[210/297]">
+              <div className="relative bg-cream aspect-[210/297] overflow-hidden">
                 {hasConverted ? (
                   <div className="absolute inset-0 flex">
-                    <div className="w-1/2 h-full border-r border-border/50 relative">
+                    <div className="w-1/2 h-full border-r border-border/50 relative overflow-hidden">
                       <img
                         src={photo.originalUrl}
                         alt={`Original ${index + 1}`}
-                        className="w-full h-full object-cover opacity-50"
+                        className={`absolute opacity-50 ${
+                          photo.isLandscape
+                            ? "top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 rotate-90 h-full w-auto max-w-none"
+                            : "w-full h-full object-cover"
+                        }`}
+                        style={photo.isLandscape ? { height: "100%", width: "auto" } : {}}
                       />
-                      <span className="absolute bottom-2 left-2 text-xs text-muted-foreground bg-background/80 px-2 py-1 rounded">
+                      <span className="absolute bottom-2 left-2 text-xs text-muted-foreground bg-background/80 px-2 py-1 rounded z-10">
                         Original
                       </span>
                     </div>
-                    <div className="w-1/2 h-full relative">
+                    <div className="w-1/2 h-full relative overflow-hidden">
                       <img
                         src={photo.convertedUrl!}
                         alt={`Line art ${index + 1}`}
-                        className="w-full h-full object-cover"
+                        className={`absolute ${
+                          photo.isLandscape
+                            ? "top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 rotate-90 h-full w-auto max-w-none"
+                            : "w-full h-full object-cover"
+                        }`}
+                        style={photo.isLandscape ? { height: "100%", width: "auto" } : {}}
                       />
-                      <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+                      <div className="absolute inset-0 flex items-center justify-center pointer-events-none z-10">
                         <span className="text-4xl font-display text-foreground/25 rotate-[-30deg] font-bold tracking-widest select-none">
                           PREVIEW
                         </span>
                       </div>
-                      <span className="absolute bottom-2 right-2 text-xs text-muted-foreground bg-background/80 px-2 py-1 rounded">
+                      <span className="absolute bottom-2 right-2 text-xs text-muted-foreground bg-background/80 px-2 py-1 rounded z-10">
                         Line Art
                       </span>
                     </div>
                   </div>
                 ) : (
-                  <div className="absolute inset-0 flex items-center justify-center">
+                  <div className="absolute inset-0 flex items-center justify-center overflow-hidden">
                     <img
                       src={photo.originalUrl}
                       alt={`Original ${index + 1}`}
-                      className={`w-full h-full object-cover ${photo.isLandscape ? "rotate-90 scale-[1.33]" : ""}`}
+                      className={`absolute ${
+                        photo.isLandscape
+                          ? "top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 rotate-90 h-full w-auto max-w-none"
+                          : "w-full h-full object-cover"
+                      }`}
+                      style={photo.isLandscape ? { height: "100%", width: "auto" } : {}}
                     />
                     {isConverting && (
-                      <div className="absolute inset-0 bg-background/70 flex flex-col items-center justify-center gap-2">
+                      <div className="absolute inset-0 bg-background/70 flex flex-col items-center justify-center gap-2 z-10">
                         <Loader2 className="w-8 h-8 text-primary animate-spin" />
                         <span className="text-sm text-muted-foreground">Converting...</span>
                       </div>
