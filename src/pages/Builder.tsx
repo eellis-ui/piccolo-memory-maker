@@ -275,10 +275,18 @@ const Builder = () => {
 
           {/* ── Multi-book tabs ── */}
           {bookCount > 1 && !showingCheckout && (() => {
-            // Build groups: consecutive non-unique books share photos
+            // Expand basket items (bundles) into per-book uniquePhotos flags
+            const perBookUnique: boolean[] = [];
+            items.forEach((basketItem) => {
+              for (let q = 0; q < basketItem.quantity; q++) {
+                perBookUnique.push(basketItem.uniquePhotos);
+              }
+            });
+
+            // Build groups: consecutive books with same shared/unique status
             const groups: { start: number; end: number; unique: boolean }[] = [];
             books.forEach((_, i) => {
-              const isUnique = items[i]?.uniquePhotos ?? false;
+              const isUnique = perBookUnique[i] ?? false;
               const last = groups[groups.length - 1];
               if (last && last.unique === isUnique && !isUnique) {
                 last.end = i;
