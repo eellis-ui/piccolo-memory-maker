@@ -35,6 +35,8 @@ const ApproveStep = ({
 
   const [photos, setPhotos] = useState<OrderPhoto[]>(initialPhotos);
   const [convertingIds, setConvertingIds] = useState<Set<string>>(new Set());
+  const [retryCounts, setRetryCounts] = useState<Record<string, number>>({});
+  const MAX_RETRIES_PER_PHOTO = 3;
 
   const updatePhotos = useCallback((updater: (prev: OrderPhoto[]) => OrderPhoto[]) => {
     setPhotos((prev) => {
@@ -51,6 +53,7 @@ const ApproveStep = ({
   const totalApproved = uniquePhotos ? approvedCount : approvedCount * bookCount;
 
   const convertPhoto = useCallback(async (photoId: string) => {
+    setRetryCounts((prev) => ({ ...prev, [photoId]: (prev[photoId] ?? 0) + 1 }));
     setConvertingIds((prev) => new Set(prev).add(photoId));
 
     try {
@@ -157,7 +160,7 @@ const ApproveStep = ({
           </p>
         </div>
 
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-3 flex-wrap">
           <Badge variant="secondary" className="text-sm py-1 px-3">
             {totalApproved} of {totalPages} pages approved
           </Badge>
@@ -181,6 +184,15 @@ const ApproveStep = ({
               Approve All
             </Button>
           )}
+          <Button
+            onClick={handleContinue}
+            disabled={!allApproved}
+            className="rounded-2xl px-8"
+          >
+            {allApproved
+              ? "Continue to Cover Design"
+              : `Approve ${photos.length - approvedCount} more`}
+          </Button>
         </div>
       </div>
 
@@ -280,17 +292,41 @@ const ApproveStep = ({
                       Convert
                     </Button>
                   )}
-                  {photo.conversionStatus === "failed" && (
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => convertPhoto(photo.id)}
-                      className="rounded-xl text-destructive"
-                    >
-                      <RefreshCw className="w-4 h-4 mr-1" />
-                      Retry
-                    </Button>
-                  )}
+                  {hasConverted && !photo.isApproved && (() => {
+                    const retries = retryCounts[photo.id] ?? 0;
+                    const attemptsLeft = MAX_RETRIES_PER_PHOTO - retries;
+                    if (attemptsLeft <= 0) return (
+                      <span className="text-xs text-muted-foreground py-1">Max retries reached</span>
+                    );
+                    return (
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => convertPhoto(photo.id)}
+                        disabled={isConverting}
+                        className="rounded-xl text-muted-foreground"
+                      >
+                        <RefreshCw className="w-4 h-4 mr-1" />
+                        Retry ({attemptsLeft} left)
+                      </Button>
+                    );
+                  })()}
+                  {photo.conversionStatus === "failed" && (() => {
+                    const retries = retryCounts[photo.id] ?? 0;
+                    const attemptsLeft = MAX_RETRIES_PER_PHOTO - retries;
+                    if (attemptsLeft <= 0) return null;
+                    return (
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => convertPhoto(photo.id)}
+                        className="rounded-xl text-destructive"
+                      >
+                        <RefreshCw className="w-4 h-4 mr-1" />
+                        Retry ({attemptsLeft} left)
+                      </Button>
+                    );
+                  })()}
                 </div>
 
                 {hasConverted && (
@@ -314,18 +350,9 @@ const ApproveStep = ({
       {allApproved && <DigitalUpsellBanner variant="compact" maxCopies={1} />}
 
       {/* Navigation */}
-      <div className="flex justify-between pt-4">
+      <div className="flex justify-start pt-4">
         <Button variant="outline" onClick={onBack} className="rounded-2xl">
           Back to Upload
-        </Button>
-        <Button
-          onClick={handleContinue}
-          disabled={!allApproved}
-          className="rounded-2xl px-8"
-        >
-          {allApproved
-            ? "Continue to Cover Design"
-            : `Approve ${photos.length - approvedCount} more`}
         </Button>
       </div>
     </div>
