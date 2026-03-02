@@ -67,7 +67,11 @@ const ApproveStep = ({
         body: { photoId, sessionId },
       });
 
-      if (error) throw error;
+      if (error) {
+        // Extract message from FunctionsHttpError body if available
+        const msg = (error as any)?.context?.error || error.message || "Conversion failed";
+        throw new Error(msg);
+      }
 
       if (data?.success) {
         updatePhotos((prev) =>
