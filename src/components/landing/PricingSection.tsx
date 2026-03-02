@@ -5,7 +5,7 @@ import { Badge } from "@/components/ui/badge";
 import { ShoppingCart, Star } from "lucide-react";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
-import { useBasket, UNIQUE_PHOTOS_PRICE } from "@/contexts/BasketContext";
+import { useBasket, UNIQUE_PHOTOS_PRICE, PERSONALIZE_COVER_PRICE } from "@/contexts/BasketContext";
 import { toast } from "sonner";
 import ProductImageGallery, { type ProductImage } from "./ProductImageGallery";
 import CountdownTimer from "./CountdownTimer";
@@ -81,6 +81,7 @@ const PRODUCT_IMAGES_QUERY = `
 const PricingSection = () => {
   const [selectedQuantity, setSelectedQuantity] = useState(2);
   const [pendingUniquePhotos, setPendingUniquePhotos] = useState(false);
+  const [pendingPersonalizeCover, setPendingPersonalizeCover] = useState(false);
   const { addToCart, setIsCartOpen } = useBasket();
   const navigate = useNavigate();
   const [productImages, setProductImages] = useState<ProductImage[]>([
@@ -118,10 +119,10 @@ const PricingSection = () => {
   }, []);
 
   const selectedTier = physicalPricing.find((t) => t.quantity === selectedQuantity)!;
-  const totalPrice = selectedTier.price + (pendingUniquePhotos ? UNIQUE_PHOTOS_PRICE : 0);
+  const totalPrice = selectedTier.price + (pendingUniquePhotos ? UNIQUE_PHOTOS_PRICE : 0) + (pendingPersonalizeCover ? PERSONALIZE_COVER_PRICE * selectedQuantity : 0);
 
   const handleAddToBasket = () => {
-    addToCart(selectedQuantity, { uniquePhotos: pendingUniquePhotos });
+    addToCart(selectedQuantity, { uniquePhotos: pendingUniquePhotos, personalizeCover: pendingPersonalizeCover });
     setIsCartOpen(true);
   };
 
@@ -245,7 +246,7 @@ const PricingSection = () => {
 
               {/* Unique photos upsell */}
               {(
-                <label className="flex items-start gap-3 p-4 rounded-lg border border-border bg-background mb-5 cursor-pointer">
+                <label className="flex items-start gap-3 p-4 rounded-lg border border-border bg-background mb-3 cursor-pointer">
                   <Checkbox
                     checked={pendingUniquePhotos}
                     onCheckedChange={(checked) => setPendingUniquePhotos(!!checked)}
@@ -262,6 +263,24 @@ const PricingSection = () => {
                   </div>
                 </label>
               )}
+
+              {/* Personalize cover upsell */}
+              <label className="flex items-start gap-3 p-4 rounded-lg border border-border bg-background mb-5 cursor-pointer">
+                <Checkbox
+                  checked={pendingPersonalizeCover}
+                  onCheckedChange={(checked) => setPendingPersonalizeCover(!!checked)}
+                  className="mt-0.5"
+                />
+                <div className="flex-1">
+                  <p className="text-sm font-semibold text-foreground">
+                    Personalize your cover!{" "}
+                    <span className="text-primary font-bold">+${PERSONALIZE_COVER_PRICE.toFixed(2)}/book</span>
+                  </p>
+                  <p className="text-xs text-muted-foreground mt-0.5">
+                    Add a custom title to the front cover of each book
+                  </p>
+                </div>
+              </label>
 
               {/* 2. Guarantee Badges */}
               <GuaranteeBadges />
@@ -331,7 +350,7 @@ const PricingSection = () => {
 
       {/* 9. Final CTA Block */}
       <FinalCTABlock onCtaClick={() => {
-        addToCart(selectedQuantity, { uniquePhotos: pendingUniquePhotos });
+        addToCart(selectedQuantity, { uniquePhotos: pendingUniquePhotos, personalizeCover: pendingPersonalizeCover });
         setIsCartOpen(true);
       }} />
 
