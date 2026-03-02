@@ -5,12 +5,16 @@ import { Badge } from "@/components/ui/badge";
 import { useBasket, UNIQUE_PHOTOS_PRICE } from "@/contexts/BasketContext";
 
 const UniquePhotosUpsellBanner = () => {
-  const { uniquePhotos, setUniquePhotos, item } = useBasket();
-  const bookCount = item?.quantity ?? 1;
+  const { items, setUniquePhotos } = useBasket();
 
-  if (bookCount <= 1) return null;
+  // Only show for multi-book bundles
+  const qualifyingItems = items.filter((i) => i.quantity > 1);
+  if (qualifyingItems.length === 0) return null;
 
-  if (uniquePhotos) {
+  const allEnabled = qualifyingItems.every((i) => i.uniquePhotos);
+  const anyEnabled = qualifyingItems.some((i) => i.uniquePhotos);
+
+  if (allEnabled) {
     return (
       <Card className="rounded-3xl border-primary/30 bg-primary/5">
         <CardContent className="p-4 flex items-center justify-between gap-4">
@@ -24,7 +28,7 @@ const UniquePhotosUpsellBanner = () => {
                 <Badge variant="secondary" className="text-xs">Added</Badge>
               </p>
               <p className="text-xs text-foreground">
-                Each of your {bookCount} books will use different photos
+                Each book will use different photos
               </p>
             </div>
           </div>
@@ -41,6 +45,8 @@ const UniquePhotosUpsellBanner = () => {
     );
   }
 
+  const count = qualifyingItems.filter((i) => !i.uniquePhotos).length;
+
   return (
     <Card className="rounded-3xl border-dashed border-2 border-primary/30 bg-primary/5 overflow-hidden">
       <CardContent className="p-6">
@@ -53,7 +59,9 @@ const UniquePhotosUpsellBanner = () => {
               Make each book unique!
             </h3>
              <p className="text-sm text-foreground mt-1">
-               You're ordering <strong>{bookCount} books</strong>. Without this upgrade, all {bookCount} books will contain the <strong>same 20 photos</strong>. Add this to upload 20 <em>different</em> photos for each book.
+               {anyEnabled
+                 ? `${count} bundle${count > 1 ? 's' : ''} still using the same photos. Add unique photos to each.`
+                 : `Upload 20 different photos for each book in your multi-book bundles.`}
              </p>
           </div>
         </div>
@@ -66,10 +74,12 @@ const UniquePhotosUpsellBanner = () => {
             <span className="font-semibold text-foreground text-sm">
               20 Different Photos Per Book
             </span>
-            <span className="text-xs text-foreground ml-2">Upload unique photos for each of your {bookCount} books</span>
+            <span className="text-xs text-foreground ml-2">
+              +${UNIQUE_PHOTOS_PRICE.toFixed(2)} per bundle
+            </span>
           </div>
           <span className="font-bold text-foreground shrink-0 ml-4">
-            + ${UNIQUE_PHOTOS_PRICE.toFixed(2)}
+            Add to all
           </span>
         </button>
       </CardContent>

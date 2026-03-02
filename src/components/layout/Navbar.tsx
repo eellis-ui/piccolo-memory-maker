@@ -2,7 +2,7 @@ import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Menu, X, ShoppingCart, Minus, Plus, Trash2, Shield, ClipboardList, Sparkles, Tag } from "lucide-react";
 import { useState, useEffect } from "react";
-import { useBasket, DIGITAL_DOWNLOAD_PRICE, UNIQUE_PHOTOS_PRICE } from "@/contexts/BasketContext";
+import { useBasket, UNIQUE_PHOTOS_PRICE } from "@/contexts/BasketContext";
 import { useIsAdmin } from "@/hooks/use-admin";
 import { supabase } from "@/integrations/supabase/client";
 import { Badge } from "@/components/ui/badge";
@@ -23,14 +23,13 @@ interface BasketContentProps {
   items: ReturnType<typeof useBasket>["items"];
   totalBookCount: number;
   totalDiscount: number;
-  uniquePhotos: boolean;
   addOns: ReturnType<typeof useBasket>["addOns"];
   addOnPrice: number;
   activeSessionId: string | null;
   setIsCartOpen: (open: boolean) => void;
   removeItem: (id: string) => void;
   updateItemQuantity: (id: string, newQuantity: number) => void;
-  setUniquePhotos: (v: boolean) => void;
+  toggleItemUniquePhotos: (id: string) => void;
 }
 
 const BasketContent = ({
@@ -38,14 +37,13 @@ const BasketContent = ({
   items,
   totalBookCount,
   totalDiscount,
-  uniquePhotos,
   addOns,
   addOnPrice,
   activeSessionId,
   setIsCartOpen,
   removeItem,
   updateItemQuantity,
-  setUniquePhotos,
+  toggleItemUniquePhotos,
 }: BasketContentProps) => (
   <div className="flex flex-col h-full">
     <div className="flex-1 overflow-y-auto space-y-4 py-4">
@@ -146,25 +144,27 @@ const BasketContent = ({
                 February Sale
               </Badge>
             </div>
+            {/* Per-bundle unique photos toggle (only for 2+ book bundles) */}
+            {lineItem.quantity >= 2 && (
+              <button
+                onClick={() => toggleItemUniquePhotos(lineItem.id)}
+                className={`flex items-center justify-between w-full p-2.5 rounded-lg border text-left text-xs transition-all ${
+                  lineItem.uniquePhotos
+                    ? 'border-primary/40 bg-primary/5'
+                    : 'border-border hover:border-primary/30 hover:bg-muted/50'
+                }`}
+              >
+                <span className={`font-medium ${lineItem.uniquePhotos ? 'text-foreground' : 'text-muted-foreground'}`}>
+                  Unique photos per book
+                </span>
+                <span className="font-semibold text-foreground">
+                  {lineItem.uniquePhotos ? '✓' : '+'} ${UNIQUE_PHOTOS_PRICE.toFixed(2)}
+                </span>
+              </button>
+            )}
           </div>
         );
       })}
-
-      {/* Unique photos upsell */}
-      {uniquePhotos &&
-        <div className="space-y-3 p-3 rounded-lg border border-border bg-background">
-          <div className="flex items-center justify-between">
-            <span className="font-semibold text-foreground text-sm">Unique Photos Per Book</span>
-            <button onClick={() => setUniquePhotos(false)} className="text-muted-foreground hover:text-destructive transition-colors">
-              <Trash2 className="w-4 h-4" />
-            </button>
-          </div>
-          <div className="flex justify-between text-sm">
-            <span className="text-muted-foreground">Different photos for each book</span>
-            <span className="font-semibold">${UNIQUE_PHOTOS_PRICE.toFixed(2)}</span>
-          </div>
-        </div>
-      }
 
       {addOns.dedicationPageEnabled &&
         <div className="space-y-3 p-3 rounded-lg border border-border bg-background">
@@ -294,7 +294,7 @@ const CartButton = ({ isCartOpen, setIsCartOpen, hasItems, itemCount, basketCont
 
 const Navbar = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const { item, items, totalBookCount, removeItem, updateItemQuantity, setQuantity, pricingTiers, digitalCopies, setDigitalCopies, digitalPrice, addOns, addOnsTotal: basketAddOnsTotal, addOnPrice, uniquePhotos, setUniquePhotos, uniquePhotosPrice, activeSessionId, isCartOpen, setIsCartOpen } = useBasket();
+  const { items, totalBookCount, removeItem, updateItemQuantity, toggleItemUniquePhotos, digitalCopies, digitalPrice, addOns, addOnsTotal: basketAddOnsTotal, addOnPrice, uniquePhotos, uniquePhotosPrice, activeSessionId, isCartOpen, setIsCartOpen } = useBasket();
   const { isAdmin } = useIsAdmin();
   const [isLoggedIn, setIsLoggedIn] = useState(false);
 
@@ -327,14 +327,13 @@ const Navbar = () => {
     items,
     totalBookCount,
     totalDiscount,
-    uniquePhotos,
     addOns,
     addOnPrice,
     activeSessionId,
     setIsCartOpen,
     removeItem,
     updateItemQuantity,
-    setUniquePhotos,
+    toggleItemUniquePhotos,
   };
 
   return (
