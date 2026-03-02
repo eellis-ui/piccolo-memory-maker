@@ -50,7 +50,7 @@ const BasketContent = ({
   setDigitalCopies
 }: BasketContentProps) =>
 <div className="flex flex-col h-full">
-    <div className="flex-1 overflow-y-auto space-y-4 py-4">
+    <div className="flex-1 overflow-y-auto overflow-x-hidden space-y-4 py-4">
       {/* Next steps banner */}
       
 
@@ -65,25 +65,12 @@ const BasketContent = ({
       {(() => {
       const subtotal = items.reduce((s, i) => s + i.totalPrice, 0);
       const FREE_SHIPPING_THRESHOLD = 35;
-      const progressPercent = Math.min(100, subtotal / FREE_SHIPPING_THRESHOLD * 100);
-      const amountRemaining = (FREE_SHIPPING_THRESHOLD - subtotal).toFixed(2);
       const unlocked = subtotal >= FREE_SHIPPING_THRESHOLD;
+      const amountRemaining = (FREE_SHIPPING_THRESHOLD - subtotal).toFixed(2);
       return (
-        <div className="space-y-2">
-            <p className="text-center font-semibold text-foreground text-base">
-              {unlocked ? "Free shipping unlocked!" : `You're $${amountRemaining} away from free shipping!`}
-            </p>
-            <div className="relative">
-              <Progress value={progressPercent} className="h-3 bg-muted [&>div]:bg-foreground rounded-full" />
-              {unlocked &&
-            <div className="absolute -right-1 -top-1 bg-foreground text-background rounded-full w-5 h-5 flex items-center justify-center">
-                  <Tag className="w-3 h-3" />
-                </div>
-            }
-            </div>
-            <p className="text-right text-xs text-muted-foreground font-medium">Free Shipping over $35</p>
-          </div>);
-
+        <p className="text-center text-xs text-muted-foreground font-medium py-1">
+          {unlocked ? "✓ Free shipping unlocked!" : `Free shipping on orders over $35 · $${amountRemaining} away`}
+        </p>);
     })()}
 
       {!hasItems &&
@@ -210,29 +197,18 @@ const BasketContent = ({
   <div className="border-t border-border pt-4 space-y-4 flex-shrink-0">
 
         {/* Digital download upsell */}
-        <div className="rounded-xl border border-dashed border-primary/30 bg-primary/5 p-3 space-y-2">
-          <div className="flex items-start gap-2">
-            <img
-              src="/lovable-uploads/d741aeb9-21af-45e1-9863-e350da643d42.png"
-              alt="Digital Download"
-              className="w-8 h-8 rounded-md object-cover flex-shrink-0 mt-0.5"
-            />
-            <div>
-              <p className="font-bold text-foreground text-sm uppercase tracking-wide leading-tight">Add an Instant Digital Download</p>
-              <p className="text-xs text-muted-foreground mt-0.5">Get all your line art drawings as a downloadable PDF — print & colour as many times as you like!</p>
-            </div>
+        <div className="flex items-center justify-between rounded-lg border border-dashed border-primary/30 bg-primary/5 px-3 py-2">
+          <div className="flex items-center gap-2 min-w-0">
+            <Download className="w-4 h-4 text-primary shrink-0" />
+            <span className="text-xs font-semibold text-foreground truncate">Add Digital PDF</span>
           </div>
-          <div className="flex items-center justify-between bg-background rounded-lg px-3 py-2">
-            <div className="flex items-center gap-2">
-              <Switch
-                checked={digitalCopies > 0}
-                onCheckedChange={(checked) => setDigitalCopies(checked ? 1 : 0)}
-                className="shrink-0"
-              />
-              <span className="text-sm font-semibold text-foreground">Digital PDF</span>
-              <span className="text-xs text-muted-foreground">· One-time download</span>
-            </div>
-            <span className="font-bold text-foreground text-sm">${DIGITAL_DOWNLOAD_PRICE.toFixed(2)}</span>
+          <div className="flex items-center gap-3 shrink-0">
+            <span className="text-xs font-bold text-foreground">${DIGITAL_DOWNLOAD_PRICE.toFixed(2)}</span>
+            <Switch
+              checked={digitalCopies > 0}
+              onCheckedChange={(checked) => setDigitalCopies(checked ? 1 : 0)}
+              className="shrink-0"
+            />
           </div>
         </div>
 
