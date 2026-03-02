@@ -223,7 +223,7 @@ const BasketContent = ({
                   <p className="font-semibold text-foreground text-sm leading-tight">
                     Instant digital download{" "}
                     <span className="line-through text-muted-foreground font-normal text-xs">
-                      ${(totalBookCount * 14).toFixed(2)}
+                      ${(totalBookCount * 10).toFixed(2)}
                     </span>{" "}
                     <span className="text-primary font-bold">
                       ${(DIGITAL_DOWNLOAD_PRICE + Math.max(0, totalBookCount - 1)).toFixed(2)}
