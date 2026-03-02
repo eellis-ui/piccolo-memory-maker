@@ -210,36 +210,29 @@ const BasketContent = ({
   <div className="border-t border-border pt-4 space-y-4 flex-shrink-0">
 
         {/* Digital download upsell */}
-        <div className="rounded-xl border border-dashed border-primary/30 bg-primary/5 p-3">
-          <div className="flex items-start gap-3">
+        <div className="rounded-xl border border-dashed border-primary/30 bg-primary/5 p-3 space-y-2">
+          <div className="flex items-start gap-2">
             <img
-          src="/lovable-uploads/d741aeb9-21af-45e1-9863-e350da643d42.png"
-          alt="Digital Download"
-          className="w-12 h-12 rounded-lg object-cover flex-shrink-0" />
-        
-            <div className="flex-1 min-w-0">
-              <div className="flex items-start justify-between gap-2">
-                <div>
-                  <p className="font-semibold text-foreground text-sm leading-tight">
-                    Instant digital download{" "}
-                    <span className="line-through text-muted-foreground font-normal text-xs">
-                      $10.00
-                    </span>{" "}
-                    <span className="text-primary font-bold">
-                      ${DIGITAL_DOWNLOAD_PRICE.toFixed(2)}
-                    </span>
-                  </p>
-                </div>
-                <Switch
-              checked={digitalCopies > 0}
-              onCheckedChange={(checked) => setDigitalCopies(checked ? 1 : 0)}
-              className="shrink-0 mt-0.5" />
-            
-              </div>
-              <p className="text-xs text-muted-foreground mt-1 leading-relaxed line-clamp-2">Get all your line art drawings, delivered to your inbox as a downloadable PDF. 
-
-          </p>
+              src="/lovable-uploads/d741aeb9-21af-45e1-9863-e350da643d42.png"
+              alt="Digital Download"
+              className="w-8 h-8 rounded-md object-cover flex-shrink-0 mt-0.5"
+            />
+            <div>
+              <p className="font-bold text-foreground text-sm uppercase tracking-wide leading-tight">Add an Instant Digital Download</p>
+              <p className="text-xs text-muted-foreground mt-0.5">Get all your line art drawings as a downloadable PDF — print & colour as many times as you like!</p>
             </div>
+          </div>
+          <div className="flex items-center justify-between bg-background rounded-lg px-3 py-2">
+            <div className="flex items-center gap-2">
+              <Switch
+                checked={digitalCopies > 0}
+                onCheckedChange={(checked) => setDigitalCopies(checked ? 1 : 0)}
+                className="shrink-0"
+              />
+              <span className="text-sm font-semibold text-foreground">Digital PDF</span>
+              <span className="text-xs text-muted-foreground">· One-time download</span>
+            </div>
+            <span className="font-bold text-foreground text-sm">${DIGITAL_DOWNLOAD_PRICE.toFixed(2)}</span>
           </div>
         </div>
 
