@@ -63,7 +63,7 @@ const Builder = () => {
   const [searchParams] = useSearchParams();
   const resumeSessionId = searchParams.get("sessionId");
 
-  const { item, addOns, uniquePhotos, setQuantity, setUniquePhotos, setActiveSessionId } = useBasket();
+  const { item, addOns, uniquePhotos, totalBookCount, addToCart, clear, setActiveSessionId } = useBasket();
   const bookCount = item?.quantity ?? 1;
 
   const [books, setBooks] = useState<BookState[]>([]);
@@ -91,11 +91,12 @@ const Builder = () => {
           const existingOrders = await getSessionOrders(resumeSessionId);
 
           if (existingOrders && existingOrders.length > 0) {
-            // Restore basket with correct quantity
-            setQuantity(existingOrders.length);
-            const hasUniquePhotos = existingOrders.some((o: any) => o.unique_photos);
-            if (hasUniquePhotos) {
-              setUniquePhotos(true);
+            // Reconstruct basket from DB orders if counts don't match
+            if (totalBookCount !== existingOrders.length) {
+              clear();
+              existingOrders.forEach((order: any) => {
+                addToCart(1, { uniquePhotos: !!order.unique_photos });
+              });
             }
 
             const restoredBooks: BookState[] = existingOrders.map((order: any) => {
