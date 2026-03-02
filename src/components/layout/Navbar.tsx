@@ -221,7 +221,7 @@ const BasketContent = ({
               <div className="flex items-start justify-between gap-2">
                 <div>
                   <p className="font-semibold text-foreground text-sm leading-tight">
-                    Get Digital Copies{" "}
+                    Instant digital download{" "}
                     <span className="line-through text-muted-foreground font-normal text-xs">
                       ${(totalBookCount * 14).toFixed(2)}
                     </span>{" "}
@@ -229,7 +229,6 @@ const BasketContent = ({
                       ${(DIGITAL_DOWNLOAD_PRICE + Math.max(0, totalBookCount - 1)).toFixed(2)}
                     </span>
                   </p>
-                  <p className="text-xs font-bold text-foreground mt-0.5">Delivered within 24 hours!</p>
                 </div>
                 <Switch
                   checked={digitalCopies > 0}
@@ -238,7 +237,7 @@ const BasketContent = ({
                 />
               </div>
               <p className="text-xs text-muted-foreground mt-1 leading-relaxed line-clamp-2">
-                ✏️ Once we receive your photos, we'll carefully convert them into your personalised coloring book PDF — ready to print at home anytime!
+                Get all your line art drawings, delivered to your inbox as a downloadable PDF. So you can color them as much as you want!
               </p>
             </div>
           </div>
