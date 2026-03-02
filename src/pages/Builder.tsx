@@ -438,6 +438,7 @@ const Builder = () => {
                     maxImages={20}
                     initialImages={activeBook.uploadImages}
                     onImagesChanged={(imgs) => updateBook(activeBookIndex, { uploadImages: imgs })}
+                    sharedBookCount={!uniquePhotos && bookCount > 1 ? bookCount : undefined}
                   />
                 )}
 

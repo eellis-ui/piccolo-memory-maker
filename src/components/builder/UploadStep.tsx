@@ -17,6 +17,7 @@ interface UploadStepProps {
   maxImages?: number;
   initialImages?: LocalImage[];
   onImagesChanged?: (images: LocalImage[]) => void;
+  sharedBookCount?: number; // when > 1, photos are shared across all books
 }
 
 export interface LocalImage {
@@ -30,7 +31,7 @@ export interface LocalImage {
   isLandscape?: boolean;
 }
 
-const UploadStep = ({ orderId, sessionId, onImagesUploaded, maxImages = 20, initialImages, onImagesChanged }: UploadStepProps) => {
+const UploadStep = ({ orderId, sessionId, onImagesUploaded, maxImages = 20, initialImages, onImagesChanged, sharedBookCount }: UploadStepProps) => {
   const [images, setImages] = useState<LocalImage[]>(initialImages ?? []);
   const [isDragging, setIsDragging] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
@@ -224,6 +225,23 @@ const UploadStep = ({ orderId, sessionId, onImagesUploaded, maxImages = 20, init
 
   return (
     <div className="space-y-8">
+      {/* Shared books info banner */}
+      {sharedBookCount && sharedBookCount > 1 && (
+        <div className="flex items-start gap-3 p-4 rounded-2xl bg-primary/5 border border-primary/20">
+          <div className="w-8 h-8 rounded-xl bg-primary/15 flex items-center justify-center shrink-0 mt-0.5">
+            <ImageIcon className="w-4 h-4 text-primary" />
+          </div>
+          <div>
+            <p className="font-semibold text-sm text-foreground">
+              Upload once for all {sharedBookCount} books
+            </p>
+            <p className="text-xs text-muted-foreground mt-0.5">
+              These photos will be shared across all {sharedBookCount} books. Upload up to 20 photos and they'll be used for every copy.
+            </p>
+          </div>
+        </div>
+      )}
+
       {/* Upload Area */}
       <div
         onDrop={handleDrop}
