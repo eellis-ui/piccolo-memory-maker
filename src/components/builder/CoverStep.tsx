@@ -4,7 +4,7 @@ import { Input } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
-import { Heart } from "lucide-react";
+import { Heart, Link2 } from "lucide-react";
 import type { BookAddOnsLocal } from "@/pages/Builder";
 import { useBasket } from "@/contexts/BasketContext";
 import logoImg from "@/assets/piccoload-logo.png";
@@ -44,9 +44,10 @@ interface CoverStepProps {
     subtitle: string;
   }) => void;
   onBack: () => void;
+  sharedBookCount?: number;
 }
 
-const CoverStep = ({ availableImages, bookAddOns, onBookAddOnsChange, onCoverComplete, onBack }: CoverStepProps) => {
+const CoverStep = ({ availableImages, bookAddOns, onBookAddOnsChange, onCoverComplete, onBack, sharedBookCount }: CoverStepProps) => {
   const { addOnPrice } = useBasket();
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
 
@@ -102,6 +103,15 @@ const CoverStep = ({ availableImages, bookAddOns, onBookAddOnsChange, onCoverCom
           Select 2 photos — each will appear alongside its line-art drawing
         </p>
       </div>
+
+      {sharedBookCount && sharedBookCount > 1 && (
+        <div className="flex items-center gap-3 rounded-2xl border border-primary/30 bg-primary/5 px-4 py-3 text-sm text-foreground">
+          <Link2 className="w-4 h-4 text-primary shrink-0" />
+          <span>
+            This cover design will be applied to all <strong>{sharedBookCount} books</strong> — your photos are shared across the bundle.
+          </span>
+        </div>
+      )}
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
         {/* Cover Preview */}

@@ -220,7 +220,14 @@ const Builder = () => {
   };
 
   const handleApprovalComplete = (photos: OrderPhoto[]) => {
-    updateBook(activeBookIndex, { photos, step: "cover" });
+    if (!uniquePhotos && bookCount > 1) {
+      // Sync approved photos to all books in shared mode
+      setBooks((prev) =>
+        prev.map((b) => ({ ...b, photos, step: "cover" as const }))
+      );
+    } else {
+      updateBook(activeBookIndex, { photos, step: "cover" });
+    }
   };
 
   const handleCoverComplete = async (data: {
@@ -238,6 +245,29 @@ const Builder = () => {
         dedication_page_text: addOns.dedicationPageText,
         builder_step: "cover",
       });
+    }
+
+    // In shared-photos mode all books use the same cover — mark all complete at once
+    if (!uniquePhotos && bookCount > 1) {
+      setBooks((prev) =>
+        prev.map((b, i) => {
+          const isActive = i === activeBookIndex;
+          // Persist cover for every non-active book too
+          if (!isActive && b.orderId && sessionId) {
+            updateGuestOrder(sessionId, b.orderId, {
+              cover_image_id: data.imageIds[0],
+              title_page_enabled: addOns.titlePageEnabled,
+              title_page_text: addOns.titlePageText,
+              dedication_page_enabled: addOns.dedicationPageEnabled,
+              dedication_page_text: addOns.dedicationPageText,
+              builder_step: "cover",
+            });
+          }
+          return { ...b, coverData: data, completed: true, step: "cover" as const };
+        })
+      );
+      setShowingCheckout(true);
+      return;
     }
 
     updateBook(activeBookIndex, { coverData: data, completed: true, step: "cover" });
@@ -466,6 +496,7 @@ const Builder = () => {
                     onBookAddOnsChange={(a) => updateBook(activeBookIndex, { bookAddOns: a })}
                     onCoverComplete={handleCoverComplete}
                     onBack={() => updateBook(activeBookIndex, { step: "approve" })}
+                    sharedBookCount={!uniquePhotos && bookCount > 1 ? bookCount : undefined}
                   />
                 )}
               </>
