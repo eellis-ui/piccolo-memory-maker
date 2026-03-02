@@ -77,13 +77,16 @@ Deno.serve(async (req) => {
             status: 404, headers: { ...corsHeaders, "Content-Type": "application/json" },
           });
         }
-        if (photo.orders.user_id !== userId) {
+        // If the order has a user_id, it must match; if null (guest order), fall through to session auth
+        if (photo.orders.user_id !== null && photo.orders.user_id !== userId) {
           return new Response(JSON.stringify({ error: "Forbidden" }), {
             status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" },
           });
         }
-        rateLimitKey = userId;
-        isAuthed = true;
+        if (photo.orders.user_id === userId) {
+          rateLimitKey = userId;
+          isAuthed = true;
+        }
       }
     }
 
