@@ -219,10 +219,7 @@ const BasketContent = ({
     }
 
         <Button asChild className="w-full rounded-lg py-6 text-base font-bold bg-foreground text-background hover:bg-foreground/90" size="lg">
-          <Link
-        to={activeSessionId ? `/builder?sessionId=${activeSessionId}` : "/builder"}
-        onClick={() => setIsCartOpen(false)}>
-        
+          <Link to="/order-review" onClick={() => setIsCartOpen(false)}>
             Proceed to Create Your {totalBookCount > 1 ? 'Books' : 'Book'}
           </Link>
         </Button>
