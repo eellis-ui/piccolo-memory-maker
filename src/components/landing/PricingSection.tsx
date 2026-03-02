@@ -119,7 +119,8 @@ const PricingSection = () => {
   }, []);
 
   const selectedTier = physicalPricing.find((t) => t.quantity === selectedQuantity)!;
-  const totalPrice = selectedTier.price + (pendingUniquePhotos ? UNIQUE_PHOTOS_PRICE : 0) + (pendingPersonalizeCover ? PERSONALIZE_COVER_PRICE * selectedQuantity : 0);
+  const personalizeCoverCount = pendingPersonalizeCover ? (pendingUniquePhotos ? selectedQuantity : 1) : 0;
+  const totalPrice = selectedTier.price + (pendingUniquePhotos ? UNIQUE_PHOTOS_PRICE : 0) + personalizeCoverCount * PERSONALIZE_COVER_PRICE;
 
   const handleAddToBasket = () => {
     addToCart(selectedQuantity, { uniquePhotos: pendingUniquePhotos, personalizeCover: pendingPersonalizeCover });

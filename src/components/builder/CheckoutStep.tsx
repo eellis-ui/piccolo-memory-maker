@@ -44,7 +44,8 @@ const CheckoutStep = ({ pageCount, extraPages, convertedUrls, onBack, bookDigita
   const titlePageCount = bookAddOnsList.filter(b => b.titlePageEnabled).length;
   const coverPersonalizeCount = bookAddOnsList.filter(b => b.dedicationPageEnabled).length;
   const perBookAddOnsTotal = (titlePageCount + coverPersonalizeCount) * addOnPrice;
-  const basketPersonalizeCoverCost = personalizeCoverFromBasket ? bookCount * 1.99 : 0;
+  const personalizeCoverBooksCount = personalizeCoverFromBasket ? (uniquePhotos ? bookCount : 1) : 0;
+  const basketPersonalizeCoverCost = personalizeCoverBooksCount * 1.99;
   const totalPrice = (basePrice + extraPagesPrice) * bookCount + (uniquePhotos ? uniquePhotosPrice : 0) + digitalPrice + perBookAddOnsTotal + basketPersonalizeCoverCost;
   const originalTotalPrice = (originalBasePrice + extraPagesPrice) * bookCount + (uniquePhotos ? uniquePhotosPrice : 0) + digitalPrice + perBookAddOnsTotal;
 
@@ -73,7 +74,7 @@ const CheckoutStep = ({ pageCount, extraPages, convertedUrls, onBack, bookDigita
 
       // Add personalize cover add-on
       const personalizeCount = bookAddOnsList.filter(b => b.titlePageEnabled).length;
-      const basketPersonalizeCount = personalizeCoverFromBasket ? bookCount : 0;
+      const basketPersonalizeCount = personalizeCoverFromBasket ? (uniquePhotos ? bookCount : 1) : 0;
       const totalPersonalizeCount = Math.max(personalizeCount, basketPersonalizeCount);
       if (totalPersonalizeCount > 0) {
         lines.push({ merchandiseId: SHOPIFY_VARIANTS.PERSONALIZE_COVER, quantity: totalPersonalizeCount });
