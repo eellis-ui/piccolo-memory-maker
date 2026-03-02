@@ -1,6 +1,6 @@
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { Menu, X, ShoppingCart, Minus, Plus, Trash2, Shield, ClipboardList, Sparkles, Tag } from "lucide-react";
+import { Menu, X, ShoppingCart, Minus, Plus, Trash2, Shield, ClipboardList, Sparkles, Tag, Check } from "lucide-react";
 import { useState, useEffect } from "react";
 import { useBasket, UNIQUE_PHOTOS_PRICE } from "@/contexts/BasketContext";
 import { useIsAdmin } from "@/hooks/use-admin";
@@ -145,23 +145,32 @@ const BasketContent = ({
               </Badge>
             </div>
             {/* Per-bundle unique photos toggle (only for 2+ book bundles) */}
-            {(
-              <button
-                onClick={() => toggleItemUniquePhotos(lineItem.id)}
-                className={`flex items-center justify-between w-full p-2.5 rounded-lg border text-left text-xs transition-all ${
-                  lineItem.uniquePhotos
-                    ? 'border-primary/40 bg-primary/5'
-                    : 'border-border hover:border-primary/30 hover:bg-muted/50'
-                }`}
-              >
-                <span className={`font-medium ${lineItem.uniquePhotos ? 'text-foreground' : 'text-muted-foreground'}`}>
-                  Unique photos per book
-                </span>
-                <span className="font-semibold text-foreground">
-                  {lineItem.uniquePhotos ? '✓' : '+'} ${UNIQUE_PHOTOS_PRICE.toFixed(2)}
-                </span>
-              </button>
-            )}
+            <button
+              onClick={() => toggleItemUniquePhotos(lineItem.id)}
+              className={`flex items-center justify-between w-full p-2.5 rounded-lg border text-left text-xs transition-all ${
+                lineItem.uniquePhotos
+                  ? 'border-green-500 bg-green-50 dark:bg-green-950/30'
+                  : 'border-dashed border-muted-foreground/30 bg-transparent hover:border-muted-foreground/50'
+              }`}
+            >
+              <span className="flex items-center gap-1.5">
+                {lineItem.uniquePhotos ? (
+                  <>
+                    <Check className="w-3.5 h-3.5 text-green-600" />
+                    <span className="font-semibold text-green-700 dark:text-green-400">Unique photos per book</span>
+                    <span className="text-[10px] font-bold uppercase bg-green-500 text-white px-1.5 py-0.5 rounded-full leading-none">Added</span>
+                  </>
+                ) : (
+                  <>
+                    <Plus className="w-3.5 h-3.5 text-muted-foreground" />
+                    <span className="font-medium text-muted-foreground">Unique photos per book</span>
+                  </>
+                )}
+              </span>
+              <span className={`font-semibold ${lineItem.uniquePhotos ? 'text-green-700 dark:text-green-400' : 'text-muted-foreground'}`}>
+                ${UNIQUE_PHOTOS_PRICE.toFixed(2)}
+              </span>
+            </button>
           </div>
         );
       })}
