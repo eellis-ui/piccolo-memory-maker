@@ -1,36 +1,43 @@
 
 
-# Fix: Multi-Book Builder Not Showing All Books
+# Fix: Session Resume Loses Books Due to Pricing Tier Mismatch
 
 ## Problem
-When you add multiple books (across bundles) to the cart and proceed to the builder, it looks like only 1 book exists. The book tabs ("Book 1", "Book 2", etc.) and the "Book X of Y" progress text are **hidden** because they are gated behind the `uniquePhotos` upsell flag. If unique photos isn't active (or gets lost on session resume), the multi-book UI disappears entirely -- even though the builder *is* tracking all books behind the scenes.
+When resuming a session with 4+ books (e.g., a 3-book bundle + a 1-book bundle = 4 orders), the builder calls `setQuantity(4)`. But `setQuantity` is a legacy function that maps to `PRICING_TIERS` which only supports quantities 1, 2, or 3. For quantity 4, it falls back to tier[0] (quantity 1), so the cart is reset to just 1 book.
 
-There's also a secondary bug: when resuming a session from the database, the `uniquePhotos` flag from the cart isn't restored.
+## Root Cause
+`setQuantity()` in `BasketContext` calls `createBasketItem(quantity)` which does:
+```text
+PRICING_TIERS.find(t => t.quantity === quantity) ?? PRICING_TIERS[0]
+```
+Since there's no tier for quantity 4 or 5, it always falls back to the first tier (1 book).
 
-## Changes
+## Fix
 
-### 1. Always show multi-book tabs when there are multiple books
-**File:** `src/pages/Builder.tsx` (lines 271, 346)
+### `src/pages/Builder.tsx` (~line 93-99)
 
-Remove the `&& uniquePhotos` condition from both places:
-- Line 271: `bookCount > 1 && uniquePhotos` becomes `bookCount > 1`
-- Line 346: `bookCount > 1 && uniquePhotos` becomes `bookCount > 1`
+Replace the `setQuantity(existingOrders.length)` call with logic that properly reconstructs the cart. Since we can't know the original bundle grouping from the database (all orders are stored individually), we should use the `items` array from the basket if it already has the right count, or fall back to adding each order as a single-book item.
 
-This ensures users always see the book tabs and "Customising Book X of Y" text whenever there are 2+ books, regardless of whether unique photos is enabled.
+The simplest correct approach: use `clear()` + multiple `addToCart(1, ...)` calls -- one per order. This creates the correct number of line items in the cart, each individually priced. The total book count will then correctly equal the number of orders.
 
-### 2. Restore `uniquePhotos` from database on session resume
-**File:** `src/pages/Builder.tsx` (around line 94)
+Replace:
+```text
+setQuantity(existingOrders.length);
+const hasUniquePhotos = existingOrders.some((o: any) => o.unique_photos);
+if (hasUniquePhotos) {
+  setUniquePhotos(true);
+}
+```
 
-When resuming a session from the database, read the `unique_photos` field from each order and set the basket items' `uniquePhotos` flags accordingly. Currently `setQuantity(existingOrders.length)` creates items with `uniquePhotos: false` by default, losing the user's selection.
+With logic that:
+1. Checks if current basket `totalBookCount` already matches `existingOrders.length` -- if so, skip (cart is already correct from product page navigation).
+2. Otherwise, clears the cart and adds each order as its own single-book item, preserving the per-order `unique_photos` flag.
 
-### 3. Show UniquePhotosUpsellBanner for all multi-book orders
-**File:** `src/pages/Builder.tsx` (line 362)
+### `src/contexts/BasketContext.tsx`
 
-The upsell banner condition `bookCount > 1` is already correct, but verify it renders properly now that the tabs are always visible.
+Import `clear` in the builder's destructuring (already available). No changes needed to the context itself -- `addToCart(1, { uniquePhotos })` already works correctly for single-book items.
 
 ## What This Fixes
-- Book tabs ("Book 1", "Book 2", ...) will always be visible for multi-book orders
-- "Customising Book X of Y" progress text will always show
-- The unique photos selection will persist across session resumes
-- Users will clearly see and navigate between all their books in the builder
-
+- Resuming a session with 4+ books will correctly show all book tabs
+- Each order's `unique_photos` flag is restored individually per cart item
+- The cart total and book count will match the actual number of orders in the session
