@@ -236,31 +236,28 @@ const ApproveStep = ({
               <div className="relative bg-cream aspect-[210/297] overflow-hidden">
                 {hasConverted ? (
                   <div className="absolute inset-0 flex">
-                    <div className="w-1/2 h-full border-r border-border/50 relative overflow-hidden">
+                    <div className="w-1/2 h-full border-r border-border/50 relative overflow-hidden flex items-center justify-center">
                       <img
                         src={photo.originalUrl}
                         alt={`Original ${index + 1}`}
-                        className={`absolute opacity-50 ${
-                          photo.isLandscape
-                            ? "top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 rotate-90 h-full w-auto max-w-none"
-                            : "w-full h-full object-cover"
-                        }`}
-                        style={photo.isLandscape ? { height: "100%", width: "auto" } : {}}
+                        className="opacity-50"
+                        style={photo.isLandscape
+                          ? { transform: "rotate(90deg)", width: "100%", height: "auto" }
+                          : { width: "100%", height: "100%", objectFit: "cover" }
+                        }
                       />
                       <span className="absolute bottom-2 left-2 text-xs text-muted-foreground bg-background/80 px-2 py-1 rounded z-10">
                         Original
                       </span>
                     </div>
-                    <div className="w-1/2 h-full relative overflow-hidden">
+                    <div className="w-1/2 h-full relative overflow-hidden flex items-center justify-center">
                       <img
                         src={photo.convertedUrl!}
                         alt={`Line art ${index + 1}`}
-                        className={`absolute ${
-                          photo.isLandscape
-                            ? "top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 rotate-90 h-full w-auto max-w-none"
-                            : "w-full h-full object-cover"
-                        }`}
-                        style={photo.isLandscape ? { height: "100%", width: "auto" } : {}}
+                        style={photo.isLandscape
+                          ? { transform: "rotate(90deg)", width: "100%", height: "auto" }
+                          : { width: "100%", height: "100%", objectFit: "cover" }
+                        }
                       />
                       <div className="absolute inset-0 flex items-center justify-center pointer-events-none z-10">
                         <span className="text-4xl font-display text-foreground/25 rotate-[-30deg] font-bold tracking-widest select-none">
@@ -277,12 +274,10 @@ const ApproveStep = ({
                     <img
                       src={photo.originalUrl}
                       alt={`Original ${index + 1}`}
-                      className={`absolute ${
-                        photo.isLandscape
-                          ? "top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 rotate-90 h-full w-auto max-w-none"
-                          : "w-full h-full object-cover"
-                      }`}
-                      style={photo.isLandscape ? { height: "100%", width: "auto" } : {}}
+                      style={photo.isLandscape
+                        ? { transform: "rotate(90deg)", width: "100%", height: "auto" }
+                        : { width: "100%", height: "100%", objectFit: "cover" }
+                      }
                     />
                     {isConverting && (
                       <div className="absolute inset-0 bg-background/70 flex flex-col items-center justify-center gap-2 z-10">
