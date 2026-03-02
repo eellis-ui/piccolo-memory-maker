@@ -1,5 +1,5 @@
 import { useState, useCallback } from "react";
-import { Check, RefreshCw, Loader2, Trash2 } from "lucide-react";
+import { Check, RefreshCw, Loader2, Trash2, X, ZoomIn } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { supabase } from "@/integrations/supabase/client";
@@ -12,6 +12,12 @@ import {
   updateGuestPhoto,
   deleteGuestPhoto,
 } from "@/lib/guest-api";
+
+// Helper: consistent image style for A4 portrait display
+const imgStyle = (isLandscape: boolean): React.CSSProperties =>
+  isLandscape
+    ? { transform: "rotate(90deg)", width: "100%", height: "auto", display: "block" }
+    : { width: "100%", height: "100%", objectFit: "contain", display: "block" };
 
 interface ApproveStepProps {
   orderId: string;
@@ -36,6 +42,7 @@ const ApproveStep = ({
   const [photos, setPhotos] = useState<OrderPhoto[]>(initialPhotos);
   const [convertingIds, setConvertingIds] = useState<Set<string>>(new Set());
   const [retryCounts, setRetryCounts] = useState<Record<string, number>>({});
+  const [lightbox, setLightbox] = useState<{ src: string; isLandscape: boolean; label: string } | null>(null);
   const MAX_RETRIES_PER_PHOTO = 3;
 
   const updatePhotos = useCallback((updater: (prev: OrderPhoto[]) => OrderPhoto[]) => {
@@ -233,59 +240,67 @@ const ApproveStep = ({
                 <Trash2 className="w-3.5 h-3.5" />
               </button>
 
-              <div className="relative bg-cream aspect-[210/297] overflow-hidden">
+              {/* Image preview area */}
+              <div className="relative bg-muted/30 aspect-[210/297] overflow-hidden">
                 {hasConverted ? (
+                  /* Side-by-side: original + line art */
                   <div className="absolute inset-0 flex">
-                    <div className="w-1/2 h-full border-r border-border/50 relative overflow-hidden flex items-center justify-center">
+                    {/* Original half */}
+                    <button
+                      className="w-1/2 h-full border-r border-border/50 flex items-center justify-center overflow-hidden bg-muted/20 hover:bg-muted/40 transition-colors group relative"
+                      onClick={() => setLightbox({ src: photo.originalUrl, isLandscape: photo.isLandscape, label: "Original" })}
+                    >
                       <img
                         src={photo.originalUrl}
                         alt={`Original ${index + 1}`}
-                        className="opacity-50"
-                        style={photo.isLandscape
-                          ? { transform: "rotate(90deg)", width: "100%", height: "auto" }
-                          : { width: "100%", height: "100%", objectFit: "contain" }
-                        }
+                        className="opacity-60"
+                        style={imgStyle(photo.isLandscape)}
                       />
+                      <ZoomIn className="absolute top-2 right-2 w-4 h-4 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity" />
                       <span className="absolute bottom-2 left-2 text-xs text-muted-foreground bg-background/80 px-2 py-1 rounded z-10">
                         Original
                       </span>
-                    </div>
-                    <div className="w-1/2 h-full relative overflow-hidden flex items-center justify-center">
+                    </button>
+                    {/* Line art half */}
+                    <button
+                      className="w-1/2 h-full flex items-center justify-center overflow-hidden bg-white hover:bg-muted/10 transition-colors group relative"
+                      onClick={() => setLightbox({ src: photo.convertedUrl!, isLandscape: photo.isLandscape, label: "Line Art" })}
+                    >
                       <img
                         src={photo.convertedUrl!}
                         alt={`Line art ${index + 1}`}
-                        style={photo.isLandscape
-                          ? { transform: "rotate(90deg)", width: "100%", height: "auto" }
-                          : { width: "100%", height: "100%", objectFit: "contain" }
-                        }
+                        style={imgStyle(photo.isLandscape)}
                       />
                       <div className="absolute inset-0 flex items-center justify-center pointer-events-none z-10">
-                        <span className="text-4xl font-display text-foreground/25 rotate-[-30deg] font-bold tracking-widest select-none">
+                        <span className="text-3xl font-display text-foreground/20 rotate-[-30deg] font-bold tracking-widest select-none">
                           PREVIEW
                         </span>
                       </div>
-                      <span className="absolute bottom-2 right-2 text-xs text-muted-foreground bg-background/80 px-2 py-1 rounded z-10">
+                      <ZoomIn className="absolute top-2 right-2 w-4 h-4 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity z-20" />
+                      <span className="absolute bottom-2 right-2 text-xs text-muted-foreground bg-background/80 px-2 py-1 rounded z-20">
                         Line Art
                       </span>
-                    </div>
+                    </button>
                   </div>
                 ) : (
-                  <div className="absolute inset-0 flex items-center justify-center overflow-hidden">
+                  /* Single: original only */
+                  <button
+                    className="absolute inset-0 flex items-center justify-center overflow-hidden bg-muted/20 hover:bg-muted/40 transition-colors group w-full"
+                    onClick={() => setLightbox({ src: photo.originalUrl, isLandscape: photo.isLandscape, label: "Original" })}
+                  >
                     <img
                       src={photo.originalUrl}
                       alt={`Original ${index + 1}`}
-                      style={photo.isLandscape
-                        ? { transform: "rotate(90deg)", width: "100%", height: "auto" }
-                        : { width: "100%", height: "100%", objectFit: "contain" }
-                      }
+                      style={imgStyle(photo.isLandscape)}
                     />
+                    <ZoomIn className="absolute top-2 right-2 w-4 h-4 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity" />
                     {isConverting && (
                       <div className="absolute inset-0 bg-background/70 flex flex-col items-center justify-center gap-2 z-10">
                         <Loader2 className="w-8 h-8 text-primary animate-spin" />
                         <span className="text-sm text-muted-foreground">Converting...</span>
                       </div>
                     )}
-                  </div>
+                  </button>
                 )}
               </div>
 
@@ -365,6 +380,45 @@ const ApproveStep = ({
           Back to Upload
         </Button>
       </div>
+
+      {/* Lightbox */}
+      {lightbox && (
+        <div
+          className="fixed inset-0 z-50 bg-black/80 flex items-center justify-center p-4"
+          onClick={() => setLightbox(null)}
+        >
+          <div
+            className="relative max-w-2xl w-full max-h-[90vh] flex items-center justify-center"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="relative bg-white rounded-2xl overflow-hidden aspect-[210/297] w-full max-h-[85vh]"
+              style={{ maxWidth: "min(90vw, calc(85vh * 210/297))" }}
+            >
+              <div className="absolute inset-0 flex items-center justify-center overflow-hidden">
+                <img
+                  src={lightbox.src}
+                  alt={lightbox.label}
+                  style={imgStyle(lightbox.isLandscape)}
+                />
+              </div>
+              <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+                <span className="text-5xl font-display text-foreground/20 rotate-[-30deg] font-bold tracking-widest select-none">
+                  PREVIEW
+                </span>
+              </div>
+              <span className="absolute bottom-3 left-3 text-sm text-muted-foreground bg-background/90 px-3 py-1 rounded-full">
+                {lightbox.label}
+              </span>
+            </div>
+            <button
+              onClick={() => setLightbox(null)}
+              className="absolute -top-3 -right-3 w-8 h-8 rounded-full bg-background text-foreground flex items-center justify-center shadow-lg hover:bg-muted transition-colors"
+            >
+              <X className="w-4 h-4" />
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
