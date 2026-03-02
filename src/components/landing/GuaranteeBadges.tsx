@@ -1,7 +1,7 @@
 import { Truck, ShieldCheck, Award } from "lucide-react";
 
 const badges = [
-  { icon: Truck, label: "Free Shipping" },
+  { icon: Truck, label: "Free Shipping over $35" },
   { icon: ShieldCheck, label: "Money-Back Guarantee" },
   { icon: Award, label: "Premium Quality" },
 ];

@@ -58,16 +58,29 @@ const BasketContent = ({
       </div>
 
       {/* Free shipping bar */}
-      <div className="space-y-2">
-        <p className="text-center font-semibold text-foreground text-base">Free shipping unlocked!</p>
-        <div className="relative">
-          <Progress value={100} className="h-3 bg-muted [&>div]:bg-foreground rounded-full" />
-          <div className="absolute -right-1 -top-1 bg-foreground text-background rounded-full w-5 h-5 flex items-center justify-center">
-            <Tag className="w-3 h-3" />
+      {(() => {
+        const subtotal = items.reduce((s, i) => s + i.totalPrice, 0);
+        const FREE_SHIPPING_THRESHOLD = 35;
+        const progressPercent = Math.min(100, (subtotal / FREE_SHIPPING_THRESHOLD) * 100);
+        const amountRemaining = (FREE_SHIPPING_THRESHOLD - subtotal).toFixed(2);
+        const unlocked = subtotal >= FREE_SHIPPING_THRESHOLD;
+        return (
+          <div className="space-y-2">
+            <p className="text-center font-semibold text-foreground text-base">
+              {unlocked ? "Free shipping unlocked!" : `You're $${amountRemaining} away from free shipping!`}
+            </p>
+            <div className="relative">
+              <Progress value={progressPercent} className="h-3 bg-muted [&>div]:bg-foreground rounded-full" />
+              {unlocked && (
+                <div className="absolute -right-1 -top-1 bg-foreground text-background rounded-full w-5 h-5 flex items-center justify-center">
+                  <Tag className="w-3 h-3" />
+                </div>
+              )}
+            </div>
+            <p className="text-right text-xs text-muted-foreground font-medium">Free Shipping over $35</p>
           </div>
-        </div>
-        <p className="text-right text-xs text-muted-foreground font-medium">Free Shipping</p>
-      </div>
+        );
+      })()}
 
       {!hasItems &&
         <p className="text-center text-muted-foreground py-12 text-sm">
