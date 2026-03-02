@@ -1,31 +1,36 @@
 
-# Make Unique Photos Toggle State More Visually Distinct in Cart
+
+# Fix: Multi-Book Builder Not Showing All Books
 
 ## Problem
-The "Unique photos per book" toggle in the cart drawer looks too similar in its enabled vs disabled states. The only difference is a subtle border/background tint and a tiny checkmark vs plus sign, making it hard to tell at a glance whether it's been added.
+When you add multiple books (across bundles) to the cart and proceed to the builder, it looks like only 1 book exists. The book tabs ("Book 1", "Book 2", etc.) and the "Book X of Y" progress text are **hidden** because they are gated behind the `uniquePhotos` upsell flag. If unique photos isn't active (or gets lost on session resume), the multi-book UI disappears entirely -- even though the builder *is* tracking all books behind the scenes.
+
+There's also a secondary bug: when resuming a session from the database, the `uniquePhotos` flag from the cart isn't restored.
 
 ## Changes
 
-### `src/components/layout/Navbar.tsx` (lines 148-164)
+### 1. Always show multi-book tabs when there are multiple books
+**File:** `src/pages/Builder.tsx` (lines 271, 346)
 
-Enhance the visual contrast between the two states:
+Remove the `&& uniquePhotos` condition from both places:
+- Line 271: `bookCount > 1 && uniquePhotos` becomes `bookCount > 1`
+- Line 346: `bookCount > 1 && uniquePhotos` becomes `bookCount > 1`
 
-**When ENABLED (uniquePhotos = true):**
-- Solid green/primary background with white or dark text
-- Checkmark icon (from lucide-react `Check`) instead of a text checkmark
-- Bolder styling: `bg-primary text-white border-primary` or `bg-green-50 border-green-500 text-green-700`
-- "Added" label or clearly visible check badge
+This ensures users always see the book tabs and "Customising Book X of Y" text whenever there are 2+ books, regardless of whether unique photos is enabled.
 
-**When DISABLED (uniquePhotos = false):**
-- Light/muted dashed or dotted border
-- Grayed-out text with a prominent "+ Add" style
-- Plus icon (from lucide-react `Plus`)
-- Price shown in muted tone
+### 2. Restore `uniquePhotos` from database on session resume
+**File:** `src/pages/Builder.tsx` (around line 94)
 
-Specifically:
-- Replace the text `'✓'` / `'+'` with `<Check />` and `<Plus />` lucide icons for clarity
-- Enabled state: `border-green-500 bg-green-50` with `text-green-700` for the label and a small green `Check` icon
-- Disabled state: `border-dashed border-muted-foreground/30 bg-transparent` with `text-muted-foreground`
-- Add a small pill/badge saying "Added" next to the checkmark when enabled
+When resuming a session from the database, read the `unique_photos` field from each order and set the basket items' `uniquePhotos` flags accordingly. Currently `setQuantity(existingOrders.length)` creates items with `uniquePhotos: false` by default, losing the user's selection.
 
-This makes the two states unmistakably different at a glance, matching the reference screenshot's style where enabled shows `✓ $4.99` prominently vs `+ $4.99` in a muted style.
+### 3. Show UniquePhotosUpsellBanner for all multi-book orders
+**File:** `src/pages/Builder.tsx` (line 362)
+
+The upsell banner condition `bookCount > 1` is already correct, but verify it renders properly now that the tabs are always visible.
+
+## What This Fixes
+- Book tabs ("Book 1", "Book 2", ...) will always be visible for multi-book orders
+- "Customising Book X of Y" progress text will always show
+- The unique photos selection will persist across session resumes
+- Users will clearly see and navigate between all their books in the builder
+
