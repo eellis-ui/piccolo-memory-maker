@@ -31,6 +31,7 @@ interface CheckoutStepProps {
 
 const CheckoutStep = ({ pageCount, extraPages, convertedUrls, onBack, bookDigitalDownloads, onToggleBookDigitalDownload, bookAddOnsList }: CheckoutStepProps) => {
   const { item, setQuantity, pricingTiers, addOnPrice, uniquePhotos, uniquePhotosPrice } = useBasket();
+  const personalizeCoverFromBasket = item?.personalizeCover ?? false;
   const [isCheckingOut, setIsCheckingOut] = useState(false);
 
   const bookCount = item?.quantity ?? 1;
@@ -69,10 +70,12 @@ const CheckoutStep = ({ pageCount, extraPages, convertedUrls, onBack, bookDigita
         lines.push({ merchandiseId: SHOPIFY_VARIANTS.UNIQUE_PHOTOS, quantity: 1 });
       }
 
-      // Add personalize cover add-on (custom bottom title per book)
+      // Add personalize cover add-on
       const personalizeCount = bookAddOnsList.filter(b => b.titlePageEnabled).length;
-      if (personalizeCount > 0) {
-        lines.push({ merchandiseId: SHOPIFY_VARIANTS.PERSONALIZE_COVER, quantity: personalizeCount });
+      const basketPersonalizeCount = personalizeCoverFromBasket ? bookCount : 0;
+      const totalPersonalizeCount = Math.max(personalizeCount, basketPersonalizeCount);
+      if (totalPersonalizeCount > 0) {
+        lines.push({ merchandiseId: SHOPIFY_VARIANTS.PERSONALIZE_COVER, quantity: totalPersonalizeCount });
       }
 
       const checkoutUrl = await createShopifyCheckout(lines);
