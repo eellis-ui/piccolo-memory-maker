@@ -243,7 +243,7 @@ const PricingSection = () => {
               </div>
 
               {/* Unique photos upsell */}
-              {selectedQuantity > 1 && (
+              {(
                 <label className="flex items-start gap-3 p-4 rounded-lg border border-border bg-background mb-5 cursor-pointer">
                   <Checkbox
                     checked={uniquePhotos}
