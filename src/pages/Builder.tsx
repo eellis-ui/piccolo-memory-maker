@@ -82,13 +82,22 @@ const Builder = () => {
     if (initialized) return;
     const init = async () => {
       // ── Resume existing session ──
-      const sid = resumeSessionId || getOrCreateSessionId();
+      // Check URL param first, then localStorage fallback
+      const storedSessionId = localStorage.getItem("guest_session_id");
+      const sid = resumeSessionId || storedSessionId || getOrCreateSessionId();
       setSessionId(sid);
       setActiveSessionId(sid);
 
-      if (resumeSessionId) {
+      // Always keep sessionId in the URL so refreshing works
+      if (!resumeSessionId && sid) {
+        const newParams = new URLSearchParams(window.location.search);
+        newParams.set("sessionId", sid);
+        window.history.replaceState(null, "", `${window.location.pathname}?${newParams.toString()}`);
+      }
+
+      if (sid) {
         try {
-          const existingOrders = await getSessionOrders(resumeSessionId);
+          const existingOrders = await getSessionOrders(sid);
 
           if (existingOrders && existingOrders.length > 0) {
             // Reconstruct basket from DB orders if counts don't match
@@ -113,6 +122,7 @@ const Builder = () => {
               }));
 
               const step = (order.builder_step || "upload") as BuilderStep;
+              const isCompleted = step === "cover" && !!order.cover_image_id;
 
               return {
                 orderId: order.id,
@@ -125,8 +135,8 @@ const Builder = () => {
                   bottomTitle: order.title_page_text === "My Piccolo'd Colouring Book" ? "color your memories" : order.title_page_text,
                 },
                 digitalDownload: false,
-                coverData: null,
-                completed: step === "cover" && !!order.cover_image_id,
+                coverData: isCompleted ? { imageIds: [order.cover_image_id, order.cover_image_id], title: order.title_page_text, subtitle: "" } : null,
+                completed: isCompleted,
               } as BookState;
             });
 
@@ -150,6 +160,11 @@ const Builder = () => {
         setSessionId(newSessionId);
         setActiveSessionId(newSessionId);
         localStorage.setItem("guest_session_id", newSessionId);
+
+        // Update URL with new session ID so refresh works
+        const newParams = new URLSearchParams(window.location.search);
+        newParams.set("sessionId", newSessionId);
+        window.history.replaceState(null, "", `${window.location.pathname}?${newParams.toString()}`);
 
         const orders = await createGuestOrders(newSessionId, bookCount);
 
