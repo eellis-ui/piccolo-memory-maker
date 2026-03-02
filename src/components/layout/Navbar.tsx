@@ -1,8 +1,8 @@
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { Menu, X, ShoppingCart, Minus, Plus, Trash2, Shield, ClipboardList, Sparkles, Tag, Check } from "lucide-react";
+import { Menu, X, ShoppingCart, Minus, Plus, Trash2, Shield, ClipboardList, Sparkles, Tag, Check, Download } from "lucide-react";
 import { useState, useEffect } from "react";
-import { useBasket, UNIQUE_PHOTOS_PRICE } from "@/contexts/BasketContext";
+import { useBasket, UNIQUE_PHOTOS_PRICE, DIGITAL_DOWNLOAD_PRICE } from "@/contexts/BasketContext";
 import { useIsAdmin } from "@/hooks/use-admin";
 import { supabase } from "@/integrations/supabase/client";
 import { Badge } from "@/components/ui/badge";
@@ -30,6 +30,8 @@ interface BasketContentProps {
   removeItem: (id: string) => void;
   updateItemQuantity: (id: string, newQuantity: number) => void;
   toggleItemUniquePhotos: (id: string) => void;
+  digitalCopies: number;
+  setDigitalCopies: (n: number) => void;
 }
 
 const BasketContent = ({
@@ -43,7 +45,9 @@ const BasketContent = ({
   setIsCartOpen,
   removeItem,
   updateItemQuantity,
-  toggleItemUniquePhotos
+  toggleItemUniquePhotos,
+  digitalCopies,
+  setDigitalCopies,
 }: BasketContentProps) =>
 <div className="flex flex-col h-full">
     <div className="flex-1 overflow-y-auto space-y-4 py-4">
@@ -204,6 +208,42 @@ const BasketContent = ({
     {/* Footer */}
     {hasItems &&
   <div className="border-t border-border pt-4 space-y-4 flex-shrink-0">
+
+        {/* Digital download upsell */}
+        <div className="rounded-xl border border-dashed border-primary/30 bg-primary/5 p-3">
+          <div className="flex items-start gap-3">
+            <img
+              src="/lovable-uploads/d741aeb9-21af-45e1-9863-e350da643d42.png"
+              alt="Digital Download"
+              className="w-12 h-12 rounded-lg object-cover flex-shrink-0"
+            />
+            <div className="flex-1 min-w-0">
+              <div className="flex items-start justify-between gap-2">
+                <div>
+                  <p className="font-semibold text-foreground text-sm leading-tight">
+                    Get Digital Copies{" "}
+                    <span className="line-through text-muted-foreground font-normal text-xs">
+                      ${(totalBookCount * 14).toFixed(2)}
+                    </span>{" "}
+                    <span className="text-primary font-bold">
+                      ${(DIGITAL_DOWNLOAD_PRICE + Math.max(0, totalBookCount - 1)).toFixed(2)}
+                    </span>
+                  </p>
+                  <p className="text-xs font-bold text-foreground mt-0.5">Delivered within 24 hours!</p>
+                </div>
+                <Switch
+                  checked={digitalCopies > 0}
+                  onCheckedChange={(checked) => setDigitalCopies(checked ? totalBookCount : 0)}
+                  className="shrink-0 mt-0.5"
+                />
+              </div>
+              <p className="text-xs text-muted-foreground mt-1 leading-relaxed line-clamp-2">
+                ✏️ Once we receive your photos, we'll carefully convert them into your personalised coloring book PDF — ready to print at home anytime!
+              </p>
+            </div>
+          </div>
+        </div>
+
         {/* Discounts line */}
         {totalDiscount > 0 &&
     <div className="flex items-center justify-between">
@@ -313,7 +353,7 @@ const CartButton = ({ isCartOpen, setIsCartOpen, hasItems, itemCount, basketCont
 
 const Navbar = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const { items, totalBookCount, removeItem, updateItemQuantity, toggleItemUniquePhotos, digitalCopies, digitalPrice, addOns, addOnsTotal: basketAddOnsTotal, addOnPrice, uniquePhotos, uniquePhotosPrice, activeSessionId, isCartOpen, setIsCartOpen } = useBasket();
+  const { items, totalBookCount, removeItem, updateItemQuantity, toggleItemUniquePhotos, digitalCopies, setDigitalCopies, digitalPrice, addOns, addOnsTotal: basketAddOnsTotal, addOnPrice, uniquePhotos, uniquePhotosPrice, activeSessionId, isCartOpen, setIsCartOpen } = useBasket();
   const { isAdmin } = useIsAdmin();
   const [isLoggedIn, setIsLoggedIn] = useState(false);
 
@@ -352,7 +392,9 @@ const Navbar = () => {
     setIsCartOpen,
     removeItem,
     updateItemQuantity,
-    toggleItemUniquePhotos
+    toggleItemUniquePhotos,
+    digitalCopies,
+    setDigitalCopies,
   };
 
   return (
