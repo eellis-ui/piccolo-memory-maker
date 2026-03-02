@@ -40,6 +40,8 @@ interface BasketContextType {
   addToCart: (quantity: number) => void;
   /** Remove a specific line item by id */
   removeItem: (id: string) => void;
+  /** Update the quantity of a specific bundle (1-3) */
+  updateItemQuantity: (id: string, newQuantity: number) => void;
   /** Legacy: set single item (used by builder for quantity changes) */
   setQuantity: (quantity: number) => void;
   clear: () => void;
@@ -117,6 +119,27 @@ export const BasketProvider = ({ children }: { children: ReactNode }) => {
     setItems((prev) => prev.filter((i) => i.id !== id));
   };
 
+  const updateItemQuantity = (id: string, newQuantity: number) => {
+    if (newQuantity <= 0) {
+      removeItem(id);
+      return;
+    }
+    setItems((prev) =>
+      prev.map((item) => {
+        if (item.id !== id) return item;
+        const tier = PRICING_TIERS.find((t) => t.quantity === newQuantity) ?? PRICING_TIERS[0];
+        return {
+          ...item,
+          quantity: tier.quantity,
+          pricePerBook: tier.pricePerBook,
+          originalPricePerBook: tier.originalPricePerBook,
+          totalPrice: +(tier.pricePerBook * tier.quantity).toFixed(2),
+          originalTotalPrice: +(tier.originalPricePerBook * tier.quantity).toFixed(2),
+        };
+      })
+    );
+  };
+
   // Legacy: replaces all items with a single item (used by builder quantity controls)
   const setQuantity = (quantity: number) => {
     if (quantity <= 0) {
@@ -144,7 +167,7 @@ export const BasketProvider = ({ children }: { children: ReactNode }) => {
     <BasketContext.Provider
       value={{
         item, items, totalBookCount,
-        addToCart, removeItem, setQuantity, clear,
+        addToCart, removeItem, updateItemQuantity, setQuantity, clear,
         pricingTiers: PRICING_TIERS,
         digitalCopies, setDigitalCopies, digitalPrice,
         addOns, setAddOns,
