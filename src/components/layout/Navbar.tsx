@@ -381,20 +381,24 @@ const Navbar = () => {
     setIsCheckingOut(true);
     try {
       const lines: CartLineInput[] = [];
+      // 1. Main product first
       lines.push({ merchandiseId: SHOPIFY_VARIANTS.COLORING_BOOK, quantity: totalBookCount });
-      if (digitalCopies > 0) {
-        lines.push({ merchandiseId: SHOPIFY_VARIANTS.DIGITAL_DOWNLOAD, quantity: 1 });
-      }
+      // 2. Unique photos (relates to book)
       const uniquePhotosItems = items.filter((i) => i.uniquePhotos);
       if (uniquePhotosItems.length > 0) {
         lines.push({ merchandiseId: SHOPIFY_VARIANTS.UNIQUE_PHOTOS, quantity: uniquePhotosItems.length });
       }
+      // 3. Personalize cover (relates to book)
       const personalizeCount = items.reduce((s, i) => {
         if (!i.personalizeCover) return s;
         return s + (i.uniquePhotos ? i.quantity : 1);
       }, 0);
       if (personalizeCount > 0) {
         lines.push({ merchandiseId: SHOPIFY_VARIANTS.PERSONALIZE_COVER, quantity: personalizeCount });
+      }
+      // 4. Digital download last (standalone add-on)
+      if (digitalCopies > 0) {
+        lines.push({ merchandiseId: SHOPIFY_VARIANTS.DIGITAL_DOWNLOAD, quantity: 1 });
       }
       const checkoutUrl = await createShopifyCheckout(lines);
       if (checkoutUrl) {
