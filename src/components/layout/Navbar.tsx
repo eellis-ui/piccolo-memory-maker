@@ -223,16 +223,16 @@ const BasketContent = ({
                   <p className="font-semibold text-foreground text-sm leading-tight">
                     Instant digital download{" "}
                     <span className="line-through text-muted-foreground font-normal text-xs">
-                      ${(totalBookCount * 10).toFixed(2)}
+                      $10.00
                     </span>{" "}
                     <span className="text-primary font-bold">
-                      ${(DIGITAL_DOWNLOAD_PRICE + Math.max(0, totalBookCount - 1)).toFixed(2)}
+                      ${DIGITAL_DOWNLOAD_PRICE.toFixed(2)}
                     </span>
                   </p>
                 </div>
                 <Switch
               checked={digitalCopies > 0}
-              onCheckedChange={(checked) => setDigitalCopies(checked ? totalBookCount : 0)}
+              onCheckedChange={(checked) => setDigitalCopies(checked ? 1 : 0)}
               className="shrink-0 mt-0.5" />
             
               </div>
