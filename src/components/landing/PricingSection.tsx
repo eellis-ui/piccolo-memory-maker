@@ -5,7 +5,7 @@ import { Badge } from "@/components/ui/badge";
 import { ShoppingCart, Star } from "lucide-react";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
-import { useBasket, UNIQUE_PHOTOS_PRICE, PERSONALIZE_COVER_PRICE } from "@/contexts/BasketContext";
+import { useBasket, UNIQUE_PHOTOS_PRICE, PERSONALIZE_COVER_PRICE, DIGITAL_DOWNLOAD_PRICE } from "@/contexts/BasketContext";
 import { toast } from "sonner";
 import ProductImageGallery, { type ProductImage } from "./ProductImageGallery";
 import CountdownTimer from "./CountdownTimer";
@@ -82,7 +82,8 @@ const PricingSection = () => {
   const [selectedQuantity, setSelectedQuantity] = useState(2);
   const [pendingUniquePhotos, setPendingUniquePhotos] = useState(false);
   const [pendingPersonalizeCover, setPendingPersonalizeCover] = useState(false);
-  const { addToCart, setIsCartOpen } = useBasket();
+  const [pendingDigitalDownload, setPendingDigitalDownload] = useState(false);
+  const { addToCart, setDigitalCopies, setIsCartOpen } = useBasket();
   const navigate = useNavigate();
   const [productImages, setProductImages] = useState<ProductImage[]>([
     { url: "/images/product-hero.png", altText: "Personalised Coloring Book" },
@@ -120,10 +121,17 @@ const PricingSection = () => {
 
   const selectedTier = physicalPricing.find((t) => t.quantity === selectedQuantity)!;
   const personalizeCoverCount = pendingPersonalizeCover ? (pendingUniquePhotos ? selectedQuantity : 1) : 0;
-  const totalPrice = selectedTier.price + (pendingUniquePhotos ? UNIQUE_PHOTOS_PRICE : 0) + personalizeCoverCount * PERSONALIZE_COVER_PRICE;
+  // Digital download: $5.99 base + $1 per extra book beyond 1
+  const digitalDownloadPrice = pendingDigitalDownload
+    ? DIGITAL_DOWNLOAD_PRICE + Math.max(0, selectedQuantity - 1) * 1
+    : 0;
+  const totalPrice = selectedTier.price + (pendingUniquePhotos ? UNIQUE_PHOTOS_PRICE : 0) + personalizeCoverCount * PERSONALIZE_COVER_PRICE + digitalDownloadPrice;
 
   const handleAddToBasket = () => {
     addToCart(selectedQuantity, { uniquePhotos: pendingUniquePhotos, personalizeCover: pendingPersonalizeCover });
+    if (pendingDigitalDownload) {
+      setDigitalCopies(selectedQuantity);
+    }
     setIsCartOpen(true);
   };
 
@@ -266,7 +274,7 @@ const PricingSection = () => {
               )}
 
               {/* Personalize cover upsell */}
-              <label className="flex items-start gap-3 p-4 rounded-lg border border-border bg-background mb-5 cursor-pointer">
+              <label className="flex items-start gap-3 p-4 rounded-lg border border-border bg-background mb-3 cursor-pointer">
                 <Checkbox
                   checked={pendingPersonalizeCover}
                   onCheckedChange={(checked) => setPendingPersonalizeCover(!!checked)}
@@ -279,6 +287,28 @@ const PricingSection = () => {
                   </p>
                   <p className="text-xs text-muted-foreground mt-0.5">
                     Add a custom title to the front cover of each book
+                  </p>
+                </div>
+              </label>
+
+              {/* Digital download upsell */}
+              <label className="flex items-start gap-3 p-4 rounded-lg border border-border bg-background mb-5 cursor-pointer">
+                <Checkbox
+                  checked={pendingDigitalDownload}
+                  onCheckedChange={(checked) => setPendingDigitalDownload(!!checked)}
+                  className="mt-0.5"
+                />
+                <div className="flex-1">
+                  <p className="text-sm font-semibold text-foreground">
+                    Add an Instant Digital Download!{" "}
+                    <span className="text-primary font-bold">
+                      +${DIGITAL_DOWNLOAD_PRICE.toFixed(2)}
+                      {selectedQuantity > 1 && ` + $${(selectedQuantity - 1).toFixed(2)} extra`}
+                    </span>
+                  </p>
+                  <p className="text-xs text-muted-foreground mt-0.5">
+                    Get a printable PDF of your coloring book — print extra copies at home anytime!
+                    {selectedQuantity > 1 && ` ($1 extra per additional book)`}
                   </p>
                 </div>
               </label>
@@ -352,6 +382,7 @@ const PricingSection = () => {
       {/* 9. Final CTA Block */}
       <FinalCTABlock onCtaClick={() => {
         addToCart(selectedQuantity, { uniquePhotos: pendingUniquePhotos, personalizeCover: pendingPersonalizeCover });
+        if (pendingDigitalDownload) setDigitalCopies(selectedQuantity);
         setIsCartOpen(true);
       }} />
 
