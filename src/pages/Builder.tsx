@@ -63,7 +63,7 @@ const Builder = () => {
   const [searchParams] = useSearchParams();
   const resumeSessionId = searchParams.get("sessionId");
 
-  const { item, addOns, uniquePhotos, setQuantity, setActiveSessionId } = useBasket();
+  const { item, addOns, uniquePhotos, setQuantity, setUniquePhotos, setActiveSessionId } = useBasket();
   const bookCount = item?.quantity ?? 1;
 
   const [books, setBooks] = useState<BookState[]>([]);
@@ -91,7 +91,12 @@ const Builder = () => {
           const existingOrders = await getSessionOrders(resumeSessionId);
 
           if (existingOrders && existingOrders.length > 0) {
+            // Restore basket with correct quantity
             setQuantity(existingOrders.length);
+            const hasUniquePhotos = existingOrders.some((o: any) => o.unique_photos);
+            if (hasUniquePhotos) {
+              setUniquePhotos(true);
+            }
 
             const restoredBooks: BookState[] = existingOrders.map((order: any) => {
               const photos: OrderPhoto[] = (order.photos || []).map((row: any) => ({
@@ -268,7 +273,7 @@ const Builder = () => {
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
 
           {/* ── Multi-book tabs ── */}
-          {bookCount > 1 && uniquePhotos && !showingCheckout && (
+          {bookCount > 1 && !showingCheckout && (
             <div className="max-w-2xl mx-auto mb-8">
               <div className="flex gap-2 p-1 bg-muted rounded-2xl">
                 {books.map((book, i) => (
@@ -343,7 +348,7 @@ const Builder = () => {
                 ))}
               </div>
 
-              {bookCount > 1 && uniquePhotos && (
+              {bookCount > 1 && (
                 <p className="text-center text-sm text-muted-foreground mt-4 flex items-center justify-center gap-1.5">
                   <Copy className="w-3.5 h-3.5" />
                   Customising{" "}
