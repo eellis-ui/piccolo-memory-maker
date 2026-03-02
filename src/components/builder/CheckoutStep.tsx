@@ -69,6 +69,12 @@ const CheckoutStep = ({ pageCount, extraPages, convertedUrls, onBack, bookDigita
         lines.push({ merchandiseId: SHOPIFY_VARIANTS.UNIQUE_PHOTOS, quantity: 1 });
       }
 
+      // Add personalize cover add-on (custom bottom title per book)
+      const personalizeCount = bookAddOnsList.filter(b => b.titlePageEnabled).length;
+      if (personalizeCount > 0) {
+        lines.push({ merchandiseId: SHOPIFY_VARIANTS.PERSONALIZE_COVER, quantity: personalizeCount });
+      }
+
       const checkoutUrl = await createShopifyCheckout(lines);
       if (checkoutUrl) {
         window.open(checkoutUrl, '_blank');

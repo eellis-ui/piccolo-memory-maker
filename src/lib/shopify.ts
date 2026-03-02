@@ -10,6 +10,8 @@ export const SHOPIFY_VARIANTS = {
   COLORING_BOOK: 'gid://shopify/ProductVariant/55768994742645',
   DIGITAL_DOWNLOAD: 'gid://shopify/ProductVariant/56284852781429',
   UNIQUE_PHOTOS: 'gid://shopify/ProductVariant/56357325111669',
+  // TODO: Replace with real variant ID once "Personalise Cover" product is created in Shopify ($1.99)
+  PERSONALIZE_COVER: 'gid://shopify/ProductVariant/PERSONALIZE_COVER_VARIANT_ID',
 } as const;
 
 export async function storefrontApiRequest(query: string, variables: Record<string, unknown> = {}) {
