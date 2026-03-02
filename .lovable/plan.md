@@ -1,38 +1,33 @@
 
 
-# Editable Bundles in Cart
+# Per-Bundle Unique Photos
 
-## What Changes
-Each bundle in the cart will display quantity controls (minus/plus buttons) allowing users to change the number of books within that bundle (cycling between 1, 2, and 3 books). Bundles stack separately as individual line items -- adding another bundle from the product page creates a new card in the cart, not merging with existing ones.
+## Problem
+"Unique Photos" is stored as a single global boolean in the basket context. Adding it to multiple bundles only counts once ($4.99 total instead of $4.99 per bundle).
 
-## How It Works
+## Solution
+Move `uniquePhotos` from a global boolean to a per-item property on each `BasketItem`. Each bundle independently tracks whether unique photos is enabled, and each one adds $4.99 to the total.
 
-### 1. Add `updateItemQuantity` to BasketContext
-- New function: `updateItemQuantity(id: string, newQuantity: number)`
-- Finds the item by id, recalculates pricing using the matching pricing tier (1/2/3 books), and updates the item in place
-- If `newQuantity` is 0 or less, removes the item
-- Expose this function via the context
+## Changes
 
-### 2. Update Cart Drawer (Navbar.tsx - BasketContent)
-- Add `updateItemQuantity` to the `BasketContentProps` interface
-- For each line item card, add minus/plus quantity controls between the product info and the delete button
-- Minus button: decreases bundle quantity by 1 (minimum 1 book; at 1, disabled or removes item)
-- Plus button: increases bundle quantity by 1 (maximum 3 books per bundle, matching the pricing tiers)
-- The price, savings, and per-book rate update live as the user changes the bundle size
-- Display the per-book price (e.g., "$29.75/book") below the quantity selector for clarity
+### 1. `src/contexts/BasketContext.tsx`
+- Add `uniquePhotos: boolean` field to the `BasketItem` interface
+- Add `toggleItemUniquePhotos(id: string)` function to toggle it per item
+- Update `createBasketItem` to default `uniquePhotos: false`
+- Calculate `uniquePhotosPrice` as the sum of $4.99 for each item that has it enabled (and has quantity > 1, since unique photos only makes sense for multi-book bundles)
+- Keep the global `uniquePhotos` getter as a derived value (true if any item has it) for backward compatibility, but deprecate `setUniquePhotos`
 
-### Visual Layout per Cart Item
-```text
-[Image] | Personalised Coloring Book     [Trash]
-        | 2 books
-        | [-] 2 [+]
-        | $90.00  $59.50  (Save $30.50)
-        | [February Sale badge]
-```
+### 2. `src/components/layout/Navbar.tsx` (Cart Drawer)
+- Replace the single global "Unique Photos" card with a per-item toggle shown inside each bundle card (only for bundles with 2+ books)
+- Add a small toggle/checkbox row under each qualifying bundle: "Unique photos for this bundle +$4.99"
+- Wire up to `toggleItemUniquePhotos(lineItem.id)`
+- Update the `BasketContentProps` interface to include `toggleItemUniquePhotos`
+- Remove the standalone unique photos section (lines 153-167)
 
-## Technical Details
+### 3. `src/components/builder/UniquePhotosUpsellBanner.tsx`
+- Update to work with per-item unique photos -- show the upsell for each bundle that qualifies (quantity > 1) and doesn't yet have it enabled
+- Or keep as a global toggle that enables it for all qualifying bundles at once
 
-**Files to change:**
-1. **`src/contexts/BasketContext.tsx`** -- Add `updateItemQuantity` method that replaces an item's quantity/pricing in the `items` array using `createBasketItem` with the new quantity, preserving the original item id
-2. **`src/components/layout/Navbar.tsx`** -- Add `updateItemQuantity` to props, wire up minus/plus buttons in each item card. The buttons cycle through quantities 1, 2, 3 (matching `PRICING_TIERS`). Disable minus at 1, disable plus at 3.
-
+### 4. Price Calculations
+- `uniquePhotosPrice` becomes: count of items with `uniquePhotos === true` multiplied by $4.99
+- Grand total in cart footer updates accordingly
