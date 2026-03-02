@@ -48,14 +48,14 @@ const BasketContent = ({
 <div className="flex flex-col h-full">
     <div className="flex-1 overflow-y-auto space-y-4 py-4">
       {/* Next steps banner */}
-      <div className="bg-foreground text-background rounded-lg p-4 text-xs leading-relaxed">
-        <div className="flex gap-2">
-          <Sparkles className="w-4 h-4 flex-shrink-0 mt-0.5" />
-          <p>You're in good hands!  for your one-of-a-kind coloring book.
-          <span className="font-semibold">You're in good hands!</span> After your purchase, we'll email you clear, easy-to-follow steps to upload your photos for your one-of-a-kind coloring book.
-          </p>
-        </div>
-      </div>
+      
+
+
+
+
+
+
+    
 
       {/* Free shipping bar */}
       {(() => {
