@@ -29,6 +29,7 @@ interface BasketContentProps {
   activeSessionId: string | null;
   setIsCartOpen: (open: boolean) => void;
   removeItem: (id: string) => void;
+  updateItemQuantity: (id: string, newQuantity: number) => void;
   setUniquePhotos: (v: boolean) => void;
 }
 
@@ -43,6 +44,7 @@ const BasketContent = ({
   activeSessionId,
   setIsCartOpen,
   removeItem,
+  updateItemQuantity,
   setUniquePhotos,
 }: BasketContentProps) => (
   <div className="flex flex-col h-full">
@@ -110,6 +112,23 @@ const BasketContent = ({
                   </button>
                 </div>
                 <p className="text-xs text-muted-foreground">{lineItem.quantity} {lineItem.quantity === 1 ? 'book' : 'books'}</p>
+                {/* Quantity controls */}
+                <div className="flex items-center gap-2 pt-1">
+                  <button
+                    onClick={() => updateItemQuantity(lineItem.id, lineItem.quantity - 1)}
+                    disabled={lineItem.quantity <= 1}
+                    className="w-6 h-6 rounded-full border border-border flex items-center justify-center text-foreground disabled:opacity-30 hover:bg-muted transition-colors">
+                    <Minus className="w-3 h-3" />
+                  </button>
+                  <span className="text-sm font-semibold text-foreground w-4 text-center">{lineItem.quantity}</span>
+                  <button
+                    onClick={() => updateItemQuantity(lineItem.id, lineItem.quantity + 1)}
+                    disabled={lineItem.quantity >= 3}
+                    className="w-6 h-6 rounded-full border border-border flex items-center justify-center text-foreground disabled:opacity-30 hover:bg-muted transition-colors">
+                    <Plus className="w-3 h-3" />
+                  </button>
+                  <span className="text-xs text-muted-foreground">${lineItem.pricePerBook.toFixed(2)}/book</span>
+                </div>
                 {/* Pricing */}
                 <div className="flex items-center gap-2 text-sm pt-0.5">
                   <span className="line-through text-muted-foreground">${lineItem.originalTotalPrice.toFixed(2)}</span>
@@ -275,7 +294,7 @@ const CartButton = ({ isCartOpen, setIsCartOpen, hasItems, itemCount, basketCont
 
 const Navbar = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const { item, items, totalBookCount, removeItem, setQuantity, pricingTiers, digitalCopies, setDigitalCopies, digitalPrice, addOns, addOnsTotal: basketAddOnsTotal, addOnPrice, uniquePhotos, setUniquePhotos, uniquePhotosPrice, activeSessionId, isCartOpen, setIsCartOpen } = useBasket();
+  const { item, items, totalBookCount, removeItem, updateItemQuantity, setQuantity, pricingTiers, digitalCopies, setDigitalCopies, digitalPrice, addOns, addOnsTotal: basketAddOnsTotal, addOnPrice, uniquePhotos, setUniquePhotos, uniquePhotosPrice, activeSessionId, isCartOpen, setIsCartOpen } = useBasket();
   const { isAdmin } = useIsAdmin();
   const [isLoggedIn, setIsLoggedIn] = useState(false);
 
@@ -314,6 +333,7 @@ const Navbar = () => {
     activeSessionId,
     setIsCartOpen,
     removeItem,
+    updateItemQuantity,
     setUniquePhotos,
   };
 
