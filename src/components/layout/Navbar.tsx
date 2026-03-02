@@ -173,13 +173,13 @@ const BasketContent = ({
             </button>
             {/* Personalize cover line item */}
             {lineItem.personalizeCover &&
-          <div className="flex items-center justify-between w-full p-2.5 rounded-lg border border-primary/30 bg-primary/5 text-xs">
+          <div className="flex items-center justify-between w-full p-2.5 rounded-lg border border-green-500 bg-green-50 dark:bg-green-950/30 text-xs">
                 <span className="flex items-center gap-1.5">
-                  <Check className="w-3.5 h-3.5 text-primary" />
-                  <span className="font-semibold text-foreground">Personalized cover</span>
-                  <span className="text-[10px] font-bold uppercase bg-primary text-primary-foreground px-1.5 py-0.5 rounded-full leading-none">Added</span>
+                  <Check className="w-3.5 h-3.5 text-green-600" />
+                  <span className="font-semibold text-green-700 dark:text-green-400">Personalized cover</span>
+                  <span className="text-[10px] font-bold uppercase bg-green-500 text-white px-1.5 py-0.5 rounded-full leading-none">Added</span>
                 </span>
-                <span className="font-semibold text-foreground">
+                <span className="font-semibold text-green-700 dark:text-green-400">
                   ${((lineItem.uniquePhotos ? lineItem.quantity : 1) * 1.99).toFixed(2)}
                 </span>
               </div>
