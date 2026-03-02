@@ -58,26 +58,26 @@ const CheckoutStep = ({ pageCount, extraPages, convertedUrls, onBack, bookDigita
     try {
       const lines: CartLineInput[] = [];
 
-      // Add coloring books
+      // 1. Main product first
       lines.push({ merchandiseId: SHOPIFY_VARIANTS.COLORING_BOOK, quantity: bookCount });
 
-      // Add digital downloads
-      const digitalCount2 = bookDigitalDownloads.filter(b => b.enabled).length;
-      if (digitalCount2 > 0) {
-        lines.push({ merchandiseId: SHOPIFY_VARIANTS.DIGITAL_DOWNLOAD, quantity: digitalCount2 });
-      }
-
-      // Add unique photos add-on
+      // 2. Unique photos (book-related upsell)
       if (uniquePhotos && bookCount > 1) {
         lines.push({ merchandiseId: SHOPIFY_VARIANTS.UNIQUE_PHOTOS, quantity: 1 });
       }
 
-      // Add personalize cover add-on
+      // 3. Personalize cover (book-related upsell)
       const personalizeCount = bookAddOnsList.filter(b => b.titlePageEnabled).length;
       const basketPersonalizeCount = personalizeCoverFromBasket ? (uniquePhotos ? bookCount : 1) : 0;
       const totalPersonalizeCount = Math.max(personalizeCount, basketPersonalizeCount);
       if (totalPersonalizeCount > 0) {
         lines.push({ merchandiseId: SHOPIFY_VARIANTS.PERSONALIZE_COVER, quantity: totalPersonalizeCount });
+      }
+
+      // 4. Digital download last (standalone add-on)
+      const digitalCount2 = bookDigitalDownloads.filter(b => b.enabled).length;
+      if (digitalCount2 > 0) {
+        lines.push({ merchandiseId: SHOPIFY_VARIANTS.DIGITAL_DOWNLOAD, quantity: digitalCount2 });
       }
 
       const checkoutUrl = await createShopifyCheckout(lines);
