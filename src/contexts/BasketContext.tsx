@@ -86,7 +86,7 @@ export const BasketProvider = ({ children }: { children: ReactNode }) => {
   const uniquePhotos = items.some((i) => i.uniquePhotos);
   const setUniquePhotos = (val: boolean) => {
     setItems((prev) =>
-      prev.map((i) => (i.quantity > 1 ? { ...i, uniquePhotos: val } : i))
+      prev.map((i) => ({ ...i, uniquePhotos: val }))
     );
   };
   const toggleItemUniquePhotos = (id: string) => {

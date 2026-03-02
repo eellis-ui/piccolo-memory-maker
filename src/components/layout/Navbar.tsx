@@ -145,7 +145,7 @@ const BasketContent = ({
               </Badge>
             </div>
             {/* Per-bundle unique photos toggle (only for 2+ book bundles) */}
-            {lineItem.quantity >= 2 && (
+            {(
               <button
                 onClick={() => toggleItemUniquePhotos(lineItem.id)}
                 className={`flex items-center justify-between w-full p-2.5 rounded-lg border text-left text-xs transition-all ${
