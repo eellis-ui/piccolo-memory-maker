@@ -242,7 +242,7 @@ const BookPreview = ({ photos, onReorder, coverImageIds }: BookPreviewProps) => 
 
       {/* Large Page View */}
       <div className="flex justify-center">
-        <div className="aspect-[3/4] w-full max-w-sm bg-muted rounded-2xl overflow-hidden shadow-inner transition-all duration-300">
+        <div className="aspect-[210/297] w-full max-w-sm bg-muted rounded-2xl overflow-hidden shadow-inner transition-all duration-300">
           {currentPage === 0 ? (
             <CoverPage photos={photos} coverImageIds={coverImageIds} />
           ) : currentPage === totalPages - 1 ? (
