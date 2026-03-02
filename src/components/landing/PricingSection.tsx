@@ -80,7 +80,8 @@ const PRODUCT_IMAGES_QUERY = `
 
 const PricingSection = () => {
   const [selectedQuantity, setSelectedQuantity] = useState(2);
-  const { addToCart, uniquePhotos, setUniquePhotos, setIsCartOpen } = useBasket();
+  const [pendingUniquePhotos, setPendingUniquePhotos] = useState(false);
+  const { addToCart, setIsCartOpen } = useBasket();
   const navigate = useNavigate();
   const [productImages, setProductImages] = useState<ProductImage[]>([
     { url: "/images/product-hero.png", altText: "Personalised Coloring Book" },
@@ -117,10 +118,10 @@ const PricingSection = () => {
   }, []);
 
   const selectedTier = physicalPricing.find((t) => t.quantity === selectedQuantity)!;
-  const totalPrice = selectedTier.price + (uniquePhotos && selectedQuantity > 1 ? UNIQUE_PHOTOS_PRICE : 0);
+  const totalPrice = selectedTier.price + (pendingUniquePhotos ? UNIQUE_PHOTOS_PRICE : 0);
 
   const handleAddToBasket = () => {
-    addToCart(selectedQuantity);
+    addToCart(selectedQuantity, { uniquePhotos: pendingUniquePhotos });
     setIsCartOpen(true);
   };
 
@@ -246,8 +247,8 @@ const PricingSection = () => {
               {(
                 <label className="flex items-start gap-3 p-4 rounded-lg border border-border bg-background mb-5 cursor-pointer">
                   <Checkbox
-                    checked={uniquePhotos}
-                    onCheckedChange={(checked) => setUniquePhotos(!!checked)}
+                    checked={pendingUniquePhotos}
+                    onCheckedChange={(checked) => setPendingUniquePhotos(!!checked)}
                     className="mt-0.5"
                   />
                   <div className="flex-1">
@@ -330,7 +331,7 @@ const PricingSection = () => {
 
       {/* 9. Final CTA Block */}
       <FinalCTABlock onCtaClick={() => {
-        addToCart(selectedQuantity);
+        addToCart(selectedQuantity, { uniquePhotos: pendingUniquePhotos });
         setIsCartOpen(true);
       }} />
 

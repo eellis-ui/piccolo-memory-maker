@@ -38,7 +38,7 @@ interface BasketContextType {
   /** Total book count across all line items */
   totalBookCount: number;
   /** Add a bundle to the cart (stacks as new line item) */
-  addToCart: (quantity: number) => void;
+  addToCart: (quantity: number, options?: { uniquePhotos?: boolean }) => void;
   /** Remove a specific line item by id */
   removeItem: (id: string) => void;
   /** Update the quantity of a specific bundle (1-3) */
@@ -66,7 +66,7 @@ interface BasketContextType {
 
 const BasketContext = createContext<BasketContextType | undefined>(undefined);
 
-function createBasketItem(quantity: number): BasketItem {
+function createBasketItem(quantity: number, options?: { uniquePhotos?: boolean }): BasketItem {
   const tier = PRICING_TIERS.find((t) => t.quantity === quantity) ?? PRICING_TIERS[0];
   return {
     id: `item-${nextItemId++}`,
@@ -75,7 +75,7 @@ function createBasketItem(quantity: number): BasketItem {
     originalPricePerBook: tier.originalPricePerBook,
     totalPrice: +(tier.pricePerBook * tier.quantity).toFixed(2),
     originalTotalPrice: +(tier.originalPricePerBook * tier.quantity).toFixed(2),
-    uniquePhotos: false,
+    uniquePhotos: options?.uniquePhotos ?? false,
   };
 }
 
@@ -125,9 +125,9 @@ export const BasketProvider = ({ children }: { children: ReactNode }) => {
       }
     : null;
 
-  const addToCart = (quantity: number) => {
+  const addToCart = (quantity: number, options?: { uniquePhotos?: boolean }) => {
     if (quantity <= 0) return;
-    setItems((prev) => [...prev, createBasketItem(quantity)]);
+    setItems((prev) => [...prev, createBasketItem(quantity, options)]);
   };
 
   const removeItem = (id: string) => {
