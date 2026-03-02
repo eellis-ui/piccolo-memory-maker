@@ -243,7 +243,7 @@ const ApproveStep = ({
                         className="opacity-50"
                         style={photo.isLandscape
                           ? { transform: "rotate(90deg)", width: "100%", height: "auto" }
-                          : { width: "100%", height: "100%", objectFit: "cover" }
+                          : { width: "100%", height: "100%", objectFit: "contain" }
                         }
                       />
                       <span className="absolute bottom-2 left-2 text-xs text-muted-foreground bg-background/80 px-2 py-1 rounded z-10">
@@ -256,7 +256,7 @@ const ApproveStep = ({
                         alt={`Line art ${index + 1}`}
                         style={photo.isLandscape
                           ? { transform: "rotate(90deg)", width: "100%", height: "auto" }
-                          : { width: "100%", height: "100%", objectFit: "cover" }
+                          : { width: "100%", height: "100%", objectFit: "contain" }
                         }
                       />
                       <div className="absolute inset-0 flex items-center justify-center pointer-events-none z-10">
@@ -276,7 +276,7 @@ const ApproveStep = ({
                       alt={`Original ${index + 1}`}
                       style={photo.isLandscape
                         ? { transform: "rotate(90deg)", width: "100%", height: "auto" }
-                        : { width: "100%", height: "100%", objectFit: "cover" }
+                        : { width: "100%", height: "100%", objectFit: "contain" }
                       }
                     />
                     {isConverting && (
