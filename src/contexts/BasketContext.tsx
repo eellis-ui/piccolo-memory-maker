@@ -7,6 +7,7 @@ export interface BasketItem {
   originalPricePerBook: number;
   totalPrice: number;
   originalTotalPrice: number;
+  uniquePhotos: boolean;
 }
 
 export interface BookAddOns {
@@ -55,6 +56,7 @@ interface BasketContextType {
   addOnsTotal: number;
   uniquePhotos: boolean;
   setUniquePhotos: (val: boolean) => void;
+  toggleItemUniquePhotos: (id: string) => void;
   uniquePhotosPrice: number;
   activeSessionId: string | null;
   setActiveSessionId: (id: string | null) => void;
@@ -73,13 +75,25 @@ function createBasketItem(quantity: number): BasketItem {
     originalPricePerBook: tier.originalPricePerBook,
     totalPrice: +(tier.pricePerBook * tier.quantity).toFixed(2),
     originalTotalPrice: +(tier.originalPricePerBook * tier.quantity).toFixed(2),
+    uniquePhotos: false,
   };
 }
 
 export const BasketProvider = ({ children }: { children: ReactNode }) => {
   const [items, setItems] = useState<BasketItem[]>([]);
   const [digitalCopies, setDigitalCopies] = useState<number>(0);
-  const [uniquePhotos, setUniquePhotos] = useState<boolean>(false);
+  // Global uniquePhotos is now derived from items; keep setter for backward compat
+  const uniquePhotos = items.some((i) => i.uniquePhotos);
+  const setUniquePhotos = (val: boolean) => {
+    setItems((prev) =>
+      prev.map((i) => (i.quantity > 1 ? { ...i, uniquePhotos: val } : i))
+    );
+  };
+  const toggleItemUniquePhotos = (id: string) => {
+    setItems((prev) =>
+      prev.map((i) => (i.id === id ? { ...i, uniquePhotos: !i.uniquePhotos } : i))
+    );
+  };
   const [activeSessionId, setActiveSessionId] = useState<string | null>(null);
   const [isCartOpen, setIsCartOpen] = useState(false);
   const [addOns, setAddOns] = useState<BookAddOns>({
@@ -107,6 +121,7 @@ export const BasketProvider = ({ children }: { children: ReactNode }) => {
         originalPricePerBook: items[0].originalPricePerBook,
         totalPrice: +items.reduce((s, i) => s + i.totalPrice, 0).toFixed(2),
         originalTotalPrice: +items.reduce((s, i) => s + i.originalTotalPrice, 0).toFixed(2),
+        uniquePhotos,
       }
     : null;
 
@@ -152,7 +167,6 @@ export const BasketProvider = ({ children }: { children: ReactNode }) => {
   const clear = () => {
     setItems([]);
     setDigitalCopies(0);
-    setUniquePhotos(false);
     setActiveSessionId(null);
     setAddOns({
       titlePageEnabled: false,
@@ -173,8 +187,8 @@ export const BasketProvider = ({ children }: { children: ReactNode }) => {
         addOns, setAddOns,
         addOnPrice: ADD_ON_PRICE,
         addOnsTotal,
-        uniquePhotos, setUniquePhotos,
-        uniquePhotosPrice: uniquePhotos ? UNIQUE_PHOTOS_PRICE : 0,
+        uniquePhotos, setUniquePhotos, toggleItemUniquePhotos,
+        uniquePhotosPrice: items.filter((i) => i.uniquePhotos).length * UNIQUE_PHOTOS_PRICE,
         activeSessionId, setActiveSessionId,
         isCartOpen, setIsCartOpen,
       }}
