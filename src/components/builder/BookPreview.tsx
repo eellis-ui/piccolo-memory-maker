@@ -252,7 +252,7 @@ const BookPreview = ({ photos, onReorder, coverImageIds }: BookPreviewProps) => 
               <img
                 src={photos[currentPage - 1]?.convertedUrl || photos[currentPage - 1]?.originalUrl}
                 alt={`Page ${currentPage}`}
-                className={`w-full h-full object-contain bg-white ${photos[currentPage - 1]?.isLandscape ? "rotate-90 scale-[1.33]" : ""}`}
+                className={`w-full h-full object-cover bg-white ${photos[currentPage - 1]?.isLandscape ? "rotate-90 scale-[1.33]" : ""}`}
               />
               <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
                 <span className="text-5xl font-display text-foreground/20 rotate-[-30deg] font-bold tracking-widest select-none">
