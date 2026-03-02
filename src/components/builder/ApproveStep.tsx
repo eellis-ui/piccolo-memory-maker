@@ -221,7 +221,7 @@ const ApproveStep = ({
                 <Trash2 className="w-3.5 h-3.5" />
               </button>
 
-              <div className="relative bg-cream aspect-[3/4]">
+              <div className="relative bg-cream aspect-[210/297]">
                 {hasConverted ? (
                   <div className="absolute inset-0 flex">
                     <div className="w-1/2 h-full border-r border-border/50 relative">
