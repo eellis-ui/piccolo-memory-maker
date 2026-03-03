@@ -7,6 +7,16 @@ type Msg = { role: "user" | "assistant"; content: string };
 
 const CHAT_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/chat`;
 
+// Detect locale: US if timezone is Americas, else UK
+const userLocale: "US" | "UK" = (() => {
+  try {
+    const tz = Intl.DateTimeFormat().resolvedOptions().timeZone;
+    return tz.startsWith("America/") || tz.startsWith("US/") ? "US" : "UK";
+  } catch {
+    return "UK";
+  }
+})();
+
 const STARTER_PROMPTS = [
   "How does it work?",
   "What's the price?",
@@ -31,7 +41,7 @@ async function streamChat({
       "Content-Type": "application/json",
       Authorization: `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
     },
-    body: JSON.stringify({ messages }),
+    body: JSON.stringify({ messages, locale: userLocale }),
     signal,
   });
 

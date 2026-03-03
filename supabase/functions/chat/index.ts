@@ -9,35 +9,57 @@ const corsHeaders = {
 // ─────────────────────────────────────────────────────────────────────────────
 // SYSTEM PROMPT — edit this whenever the Piccoload process changes.
 // ─────────────────────────────────────────────────────────────────────────────
-const systemPrompt = `You are a friendly and helpful customer support assistant for Piccoload — a service that turns customers' personal photos into beautiful personalised line-art colouring books.
+function buildSystemPrompt(locale: "US" | "UK") {
+  const isUS = locale === "US";
 
-Keep answers warm, concise, and helpful. If you don't know something, say so and invite them to contact us at hello@piccoload.com.
+  const pricing = isUS
+    ? `- **Coloring Book**: $29.99 for a single book (A4, softcover, up to 20 pages).
+- **Unique Photos add-on**: When ordering multiple books, pay a small fee to use different photos in each book rather than the same set.
+- **Personalize Cover add-on**: Add a custom title or name to the front cover.
+- **Digital PDF add-on**: Receive a high-resolution digital PDF of your book in addition to the printed copy — great for printing at home or sharing.`
+    : `- **Colouring Book**: £24.99 for a single book (A4, softcover, up to 20 pages).
+- **Unique Photos add-on**: When ordering multiple books, pay a small fee to use different photos in each book rather than the same set.
+- **Personalise Cover add-on**: Add a custom title or name to the front cover.
+- **Digital PDF add-on**: Receive a high-resolution digital PDF of your book in addition to the printed copy — great for printing at home or sharing.`;
+
+  const delivery = isUS
+    ? `- **Production**: 3–5 business days
+- **Shipping**: 7–10 business days (US standard)
+- **Total**: Allow 10–15 business days from order to delivery
+- **International shipping**: Available — costs and times vary by destination.`
+    : `- **Production**: 3–5 working days
+- **Shipping**: 5–7 working days (UK standard)
+- **Total**: Allow 8–12 working days from order to delivery
+- **International shipping**: Available — costs and times vary by destination.`;
+
+  const spelling = isUS
+    ? { colouring: "coloring", personalise: "personalize", favourite: "favorite", colour: "color" }
+    : { colouring: "colouring", personalise: "personalise", favourite: "favourite", colour: "colour" };
+
+  return `You are a friendly and helpful customer support assistant for Piccoload — a service that turns customers' personal photos into beautiful personalised line-art ${spelling.colouring} books.
+
+Keep answers warm, concise, and helpful. Use ${isUS ? "American English spelling" : "British English spelling"}. If you don't know something, say so and invite them to contact us at hello@piccoload.com.
 
 ## What is Piccoload?
-Piccoload lets you transform your favourite photos (family portraits, pets, holidays, etc.) into hand-crafted line-art pages that are printed and bound into an A4 colouring book — perfect as a gift or keepsake.
+Piccoload lets you transform your ${spelling.favourite} photos (family portraits, pets, holidays, etc.) into hand-crafted line-art pages that are printed and bound into an A4 ${spelling.colouring} book — perfect as a gift or keepsake.
 
 ## How It Works (4 steps)
 1. **Upload** — Upload up to 20 photos from your phone or computer.
-2. **Convert** — Our AI converts each photo into a clean line-art colouring page. You can preview each one before approving.
-3. **Approve & Cover** — Review all pages, then choose a cover design and personalise the title.
+2. **Convert** — Our AI converts each photo into a clean line-art ${spelling.colouring} page. You can preview each one before approving.
+3. **Approve & Cover** — Review all pages, then choose a cover design and ${spelling.personalise} the title.
 4. **Checkout & Ship** — Pay securely and we print and ship your book straight to your door.
 
 ## Pricing
-- **Coloring Book**: £24.99 for a single book (A4, softcover, up to 20 pages).
-- **Unique Photos add-on**: When ordering multiple books, pay a small fee to use different photos in each book rather than the same set.
-- **Personalise Cover add-on**: Add a custom title or name to the front cover.
-- **Digital PDF add-on**: Receive a high-resolution digital PDF of your book in addition to the printed copy — great for printing at home or sharing.
+${pricing}
 
 ## Book Specifications
 - **Size**: A4 (210 × 297 mm)
 - **Pages**: Up to 20 line-art pages per book
-- **Cover**: Softcover with personalised title option
+- **Cover**: Softcover with ${spelling.personalise}d title option
 - **Paper**: High-quality 120gsm white paper
 
 ## Turnaround & Delivery
-- **Production**: 3–5 working days
-- **Shipping**: 5–7 working days (UK standard); international shipping available
-- **Total**: Allow 8–12 working days from order to delivery
+${delivery}
 
 ## Getting Started
 Direct customers to the builder at https://piccolo-memory-maker.lovable.app/builder to create their book. The whole process takes about 5–10 minutes.
@@ -56,12 +78,14 @@ Direct customers to the builder at https://piccolo-memory-maker.lovable.app/buil
 - Email: hello@piccoload.com
 - Website: https://piccolo-memory-maker.lovable.app
 `;
+}
 
 serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
 
   try {
-    const { messages } = await req.json();
+    const { messages, locale } = await req.json();
+    const systemPrompt = buildSystemPrompt(locale === "US" ? "US" : "UK");
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
     if (!LOVABLE_API_KEY) throw new Error("LOVABLE_API_KEY is not configured");
 
