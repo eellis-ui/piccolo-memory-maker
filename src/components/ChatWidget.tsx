@@ -1,7 +1,6 @@
 import { useState, useRef, useEffect } from "react";
 import { MessageCircle, X, Send, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { ScrollArea } from "@/components/ui/scroll-area";
 import { cn } from "@/lib/utils";
 
 type Msg = { role: "user" | "assistant"; content: string };
@@ -204,7 +203,10 @@ export default function ChatWidget() {
           </div>
 
           {/* Messages */}
-          <ScrollArea className="flex-1 px-3 py-3">
+          <div
+            className="flex-1 overflow-y-auto overscroll-contain px-3 py-3"
+            style={{ minHeight: 0 }}
+          >
             {messages.length === 0 && (
               <div className="space-y-3">
                 <p className="text-center text-xs text-muted-foreground font-sans pt-2">
@@ -263,7 +265,7 @@ export default function ChatWidget() {
               )}
             </div>
             <div ref={bottomRef} />
-          </ScrollArea>
+          </div>
 
           {/* Input */}
           <div className="border-t border-border p-3 flex gap-2 items-end">
