@@ -18,6 +18,7 @@ import ResetPassword from "./pages/ResetPassword";
 import OrderReview from "./pages/OrderReview";
 import NotFound from "./pages/NotFound";
 import ScrollToTop from "./components/ScrollToTop";
+import ChatWidget from "./components/ChatWidget";
 
 const queryClient = new QueryClient();
 
@@ -29,6 +30,7 @@ const App = () => (
       <BrowserRouter>
         <BasketProvider>
           <ScrollToTop />
+          <ChatWidget />
           <Routes>
             <Route path="/" element={<Index />} />
             <Route path="/auth" element={<Auth />} />
