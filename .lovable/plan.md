@@ -1,17 +1,53 @@
 
+## Plan: Customer Support Chatbot
 
-## Plan: Reorder Checkout Line Items in Builder Flow
+### Overview
+Add a floating chat widget (bottom-right corner, visible on all pages) powered by Lovable AI that helps customers understand the Piccoload process. The system prompt lives in a dedicated edge function — so when you update your process, you update one file and every future conversation reflects the change.
 
-The cart drawer (`Navbar.tsx`) already sends items in the correct order after the last edit. However, the builder's checkout flow (`CheckoutStep.tsx`) still sends items in a different order — Digital Download comes right after the book, before the book-related upsells.
+### Architecture
 
-### Change
+```text
+Browser (ChatWidget.tsx)
+       │  POST messages[]
+       ▼
+Edge Function: supabase/functions/chat/index.ts
+       │  LOVABLE_API_KEY (already configured)
+       ▼
+Lovable AI Gateway  →  google/gemini-3-flash-preview
+```
 
-**`src/components/builder/CheckoutStep.tsx`** — Reorder the `lines.push()` calls in `handleCheckout` to match:
+### Files to create / edit
 
-1. **Coloring Book** (main product)
-2. **Unique Photos** (book-related upsell)
-3. **Personalize Cover** (book-related upsell)
-4. **Digital Download** (standalone add-on, last)
+1. **`supabase/functions/chat/index.ts`** (new)  
+   - Streaming SSE edge function  
+   - Inlined system prompt describes the full Piccoload process (pricing, steps, book specs, FAQs)  
+   - To update: edit the `systemPrompt` string — no UI needed
 
-Currently the code pushes Digital Download second and Unique Photos third. The fix is simply swapping those two blocks so book-related add-ons appear directly beneath the book on the Shopify checkout page.
+2. **`src/components/ChatWidget.tsx`** (new)  
+   - Floating button (bottom-right, `MessageCircle` icon) toggles an open panel  
+   - Conversation history held in component state (no persistence needed)  
+   - Streams tokens from the edge function and renders markdown  
+   - Suggested starter prompts: "How does it work?", "What's the price?", "How long does delivery take?"
 
+3. **`src/App.tsx`** (edit)  
+   - Import and render `<ChatWidget />` once, outside `<Routes>` so it persists on every page
+
+### System prompt (editable in the edge function)
+Covers:
+- What Piccoload is (personalised photo-to-line-art colouring books)
+- The 4-step process: Upload → Convert → Approve → Cover design → Checkout → Print & Ship
+- Pricing: base book price, unique photos add-on, personalize cover, digital PDF
+- Book specs: A4, up to 20 photos per book
+- Turnaround: 3–5 days production + 5–7 days shipping
+- How to start: direct to the builder
+
+### Visual design
+- Floating button: primary colour circle, bottom-right  
+- Panel: `w-80`, rounded card, white background, subtle shadow  
+- Messages: user (right-aligned, primary bg), assistant (left-aligned, muted bg, markdown rendered)  
+- Starter prompts shown when chat is empty  
+
+### What won't change
+- No database tables needed — conversations are ephemeral  
+- `LOVABLE_API_KEY` is already provisioned — no extra secrets required  
+- Works on all pages without any route changes
