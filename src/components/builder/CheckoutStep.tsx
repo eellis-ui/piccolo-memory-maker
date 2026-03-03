@@ -59,11 +59,22 @@ const CheckoutStep = ({ pageCount, extraPages, convertedUrls, onBack, bookDigita
       const lines: CartLineInput[] = [];
 
       // 1. Main product first
-      lines.push({ merchandiseId: SHOPIFY_VARIANTS.COLORING_BOOK, quantity: bookCount });
+      lines.push({
+        merchandiseId: SHOPIFY_VARIANTS.COLORING_BOOK,
+        quantity: bookCount,
+        attributes: [{ key: "_position", value: "1" }],
+      });
 
       // 2. Unique photos (book-related upsell)
       if (uniquePhotos && bookCount > 1) {
-        lines.push({ merchandiseId: SHOPIFY_VARIANTS.UNIQUE_PHOTOS, quantity: 1 });
+        lines.push({
+          merchandiseId: SHOPIFY_VARIANTS.UNIQUE_PHOTOS,
+          quantity: 1,
+          attributes: [
+            { key: "Add-on for", value: "Personalised Coloring Book" },
+            { key: "_position", value: "2" },
+          ],
+        });
       }
 
       // 3. Personalize cover (book-related upsell)
@@ -71,13 +82,27 @@ const CheckoutStep = ({ pageCount, extraPages, convertedUrls, onBack, bookDigita
       const basketPersonalizeCount = personalizeCoverFromBasket ? (uniquePhotos ? bookCount : 1) : 0;
       const totalPersonalizeCount = Math.max(personalizeCount, basketPersonalizeCount);
       if (totalPersonalizeCount > 0) {
-        lines.push({ merchandiseId: SHOPIFY_VARIANTS.PERSONALIZE_COVER, quantity: totalPersonalizeCount });
+        lines.push({
+          merchandiseId: SHOPIFY_VARIANTS.PERSONALIZE_COVER,
+          quantity: totalPersonalizeCount,
+          attributes: [
+            { key: "Add-on for", value: "Personalised Coloring Book" },
+            { key: "_position", value: "3" },
+          ],
+        });
       }
 
       // 4. Digital download last (standalone add-on)
       const digitalCount2 = bookDigitalDownloads.filter(b => b.enabled).length;
       if (digitalCount2 > 0) {
-        lines.push({ merchandiseId: SHOPIFY_VARIANTS.DIGITAL_DOWNLOAD, quantity: digitalCount2 });
+        lines.push({
+          merchandiseId: SHOPIFY_VARIANTS.DIGITAL_DOWNLOAD,
+          quantity: digitalCount2,
+          attributes: [
+            { key: "Add-on for", value: "Personalised Coloring Book" },
+            { key: "_position", value: "4" },
+          ],
+        });
       }
 
       const checkoutUrl = await createShopifyCheckout(lines);

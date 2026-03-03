@@ -49,7 +49,7 @@ const CART_CREATE_MUTATION = `
       cart {
         id
         checkoutUrl
-        lines(first: 100) { edges { node { id merchandise { ... on ProductVariant { id } } } } }
+        lines(first: 100) { edges { node { id attributes { key value } merchandise { ... on ProductVariant { id } } } } }
       }
       userErrors { field message }
     }
@@ -66,9 +66,15 @@ function formatCheckoutUrl(checkoutUrl: string): string {
   }
 }
 
+export interface CartLineAttribute {
+  key: string;
+  value: string;
+}
+
 export interface CartLineInput {
   merchandiseId: string;
   quantity: number;
+  attributes?: CartLineAttribute[];
 }
 
 export async function createShopifyCheckout(lines: CartLineInput[]): Promise<string | null> {
