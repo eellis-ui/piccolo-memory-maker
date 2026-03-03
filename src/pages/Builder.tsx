@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from "react";
-import { Check, BookOpen, Copy, Link2, Sparkles } from "lucide-react";
+import { Check, BookOpen, Copy, Link2, Sparkles, CheckCircle, X } from "lucide-react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { useBasket } from "@/contexts/BasketContext";
 import Navbar from "@/components/layout/Navbar";
@@ -69,6 +69,7 @@ const Builder = () => {
   const [books, setBooks] = useState<BookState[]>([]);
   const [activeBookIndex, setActiveBookIndex] = useState(0);
   const [showingCheckout, setShowingCheckout] = useState(false);
+  const [postCheckout, setPostCheckout] = useState(searchParams.get("paid") === "true");
   const [sessionId, setSessionId] = useState<string | null>(null);
   const [initialized, setInitialized] = useState(false);
 
@@ -297,6 +298,15 @@ const Builder = () => {
     }
   };
 
+  const handleCheckoutComplete = () => {
+    setShowingCheckout(false);
+    setPostCheckout(true);
+    // Update URL so refresh preserves the state
+    const newParams = new URLSearchParams(window.location.search);
+    newParams.set("paid", "true");
+    window.history.replaceState(null, "", `${window.location.pathname}?${newParams.toString()}`);
+  };
+
   const currentStepIndex = activeBook
     ? BUILDER_STEPS.findIndex((s) => s.key === activeBook.step)
     : 0;
@@ -319,6 +329,30 @@ const Builder = () => {
 
       <main className="pt-24 pb-16">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
+
+          {/* ── Post-checkout thank you banner ── */}
+          {postCheckout && (
+            <div className="max-w-2xl mx-auto mb-8 bg-green-50 border border-green-200 rounded-2xl p-5 flex items-start gap-4 relative">
+              <CheckCircle className="w-8 h-8 text-green-600 shrink-0 mt-0.5" />
+              <div>
+                <h2 className="text-lg font-semibold text-green-900">Thank You For Your Order!</h2>
+                <p className="text-sm text-green-700 mt-1">
+                  Your payment was successful. Now let's create your colouring book — start by uploading your favourite photos below.
+                </p>
+              </div>
+              <button
+                onClick={() => {
+                  setPostCheckout(false);
+                  const newParams = new URLSearchParams(window.location.search);
+                  newParams.delete("paid");
+                  window.history.replaceState(null, "", `${window.location.pathname}?${newParams.toString()}`);
+                }}
+                className="absolute top-3 right-3 text-green-400 hover:text-green-600 transition-colors"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+          )}
 
           {/* ── Multi-book tabs ── */}
           {bookCount > 1 && !showingCheckout && (() => {
@@ -533,6 +567,7 @@ const Builder = () => {
                   titlePageEnabled: b.bookAddOns.bottomTitle !== "color your memories",
                   dedicationPageEnabled: b.bookAddOns.dedicationPageEnabled,
                 }))}
+                onCheckoutComplete={handleCheckoutComplete}
                 onBack={() => {
                   setShowingCheckout(false);
                   setActiveBookIndex(bookCount - 1);
