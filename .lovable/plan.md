@@ -1,53 +1,36 @@
 
-## Plan: Customer Support Chatbot
 
-### Overview
-Add a floating chat widget (bottom-right corner, visible on all pages) powered by Lovable AI that helps customers understand the Piccoload process. The system prompt lives in a dedicated edge function — so when you update your process, you update one file and every future conversation reflects the change.
+## Analysis: Shopify Checkout Line Item Grouping
 
-### Architecture
+### The Problem
 
-```text
-Browser (ChatWidget.tsx)
-       │  POST messages[]
-       ▼
-Edge Function: supabase/functions/chat/index.ts
-       │  LOVABLE_API_KEY (already configured)
-       ▼
-Lovable AI Gateway  →  google/gemini-3-flash-preview
-```
+In your current Shopify theme, add-ons (Unique Photos, Digital Download, Personalize Cover) appear visually grouped/indented beneath the main "Personalised Coloring Book" product in checkout. When using the Storefront API `cartCreate` mutation (the Lovable approach), each line item is sent as a separate product variant, so Shopify's checkout renders them as flat, unrelated items with no visual hierarchy.
 
-### Files to create / edit
+### Why This Happens
 
-1. **`supabase/functions/chat/index.ts`** (new)  
-   - Streaming SSE edge function  
-   - Inlined system prompt describes the full Piccoload process (pricing, steps, book specs, FAQs)  
-   - To update: edit the `systemPrompt` string — no UI needed
+Shopify's checkout UI groups line items **by parent product**. If multiple variants belong to the **same product**, they appear visually connected. Your current theme likely has the add-ons configured as variants of the main Coloring Book product, so they auto-group. In our implementation, `COLORING_BOOK`, `DIGITAL_DOWNLOAD`, `UNIQUE_PHOTOS`, and `PERSONALIZE_COVER` are all **separate products** with their own variant IDs — so Shopify treats them independently.
 
-2. **`src/components/ChatWidget.tsx`** (new)  
-   - Floating button (bottom-right, `MessageCircle` icon) toggles an open panel  
-   - Conversation history held in component state (no persistence needed)  
-   - Streams tokens from the edge function and renders markdown  
-   - Suggested starter prompts: "How does it work?", "What's the price?", "How long does delivery take?"
+### Proposed Solution
 
-3. **`src/App.tsx`** (edit)  
-   - Import and render `<ChatWidget />` once, outside `<Routes>` so it persists on every page
+**Use Shopify cart line `attributes`** to attach metadata to each line item. While this won't force Shopify's checkout to visually indent items (that's controlled by parent product grouping), it will:
 
-### System prompt (editable in the edge function)
-Covers:
-- What Piccoload is (personalised photo-to-line-art colouring books)
-- The 4-step process: Upload → Convert → Approve → Cover design → Checkout → Print & Ship
-- Pricing: base book price, unique photos add-on, personalize cover, digital PDF
-- Book specs: A4, up to 20 photos per book
-- Turnaround: 3–5 days production + 5–7 days shipping
-- How to start: direct to the builder
+1. Add descriptive labels beneath each line item in checkout (e.g., "Add-on for: Personalised Coloring Book")
+2. Keep the items in logical order (main product first, then add-ons)
 
-### Visual design
-- Floating button: primary colour circle, bottom-right  
-- Panel: `w-80`, rounded card, white background, subtle shadow  
-- Messages: user (right-aligned, primary bg), assistant (left-aligned, muted bg, markdown rendered)  
-- Starter prompts shown when chat is empty  
+**Changes required:**
 
-### What won't change
-- No database tables needed — conversations are ephemeral  
-- `LOVABLE_API_KEY` is already provisioned — no extra secrets required  
-- Works on all pages without any route changes
+1. **`src/lib/shopify.ts`** — Update the `CartLineInput` type and `CART_CREATE_MUTATION` to support `attributes` (key-value pairs) on each cart line:
+   ```graphql
+   lines: [{ merchandiseId: "...", quantity: 1, attributes: [{ key: "For", value: "Coloring Book" }] }]
+   ```
+
+2. **`src/components/builder/CheckoutStep.tsx`** — Add attributes to each add-on line item to label them as belonging to the main product.
+
+### Alternative (Shopify Admin side)
+
+If you truly need the indented/grouped appearance, the only reliable way is to restructure your Shopify products so the add-ons are **variants of the same parent product** rather than separate products. This is a Shopify Admin change, not a code change. However, this has trade-offs (variant limits, pricing complexity).
+
+### Recommendation
+
+Start with **cart line attributes** — it's a quick code-only fix that adds context to each item in checkout. If the visual grouping is critical, we can discuss restructuring the Shopify products afterward.
+
