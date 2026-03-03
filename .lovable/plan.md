@@ -1,36 +1,36 @@
 
 
-## Analysis: Shopify Checkout Line Item Grouping
+## Plan: Post-Checkout Thank You Banner on Builder Page
 
-### The Problem
+### Current Flow
+Checkout opens Shopify in a **new tab** (`window.open`). The original Builder tab remains open. After payment, the customer switches back to the Builder tab.
 
-In your current Shopify theme, add-ons (Unique Photos, Digital Download, Personalize Cover) appear visually grouped/indented beneath the main "Personalised Coloring Book" product in checkout. When using the Storefront API `cartCreate` mutation (the Lovable approach), each line item is sent as a separate product variant, so Shopify's checkout renders them as flat, unrelated items with no visual hierarchy.
+### Problem
+When customers return to the Builder tab after paying, there's no acknowledgment of their payment and no clear prompt to start uploading photos.
 
-### Why This Happens
+### Proposed Changes
 
-Shopify's checkout UI groups line items **by parent product**. If multiple variants belong to the **same product**, they appear visually connected. Your current theme likely has the add-ons configured as variants of the main Coloring Book product, so they auto-group. In our implementation, `COLORING_BOOK`, `DIGITAL_DOWNLOAD`, `UNIQUE_PHOTOS`, and `PERSONALIZE_COVER` are all **separate products** with their own variant IDs — so Shopify treats them independently.
+**1. `src/pages/Builder.tsx`** — Add a `postCheckout` state
+- Detect a `paid=true` URL parameter OR set it locally after checkout button is clicked
+- When `postCheckout` is true, show a thank-you banner at the top of the builder (above progress steps)
+- Reset the builder to the upload step so they're ready to add photos
+- The banner includes: a confirmation message ("Thank you for your order!"), a prompt ("Now upload your photos to create your coloring book"), and a friendly icon
 
-### Proposed Solution
+**2. `src/components/builder/CheckoutStep.tsx`** — After opening checkout URL
+- After `window.open(checkoutUrl, '_blank')`, call a new `onCheckoutComplete` callback prop
+- This lets the parent Builder component transition to the post-checkout upload state
 
-**Use Shopify cart line `attributes`** to attach metadata to each line item. While this won't force Shopify's checkout to visually indent items (that's controlled by parent product grouping), it will:
+**3. `src/pages/Builder.tsx`** — Handle checkout complete
+- Add `onCheckoutComplete` handler that sets `showingCheckout = false`, sets a `postCheckout = true` state, and updates the URL with `&paid=true`
+- The builder then shows the upload step with the thank-you banner on top
 
-1. Add descriptive labels beneath each line item in checkout (e.g., "Add-on for: Personalised Coloring Book")
-2. Keep the items in logical order (main product first, then add-ons)
+### Thank You Banner Design
+A full-width, visually distinct banner (green/success themed) at the top of the builder content area:
+- Check icon + "Thank You For Your Order!"  
+- Subtext: "Your payment was successful. Now let's create your coloring book — start by uploading your favorite photos below."
+- Dismissible with an X button
 
-**Changes required:**
-
-1. **`src/lib/shopify.ts`** — Update the `CartLineInput` type and `CART_CREATE_MUTATION` to support `attributes` (key-value pairs) on each cart line:
-   ```graphql
-   lines: [{ merchandiseId: "...", quantity: 1, attributes: [{ key: "For", value: "Coloring Book" }] }]
-   ```
-
-2. **`src/components/builder/CheckoutStep.tsx`** — Add attributes to each add-on line item to label them as belonging to the main product.
-
-### Alternative (Shopify Admin side)
-
-If you truly need the indented/grouped appearance, the only reliable way is to restructure your Shopify products so the add-ons are **variants of the same parent product** rather than separate products. This is a Shopify Admin change, not a code change. However, this has trade-offs (variant limits, pricing complexity).
-
-### Recommendation
-
-Start with **cart line attributes** — it's a quick code-only fix that adds context to each item in checkout. If the visual grouping is critical, we can discuss restructuring the Shopify products afterward.
+### What Won't Change
+- The Shopify checkout still opens in a new tab (required by Shopify)
+- All existing builder steps and session persistence remain intact
 
