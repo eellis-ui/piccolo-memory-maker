@@ -24,12 +24,13 @@ interface CheckoutStepProps {
   extraPages: number;
   convertedUrls: (string | null)[];
   onBack: () => void;
+  onCheckoutComplete?: () => void;
   bookDigitalDownloads: BookDigitalDownload[];
   onToggleBookDigitalDownload: (bookIndex: number) => void;
   bookAddOnsList: BookAddOnsInfo[];
 }
 
-const CheckoutStep = ({ pageCount, extraPages, convertedUrls, onBack, bookDigitalDownloads, onToggleBookDigitalDownload, bookAddOnsList }: CheckoutStepProps) => {
+const CheckoutStep = ({ pageCount, extraPages, convertedUrls, onBack, onCheckoutComplete, bookDigitalDownloads, onToggleBookDigitalDownload, bookAddOnsList }: CheckoutStepProps) => {
   const { item, setQuantity, pricingTiers, addOnPrice, uniquePhotos, uniquePhotosPrice } = useBasket();
   const personalizeCoverFromBasket = item?.personalizeCover ?? false;
   const [isCheckingOut, setIsCheckingOut] = useState(false);
@@ -108,6 +109,7 @@ const CheckoutStep = ({ pageCount, extraPages, convertedUrls, onBack, bookDigita
       const checkoutUrl = await createShopifyCheckout(lines);
       if (checkoutUrl) {
         window.open(checkoutUrl, '_blank');
+        onCheckoutComplete?.();
       }
     } catch (error) {
       console.error('Checkout error:', error);
