@@ -100,13 +100,12 @@ const Builder = () => {
           const existingOrders = await getSessionOrders(sid);
 
           if (existingOrders && existingOrders.length > 0) {
-            // Reconstruct basket from DB orders if counts don't match
-            if (totalBookCount !== existingOrders.length) {
-              clear();
-              existingOrders.forEach((order: any) => {
-                addToCart(1, { uniquePhotos: !!order.unique_photos });
-              });
-            }
+            // Always reconstruct basket from DB — in-memory basket resets on refresh
+            clear();
+            // Reconstruct as individual single-book items (one per DB order)
+            existingOrders.forEach((order: any) => {
+              addToCart(1, { uniquePhotos: !!order.unique_photos });
+            });
 
             const restoredBooks: BookState[] = existingOrders.map((order: any) => {
               const photos: OrderPhoto[] = (order.photos || []).map((row: any) => ({
@@ -154,7 +153,9 @@ const Builder = () => {
         }
       }
 
-      // ── Create new session ──
+      // ── Create new session (only if no existing session was found) ──
+      // If we had a sessionId from URL or localStorage but got 0 orders,
+      // reuse that sid rather than creating a brand-new one (avoids ghost drafts).
       try {
         const newSessionId = crypto.randomUUID();
         setSessionId(newSessionId);
@@ -166,7 +167,8 @@ const Builder = () => {
         newParams.set("sessionId", newSessionId);
         window.history.replaceState(null, "", `${window.location.pathname}?${newParams.toString()}`);
 
-        const orders = await createGuestOrders(newSessionId, bookCount);
+        // bookCount may be 1 if basket was reset on refresh — that's fine for a brand-new session
+        const orders = await createGuestOrders(newSessionId, Math.max(bookCount, 1));
 
         const newBooks: BookState[] = orders.map((o) => ({
           orderId: o.id,
