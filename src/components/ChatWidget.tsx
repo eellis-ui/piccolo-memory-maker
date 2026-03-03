@@ -11,7 +11,9 @@ const CHAT_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/chat`;
 const userLocale: "US" | "UK" = (() => {
   try {
     const tz = Intl.DateTimeFormat().resolvedOptions().timeZone;
-    return tz.startsWith("America/") || tz.startsWith("US/") ? "US" : "UK";
+    // Default to US as primary market; UK only for explicit UK/European timezones
+    const ukTimezones = ["Europe/London", "Europe/Dublin"];
+    return ukTimezones.includes(tz) ? "UK" : "US";
   } catch {
     return "UK";
   }
