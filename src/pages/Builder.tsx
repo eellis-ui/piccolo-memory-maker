@@ -301,6 +301,9 @@ const Builder = () => {
   const handleCheckoutComplete = () => {
     setShowingCheckout(false);
     setPostCheckout(true);
+    // Reset all books back to the upload step
+    setBooks((prev) => prev.map((b) => ({ ...b, step: "upload" as const })));
+    setActiveBookIndex(0);
     // Update URL so refresh preserves the state
     const newParams = new URLSearchParams(window.location.search);
     newParams.set("paid", "true");
