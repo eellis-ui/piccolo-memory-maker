@@ -1,36 +1,31 @@
 
 
-## Plan: Post-Checkout Thank You Banner on Builder Page
+## Plan: Pause Builder Until Payment Confirmed, Then Show Upload Step
 
 ### Current Flow
-Checkout opens Shopify in a **new tab** (`window.open`). The original Builder tab remains open. After payment, the customer switches back to the Builder tab.
+Checkout opens Shopify in a new tab via `window.open`. The builder immediately transitions to a post-checkout state after the tab opens — but there's no actual payment confirmation.
 
-### Problem
-When customers return to the Builder tab after paying, there's no acknowledgment of their payment and no clear prompt to start uploading photos.
+### New Flow
+1. Checkout opens in a **new tab** (kept as-is)
+2. The original tab shows a **"waiting for payment"** overlay/state instead of immediately transitioning
+3. The tab polls for payment confirmation using `visibilitychange` — when the user switches back, it checks a flag
+4. Since we can't get real-time payment confirmation from Shopify via the Storefront API, we use the pragmatic approach: when the user returns to the tab (tab becomes visible again after checkout was opened), we treat that as "payment completed" and transition to the upload step with the thank-you banner
 
-### Proposed Changes
+### Changes
 
-**1. `src/pages/Builder.tsx`** — Add a `postCheckout` state
-- Detect a `paid=true` URL parameter OR set it locally after checkout button is clicked
-- When `postCheckout` is true, show a thank-you banner at the top of the builder (above progress steps)
-- Reset the builder to the upload step so they're ready to add photos
-- The banner includes: a confirmation message ("Thank you for your order!"), a prompt ("Now upload your photos to create your coloring book"), and a friendly icon
+**1. `src/components/builder/CheckoutStep.tsx`**
+- After `window.open(checkoutUrl, '_blank')`, instead of calling `onCheckoutComplete` immediately, set a local `awaitingPayment` state to `true`
+- Show a waiting UI: "Complete your payment in the other tab. Once done, come back here."
+- Listen for `visibilitychange` — when the tab becomes visible again and `awaitingPayment` is true, call `onCheckoutComplete()`
 
-**2. `src/components/builder/CheckoutStep.tsx`** — After opening checkout URL
-- After `window.open(checkoutUrl, '_blank')`, call a new `onCheckoutComplete` callback prop
-- This lets the parent Builder component transition to the post-checkout upload state
+**2. `src/pages/Builder.tsx`**
+- `handleCheckoutComplete` already sets `postCheckout = true` and hides checkout — keep this
+- Additionally, reset all books back to the `upload` step so the user lands on the photo upload page
+- The thank-you banner (already implemented) shows at the top
 
-**3. `src/pages/Builder.tsx`** — Handle checkout complete
-- Add `onCheckoutComplete` handler that sets `showingCheckout = false`, sets a `postCheckout = true` state, and updates the URL with `&paid=true`
-- The builder then shows the upload step with the thank-you banner on top
-
-### Thank You Banner Design
-A full-width, visually distinct banner (green/success themed) at the top of the builder content area:
-- Check icon + "Thank You For Your Order!"  
-- Subtext: "Your payment was successful. Now let's create your coloring book — start by uploading your favorite photos below."
-- Dismissible with an X button
-
-### What Won't Change
-- The Shopify checkout still opens in a new tab (required by Shopify)
-- All existing builder steps and session persistence remain intact
+### Waiting State UI (CheckoutStep)
+When `awaitingPayment` is true, replace the checkout content with a centered message:
+- Spinner/icon + "Waiting for payment..."
+- "Complete your purchase in the Shopify tab, then return here"
+- A "I've completed payment" button as a manual fallback
 
