@@ -1,5 +1,5 @@
-import { useState } from "react";
-import { Check, ShoppingCart, Lock, Minus, Plus, Download, X, Loader2 } from "lucide-react";
+import { useState, useEffect } from "react";
+import { Check, ShoppingCart, Lock, Minus, Plus, Download, X, Loader2, Clock } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -34,6 +34,20 @@ const CheckoutStep = ({ pageCount, extraPages, convertedUrls, onBack, onCheckout
   const { item, setQuantity, pricingTiers, addOnPrice, uniquePhotos, uniquePhotosPrice } = useBasket();
   const personalizeCoverFromBasket = item?.personalizeCover ?? false;
   const [isCheckingOut, setIsCheckingOut] = useState(false);
+  const [awaitingPayment, setAwaitingPayment] = useState(false);
+
+  // Listen for tab visibility change to detect return from checkout
+  useEffect(() => {
+    if (!awaitingPayment) return;
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === 'visible' && awaitingPayment) {
+        setAwaitingPayment(false);
+        onCheckoutComplete?.();
+      }
+    };
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+    return () => document.removeEventListener('visibilitychange', handleVisibilityChange);
+  }, [awaitingPayment, onCheckoutComplete]);
 
   const bookCount = item?.quantity ?? 1;
   const basePrice = item?.pricePerBook ?? 35;
@@ -109,7 +123,7 @@ const CheckoutStep = ({ pageCount, extraPages, convertedUrls, onBack, onCheckout
       const checkoutUrl = await createShopifyCheckout(lines);
       if (checkoutUrl) {
         window.open(checkoutUrl, '_blank');
-        onCheckoutComplete?.();
+        setAwaitingPayment(true);
       }
     } catch (error) {
       console.error('Checkout error:', error);
@@ -117,6 +131,37 @@ const CheckoutStep = ({ pageCount, extraPages, convertedUrls, onBack, onCheckout
       setIsCheckingOut(false);
     }
   };
+
+  // ── Awaiting payment UI ──
+  if (awaitingPayment) {
+    return (
+      <div className="space-y-8">
+        <div className="max-w-md mx-auto text-center py-16 space-y-6">
+          <div className="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center mx-auto">
+            <Clock className="w-8 h-8 text-primary animate-pulse" />
+          </div>
+          <div>
+            <h2 className="font-display text-2xl font-semibold text-foreground">
+              Waiting for payment…
+            </h2>
+            <p className="text-muted-foreground mt-2">
+              Complete your purchase in the Shopify tab, then come back here.
+            </p>
+          </div>
+          <Button
+            variant="outline"
+            className="rounded-2xl"
+            onClick={() => {
+              setAwaitingPayment(false);
+              onCheckoutComplete?.();
+            }}
+          >
+            I've completed payment
+          </Button>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-8">
