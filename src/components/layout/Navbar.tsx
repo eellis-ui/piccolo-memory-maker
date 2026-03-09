@@ -337,6 +337,7 @@ const CartButton = ({ isCartOpen, setIsCartOpen, hasItems, itemCount, basketCont
 
 
 const Navbar = () => {
+  const navigate = useNavigate();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const { items, totalBookCount, removeItem, updateItemQuantity, toggleItemUniquePhotos, digitalCopies, setDigitalCopies, digitalPrice, addOns, addOnsTotal: basketAddOnsTotal, addOnPrice, uniquePhotos, uniquePhotosPrice, activeSessionId, isCartOpen, setIsCartOpen } = useBasket();
   const { isAdmin } = useIsAdmin();
