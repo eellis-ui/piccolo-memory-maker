@@ -28,9 +28,10 @@ interface CheckoutStepProps {
   bookDigitalDownloads: BookDigitalDownload[];
   onToggleBookDigitalDownload: (bookIndex: number) => void;
   bookAddOnsList: BookAddOnsInfo[];
+  sessionId?: string;
 }
 
-const CheckoutStep = ({ pageCount, extraPages, convertedUrls, onBack, onCheckoutComplete, bookDigitalDownloads, onToggleBookDigitalDownload, bookAddOnsList }: CheckoutStepProps) => {
+const CheckoutStep = ({ pageCount, extraPages, convertedUrls, onBack, onCheckoutComplete, bookDigitalDownloads, onToggleBookDigitalDownload, bookAddOnsList, sessionId }: CheckoutStepProps) => {
   const { item, setQuantity, pricingTiers, addOnPrice, uniquePhotos, uniquePhotosPrice } = useBasket();
   const personalizeCoverFromBasket = item?.personalizeCover ?? false;
   const [isCheckingOut, setIsCheckingOut] = useState(false);
@@ -120,7 +121,7 @@ const CheckoutStep = ({ pageCount, extraPages, convertedUrls, onBack, onCheckout
         });
       }
 
-      const checkoutUrl = await createShopifyCheckout(lines);
+      const checkoutUrl = await createShopifyCheckout(lines, sessionId);
       if (checkoutUrl) {
         window.open(checkoutUrl, '_blank');
         setAwaitingPayment(true);

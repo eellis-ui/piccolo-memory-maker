@@ -1,5 +1,5 @@
 import { useState, useCallback } from "react";
-import { Check, RefreshCw, Loader2, Trash2 } from "lucide-react";
+import { Check, RefreshCw, Loader2, Trash2, Lock } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { supabase } from "@/integrations/supabase/client";
@@ -26,6 +26,7 @@ interface ApproveStepProps {
   onApprovalComplete: (photos: OrderPhoto[]) => void;
   onPhotosChange: (photos: OrderPhoto[]) => void;
   onBack: () => void;
+  paymentConfirmed?: boolean;
 }
 
 const ApproveStep = ({
@@ -35,6 +36,7 @@ const ApproveStep = ({
   onApprovalComplete,
   onPhotosChange,
   onBack,
+  paymentConfirmed = false,
 }: ApproveStepProps) => {
   const { item, uniquePhotos } = useBasket();
   const bookCount = item?.quantity ?? 1;
@@ -159,6 +161,19 @@ const ApproveStep = ({
 
   return (
     <div className="space-y-8">
+      {/* Payment required banner */}
+      {!paymentConfirmed && (
+        <div className="bg-amber-50 border border-amber-200 rounded-2xl p-4 flex items-start gap-3">
+          <Lock className="w-5 h-5 text-amber-600 shrink-0 mt-0.5" />
+          <div>
+            <h3 className="font-semibold text-amber-900 text-sm">Payment Required</h3>
+            <p className="text-xs text-amber-700 mt-0.5">
+              Photo conversions will be processed after payment is confirmed. You can still reorder and preview your photos.
+            </p>
+          </div>
+        </div>
+      )}
+
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
@@ -166,7 +181,7 @@ const ApproveStep = ({
             Approve Your Pages
           </h2>
           <p className="text-muted-foreground">
-            Convert and review each page before continuing
+            {paymentConfirmed ? "Convert and review each page before continuing" : "Review your page order — conversions will begin after payment"}
           </p>
         </div>
 
@@ -174,7 +189,7 @@ const ApproveStep = ({
           <Badge variant="secondary" className="text-sm py-1 px-3">
             {totalApproved} of {totalPages} pages approved
           </Badge>
-          {hasUnconverted && (
+          {hasUnconverted && paymentConfirmed && (
             <Button
               variant="outline"
               onClick={convertAll}
@@ -293,7 +308,7 @@ const ApproveStep = ({
 
               <div className="p-4 flex items-center justify-between bg-background">
                 <div className="flex gap-2">
-                  {!hasConverted && !isConverting && (
+                  {!hasConverted && !isConverting && paymentConfirmed && (
                     <Button
                       variant="ghost"
                       size="sm"
@@ -303,6 +318,11 @@ const ApproveStep = ({
                       <RefreshCw className="w-4 h-4 mr-1" />
                       Convert
                     </Button>
+                  )}
+                  {!hasConverted && !isConverting && !paymentConfirmed && (
+                    <span className="text-xs text-muted-foreground py-1 flex items-center gap-1">
+                      <Lock className="w-3 h-3" /> Awaiting payment
+                    </span>
                   )}
                   {hasConverted && !photo.isApproved && (() => {
                     const retries = retryCounts[photo.id] ?? 0;

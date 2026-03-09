@@ -169,7 +169,7 @@ Deno.serve(async (req) => {
       const fields = [
         "builder_step", "cover_image_id", "title_page_enabled",
         "title_page_text", "dedication_page_enabled", "dedication_page_text",
-        "extra_pages", "unique_photos",
+        "extra_pages", "unique_photos", "payment_status",
       ];
       for (const f of fields) {
         if (updates[f] !== undefined) allowed[f] = updates[f];
