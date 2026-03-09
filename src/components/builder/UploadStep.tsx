@@ -37,9 +37,15 @@ const UploadStep = ({ orderId, sessionId, onImagesUploaded, maxImages = 20, init
   const [isUploading, setIsUploading] = useState(false);
 
   // Sync images back to parent so they persist across tab switches
+  // Use a ref for the callback to avoid infinite loops
+  const onImagesChangedRef = useCallback((imgs: LocalImage[]) => {
+    onImagesChanged?.(imgs);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   useEffect(() => {
-    onImagesChanged?.(images);
-  }, [images, onImagesChanged]);
+    onImagesChangedRef(images);
+  }, [images, onImagesChangedRef]);
 
   // Convert HEIC to JPEG blob using heic-to
   const convertHeicToJpeg = async (file: File): Promise<Blob> => {

@@ -83,28 +83,23 @@ const Builder = () => {
   useEffect(() => {
     if (initialized) return;
     const init = async () => {
-      // ── Resume existing session ──
-      // Check URL param first, then localStorage fallback
-      const storedSessionId = localStorage.getItem("guest_session_id");
-      const sid = resumeSessionId || storedSessionId || getOrCreateSessionId();
-      setSessionId(sid);
-      setActiveSessionId(sid);
+      // If we have basket items and no explicit sessionId in the URL,
+      // always create a fresh session from the current cart (user clicked "Go To Next Step")
+      const hasBasketItems = items.length > 0;
+      const isResuming = !!resumeSessionId;
 
-      // Always keep sessionId in the URL so refreshing works
-      if (!resumeSessionId && sid) {
-        const newParams = new URLSearchParams(window.location.search);
-        newParams.set("sessionId", sid);
-        window.history.replaceState(null, "", `${window.location.pathname}?${newParams.toString()}`);
-      }
+      // ── Resume existing session (only when explicitly resuming via URL param) ──
+      if (isResuming) {
+        const sid = resumeSessionId;
+        setSessionId(sid);
+        setActiveSessionId(sid);
 
-      if (sid) {
         try {
           const existingOrders = await getSessionOrders(sid);
 
           if (existingOrders && existingOrders.length > 0) {
-            // Always reconstruct basket from DB — in-memory basket resets on refresh
+            // Reconstruct basket from DB — in-memory basket resets on refresh
             clear();
-            // Reconstruct as individual single-book items (one per DB order)
             existingOrders.forEach((order: any) => {
               addToCart(1, { uniquePhotos: !!order.unique_photos });
             });
@@ -152,6 +147,74 @@ const Builder = () => {
           }
         } catch (err) {
           console.error("Failed to resume session:", err);
+        }
+      }
+
+      // ── Also try localStorage session if no basket items (page refresh) ──
+      if (!hasBasketItems && !isResuming) {
+        const storedSessionId = localStorage.getItem("guest_session_id");
+        if (storedSessionId) {
+          try {
+            const existingOrders = await getSessionOrders(storedSessionId);
+            if (existingOrders && existingOrders.length > 0) {
+              const sid = storedSessionId;
+              setSessionId(sid);
+              setActiveSessionId(sid);
+
+              // Update URL so refresh works
+              const newParams = new URLSearchParams(window.location.search);
+              newParams.set("sessionId", sid);
+              window.history.replaceState(null, "", `${window.location.pathname}?${newParams.toString()}`);
+
+              clear();
+              existingOrders.forEach((order: any) => {
+                addToCart(1, { uniquePhotos: !!order.unique_photos });
+              });
+
+              const restoredBooks: BookState[] = existingOrders.map((order: any) => {
+                const photos: OrderPhoto[] = (order.photos || []).map((row: any) => ({
+                  id: row.id,
+                  originalPath: row.original_path,
+                  convertedPath: row.converted_path,
+                  pagePosition: row.page_position,
+                  isApproved: row.is_approved,
+                  conversionStatus: row.conversion_status,
+                  originalUrl: row.originalUrl || "",
+                  convertedUrl: row.convertedUrl || null,
+                  isLandscape: row.is_landscape,
+                }));
+
+                const step = (order.builder_step || "upload") as BuilderStep;
+                const isCompleted = step === "cover" && !!order.cover_image_id;
+
+                return {
+                  orderId: order.id,
+                  step,
+                  photos,
+                  uploadImages: [] as LocalImage[],
+                  bookAddOns: {
+                    dedicationPageEnabled: order.dedication_page_enabled,
+                    dedicationPageText: order.dedication_page_text || "",
+                    bottomTitle: order.title_page_text === "My Piccolo'd Colouring Book" ? "color your memories" : order.title_page_text,
+                  },
+                  digitalDownload: false,
+                  coverData: isCompleted ? { imageIds: [order.cover_image_id, order.cover_image_id], title: order.title_page_text, subtitle: "" } : null,
+                  completed: isCompleted,
+                } as BookState;
+              });
+
+              setBooks(restoredBooks);
+
+              if (restoredBooks.every((b) => b.completed)) {
+                setShowingCheckout(true);
+              }
+
+              setInitialized(true);
+              return;
+            }
+          } catch (err) {
+            console.error("Failed to resume localStorage session:", err);
+          }
         }
       }
 
