@@ -239,16 +239,12 @@ const BasketContent = ({
         <Button
           className="w-full rounded-lg py-6 text-base font-bold bg-foreground text-background hover:bg-foreground/90"
           size="lg"
-          onClick={onCheckout}
-          disabled={isCheckingOut}
+          onClick={() => {
+            setIsCartOpen(false);
+            window.location.href = '/builder';
+          }}
         >
-          {isCheckingOut ? (
-            <><Loader2 className="w-5 h-5 mr-2 animate-spin" />Creating Checkout…</>
-          ) : (
-            <>
-              Go To Next Step
-            </>
-          )}
+          Go To Next Step
         </Button>
 
         {/* Payment trust badges */}
