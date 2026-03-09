@@ -161,6 +161,19 @@ const ApproveStep = ({
 
   return (
     <div className="space-y-8">
+      {/* Payment required banner */}
+      {!paymentConfirmed && (
+        <div className="bg-amber-50 border border-amber-200 rounded-2xl p-4 flex items-start gap-3">
+          <Lock className="w-5 h-5 text-amber-600 shrink-0 mt-0.5" />
+          <div>
+            <h3 className="font-semibold text-amber-900 text-sm">Payment Required</h3>
+            <p className="text-xs text-amber-700 mt-0.5">
+              Photo conversions will be processed after payment is confirmed. You can still reorder and preview your photos.
+            </p>
+          </div>
+        </div>
+      )}
+
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
@@ -168,7 +181,7 @@ const ApproveStep = ({
             Approve Your Pages
           </h2>
           <p className="text-muted-foreground">
-            Convert and review each page before continuing
+            {paymentConfirmed ? "Convert and review each page before continuing" : "Review your page order — conversions will begin after payment"}
           </p>
         </div>
 
