@@ -1,4 +1,4 @@
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Menu, X, ShoppingCart, Minus, Plus, Trash2, Shield, ClipboardList, Sparkles, Tag, Check, Download, Loader2, Lock } from "lucide-react";
 import { createShopifyCheckout, SHOPIFY_VARIANTS, type CartLineInput } from "@/lib/shopify";
