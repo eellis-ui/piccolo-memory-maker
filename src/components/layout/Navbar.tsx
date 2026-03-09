@@ -246,8 +246,7 @@ const BasketContent = ({
             <><Loader2 className="w-5 h-5 mr-2 animate-spin" />Creating Checkout…</>
           ) : (
             <>
-              <Lock className="w-4 h-4 mr-2" />
-              Checkout · ${grandTotal.toFixed(2)}
+              Go To Next Step
             </>
           )}
         </Button>
