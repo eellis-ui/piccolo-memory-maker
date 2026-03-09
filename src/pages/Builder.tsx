@@ -483,6 +483,7 @@ const Builder = () => {
           )}
 
           {/* ── Step Content ── */}
+          {!postCheckout && (
           <div className="max-w-5xl mx-auto">
             {!showingCheckout && activeBook && (
               <>
