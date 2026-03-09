@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from "react";
-import { Check, BookOpen, Copy, Link2, Sparkles, CheckCircle, X } from "lucide-react";
+import { Check, BookOpen, Copy, Link2, Sparkles } from "lucide-react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { useBasket } from "@/contexts/BasketContext";
 import Navbar from "@/components/layout/Navbar";
@@ -8,6 +8,7 @@ import UploadStep, { type LocalImage } from "@/components/builder/UploadStep";
 import ApproveStep from "@/components/builder/ApproveStep";
 import CoverStep from "@/components/builder/CoverStep";
 import CheckoutStep from "@/components/builder/CheckoutStep";
+import ThankYouStep from "@/components/builder/ThankYouStep";
 import UniquePhotosUpsellBanner from "@/components/builder/UniquePhotosUpsellBanner";
 import {
   getOrCreateSessionId,
