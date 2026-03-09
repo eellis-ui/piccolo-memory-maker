@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from "react";
-import { Check, BookOpen, Copy, Link2, Sparkles, CheckCircle, X } from "lucide-react";
+import { Check, BookOpen, Copy, Link2, Sparkles } from "lucide-react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { useBasket } from "@/contexts/BasketContext";
 import Navbar from "@/components/layout/Navbar";
@@ -8,6 +8,7 @@ import UploadStep, { type LocalImage } from "@/components/builder/UploadStep";
 import ApproveStep from "@/components/builder/ApproveStep";
 import CoverStep from "@/components/builder/CoverStep";
 import CheckoutStep from "@/components/builder/CheckoutStep";
+import ThankYouStep from "@/components/builder/ThankYouStep";
 import UniquePhotosUpsellBanner from "@/components/builder/UniquePhotosUpsellBanner";
 import {
   getOrCreateSessionId,
@@ -301,9 +302,6 @@ const Builder = () => {
   const handleCheckoutComplete = () => {
     setShowingCheckout(false);
     setPostCheckout(true);
-    // Reset all books back to the upload step
-    setBooks((prev) => prev.map((b) => ({ ...b, step: "upload" as const })));
-    setActiveBookIndex(0);
     // Update URL so refresh preserves the state
     const newParams = new URLSearchParams(window.location.search);
     newParams.set("paid", "true");
@@ -333,32 +331,13 @@ const Builder = () => {
       <main className="pt-24 pb-16">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
 
-          {/* ── Post-checkout thank you banner ── */}
+          {/* ── Post-checkout: Thank You + Create Account ── */}
           {postCheckout && (
-            <div className="max-w-2xl mx-auto mb-8 bg-green-50 border border-green-200 rounded-2xl p-5 flex items-start gap-4 relative">
-              <CheckCircle className="w-8 h-8 text-green-600 shrink-0 mt-0.5" />
-              <div>
-                <h2 className="text-lg font-semibold text-green-900">Thank You For Your Order!</h2>
-                <p className="text-sm text-green-700 mt-1">
-                  Your payment was successful. Now let's create your colouring book — start by uploading your favourite photos below.
-                </p>
-              </div>
-              <button
-                onClick={() => {
-                  setPostCheckout(false);
-                  const newParams = new URLSearchParams(window.location.search);
-                  newParams.delete("paid");
-                  window.history.replaceState(null, "", `${window.location.pathname}?${newParams.toString()}`);
-                }}
-                className="absolute top-3 right-3 text-green-400 hover:text-green-600 transition-colors"
-              >
-                <X className="w-5 h-5" />
-              </button>
-            </div>
+            <ThankYouStep sessionId={sessionId} />
           )}
 
           {/* ── Multi-book tabs ── */}
-          {bookCount > 1 && !showingCheckout && (() => {
+          {!postCheckout && bookCount > 1 && !showingCheckout && (() => {
             // Expand basket items (bundles) into per-book uniquePhotos flags
             const perBookUnique: boolean[] = [];
             items.forEach((basketItem) => {
@@ -449,7 +428,7 @@ const Builder = () => {
           })()}
 
           {/* ── Progress Steps ── */}
-          {!showingCheckout && (
+          {!postCheckout && !showingCheckout && (
             <div className="max-w-2xl mx-auto mb-12">
               <div className="flex items-center justify-between">
                 {BUILDER_STEPS.filter((s) => s.key !== "checkout").map((step, index) => (
@@ -504,6 +483,7 @@ const Builder = () => {
           )}
 
           {/* ── Step Content ── */}
+          {!postCheckout && (
           <div className="max-w-5xl mx-auto">
             {!showingCheckout && activeBook && (
               <>
@@ -579,6 +559,7 @@ const Builder = () => {
               />
             )}
           </div>
+          )}
         </div>
       </main>
 
