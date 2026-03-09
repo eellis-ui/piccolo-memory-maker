@@ -26,6 +26,7 @@ interface ApproveStepProps {
   onApprovalComplete: (photos: OrderPhoto[]) => void;
   onPhotosChange: (photos: OrderPhoto[]) => void;
   onBack: () => void;
+  paymentConfirmed?: boolean;
 }
 
 const ApproveStep = ({
@@ -35,6 +36,7 @@ const ApproveStep = ({
   onApprovalComplete,
   onPhotosChange,
   onBack,
+  paymentConfirmed = false,
 }: ApproveStepProps) => {
   const { item, uniquePhotos } = useBasket();
   const bookCount = item?.quantity ?? 1;
