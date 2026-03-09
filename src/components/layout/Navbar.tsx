@@ -1,4 +1,4 @@
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Menu, X, ShoppingCart, Minus, Plus, Trash2, Shield, ClipboardList, Sparkles, Tag, Check, Download, Loader2, Lock } from "lucide-react";
 import { createShopifyCheckout, SHOPIFY_VARIANTS, type CartLineInput } from "@/lib/shopify";
@@ -35,6 +35,7 @@ interface BasketContentProps {
   setDigitalCopies: (n: number) => void;
   isCheckingOut: boolean;
   onCheckout: () => void;
+  onNavigateToBuilder: () => void;
   grandTotal: number;
 }
 
@@ -54,6 +55,7 @@ const BasketContent = ({
   setDigitalCopies,
   isCheckingOut,
   onCheckout,
+  onNavigateToBuilder,
   grandTotal
 }: BasketContentProps) =>
 <div className="flex flex-col h-full">
@@ -241,7 +243,7 @@ const BasketContent = ({
           size="lg"
           onClick={() => {
             setIsCartOpen(false);
-            window.location.href = '/builder';
+            onNavigateToBuilder();
           }}
         >
           Go To Next Step
@@ -335,6 +337,7 @@ const CartButton = ({ isCartOpen, setIsCartOpen, hasItems, itemCount, basketCont
 
 
 const Navbar = () => {
+  const navigate = useNavigate();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const { items, totalBookCount, removeItem, updateItemQuantity, toggleItemUniquePhotos, digitalCopies, setDigitalCopies, digitalPrice, addOns, addOnsTotal: basketAddOnsTotal, addOnPrice, uniquePhotos, uniquePhotosPrice, activeSessionId, isCartOpen, setIsCartOpen } = useBasket();
   const { isAdmin } = useIsAdmin();
@@ -423,6 +426,7 @@ const Navbar = () => {
     setDigitalCopies,
     isCheckingOut,
     onCheckout: handleCheckout,
+    onNavigateToBuilder: () => navigate('/builder'),
     grandTotal,
   };
 

@@ -155,9 +155,7 @@ const Builder = () => {
         }
       }
 
-      // ── Create new session (only if no existing session was found) ──
-      // If we had a sessionId from URL or localStorage but got 0 orders,
-      // reuse that sid rather than creating a brand-new one (avoids ghost drafts).
+      // ── Create new session from basket items ──
       try {
         const newSessionId = crypto.randomUUID();
         setSessionId(newSessionId);
@@ -169,8 +167,29 @@ const Builder = () => {
         newParams.set("sessionId", newSessionId);
         window.history.replaceState(null, "", `${window.location.pathname}?${newParams.toString()}`);
 
-        // bookCount may be 1 if basket was reset on refresh — that's fine for a brand-new session
-        const orders = await createGuestOrders(newSessionId, Math.max(bookCount, 1));
+        // Expand basket items (bundles) into individual books
+        const perBookFlags: { uniquePhotos: boolean; personalizeCover: boolean }[] = [];
+        if (items.length > 0) {
+          items.forEach((basketItem) => {
+            for (let q = 0; q < basketItem.quantity; q++) {
+              perBookFlags.push({
+                uniquePhotos: basketItem.uniquePhotos,
+                personalizeCover: basketItem.personalizeCover,
+              });
+            }
+          });
+        }
+        const totalBooks = perBookFlags.length > 0 ? perBookFlags.length : 1;
+
+        const orders = await createGuestOrders(newSessionId, totalBooks);
+
+        // Set unique_photos on each order based on basket item flags
+        for (let i = 0; i < orders.length; i++) {
+          const flags = perBookFlags[i];
+          if (flags?.uniquePhotos) {
+            await updateGuestOrder(newSessionId, orders[i].id, { unique_photos: true });
+          }
+        }
 
         const newBooks: BookState[] = orders.map((o) => ({
           orderId: o.id,
