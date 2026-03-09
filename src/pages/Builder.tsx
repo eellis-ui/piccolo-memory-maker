@@ -571,6 +571,7 @@ const Builder = () => {
                   dedicationPageEnabled: b.bookAddOns.dedicationPageEnabled,
                 }))}
                 onCheckoutComplete={handleCheckoutComplete}
+                sessionId={sessionId || undefined}
                 onBack={() => {
                   setShowingCheckout(false);
                   setActiveBookIndex(bookCount - 1);
