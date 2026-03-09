@@ -308,7 +308,7 @@ const ApproveStep = ({
 
               <div className="p-4 flex items-center justify-between bg-background">
                 <div className="flex gap-2">
-                  {!hasConverted && !isConverting && (
+                  {!hasConverted && !isConverting && paymentConfirmed && (
                     <Button
                       variant="ghost"
                       size="sm"
@@ -318,6 +318,11 @@ const ApproveStep = ({
                       <RefreshCw className="w-4 h-4 mr-1" />
                       Convert
                     </Button>
+                  )}
+                  {!hasConverted && !isConverting && !paymentConfirmed && (
+                    <span className="text-xs text-muted-foreground py-1 flex items-center gap-1">
+                      <Lock className="w-3 h-3" /> Awaiting payment
+                    </span>
                   )}
                   {hasConverted && !photo.isApproved && (() => {
                     const retries = retryCounts[photo.id] ?? 0;

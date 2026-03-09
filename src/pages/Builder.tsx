@@ -535,6 +535,7 @@ const Builder = () => {
                     onApprovalComplete={handleApprovalComplete}
                     onPhotosChange={(photos) => updateBook(activeBookIndex, { photos })}
                     onBack={() => updateBook(activeBookIndex, { step: "upload" })}
+                    paymentConfirmed={postCheckout}
                   />
                 )}
 
