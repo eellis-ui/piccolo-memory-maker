@@ -559,6 +559,7 @@ const Builder = () => {
               />
             )}
           </div>
+          )}
         </div>
       </main>
 
