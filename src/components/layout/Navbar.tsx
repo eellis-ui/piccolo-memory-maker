@@ -426,6 +426,7 @@ const Navbar = () => {
     setDigitalCopies,
     isCheckingOut,
     onCheckout: handleCheckout,
+    onNavigateToBuilder: () => navigate('/builder'),
     grandTotal,
   };
 
