@@ -189,7 +189,7 @@ const ApproveStep = ({
           <Badge variant="secondary" className="text-sm py-1 px-3">
             {totalApproved} of {totalPages} pages approved
           </Badge>
-          {hasUnconverted && (
+          {hasUnconverted && paymentConfirmed && (
             <Button
               variant="outline"
               onClick={convertAll}
