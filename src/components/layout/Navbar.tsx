@@ -35,6 +35,7 @@ interface BasketContentProps {
   setDigitalCopies: (n: number) => void;
   isCheckingOut: boolean;
   onCheckout: () => void;
+  onNavigateToBuilder: () => void;
   grandTotal: number;
 }
 
