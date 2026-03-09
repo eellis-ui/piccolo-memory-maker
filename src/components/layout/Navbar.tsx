@@ -243,7 +243,7 @@ const BasketContent = ({
           size="lg"
           onClick={() => {
             setIsCartOpen(false);
-            window.location.href = '/builder';
+            onNavigateToBuilder();
           }}
         >
           Go To Next Step
