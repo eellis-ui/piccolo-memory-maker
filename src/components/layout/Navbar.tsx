@@ -55,6 +55,7 @@ const BasketContent = ({
   setDigitalCopies,
   isCheckingOut,
   onCheckout,
+  onNavigateToBuilder,
   grandTotal
 }: BasketContentProps) =>
 <div className="flex flex-col h-full">
