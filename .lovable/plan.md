@@ -1,62 +1,36 @@
 
 
-## Plan: Build-First, Pay-Last Flow with Stripe Checkout
+## Plan: Post-Checkout Thank You Banner on Builder Page
 
-### Current Flow (to change)
-Pricing → Add to Cart → Builder (Upload → Approve → Cover → **Shopify Checkout**) → Post-payment "Thank You" banner → Upload photos
+### Current Flow
+Checkout opens Shopify in a **new tab** (`window.open`). The original Builder tab remains open. After payment, the customer switches back to the Builder tab.
 
-### New Flow
-Pricing → Add to Cart → Builder (Upload → Approve → Cover → **Stripe Checkout**) → Payment confirmation page
+### Problem
+When customers return to the Builder tab after paying, there's no acknowledgment of their payment and no clear prompt to start uploading photos.
 
-The build process already happens before payment in the current step sequence. The main change is replacing Shopify checkout with Stripe checkout and removing the post-checkout loop-back logic.
+### Proposed Changes
 
-### Steps
+**1. `src/pages/Builder.tsx`** — Add a `postCheckout` state
+- Detect a `paid=true` URL parameter OR set it locally after checkout button is clicked
+- When `postCheckout` is true, show a thank-you banner at the top of the builder (above progress steps)
+- Reset the builder to the upload step so they're ready to add photos
+- The banner includes: a confirmation message ("Thank you for your order!"), a prompt ("Now upload your photos to create your coloring book"), and a friendly icon
 
-**1. Create Stripe Products & Prices**
-Create the matching products/prices in Stripe for:
-- Coloring Book 1-pack ($35), 2-pack ($59.50), 3-pack ($69.30)
-- Digital Download add-on ($6.99)
-- Unique Photos add-on ($4.99)
-- Personalize Cover add-on ($1.99)
+**2. `src/components/builder/CheckoutStep.tsx`** — After opening checkout URL
+- After `window.open(checkoutUrl, '_blank')`, call a new `onCheckoutComplete` callback prop
+- This lets the parent Builder component transition to the post-checkout upload state
 
-**2. Create a `create-stripe-checkout` Edge Function**
-A new backend function that:
-- Accepts line items (product quantities, add-ons, session ID)
-- Creates a Stripe Checkout Session with the correct line items
-- Passes the guest `sessionId` as metadata so the webhook can link it later
-- Returns the checkout URL
-- Sets success/cancel URLs back to the builder page
+**3. `src/pages/Builder.tsx`** — Handle checkout complete
+- Add `onCheckoutComplete` handler that sets `showingCheckout = false`, sets a `postCheckout = true` state, and updates the URL with `&paid=true`
+- The builder then shows the upload step with the thank-you banner on top
 
-**3. Update `CheckoutStep.tsx` — Replace Shopify with Stripe**
-- Remove Shopify cart creation (`createShopifyCheckout`)
-- Instead, call the new `create-stripe-checkout` edge function
-- Open the returned Stripe checkout URL in the same or new tab
-- Remove the "awaiting payment" UI and `visibilitychange` listener (Stripe redirects back via `success_url`)
+### Thank You Banner Design
+A full-width, visually distinct banner (green/success themed) at the top of the builder content area:
+- Check icon + "Thank You For Your Order!"  
+- Subtext: "Your payment was successful. Now let's create your coloring book — start by uploading your favorite photos below."
+- Dismissible with an X button
 
-**4. Create a `stripe-webhook` Edge Function**
-- Listens for `checkout.session.completed` events
-- Extracts the `sessionId` from metadata
-- Updates the orders in the database (marks as paid, stores Stripe payment ID)
-- Triggers line-art conversion (same as the current Shopify webhook does)
-
-**5. Update `Builder.tsx` — Simplify Post-Checkout**
-- Remove the `postCheckout` state and "Thank You" banner (no longer needed since payment is the final step)
-- Remove `handleCheckoutComplete` callback and `paid=true` URL param logic
-- The checkout step is now simply the last step; after payment, Stripe redirects to a success page
-
-**6. Add a Success/Thank You Page**
-- New route `/order-confirmed` 
-- Shows order confirmation with a thank-you message
-- Clears the basket and session
-
-**7. Remove Shopify Dependencies**
-- Remove `src/lib/shopify.ts` (Shopify storefront API)
-- Remove Shopify imports from `CheckoutStep.tsx` and `PricingSection.tsx`
-- Clean up any remaining Shopify references
-
-### What Stays the Same
-- The builder step flow (Upload → Approve → Cover) is unchanged
-- Guest session model and database schema remain the same
-- Basket context and pricing tiers stay as-is
-- All photo upload, approval, and cover design functionality is untouched
+### What Won't Change
+- The Shopify checkout still opens in a new tab (required by Shopify)
+- All existing builder steps and session persistence remain intact
 

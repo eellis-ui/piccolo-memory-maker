@@ -128,22 +128,14 @@ Deno.serve(async (req) => {
     // Get photo record (may already be fetched above, but fetch cleanly for conversion logic)
     const { data: photo, error: photoError } = await supabase
       .from("order_photos")
-      .select("*, orders!inner(payment_status)")
+      .select("*")
       .eq("id", photoId)
-      .single() as { data: any; error: any };
+      .single();
 
     if (photoError || !photo) {
       return new Response(JSON.stringify({ error: "Photo not found" }), {
         status: 404, headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
-    }
-
-    // ── Payment gate: block conversion unless payment confirmed ──
-    if (photo.orders?.payment_status !== "paid") {
-      return new Response(
-        JSON.stringify({ error: "Payment required. Please complete checkout before converting photos." }),
-        { status: 402, headers: { ...corsHeaders, "Content-Type": "application/json" } },
-      );
     }
 
     const isLandscape = photo?.is_landscape ?? false;

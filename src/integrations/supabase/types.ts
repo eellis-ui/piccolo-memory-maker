@@ -71,7 +71,6 @@ export type Database = {
           dedication_page_text: string | null
           extra_pages: number
           id: string
-          payment_status: string
           shipped_at: string | null
           status: string
           title_page_enabled: boolean
@@ -92,7 +91,6 @@ export type Database = {
           dedication_page_text?: string | null
           extra_pages?: number
           id?: string
-          payment_status?: string
           shipped_at?: string | null
           status?: string
           title_page_enabled?: boolean
@@ -113,7 +111,6 @@ export type Database = {
           dedication_page_text?: string | null
           extra_pages?: number
           id?: string
-          payment_status?: string
           shipped_at?: string | null
           status?: string
           title_page_enabled?: boolean

@@ -535,7 +535,6 @@ const Builder = () => {
                     onApprovalComplete={handleApprovalComplete}
                     onPhotosChange={(photos) => updateBook(activeBookIndex, { photos })}
                     onBack={() => updateBook(activeBookIndex, { step: "upload" })}
-                    paymentConfirmed={postCheckout}
                   />
                 )}
 
@@ -572,7 +571,6 @@ const Builder = () => {
                   dedicationPageEnabled: b.bookAddOns.dedicationPageEnabled,
                 }))}
                 onCheckoutComplete={handleCheckoutComplete}
-                sessionId={sessionId || undefined}
                 onBack={() => {
                   setShowingCheckout(false);
                   setActiveBookIndex(bookCount - 1);
