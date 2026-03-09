@@ -428,7 +428,7 @@ const Builder = () => {
           })()}
 
           {/* ── Progress Steps ── */}
-          {!showingCheckout && (
+          {!postCheckout && !showingCheckout && (
             <div className="max-w-2xl mx-auto mb-12">
               <div className="flex items-center justify-between">
                 {BUILDER_STEPS.filter((s) => s.key !== "checkout").map((step, index) => (
