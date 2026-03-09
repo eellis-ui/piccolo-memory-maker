@@ -1,62 +1,62 @@
 
 
-## Plan: Pay-First Flow with Stripe Checkout
+## Plan: Build-First, Pay-Last Flow with Stripe Checkout
 
-The current flow is: Select product → Upload photos → Approve → Cover → Checkout (Shopify). You want to flip this so customers **pay first via Stripe**, then get access to the builder.
+### Current Flow (to change)
+Pricing → Add to Cart → Builder (Upload → Approve → Cover → **Shopify Checkout**) → Post-payment "Thank You" banner → Upload photos
 
-### New Customer Flow
+### New Flow
+Pricing → Add to Cart → Builder (Upload → Approve → Cover → **Stripe Checkout**) → Payment confirmation page
 
-```text
-Pricing Page (select quantity/add-ons)
-        ↓
-   Stripe Checkout (new tab)
-        ↓
-   Stripe webhook confirms payment
-        ↓
-   User returns to builder tab
-        ↓
-   Upload → Approve → Cover → Done
-```
+The build process already happens before payment in the current step sequence. The main change is replacing Shopify checkout with Stripe checkout and removing the post-checkout loop-back logic.
 
-### Step 1: Enable Stripe Integration
-Use the Stripe integration tool to connect your Stripe account. This will prompt you for your Stripe secret key and unlock Stripe-specific tools for creating products/prices.
+### Steps
 
-### Step 2: Create Stripe Products & Prices
-Set up Stripe products matching your pricing tiers:
-- 1 book: £35.00
-- 2 books: £59.50
-- 3 books: £69.30
-- Add-ons: Unique Photos (£4.99), Digital Download (£6.99), Personalize Cover (£1.99)
+**1. Create Stripe Products & Prices**
+Create the matching products/prices in Stripe for:
+- Coloring Book 1-pack ($35), 2-pack ($59.50), 3-pack ($69.30)
+- Digital Download add-on ($6.99)
+- Unique Photos add-on ($4.99)
+- Personalize Cover add-on ($1.99)
 
-### Step 3: Create `stripe-checkout` Edge Function
-- Accepts: quantity, add-on selections, session ID
+**2. Create a `create-stripe-checkout` Edge Function**
+A new backend function that:
+- Accepts line items (product quantities, add-ons, session ID)
 - Creates a Stripe Checkout Session with the correct line items
-- Sets `success_url` back to `/builder?sessionId={id}&paid=true`
-- Returns the checkout URL to the frontend
+- Passes the guest `sessionId` as metadata so the webhook can link it later
+- Returns the checkout URL
+- Sets success/cancel URLs back to the builder page
 
-### Step 4: Create `stripe-webhook` Edge Function
-- Verifies Stripe signature using a webhook secret
-- On `checkout.session.completed`: updates the order's `payment_status` to `"paid"` and `status` to `"confirmed"`
-- Triggers any auto-processing if needed
+**3. Update `CheckoutStep.tsx` — Replace Shopify with Stripe**
+- Remove Shopify cart creation (`createShopifyCheckout`)
+- Instead, call the new `create-stripe-checkout` edge function
+- Open the returned Stripe checkout URL in the same or new tab
+- Remove the "awaiting payment" UI and `visibilitychange` listener (Stripe redirects back via `success_url`)
 
-### Step 5: Update Pricing Page / CTA
-- Replace the "Add to Cart → Shopify Checkout" flow with a direct "Buy Now" button that calls the `stripe-checkout` edge function and redirects to Stripe
-- Create the guest session and order records before redirecting so the builder has data ready when they return
+**4. Create a `stripe-webhook` Edge Function**
+- Listens for `checkout.session.completed` events
+- Extracts the `sessionId` from metadata
+- Updates the orders in the database (marks as paid, stores Stripe payment ID)
+- Triggers line-art conversion (same as the current Shopify webhook does)
 
-### Step 6: Update Builder Page
-- Remove the Checkout step from the builder steps (no more `checkout` tab)
-- Builder becomes: Upload → Approve → Cover → Done
-- The `paid=true` parameter and DB `payment_status` gate access to the builder
-- Keep the existing post-checkout banner and session resume logic
+**5. Update `Builder.tsx` — Simplify Post-Checkout**
+- Remove the `postCheckout` state and "Thank You" banner (no longer needed since payment is the final step)
+- Remove `handleCheckoutComplete` callback and `paid=true` URL param logic
+- The checkout step is now simply the last step; after payment, Stripe redirects to a success page
 
-### Step 7: Remove Shopify Checkout Code
-- Remove `createShopifyCheckout` usage from `CheckoutStep.tsx`
-- Remove Shopify checkout logic from `BasketContext` if no longer needed
-- Keep Shopify webhook if you still want Shopify order sync, otherwise remove
+**6. Add a Success/Thank You Page**
+- New route `/order-confirmed` 
+- Shows order confirmation with a thank-you message
+- Clears the basket and session
 
-### Technical Details
-- **Database**: Add `stripe_checkout_session_id` and `stripe_payment_intent_id` columns to `orders` table for tracking
-- **Security**: Stripe webhook verification using signing secret stored as a backend secret
-- **Session continuity**: Guest session ID is embedded in Stripe checkout metadata and `success_url`, so the user returns to the correct builder session
-- **No auth required**: Maintains the current guest checkout flow — no login needed
+**7. Remove Shopify Dependencies**
+- Remove `src/lib/shopify.ts` (Shopify storefront API)
+- Remove Shopify imports from `CheckoutStep.tsx` and `PricingSection.tsx`
+- Clean up any remaining Shopify references
+
+### What Stays the Same
+- The builder step flow (Upload → Approve → Cover) is unchanged
+- Guest session model and database schema remain the same
+- Basket context and pricing tiers stay as-is
+- All photo upload, approval, and cover design functionality is untouched
 
