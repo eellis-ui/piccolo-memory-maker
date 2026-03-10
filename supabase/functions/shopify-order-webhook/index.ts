@@ -233,6 +233,7 @@ Deno.serve(async (req) => {
 
     const payload = JSON.parse(body);
     const customerEmail = payload.email || payload.customer?.email;
+    const shopifyOrderNumber = payload.name || payload.order_number ? `#${payload.order_number}` : null;
     
     // Extract builder_session_id from cart note attributes
     const noteAttributes: { name: string; value: string }[] = payload.note_attributes || [];
