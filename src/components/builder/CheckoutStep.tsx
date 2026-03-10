@@ -218,7 +218,7 @@ const CheckoutStep = ({ pageCount, extraPages, convertedUrls, onBack, onCheckout
           merchandiseId: SHOPIFY_VARIANTS.PERSONALIZE_COVER,
           quantity: totalPersonalizeCount,
           attributes: [
-            { key: "Add-on for", value: "Personalised Coloring Book" },
+             { key: "Add-on for", value: "Personalized Coloring Book" },
             { key: "_position", value: "3" },
           ],
         });
