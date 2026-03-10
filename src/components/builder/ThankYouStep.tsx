@@ -55,9 +55,23 @@ const ThankYouStep = ({ sessionId, orderIds = [] }: ThankYouStepProps) => {
           Thank You For Your Order!
         </h1>
         <p className="text-muted-foreground text-lg">
-          Your payment was successful. We'll start preparing your personalised colouring book right away.
+          Your order has been submitted successfully. We'll start preparing your personalised colouring book right away.
         </p>
       </div>
+
+      {/* Order number(s) */}
+      {orderIds.length > 0 && (
+        <div className="bg-muted/50 border border-border rounded-2xl p-4 space-y-1">
+          <p className="text-sm text-muted-foreground font-medium">
+            {orderIds.length === 1 ? "Order Reference" : "Order References"}
+          </p>
+          {orderIds.map((id) => (
+            <p key={id} className="font-mono text-sm text-foreground font-semibold">
+              {id.slice(0, 8).toUpperCase()}
+            </p>
+          ))}
+        </div>
+      )}
 
       {/* Order confirmation details */}
       <div className="flex items-center justify-center gap-3 text-sm text-green-700 bg-green-50 border border-green-200 rounded-2xl p-4">
