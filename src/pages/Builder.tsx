@@ -450,7 +450,7 @@ const Builder = () => {
                       className={`flex-1 flex items-center justify-center gap-2 py-2.5 px-3 rounded-md text-sm transition-all ${
                         activeBookIndex === i
                           ? "bg-background shadow-md text-foreground font-bold"
-                          : "text-background/70 hover:text-background font-medium"
+                          : "text-background font-medium"
                       }`}
                     >
                       {book.completed ? (
