@@ -512,9 +512,10 @@ const Builder = () => {
           {/* ── Progress Steps ── */}
           {!postCheckout && !showingCheckout && (
             <div className="max-w-2xl mx-auto mb-12">
+              {/* Circles + connectors row */}
               <div className="flex items-center justify-between">
-                {BUILDER_STEPS.filter((s) => s.key !== "checkout").map((step, index) => (
-                  <div key={step.key} className="flex items-center">
+                {BUILDER_STEPS.filter((s) => s.key !== "checkout").map((step, index, arr) => (
+                  <React.Fragment key={step.key}>
                     <div className="flex flex-col items-center">
                       <div
                         className={`w-10 h-10 rounded-full flex items-center justify-center text-sm font-bold transition-all ${
@@ -541,14 +542,14 @@ const Builder = () => {
                         {step.label}
                       </span>
                     </div>
-                    {index < BUILDER_STEPS.filter((s) => s.key !== "checkout").length - 1 && (
+                    {index < arr.length - 1 && (
                       <div
-                        className={`w-16 sm:w-24 h-0.5 mx-2 mb-6 ${
+                        className={`flex-1 h-0.5 mx-2 mb-6 ${
                           index < currentStepIndex ? "bg-foreground" : "bg-muted"
                         }`}
                       />
                     )}
-                  </div>
+                  </React.Fragment>
                 ))}
               </div>
 
