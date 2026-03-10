@@ -346,11 +346,13 @@ const BecomeAffiliate = () => {
           <p className="text-foreground text-base mb-10 max-w-md mx-auto leading-relaxed">
             It only takes a minute to sign up. No fees, no obligations - just share and earn.
           </p>
-          <Link to="/affiliates">
-            <Button size="lg" className="rounded-lg text-base px-10 py-6 bg-primary text-primary-foreground hover:bg-primary/90">
-              Become an Affiliate
-            </Button>
-          </Link>
+          <Button
+            size="lg"
+            className="rounded-lg text-base px-10 py-6 bg-primary text-primary-foreground hover:bg-primary/90"
+            onClick={() => document.getElementById('signup-form')?.scrollIntoView({ behavior: 'smooth' })}
+          >
+            Become an Affiliate
+          </Button>
         </div>
       </section>
 
