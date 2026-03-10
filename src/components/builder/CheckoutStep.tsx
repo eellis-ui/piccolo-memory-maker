@@ -19,6 +19,12 @@ interface BookAddOnsInfo {
   dedicationPageEnabled: boolean;
 }
 
+interface BookPreviewData {
+  bookIndex: number;
+  coverGridUrls: (string | null)[];
+  pageUrls: (string | null)[];
+}
+
 interface CheckoutStepProps {
   pageCount: number;
   extraPages: number;
@@ -28,6 +34,7 @@ interface CheckoutStepProps {
   bookDigitalDownloads: BookDigitalDownload[];
   onToggleBookDigitalDownload: (bookIndex: number) => void;
   bookAddOnsList: BookAddOnsInfo[];
+  bookPreviews?: BookPreviewData[];
 }
 
 const CheckoutStep = ({ pageCount, extraPages, convertedUrls, onBack, onCheckoutComplete, bookDigitalDownloads, onToggleBookDigitalDownload, bookAddOnsList }: CheckoutStepProps) => {
