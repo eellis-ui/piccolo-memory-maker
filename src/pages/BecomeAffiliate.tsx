@@ -4,29 +4,29 @@ import Navbar from "@/components/layout/Navbar";
 import Footer from "@/components/layout/Footer";
 
 const benefits = [
-  {
-    number: "10%",
-    title: "Discount for Customers",
-    description: "Get your own unique discount code to share with your audience. Your followers save 10% on every order.",
-  },
-  {
-    number: "10%",
-    title: "Commission for You",
-    description: "Earn 10% commission on every sale made using your code. No caps, no limits.",
-  },
-  {
-    number: "∞",
-    title: "Unlimited Earning",
-    description: "Share your code on Instagram, TikTok, or anywhere you like. We track every sale automatically.",
-  },
-];
+{
+  number: "10%",
+  title: "Discount for Customers",
+  description: "Get your own unique discount code to share with your audience. Your followers save 10% on every order."
+},
+{
+  number: "10%",
+  title: "Commission for You",
+  description: "Earn 10% commission on every sale made using your code. No caps, no limits."
+},
+{
+  number: "∞",
+  title: "Unlimited Earning",
+  description: "Share your code on Instagram, TikTok, or anywhere you like. We track every sale automatically."
+}];
+
 
 const steps = [
-  { number: "01", text: "Create your affiliate account" },
-  { number: "02", text: "Choose your unique discount code" },
-  { number: "03", text: "Share it with your audience" },
-  { number: "04", text: "Earn commission on every sale" },
-];
+{ number: "01", text: "Create your affiliate account" },
+{ number: "02", text: "Choose your unique discount code" },
+{ number: "03", text: "Share it with your audience" },
+{ number: "04", text: "Earn commission on every sale" }];
+
 
 const BecomeAffiliate = () => {
   return (
@@ -36,9 +36,9 @@ const BecomeAffiliate = () => {
       {/* Hero */}
       <section className="pt-32 pb-24 bg-cream">
         <div className="container mx-auto px-4 text-center max-w-3xl">
-          <p className="text-sm tracking-[0.3em] uppercase text-muted-foreground mb-4 font-medium">
-            Affiliate Programme
-          </p>
+          
+
+          
           <h1 className="font-display text-5xl md:text-7xl font-bold text-foreground mb-6 uppercase">
             Share the Love.<br />Earn the Rewards.
           </h1>
@@ -63,11 +63,11 @@ const BecomeAffiliate = () => {
             Everyone Wins
           </h2>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            {benefits.map((benefit) => (
-              <div
-                key={benefit.title}
-                className="text-center p-10 rounded-lg border border-border bg-background"
-              >
+            {benefits.map((benefit) =>
+            <div
+              key={benefit.title}
+              className="text-center p-10 rounded-lg border border-border bg-background">
+              
                 <span className="font-display text-5xl font-bold text-foreground block mb-4">
                   {benefit.number}
                 </span>
@@ -78,7 +78,7 @@ const BecomeAffiliate = () => {
                   {benefit.description}
                 </p>
               </div>
-            ))}
+            )}
           </div>
         </div>
       </section>
@@ -93,18 +93,18 @@ const BecomeAffiliate = () => {
             How It Works
           </h2>
           <div className="space-y-4">
-            {steps.map((step, i) => (
-              <div
-                key={step.number}
-                className="flex items-center gap-6 bg-background rounded-lg p-5 border border-border"
-              >
+            {steps.map((step, i) =>
+            <div
+              key={step.number}
+              className="flex items-center gap-6 bg-background rounded-lg p-5 border border-border">
+              
                 <span className="font-display text-2xl font-bold text-foreground w-10 shrink-0">
                   {step.number}
                 </span>
                 <div className="h-px flex-1 bg-border hidden sm:block" />
                 <p className="text-base text-foreground font-medium flex-1">{step.text}</p>
               </div>
-            ))}
+            )}
           </div>
         </div>
       </section>
@@ -127,8 +127,8 @@ const BecomeAffiliate = () => {
       </section>
 
       <Footer />
-    </div>
-  );
+    </div>);
+
 };
 
 export default BecomeAffiliate;
