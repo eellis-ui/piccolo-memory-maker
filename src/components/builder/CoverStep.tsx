@@ -43,9 +43,10 @@ interface CoverStepProps {
   }) => void;
   onBack: () => void;
   sharedBookCount?: number;
+  hasMoreBooks?: boolean;
 }
 
-const CoverStep = ({ availableImages, bookAddOns, onBookAddOnsChange, onCoverComplete, onBack, sharedBookCount }: CoverStepProps) => {
+const CoverStep = ({ availableImages, bookAddOns, onBookAddOnsChange, onCoverComplete, onBack, sharedBookCount, hasMoreBooks }: CoverStepProps) => {
   const { addOnPrice } = useBasket();
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
 
