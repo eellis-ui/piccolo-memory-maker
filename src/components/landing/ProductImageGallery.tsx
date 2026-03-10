@@ -7,9 +7,9 @@ export interface ProductImage {
 }
 
 const FALLBACK_IMAGES: ProductImage[] = [
-  { url: "/lovable-uploads/67e8bc18-d4da-4d1e-bb5c-8235ea57eb6d.png", altText: "Personalised coloring book" },
-  { url: "/lovable-uploads/bc0afa55-54e9-40fc-b263-333f5ed085bc.png", altText: "Personalised coloring book" },
-  { url: "/lovable-uploads/d741aeb9-21af-45e1-9863-e350da643d42.png", altText: "Personalised coloring book" },
+   { url: "/lovable-uploads/67e8bc18-d4da-4d1e-bb5c-8235ea57eb6d.png", altText: "Personalized coloring book" },
+   { url: "/lovable-uploads/bc0afa55-54e9-40fc-b263-333f5ed085bc.png", altText: "Personalized coloring book" },
+   { url: "/lovable-uploads/d741aeb9-21af-45e1-9863-e350da643d42.png", altText: "Personalized coloring book" },
 ];
 
 interface Props {
