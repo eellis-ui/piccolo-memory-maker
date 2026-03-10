@@ -114,9 +114,9 @@ const CoverStep = ({ availableImages, bookAddOns, onBookAddOnsChange, onCoverCom
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
         {/* Cover Preview */}
         <div className="order-2 lg:order-1">
-          <div className="bg-[#fffaf3] rounded-3xl p-4 shadow-soft">
+          <div className="bg-[#fffaf3] rounded-lg p-4 shadow-soft">
             <div
-              className="relative bg-[#fffaf3] rounded-2xl shadow-soft-lg overflow-hidden flex flex-col"
+              className="relative bg-[#fffaf3] overflow-hidden flex flex-col"
               style={{ aspectRatio: "3 / 4" }}
             >
               {/* ── Top space: logo centered ── */}
