@@ -73,6 +73,7 @@ const Builder = () => {
   const [showingCheckout, setShowingCheckout] = useState(false);
   const [showingRecap, setShowingRecap] = useState(false);
   const [postCheckout, setPostCheckout] = useState(searchParams.get("paid") === "true");
+  const [shopifyOrderNumber, setShopifyOrderNumber] = useState<string | null>(searchParams.get("shopifyOrder") || null);
   const [sessionId, setSessionId] = useState<string | null>(null);
   const [initialized, setInitialized] = useState(false);
 
