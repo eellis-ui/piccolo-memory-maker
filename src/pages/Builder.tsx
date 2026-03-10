@@ -71,6 +71,7 @@ const Builder = () => {
   const [books, setBooks] = useState<BookState[]>([]);
   const [activeBookIndex, setActiveBookIndex] = useState(0);
   const [showingCheckout, setShowingCheckout] = useState(false);
+  const [showingRecap, setShowingRecap] = useState(false);
   const [postCheckout, setPostCheckout] = useState(searchParams.get("paid") === "true");
   const [sessionId, setSessionId] = useState<string | null>(null);
   const [initialized, setInitialized] = useState(false);
