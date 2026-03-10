@@ -9,9 +9,10 @@ import { toast } from "sonner";
 interface ThankYouStepProps {
   sessionId: string | null;
   orderIds?: string[];
+  shopifyOrderNumber?: string | null;
 }
 
-const ThankYouStep = ({ sessionId, orderIds = [] }: ThankYouStepProps) => {
+const ThankYouStep = ({ sessionId, orderIds = [], shopifyOrderNumber }: ThankYouStepProps) => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [isCreating, setIsCreating] = useState(false);
@@ -59,8 +60,18 @@ const ThankYouStep = ({ sessionId, orderIds = [] }: ThankYouStepProps) => {
         </p>
       </div>
 
-      {/* Order number(s) */}
-      {orderIds.length > 0 && (
+      {/* Shopify Order Number */}
+      {shopifyOrderNumber && (
+        <div className="bg-muted/50 border border-border rounded-2xl p-5 space-y-1">
+          <p className="text-sm text-muted-foreground font-medium">Order Number</p>
+          <p className="font-display text-2xl font-bold text-foreground">
+            {shopifyOrderNumber}
+          </p>
+        </div>
+      )}
+
+      {/* Internal reference IDs (fallback if no Shopify number) */}
+      {!shopifyOrderNumber && orderIds.length > 0 && (
         <div className="bg-muted/50 border border-border rounded-2xl p-4 space-y-1">
           <p className="text-sm text-muted-foreground font-medium">
             {orderIds.length === 1 ? "Order Reference" : "Order References"}

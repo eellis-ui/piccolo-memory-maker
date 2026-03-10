@@ -1,6 +1,6 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { jsPDF } from "https://esm.sh/jspdf@2.5.1";
-import { encode as base64Encode } from "https://deno.land/std@0.220.0/encoding/base64.ts";
+
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -233,6 +233,7 @@ Deno.serve(async (req) => {
 
     const payload = JSON.parse(body);
     const customerEmail = payload.email || payload.customer?.email;
+    const shopifyOrderNumber = payload.name || payload.order_number ? `#${payload.order_number}` : null;
     
     // Extract builder_session_id from cart note attributes
     const noteAttributes: { name: string; value: string }[] = payload.note_attributes || [];
@@ -277,6 +278,7 @@ Deno.serve(async (req) => {
         payment_status: "paid",
         status: "paid",
         customer_email: customerEmail || null,
+        shopify_order_number: shopifyOrderNumber || null,
       };
 
       if (hasDigitalDownload) {

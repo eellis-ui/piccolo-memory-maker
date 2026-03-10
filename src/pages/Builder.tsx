@@ -73,6 +73,7 @@ const Builder = () => {
   const [showingCheckout, setShowingCheckout] = useState(false);
   const [showingRecap, setShowingRecap] = useState(false);
   const [postCheckout, setPostCheckout] = useState(searchParams.get("paid") === "true");
+  const [shopifyOrderNumber, setShopifyOrderNumber] = useState<string | null>(searchParams.get("shopifyOrder") || null);
   const [sessionId, setSessionId] = useState<string | null>(null);
   const [initialized, setInitialized] = useState(false);
 
@@ -383,12 +384,14 @@ const Builder = () => {
     }
   };
 
-  const handleCheckoutComplete = () => {
+  const handleCheckoutComplete = (shopifyNum?: string | null) => {
     setShowingCheckout(false);
     setPostCheckout(true);
+    if (shopifyNum) setShopifyOrderNumber(shopifyNum);
     // Update URL so refresh preserves the state
     const newParams = new URLSearchParams(window.location.search);
     newParams.set("paid", "true");
+    if (shopifyNum) newParams.set("shopifyOrder", shopifyNum);
     window.history.replaceState(null, "", `${window.location.pathname}?${newParams.toString()}`);
   };
 
@@ -417,7 +420,11 @@ const Builder = () => {
 
           {/* ── Post-checkout: Thank You + Create Account ── */}
           {postCheckout && (
-            <ThankYouStep sessionId={sessionId} orderIds={books.map(b => b.orderId).filter(Boolean) as string[]} />
+            <ThankYouStep
+              sessionId={sessionId}
+              orderIds={books.map(b => b.orderId).filter(Boolean) as string[]}
+              shopifyOrderNumber={shopifyOrderNumber}
+            />
           )}
 
           {/* ── Multi-book tabs ── */}

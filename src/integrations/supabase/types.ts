@@ -76,6 +76,7 @@ export type Database = {
           id: string
           payment_status: string
           shipped_at: string | null
+          shopify_order_number: string | null
           status: string
           title_page_enabled: boolean
           title_page_text: string
@@ -100,6 +101,7 @@ export type Database = {
           id?: string
           payment_status?: string
           shipped_at?: string | null
+          shopify_order_number?: string | null
           status?: string
           title_page_enabled?: boolean
           title_page_text?: string
@@ -124,6 +126,7 @@ export type Database = {
           id?: string
           payment_status?: string
           shipped_at?: string | null
+          shopify_order_number?: string | null
           status?: string
           title_page_enabled?: boolean
           title_page_text?: string
