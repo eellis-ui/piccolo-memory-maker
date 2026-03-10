@@ -51,8 +51,6 @@ const BecomeAffiliate = () => {
   // Signup form
   const [fullName, setFullName] = useState("");
   const [discountCode, setDiscountCode] = useState("");
-  const [instagramHandle, setInstagramHandle] = useState("");
-  const [tiktokHandle, setTiktokHandle] = useState("");
   const [submitting, setSubmitting] = useState(false);
 
   useEffect(() => {
