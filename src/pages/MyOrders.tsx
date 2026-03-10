@@ -211,9 +211,13 @@ const MyOrders = () => {
           <p className="text-muted-foreground mb-6">Track the progress of your coloring books</p>
 
           <Tabs value={activeTab} onValueChange={setActiveTab} className="mb-6">
-            <TabsList className="w-full grid grid-cols-4 rounded-2xl">
+            <TabsList className="w-full grid grid-cols-4 rounded-lg bg-foreground p-1">
               {STATUS_TABS.map((tab) => (
-                <TabsTrigger key={tab.value} value={tab.value} className="rounded-xl text-xs sm:text-sm">
+                <TabsTrigger
+                  key={tab.value}
+                  value={tab.value}
+                  className="rounded-md text-xs sm:text-sm font-semibold text-background data-[state=active]:bg-background data-[state=active]:text-foreground data-[state=inactive]:text-background/70"
+                >
                   {tab.label}
                 </TabsTrigger>
               ))}
