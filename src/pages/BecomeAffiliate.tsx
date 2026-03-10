@@ -83,7 +83,7 @@ const BecomeAffiliate = () => {
           </div>
         </div>
 
-        <ReviewsBanner />
+        <AffiliateBanner />
       </section>
 
       {/* How It Works */}
