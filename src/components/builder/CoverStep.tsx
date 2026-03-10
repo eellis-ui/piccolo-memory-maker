@@ -43,9 +43,10 @@ interface CoverStepProps {
   }) => void;
   onBack: () => void;
   sharedBookCount?: number;
+  hasMoreBooks?: boolean;
 }
 
-const CoverStep = ({ availableImages, bookAddOns, onBookAddOnsChange, onCoverComplete, onBack, sharedBookCount }: CoverStepProps) => {
+const CoverStep = ({ availableImages, bookAddOns, onBookAddOnsChange, onCoverComplete, onBack, sharedBookCount, hasMoreBooks }: CoverStepProps) => {
   const { addOnPrice } = useBasket();
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
 
@@ -315,7 +316,7 @@ const CoverStep = ({ availableImages, bookAddOns, onBookAddOnsChange, onCoverCom
           className="rounded-2xl px-8"
         >
           {canContinue
-            ? "Continue to Checkout"
+            ? (hasMoreBooks ? "Continue to Next Book" : "Continue to Checkout")
             : `Select ${2 - selectedIds.length} more photo${2 - selectedIds.length === 1 ? "" : "s"}`}
         </Button>
       </div>
