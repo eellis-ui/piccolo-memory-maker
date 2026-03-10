@@ -26,7 +26,7 @@ const StorySection = () => {
             </p>
             
             <p className="text-muted-foreground text-lg leading-relaxed mb-6">
-              Our story began during a challenging chapter. While recovering from a chronic illness and spending long days in hospital, coloring became more than just a pastime - it was a comforting escape, a way to focus the mind and find calm in the middle of uncertainty. From that experience, the idea for Piccolo'd was born: to help others find joy, relaxation, and connection through personalised colouring books.
+              Our story began during a challenging chapter. While recovering from a chronic illness and spending long days in hospital, coloring became more than just a pastime - it was a comforting escape, a way to focus the mind and find calm in the middle of uncertainty. From that experience, the idea for Piccolo'd was born: to help others find joy, relaxation, and connection through personalized coloring books.
             </p>
             
             <p className="text-muted-foreground text-lg leading-relaxed">
