@@ -16,16 +16,16 @@ const UniquePhotosUpsellBanner = () => {
 
   if (allEnabled) {
     return (
-      <Card className="rounded-3xl border-primary/30 bg-primary/5">
+      <Card className="rounded-lg border border-border bg-background">
         <CardContent className="p-4 flex items-center justify-between gap-4">
           <div className="flex items-center gap-3">
-            <div className="w-9 h-9 rounded-xl bg-primary/15 flex items-center justify-center shrink-0">
-              <Images className="w-4 h-4 text-primary" />
+            <div className="w-9 h-9 rounded-lg bg-foreground flex items-center justify-center shrink-0">
+              <Images className="w-4 h-4 text-background" />
             </div>
             <div>
               <p className="font-display text-sm font-semibold text-foreground flex items-center gap-2">
                 20 Unique Photos Per Book
-                <Badge variant="secondary" className="text-xs">Added</Badge>
+                <Badge className="text-xs bg-primary text-primary-foreground border-0">Added</Badge>
               </p>
               <p className="text-xs text-foreground">
                 Each book will use different photos
@@ -35,7 +35,7 @@ const UniquePhotosUpsellBanner = () => {
           <Button
             size="sm"
             variant="ghost"
-            className="rounded-xl text-muted-foreground hover:text-destructive shrink-0 text-xs"
+            className="rounded-lg text-muted-foreground hover:text-destructive shrink-0 text-xs"
             onClick={() => setUniquePhotos(false)}
           >
             Remove
@@ -48,11 +48,11 @@ const UniquePhotosUpsellBanner = () => {
   const count = qualifyingItems.filter((i) => !i.uniquePhotos).length;
 
   return (
-    <Card className="rounded-3xl border-dashed border-2 border-primary/30 bg-primary/5 overflow-hidden">
+    <Card className="rounded-lg border border-border bg-background overflow-hidden">
       <CardContent className="p-6">
         <div className="flex items-start gap-4 mb-4">
-          <div className="w-10 h-10 rounded-xl bg-secondary/40 flex items-center justify-center shrink-0">
-            <Sparkles className="w-5 h-5 text-secondary-foreground" />
+          <div className="w-10 h-10 rounded-lg bg-foreground flex items-center justify-center shrink-0">
+            <Sparkles className="w-5 h-5 text-background" />
           </div>
           <div className="flex-1">
             <h3 className="font-display text-base font-semibold text-foreground">
@@ -68,17 +68,17 @@ const UniquePhotosUpsellBanner = () => {
 
         <button
           onClick={() => setUniquePhotos(true)}
-          className="w-full flex items-center justify-between p-4 rounded-xl border border-border bg-background hover:border-primary/50 hover:bg-primary/5 transition-all text-left"
+          className="w-full flex items-center justify-between p-4 rounded-lg bg-foreground hover:bg-foreground/90 transition-all text-left"
         >
           <div>
-            <span className="font-semibold text-foreground text-sm">
+            <span className="font-semibold text-background text-sm">
               20 Different Photos Per Book
             </span>
-            <span className="text-xs text-foreground ml-2">
+            <span className="text-xs text-primary ml-2 font-bold">
               +${UNIQUE_PHOTOS_PRICE.toFixed(2)} per bundle
             </span>
           </div>
-          <span className="font-bold text-foreground shrink-0 ml-4">
+          <span className="font-bold text-background shrink-0 ml-4">
             Add to all
           </span>
         </button>
