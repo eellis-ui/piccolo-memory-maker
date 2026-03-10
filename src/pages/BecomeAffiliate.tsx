@@ -67,15 +67,15 @@ const BecomeAffiliate = () => {
             {benefits.map((benefit) =>
             <div
               key={benefit.title}
-              className="text-center p-10 rounded-lg border border-border bg-card">
+              className="text-left p-8 rounded-lg border border-border bg-cream">
               
-                <span className="font-display text-5xl font-bold text-foreground block mb-4">
+                <span className="font-display text-5xl font-bold text-foreground block mb-2">
                   {benefit.number}
                 </span>
-                <h3 className="font-display text-lg font-semibold text-foreground mb-3 uppercase tracking-wide">
+                <h3 className="font-sans text-base font-extrabold text-foreground mb-3 uppercase">
                   {benefit.title}
                 </h3>
-                <p className="text-muted-foreground text-sm leading-relaxed">
+                <p className="text-foreground text-sm leading-relaxed">
                   {benefit.description}
                 </p>
               </div>
