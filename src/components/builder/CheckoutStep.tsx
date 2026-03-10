@@ -259,7 +259,7 @@ const CheckoutStep = ({ pageCount, extraPages, convertedUrls, onBack, onCheckout
                       />
                       <div>
                         <span className="font-semibold text-foreground text-sm">
-                          Book {bd.bookIndex + 1}
+                          {bookDigitalDownloads.length > 1 ? `Book ${bd.bookIndex + 1}` : "Digital PDF"}
                         </span>
                         <span className="text-xs text-muted-foreground ml-2">
                           Instantly downloadable copy
