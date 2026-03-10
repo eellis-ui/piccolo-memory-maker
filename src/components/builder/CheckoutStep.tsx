@@ -95,7 +95,8 @@ const CheckoutStep = ({ pageCount, extraPages, convertedUrls, onBack, onCheckout
       }
 
       // 3. Personalize cover (book-related upsell)
-      const personalizeCount = bookAddOnsList.filter(b => b.titlePageEnabled).length;
+      const rawPersonalizeCount = bookAddOnsList.filter(b => b.titlePageEnabled).length;
+      const personalizeCount = rawPersonalizeCount > 0 && !uniquePhotos ? 1 : rawPersonalizeCount;
       const basketPersonalizeCount = personalizeCoverFromBasket ? (uniquePhotos ? bookCount : 1) : 0;
       const totalPersonalizeCount = Math.max(personalizeCount, basketPersonalizeCount);
       if (totalPersonalizeCount > 0) {
