@@ -614,7 +614,7 @@ const Builder = () => {
                     onBookAddOnsChange={(a) => updateBook(activeBookIndex, { bookAddOns: a })}
                     onCoverComplete={handleCoverComplete}
                     onBack={() => updateBook(activeBookIndex, { step: "approve" })}
-                    sharedBookCount={!uniquePhotos && bookCount > 1 ? bookCount : undefined}
+                    sharedBookCount={!uniquePhotos && (bookCount > 1 || books.length > 1) ? Math.max(bookCount, books.length) : undefined}
                     hasMoreBooks={uniquePhotos && books.some((b, i) => i !== activeBookIndex && !b.completed)}
                   />
                 )}
