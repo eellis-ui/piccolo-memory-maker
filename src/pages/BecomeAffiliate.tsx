@@ -47,7 +47,7 @@ const BecomeAffiliate = () => {
             Love Piccoload? Join our affiliate programme and earn money doing what you already do — sharing amazing things with your audience.
           </p>
           <Link to="/affiliates">
-            <Button size="lg" className="rounded-lg text-base px-10 py-6 bg-foreground text-background hover:bg-foreground/90">
+            <Button size="lg" className="rounded-lg text-base px-10 py-6 bg-primary text-primary-foreground hover:bg-primary/90">
               Sign Up Now
             </Button>
           </Link>
