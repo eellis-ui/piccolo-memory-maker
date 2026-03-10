@@ -336,7 +336,7 @@ const CheckoutStep = ({ pageCount, extraPages, convertedUrls, onBack, onCheckout
                 {bookDigitalDownloads.map((bd) => (
                   <div
                     key={bd.bookIndex}
-                    className="flex items-center justify-between p-3 rounded-xl border border-border bg-background"
+                    className={`flex items-center justify-between p-3 rounded-xl border transition-all ${bd.enabled ? "border-primary bg-primary/5" : "border-border bg-background"}`}
                   >
                     <div className="flex items-center gap-3">
                       <Switch
