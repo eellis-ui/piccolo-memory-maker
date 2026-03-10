@@ -45,7 +45,7 @@ const UniquePhotosUpsellBanner = () => {
     );
   }
 
-  const count = qualifyingItems.filter((i) => !i.uniquePhotos).length;
+  const bookCount = qualifyingItems.filter((i) => !i.uniquePhotos).reduce((sum, i) => sum + i.quantity, 0);
 
   return (
     <Card className="rounded-lg border border-border bg-background overflow-hidden">
@@ -60,7 +60,7 @@ const UniquePhotosUpsellBanner = () => {
             </h3>
              <p className="text-sm text-foreground mt-1">
                {anyEnabled
-                 ? `${count} book${count > 1 ? 's' : ''} still share the same photos. Add unique photos to each.`
+                 ? `${bookCount} book${bookCount > 1 ? 's' : ''} still share the same photos. Add unique photos to each.`
                  : `Upload 20 different photos for each book in your multi-book bundles.`}
              </p>
           </div>
