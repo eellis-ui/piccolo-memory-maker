@@ -167,7 +167,7 @@ const ApproveStep = ({
             Approve Your Pages
           </h2>
           <p className="text-muted-foreground">
-            Approve the order of your photos. You can choose the cover photos on the next page.
+            Reorder your pages. Cover page is created on next page.
           </p>
         </div>
 
