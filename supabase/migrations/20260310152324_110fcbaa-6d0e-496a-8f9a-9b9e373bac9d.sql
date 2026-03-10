@@ -1,0 +1,1 @@
+ALTER TABLE public.orders ADD COLUMN IF NOT EXISTS review_request_sent boolean NOT NULL DEFAULT false;
