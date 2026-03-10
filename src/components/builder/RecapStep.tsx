@@ -22,7 +22,7 @@ interface RecapStepProps {
   hasAnyDigitalDownload?: boolean;
 }
 
-const RecapStep = ({ books, onContinueToCheckout, onEditBook }: RecapStepProps) => {
+const RecapStep = ({ books, onContinueToCheckout, onEditBook, hasAnyDigitalDownload }: RecapStepProps) => {
   return (
     <div className="space-y-8">
       <div className="text-center">
