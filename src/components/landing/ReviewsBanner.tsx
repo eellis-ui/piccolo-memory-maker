@@ -4,7 +4,7 @@ const items = [
   { type: "quote" as const, text: "Love it SOO much", name: "Ellie, UK" },
   { type: "promo" as const, text: "Buy Three, Save 49%!" },
   { type: "quote" as const, text: "Mums Birthday is complete!", name: "Georgie, USA" },
-  { type: "quote" as const, text: "Really enjoyed colouring my London Marathon run!", name: "Ewan, UK" },
+  { type: "quote" as const, text: "Really enjoyed coloring my London Marathon run!", name: "Ewan, UK" },
   { type: "promo" as const, text: "Buy Three, Save 49%!" },
   { type: "quote" as const, text: "Exactly what I didn't know I needed", name: "Matilda, UK" },
 ];

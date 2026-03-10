@@ -131,7 +131,7 @@ const Builder = () => {
                 bookAddOns: {
                   dedicationPageEnabled: order.dedication_page_enabled,
                   dedicationPageText: order.dedication_page_text || "",
-                  bottomTitle: order.title_page_text === "My Piccolo'd Colouring Book" ? "color your memories" : order.title_page_text,
+                  bottomTitle: order.title_page_text === "My Piccolo'd Colouring Book" || order.title_page_text === "My Piccolo'd Coloring Book" ? "color your memories" : order.title_page_text,
                 },
                 digitalDownload: false,
                 coverData: isCompleted ? { imageIds: [order.cover_image_id, order.cover_image_id], title: order.title_page_text, subtitle: "" } : null,
@@ -198,7 +198,7 @@ const Builder = () => {
                   bookAddOns: {
                     dedicationPageEnabled: order.dedication_page_enabled,
                     dedicationPageText: order.dedication_page_text || "",
-                    bottomTitle: order.title_page_text === "My Piccolo'd Colouring Book" ? "color your memories" : order.title_page_text,
+                    bottomTitle: order.title_page_text === "My Piccolo'd Colouring Book" || order.title_page_text === "My Piccolo'd Coloring Book" ? "color your memories" : order.title_page_text,
                   },
                   digitalDownload: false,
                   coverData: isCompleted ? { imageIds: [order.cover_image_id, order.cover_image_id], title: order.title_page_text, subtitle: "" } : null,

@@ -22,15 +22,15 @@ const StorySection = () => {
         <div className="max-w-3xl mx-auto relative z-10">
           <div className="prose prose-lg mx-auto text-center">
             <p className="text-muted-foreground text-lg leading-relaxed mb-6">
-              At Piccolo'd, we believe that the most meaningful gifts come from the heart - and nothing is more personal than your own cherished memories, turned into something you can hold, colour, and treasure forever.
+              At Piccolo'd, we believe that the most meaningful gifts come from the heart - and nothing is more personal than your own cherished memories, turned into something you can hold, color, and treasure forever.
             </p>
             
             <p className="text-muted-foreground text-lg leading-relaxed mb-6">
-              Our story began during a challenging chapter. While recovering from a chronic illness and spending long days in hospital, coloring became more than just a pastime - it was a comforting escape, a way to focus the mind and find calm in the middle of uncertainty. From that experience, the idea for Piccolo'd was born: to help others find joy, relaxation, and connection through personalised colouring books.
+              Our story began during a challenging chapter. While recovering from a chronic illness and spending long days in hospital, coloring became more than just a pastime - it was a comforting escape, a way to focus the mind and find calm in the middle of uncertainty. From that experience, the idea for Piccolo'd was born: to help others find joy, relaxation, and connection through personalized coloring books.
             </p>
             
             <p className="text-muted-foreground text-lg leading-relaxed">
-              Today, we transform your favourite photos - from silly selfies to treasured family moments - into beautiful line art, bound together in a bespoke coloring book. Whether it's a sentimental gift for someone special, a therapeutic activity to ease anxiety, or a creative keepsake for children, every page tells a story that's uniquely yours.
+              Today, we transform your favorite photos - from silly selfies to treasured family moments - into beautiful line art, bound together in a bespoke coloring book. Whether it's a sentimental gift for someone special, a therapeutic activity to ease anxiety, or a creative keepsake for children, every page tells a story that's uniquely yours.
             </p>
           </div>
 

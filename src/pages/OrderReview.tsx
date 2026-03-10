@@ -124,14 +124,14 @@ const OrderReview = () => {
                     <div className="flex gap-4">
                       <img
                         src="/lovable-uploads/d741aeb9-21af-45e1-9863-e350da643d42.png"
-                        alt="Personalised Coloring Book"
+                        alt="Personalized Coloring Book"
                         className="w-20 h-20 rounded-xl object-cover flex-shrink-0"
                       />
                       <div className="flex-1 min-w-0 space-y-1">
                         <div className="flex items-start justify-between gap-2">
                           <span className="font-semibold text-foreground text-sm leading-tight">
                             {lineItem.quantity === 1
-                              ? "Personalised Coloring Book"
+                              ? "Personalized Coloring Book"
                               : `${lineItem.quantity}× Coloring Book Bundle`}
                           </span>
                           <button
@@ -179,7 +179,7 @@ const OrderReview = () => {
                     {/* What's included */}
                     <div className="space-y-1.5 pt-1">
                       {[
-                        "20-page personalised coloring book",
+                        "20-page personalized coloring book",
                         "High-quality line art conversions",
                         "Custom front cover design",
                         "Premium paper quality",
@@ -269,7 +269,7 @@ const OrderReview = () => {
 
                 {personalizeCoverTotal > 0 && (
                   <div className="flex justify-between text-sm">
-                    <span className="text-muted-foreground">Personalised Cover</span>
+                    <span className="text-muted-foreground">Personalized Cover</span>
                     <span className="font-medium">${personalizeCoverTotal.toFixed(2)}</span>
                   </div>
                 )}

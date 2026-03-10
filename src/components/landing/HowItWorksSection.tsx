@@ -4,7 +4,7 @@ const steps = [
   {
     icon: Upload,
     title: "Upload Photos",
-    description: "Choose up to 20 of your favourite photos per book!",
+    description: "Choose up to 20 of your favorite photos per book!",
   },
   {
     icon: Sparkles,

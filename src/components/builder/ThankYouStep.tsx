@@ -57,7 +57,7 @@ const ThankYouStep = ({ sessionId, orderIds = [], shopifyOrderNumber, hasDigital
           Thank You For Your Order!
         </h1>
         <p className="text-muted-foreground text-lg">
-          Your order has been submitted successfully. We'll start preparing your personalised colouring book right away.
+          Your order has been submitted successfully. We'll start preparing your personalized coloring book right away.
         </p>
       </div>
 

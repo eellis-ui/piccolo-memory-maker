@@ -85,7 +85,7 @@ const PricingSection = () => {
   const { addToCart, setIsCartOpen } = useBasket();
   const navigate = useNavigate();
   const [productImages, setProductImages] = useState<ProductImage[]>([
-    { url: "/images/product-hero.png", altText: "Personalised Coloring Book" },
+    { url: "/images/product-hero.png", altText: "Personalized Coloring Book" },
     { url: "/images/product-gallery-2.png", altText: "Coloring book pages with pens" },
     { url: "/images/product-gallery-3.png", altText: "Coloring book front cover" },
     { url: "/images/product-gallery-4.png", altText: "Photo to coloring page conversion" },
@@ -99,7 +99,7 @@ const PricingSection = () => {
     const fetchImages = async () => {
       try {
         const data = await storefrontApiRequest(PRODUCT_IMAGES_QUERY, {
-          handle: "personalised-coloring-book",
+          handle: "personalized-coloring-book",
         });
         const edges = data?.data?.product?.images?.edges;
         if (edges && edges.length > 0) {
@@ -154,7 +154,7 @@ const PricingSection = () => {
 
               {/* Title */}
               <h1 className="font-display text-2xl sm:text-3xl md:text-4xl font-bold text-foreground mb-5 uppercase tracking-wide">
-                Personalised Coloring Book
+                Personalized Coloring Book
               </h1>
 
               {/* Feature bullets */}

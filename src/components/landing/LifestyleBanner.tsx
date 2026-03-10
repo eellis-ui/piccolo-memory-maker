@@ -26,7 +26,7 @@ const LifestyleBanner = () => {
               Up to <span className="text-[#A8C686] drop-shadow-[0_0_12px_rgba(168,198,134,0.6)]">40% Off</span> All Books
             </p>
             <p className="text-sm sm:text-base text-background/70 max-w-md mx-auto">
-              Turn your favourite spring memories into a personalised colouring book — at our best price of the year.
+              Turn your favorite spring memories into a personalized coloring book — at our best price of the year.
             </p>
             <Button
               asChild
