@@ -317,6 +317,36 @@ Deno.serve(async (req) => {
       }
     }
 
+    // Track affiliate discount codes
+    if (discountCodes.length > 0) {
+      for (const dc of discountCodes) {
+        const code = dc.code?.toUpperCase();
+        if (!code) continue;
+
+        const { data: aff } = await admin
+          .from("affiliates")
+          .select("id")
+          .ilike("discount_code", code)
+          .maybeSingle();
+
+        if (aff) {
+          const commission = orderTotal * 0.1;
+
+          // Insert affiliate order record
+          await admin.from("affiliate_orders").insert({
+            affiliate_id: aff.id,
+            order_id: orders[0]?.id || null,
+            shopify_order_number: shopifyOrderNumber,
+            order_total: orderTotal,
+            commission: commission,
+          });
+
+          // Update affiliate totals
+          await admin.rpc("update_affiliate_totals" as any, { _affiliate_id: aff.id });
+        }
+      }
+    }
+
     return new Response(JSON.stringify({ ok: true, orders_updated: orders.length }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
