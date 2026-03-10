@@ -369,7 +369,7 @@ const Builder = () => {
           return { ...b, coverData: data, completed: true, step: "cover" as const };
         })
       );
-      setShowingCheckout(true);
+      setShowingRecap(true);
       return;
     }
 
