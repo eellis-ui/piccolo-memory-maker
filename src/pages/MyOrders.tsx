@@ -21,6 +21,8 @@ interface OrderRow {
   shipped_at: string | null;
   extra_pages: number;
   builder_session_id: string | null;
+  digital_download: boolean;
+  digital_pdf_path: string | null;
 }
 
 const STEPS = [
@@ -54,7 +56,7 @@ const MyOrders = () => {
   const fetchOrders = async () => {
     const { data } = await supabase
       .from("orders")
-      .select("id, status, title_page_text, created_at, tracking_number, shipped_at, extra_pages, builder_session_id")
+      .select("id, status, title_page_text, created_at, tracking_number, shipped_at, extra_pages, builder_session_id, digital_download, digital_pdf_path")
       .order("created_at", { ascending: false });
     if (data) setOrders(data as OrderRow[]);
   };
@@ -341,7 +343,25 @@ const MyOrders = () => {
                           </Button>
                         )}
 
-                        {!isDraft && (
+                        {!isDraft && order.digital_download && order.digital_pdf_path ? (
+                          <Button
+                            variant="outline"
+                            className="rounded-2xl ml-auto"
+                            onClick={async () => {
+                              const { data } = await supabase.storage
+                                .from("order-files")
+                                .createSignedUrl(order.digital_pdf_path!, 60 * 60); // 1 hour signed URL
+                              if (data?.signedUrl) {
+                                window.open(data.signedUrl, "_blank");
+                              } else {
+                                toast.error("Could not generate download link");
+                              }
+                            }}
+                          >
+                            <Download className="w-4 h-4 mr-1" />
+                            Download PDF
+                          </Button>
+                        ) : !isDraft && (
                           <div className="ml-auto p-3 rounded-xl border border-dashed border-primary/30 bg-primary/5 flex items-center gap-3">
                             <Download className="w-4 h-4 text-primary shrink-0" />
                             <div className="min-w-0">

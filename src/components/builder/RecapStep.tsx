@@ -1,5 +1,5 @@
 import { Button } from "@/components/ui/button";
-import { Check, BookOpen } from "lucide-react";
+import { Check, BookOpen, Download, UserPlus } from "lucide-react";
 import type { OrderPhoto, BookAddOnsLocal } from "@/pages/Builder";
 import logoImg from "@/assets/piccoload-logo.png";
 
@@ -12,15 +12,17 @@ interface RecapBook {
     title: string;
     subtitle: string;
   } | null;
+  digitalDownload?: boolean;
 }
 
 interface RecapStepProps {
   books: RecapBook[];
   onContinueToCheckout: () => void;
   onEditBook: (bookIndex: number) => void;
+  hasAnyDigitalDownload?: boolean;
 }
 
-const RecapStep = ({ books, onContinueToCheckout, onEditBook }: RecapStepProps) => {
+const RecapStep = ({ books, onContinueToCheckout, onEditBook, hasAnyDigitalDownload }: RecapStepProps) => {
   return (
     <div className="space-y-8">
       <div className="text-center">
@@ -148,6 +150,31 @@ const RecapStep = ({ books, onContinueToCheckout, onEditBook }: RecapStepProps) 
           );
         })}
       </div>
+
+      {/* Digital Download Note */}
+      {hasAnyDigitalDownload && (
+        <div className="max-w-3xl mx-auto rounded-2xl border-2 border-primary/20 bg-primary/5 p-5 space-y-3">
+          <div className="flex items-start gap-3">
+            <div className="w-9 h-9 rounded-xl bg-primary/10 flex items-center justify-center shrink-0">
+              <Download className="w-4.5 h-4.5 text-primary" />
+            </div>
+            <div>
+              <h3 className="font-display text-sm font-semibold text-foreground">
+                Digital PDF Download Included
+              </h3>
+              <p className="text-sm text-muted-foreground mt-1">
+                After payment, we'll email you a secure download link valid for <strong>7 days</strong>.
+              </p>
+            </div>
+          </div>
+          <div className="flex items-start gap-3 pl-12">
+            <UserPlus className="w-4 h-4 text-primary shrink-0 mt-0.5" />
+            <p className="text-sm text-muted-foreground">
+              <strong className="text-foreground">Tip:</strong> Create a free account after checkout to access your digital downloads <strong>anytime</strong> from your My Orders page — no expiry!
+            </p>
+          </div>
+        </div>
+      )}
 
       <div className="flex justify-center pt-4">
         <Button onClick={onContinueToCheckout} className="rounded-2xl px-10 text-base">

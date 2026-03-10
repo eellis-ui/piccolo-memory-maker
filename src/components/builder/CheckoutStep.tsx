@@ -37,6 +37,7 @@ interface CheckoutStepProps {
   onToggleBookDigitalDownload: (bookIndex: number) => void;
   bookAddOnsList: BookAddOnsInfo[];
   bookPreviews?: BookPreviewData[];
+  sessionId?: string | null;
 }
 
 const MiniFlipbook = ({ bookPreview, bookCount }: { bookPreview: BookPreviewData; bookCount: number }) => {
@@ -113,7 +114,7 @@ const MiniFlipbook = ({ bookPreview, bookCount }: { bookPreview: BookPreviewData
   );
 };
 
-const CheckoutStep = ({ pageCount, extraPages, convertedUrls, onBack, onCheckoutComplete, bookDigitalDownloads, onToggleBookDigitalDownload, bookAddOnsList, bookPreviews = [] }: CheckoutStepProps) => {
+const CheckoutStep = ({ pageCount, extraPages, convertedUrls, onBack, onCheckoutComplete, bookDigitalDownloads, onToggleBookDigitalDownload, bookAddOnsList, bookPreviews = [], sessionId }: CheckoutStepProps) => {
   const { item, setQuantity, pricingTiers, addOnPrice, uniquePhotos, uniquePhotosPrice } = useBasket();
   const personalizeCoverFromBasket = item?.personalizeCover ?? false;
   const [isCheckingOut, setIsCheckingOut] = useState(false);
@@ -206,7 +207,7 @@ const CheckoutStep = ({ pageCount, extraPages, convertedUrls, onBack, onCheckout
         });
       }
 
-      const checkoutUrl = await createShopifyCheckout(lines);
+      const checkoutUrl = await createShopifyCheckout(lines, sessionId || undefined);
       if (checkoutUrl) {
         window.open(checkoutUrl, '_blank');
         setAwaitingPayment(true);
@@ -478,7 +479,7 @@ const CheckoutStep = ({ pageCount, extraPages, convertedUrls, onBack, onCheckout
               </div>
 
               <p className="text-xs text-center text-muted-foreground">
-                Watermarks will be removed after payment. Full-resolution PDF generated within 24 hours.
+                Watermarks will be removed after payment. Full-resolution PDF generated and emailed after purchase.
               </p>
             </CardContent>
           </Card>

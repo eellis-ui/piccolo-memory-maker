@@ -77,10 +77,13 @@ export interface CartLineInput {
   attributes?: CartLineAttribute[];
 }
 
-export async function createShopifyCheckout(lines: CartLineInput[]): Promise<string | null> {
-  const data = await storefrontApiRequest(CART_CREATE_MUTATION, {
-    input: { lines },
-  });
+export async function createShopifyCheckout(lines: CartLineInput[], note?: string): Promise<string | null> {
+  const input: Record<string, unknown> = { lines };
+  if (note) {
+    input.note = note;
+    input.attributes = [{ key: "builder_session_id", value: note }];
+  }
+  const data = await storefrontApiRequest(CART_CREATE_MUTATION, { input });
 
   if (!data) return null;
 

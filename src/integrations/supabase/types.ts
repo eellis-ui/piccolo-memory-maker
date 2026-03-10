@@ -67,8 +67,11 @@ export type Database = {
           cover_position_y: number
           cover_zoom: number
           created_at: string
+          customer_email: string | null
           dedication_page_enabled: boolean
           dedication_page_text: string | null
+          digital_download: boolean
+          digital_pdf_path: string | null
           extra_pages: number
           id: string
           payment_status: string
@@ -88,8 +91,11 @@ export type Database = {
           cover_position_y?: number
           cover_zoom?: number
           created_at?: string
+          customer_email?: string | null
           dedication_page_enabled?: boolean
           dedication_page_text?: string | null
+          digital_download?: boolean
+          digital_pdf_path?: string | null
           extra_pages?: number
           id?: string
           payment_status?: string
@@ -109,8 +115,11 @@ export type Database = {
           cover_position_y?: number
           cover_zoom?: number
           created_at?: string
+          customer_email?: string | null
           dedication_page_enabled?: boolean
           dedication_page_text?: string | null
+          digital_download?: boolean
+          digital_pdf_path?: string | null
           extra_pages?: number
           id?: string
           payment_status?: string
