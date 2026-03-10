@@ -673,7 +673,9 @@ const Builder = () => {
                   photos: b.photos,
                   bookAddOns: b.bookAddOns,
                   coverData: b.coverData,
+                  digitalDownload: b.digitalDownload,
                 }))}
+                hasAnyDigitalDownload={books.some(b => b.digitalDownload)}
                 onContinueToCheckout={() => {
                   setShowingRecap(false);
                   setShowingCheckout(true);
