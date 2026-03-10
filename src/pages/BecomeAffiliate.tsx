@@ -113,37 +113,33 @@ const BecomeAffiliate = () => {
       </section>
 
       {/* CTA */}
-      <section className="py-24">
-        <div className="container mx-auto px-4 max-w-5xl">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 items-center">
-            <div className="hidden md:block rounded-lg overflow-hidden">
-              <img
-                src="/images/hero-grid-3.png"
-                alt="Coloring book gift"
-                className="w-full h-64 object-cover rounded-lg"
-              />
-            </div>
-            <div className="text-center">
-              <h2 className="font-display text-3xl md:text-5xl font-bold text-foreground mb-6 uppercase">
-                Ready to Start?
-              </h2>
-              <p className="text-foreground text-base mb-10 max-w-md mx-auto leading-relaxed">
-                It only takes a minute to sign up. No fees, no obligations — just share and earn.
-              </p>
-              <Link to="/affiliates">
-                <Button size="lg" className="rounded-lg text-base px-10 py-6 bg-primary text-primary-foreground hover:bg-primary/90">
-                  Become an Affiliate
-                </Button>
-              </Link>
-            </div>
-            <div className="hidden md:block rounded-lg overflow-hidden">
-              <img
-                src="/images/hero-grid-7.png"
-                alt="Happy customer coloring"
-                className="w-full h-64 object-cover rounded-lg"
-              />
-            </div>
-          </div>
+      <section className="py-24 relative overflow-hidden">
+        <div className="hidden md:block absolute left-0 top-1/2 -translate-y-1/2 -translate-x-1/4 w-48 h-48">
+          <img
+            src="/images/hero-grid-3.png"
+            alt="Coloring book gift"
+            className="w-full h-full object-cover rounded-full rotate-[-6deg]"
+          />
+        </div>
+        <div className="hidden md:block absolute right-0 top-1/2 -translate-y-1/2 translate-x-1/4 w-44 h-56">
+          <img
+            src="/images/hero-grid-7.png"
+            alt="Happy customer coloring"
+            className="w-full h-full object-cover rounded-[2rem] rotate-[6deg]"
+          />
+        </div>
+        <div className="container mx-auto px-4 text-center max-w-2xl relative z-10">
+          <h2 className="font-display text-3xl md:text-5xl font-bold text-foreground mb-6 uppercase">
+            Ready to Start?
+          </h2>
+          <p className="text-foreground text-base mb-10 max-w-md mx-auto leading-relaxed">
+            It only takes a minute to sign up. No fees, no obligations — just share and earn.
+          </p>
+          <Link to="/affiliates">
+            <Button size="lg" className="rounded-lg text-base px-10 py-6 bg-primary text-primary-foreground hover:bg-primary/90">
+              Become an Affiliate
+            </Button>
+          </Link>
         </div>
       </section>
 
