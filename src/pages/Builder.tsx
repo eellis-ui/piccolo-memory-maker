@@ -422,7 +422,7 @@ const Builder = () => {
           )}
 
           {/* ── Multi-book tabs ── */}
-          {!postCheckout && bookCount > 1 && !showingCheckout && (() => {
+          {!postCheckout && bookCount > 1 && !showingCheckout && !showingRecap && (() => {
             // Expand basket items (bundles) into per-book uniquePhotos flags
             const perBookUnique: boolean[] = [];
             items.forEach((basketItem) => {
