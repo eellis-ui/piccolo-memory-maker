@@ -85,7 +85,7 @@ const PricingSection = () => {
   const { addToCart, setIsCartOpen } = useBasket();
   const navigate = useNavigate();
   const [productImages, setProductImages] = useState<ProductImage[]>([
-    { url: "/images/product-hero.png", altText: "Personalised Coloring Book" },
+    { url: "/images/product-hero.png", altText: "Personalized Coloring Book" },
     { url: "/images/product-gallery-2.png", altText: "Coloring book pages with pens" },
     { url: "/images/product-gallery-3.png", altText: "Coloring book front cover" },
     { url: "/images/product-gallery-4.png", altText: "Photo to coloring page conversion" },
