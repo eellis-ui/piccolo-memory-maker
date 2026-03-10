@@ -681,10 +681,20 @@ const Builder = () => {
                 pageCount={books[0].photos.length}
                 extraPages={0}
                 convertedUrls={books[0].photos.map((p) => p.convertedUrl)}
-                bookDigitalDownloads={books.map((b, i) => ({ bookIndex: i, enabled: b.digitalDownload }))}
-                onToggleBookDigitalDownload={(bookIndex) =>
-                  updateBook(bookIndex, { digitalDownload: !books[bookIndex].digitalDownload })
+                bookDigitalDownloads={
+                  uniquePhotos
+                    ? books.map((b, i) => ({ bookIndex: i, enabled: b.digitalDownload }))
+                    : [{ bookIndex: 0, enabled: books[0].digitalDownload }]
                 }
+                onToggleBookDigitalDownload={(bookIndex) => {
+                  if (uniquePhotos) {
+                    updateBook(bookIndex, { digitalDownload: !books[bookIndex].digitalDownload });
+                  } else {
+                    // Toggle all books together for shared-photo bundles
+                    const newVal = !books[0].digitalDownload;
+                    books.forEach((_, i) => updateBook(i, { digitalDownload: newVal }));
+                  }
+                }}
                 bookAddOnsList={books.map((b, i) => ({
                   bookIndex: i,
                   titlePageEnabled: b.bookAddOns.bottomTitle !== "color your memories",
