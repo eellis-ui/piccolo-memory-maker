@@ -38,6 +38,80 @@ interface CheckoutStepProps {
   bookPreviews?: BookPreviewData[];
 }
 
+const MiniFlipbook = ({ bookPreview, bookCount }: { bookPreview: BookPreviewData; bookCount: number }) => {
+  const [currentPage, setCurrentPage] = useState(0);
+  const totalPages = 1 + bookPreview.pageUrls.length;
+
+  const goBack = () => setCurrentPage((p) => Math.max(0, p - 1));
+  const goForward = () => setCurrentPage((p) => Math.min(totalPages - 1, p + 1));
+
+  return (
+    <div className="flex flex-col items-center gap-2">
+      {bookCount > 1 && (
+        <span className="text-xs font-semibold text-foreground">Book {bookPreview.bookIndex + 1}</span>
+      )}
+      <div className="relative w-full aspect-[3/4] bg-[#fffaf3] rounded-lg overflow-hidden border border-border">
+        {currentPage === 0 ? (
+          <div className="w-full h-full flex flex-col">
+            <div className="flex-1 flex items-center justify-center min-h-0">
+              <img src={logoImg} alt="Piccoload" style={{ width: "50%" }} />
+            </div>
+            <div className="shrink-0 grid grid-cols-2" style={{ margin: "0 8.75%", gap: 0 }}>
+              {bookPreview.coverGridUrls.map((url, idx) => (
+                <div key={idx} className="aspect-square overflow-hidden bg-[#ede8e0]">
+                  {url ? (
+                    <img src={url} alt={`Cover ${idx + 1}`} className="w-full h-full object-cover object-center" />
+                  ) : (
+                    <div className="w-full h-full bg-muted" />
+                  )}
+                </div>
+              ))}
+            </div>
+            <div className="flex-1 min-h-0" />
+          </div>
+        ) : (
+          <div className="w-full h-full flex items-center justify-center bg-white relative">
+            {bookPreview.pageUrls[currentPage - 1] ? (
+              <img
+                src={bookPreview.pageUrls[currentPage - 1]!}
+                alt={`Page ${currentPage}`}
+                className="w-full h-full object-contain"
+              />
+            ) : (
+              <span className="text-xs text-muted-foreground">Page {currentPage}</span>
+            )}
+            <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+              <span className="text-lg font-display text-foreground/20 rotate-[-30deg] font-bold tracking-widest select-none">
+                PREVIEW
+              </span>
+            </div>
+          </div>
+        )}
+
+        {currentPage > 0 && (
+          <button
+            onClick={goBack}
+            className="absolute left-1 top-1/2 -translate-y-1/2 w-6 h-6 rounded-full bg-foreground/70 text-background flex items-center justify-center hover:bg-foreground transition-colors"
+          >
+            <ChevronLeft className="w-3.5 h-3.5" />
+          </button>
+        )}
+        {currentPage < totalPages - 1 && (
+          <button
+            onClick={goForward}
+            className="absolute right-1 top-1/2 -translate-y-1/2 w-6 h-6 rounded-full bg-foreground/70 text-background flex items-center justify-center hover:bg-foreground transition-colors"
+          >
+            <ChevronRight className="w-3.5 h-3.5" />
+          </button>
+        )}
+      </div>
+      <span className="text-xs text-muted-foreground">
+        {currentPage === 0 ? "Cover" : `Page ${currentPage}`} / {totalPages - 1} pages
+      </span>
+    </div>
+  );
+};
+
 const CheckoutStep = ({ pageCount, extraPages, convertedUrls, onBack, onCheckoutComplete, bookDigitalDownloads, onToggleBookDigitalDownload, bookAddOnsList, bookPreviews = [] }: CheckoutStepProps) => {
   const { item, setQuantity, pricingTiers, addOnPrice, uniquePhotos, uniquePhotosPrice } = useBasket();
   const personalizeCoverFromBasket = item?.personalizeCover ?? false;
