@@ -253,10 +253,10 @@ const UploadStep = ({ orderId, sessionId, onImagesUploaded, maxImages = 20, init
         onDrop={handleDrop}
         onDragOver={handleDragOver}
         onDragLeave={handleDragLeave}
-        className={`relative border-2 border-dashed rounded-3xl p-12 text-center transition-all ${
+        className={`relative border-2 border-dashed rounded-lg p-12 text-center transition-all ${
           isDragging
-            ? "border-primary bg-primary/5"
-            : "border-border hover:border-primary/50"
+            ? "border-foreground bg-muted"
+            : "border-foreground hover:bg-muted"
         }`}
       >
         <input
