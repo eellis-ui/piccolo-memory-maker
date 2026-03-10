@@ -12,7 +12,7 @@ const reviews = [
   {
     name: "Matilda",
     title: "Exactly what I didn't know I needed.",
-    text: "My boyfriend bought this for me during a really rough patch. It was so comforting in a way I wasn't expecting. It's like having a little visual journal of joy, and spending time colouring each page was grounding. It was a treat well received 🥹",
+    text: "My boyfriend bought this for me during a really rough patch. It was so comforting in a way I wasn't expecting. It's like having a little visual journal of joy, and spending time coloring each page was grounding. It was a treat well received 🥹",
     stars: 5,
     avatar: "/images/review-matilda.png",
   },
