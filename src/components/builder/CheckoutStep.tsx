@@ -276,7 +276,7 @@ const CheckoutStep = ({ pageCount, extraPages, convertedUrls, onBack, onCheckout
           </Card>
 
           {/* Preview */}
-          <Card className="rounded-3xl">
+          <Card className="rounded-lg border-2 border-foreground">
             <CardHeader>
               <CardTitle className="font-display text-lg">Book Preview</CardTitle>
             </CardHeader>
