@@ -55,8 +55,8 @@ const BecomeAffiliate = () => {
       </section>
 
       {/* Benefits */}
-      <section className="py-24">
-        <div className="container mx-auto px-4 max-w-5xl">
+      <section className="pt-24 pb-0">
+        <div className="container mx-auto px-4 max-w-5xl pb-24">
           <p className="text-sm tracking-[0.3em] uppercase text-muted-foreground text-center mb-3 font-medium">
             Why Join?
           </p>
@@ -83,9 +83,7 @@ const BecomeAffiliate = () => {
           </div>
         </div>
 
-        <div className="mt-16">
-          <ReviewsBanner />
-        </div>
+        <ReviewsBanner />
       </section>
 
       {/* How It Works */}
