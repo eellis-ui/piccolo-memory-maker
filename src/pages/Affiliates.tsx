@@ -32,7 +32,7 @@ interface AffiliateOrder {
 }
 
 const Affiliates = () => {
-  const navigate = useNavigate();
+  
   const [user, setUser] = useState<any>(null);
   const [affiliate, setAffiliate] = useState<Affiliate | null>(null);
   const [orders, setOrders] = useState<AffiliateOrder[]>([]);
