@@ -308,7 +308,7 @@ const CheckoutStep = ({ pageCount, extraPages, convertedUrls, onBack, onCheckout
 
         {/* Price Summary */}
         <div>
-          <Card className="rounded-3xl sticky top-24">
+          <Card className="rounded-lg border-2 border-foreground sticky top-24">
             <CardHeader>
               <CardTitle className="font-display text-lg">Order Summary</CardTitle>
             </CardHeader>
