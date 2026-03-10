@@ -1,32 +1,36 @@
 
 
-## Problem
+## Plan: Post-Checkout Thank You Banner on Builder Page
 
-The reviews section shows an infinite loading spinner because **all RLS policies on the `reviews` table are RESTRICTIVE**. In PostgreSQL, restrictive policies require ALL to pass. An anonymous visitor fails the "Admins can view all reviews" check, which blocks their access entirely — even though "Anyone can read approved reviews" should grant it.
+### Current Flow
+Checkout opens Shopify in a **new tab** (`window.open`). The original Builder tab remains open. After payment, the customer switches back to the Builder tab.
 
-The previous migration attempted to fix this but created the policies as restrictive again.
+### Problem
+When customers return to the Builder tab after paying, there's no acknowledgment of their payment and no clear prompt to start uploading photos.
 
-## Plan
+### Proposed Changes
 
-### 1. Fix RLS policies on the `reviews` table (database migration)
+**1. `src/pages/Builder.tsx`** — Add a `postCheckout` state
+- Detect a `paid=true` URL parameter OR set it locally after checkout button is clicked
+- When `postCheckout` is true, show a thank-you banner at the top of the builder (above progress steps)
+- Reset the builder to the upload step so they're ready to add photos
+- The banner includes: a confirmation message ("Thank you for your order!"), a prompt ("Now upload your photos to create your coloring book"), and a friendly icon
 
-Drop all existing policies and recreate them as **PERMISSIVE** (the PostgreSQL default):
+**2. `src/components/builder/CheckoutStep.tsx`** — After opening checkout URL
+- After `window.open(checkoutUrl, '_blank')`, call a new `onCheckoutComplete` callback prop
+- This lets the parent Builder component transition to the post-checkout upload state
 
-- **SELECT** (public): `is_approved = true` — anyone can read approved reviews
-- **SELECT** (authenticated): `has_role(auth.uid(), 'admin')` — admins see all
-- **INSERT** (public): `WITH CHECK (true)` — anyone can submit
-- **UPDATE** (authenticated): admins only
-- **DELETE** (authenticated): admins only
+**3. `src/pages/Builder.tsx`** — Handle checkout complete
+- Add `onCheckoutComplete` handler that sets `showingCheckout = false`, sets a `postCheckout = true` state, and updates the URL with `&paid=true`
+- The builder then shows the upload step with the thank-you banner on top
 
-### 2. No code changes needed
+### Thank You Banner Design
+A full-width, visually distinct banner (green/success themed) at the top of the builder content area:
+- Check icon + "Thank You For Your Order!"  
+- Subtext: "Your payment was successful. Now let's create your coloring book — start by uploading your favorite photos below."
+- Dismissible with an X button
 
-The `CustomerReviewsSection` component already has the full Judge.me-style functionality:
-- Aggregate rating summary with star distribution bars
-- Interactive star rating form
-- Name, email, and review text submission
-- Baseline of ~3,947 legacy reviews for social proof
-- Individual review cards with verified badges
-- "Show All" pagination
-
-The component is already rendered in `PricingSection`. Once the RLS fix is applied, it will load and display correctly.
+### What Won't Change
+- The Shopify checkout still opens in a new tab (required by Shopify)
+- All existing builder steps and session persistence remain intact
 
