@@ -442,7 +442,7 @@ const Builder = () => {
 
             return (
               <div className="max-w-2xl mx-auto mb-8">
-                <div className="flex gap-2 p-1 bg-foreground rounded-2xl">
+                <div className="flex gap-2 p-1 bg-foreground rounded-lg">
                   {books.map((book, i) => (
                     <button
                       key={i}
