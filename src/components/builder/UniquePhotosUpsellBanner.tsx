@@ -79,7 +79,7 @@ const UniquePhotosUpsellBanner = () => {
             </span>
           </div>
           <span className="font-bold text-foreground shrink-0 ml-4">
-            Add to all
+            Upgrade to all
           </span>
         </button>
       </CardContent>
