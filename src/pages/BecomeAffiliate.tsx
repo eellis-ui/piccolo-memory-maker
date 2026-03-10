@@ -89,7 +89,7 @@ const BecomeAffiliate = () => {
       </section>
 
       {/* How It Works */}
-      <section className="py-24 bg-cream">
+      <section className="pt-24 pb-24 bg-cream">
         <div className="container mx-auto px-4 max-w-2xl">
           <p className="text-sm tracking-[0.3em] uppercase text-muted-foreground text-center mb-3 font-medium">
             Getting Started
