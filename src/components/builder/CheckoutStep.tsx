@@ -37,6 +37,7 @@ interface CheckoutStepProps {
   onToggleBookDigitalDownload: (bookIndex: number) => void;
   bookAddOnsList: BookAddOnsInfo[];
   bookPreviews?: BookPreviewData[];
+  sessionId?: string | null;
 }
 
 const MiniFlipbook = ({ bookPreview, bookCount }: { bookPreview: BookPreviewData; bookCount: number }) => {
