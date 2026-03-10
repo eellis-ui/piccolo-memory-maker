@@ -8,6 +8,7 @@ import { toast } from "sonner";
 
 interface ThankYouStepProps {
   sessionId: string | null;
+  orderIds?: string[];
 }
 
 const ThankYouStep = ({ sessionId }: ThankYouStepProps) => {
