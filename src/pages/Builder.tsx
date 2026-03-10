@@ -681,6 +681,23 @@ const Builder = () => {
                 pageCount={books[0].photos.length}
                 extraPages={0}
                 convertedUrls={books[0].photos.map((p) => p.convertedUrl)}
+                bookPreviews={
+                  (uniquePhotos ? books : [books[0]]).map((b, i) => {
+                    const cover = b.coverData;
+                    const photo1 = cover ? b.photos.find((p) => p.id === cover.imageIds[0]) : null;
+                    const photo2 = cover ? b.photos.find((p) => p.id === cover.imageIds[1]) : null;
+                    return {
+                      bookIndex: uniquePhotos ? i : 0,
+                      coverGridUrls: [
+                        photo1?.originalUrl ?? null,
+                        photo1?.convertedUrl ?? null,
+                        photo2?.convertedUrl ?? null,
+                        photo2?.originalUrl ?? null,
+                      ],
+                      pageUrls: b.photos.map((p) => p.convertedUrl),
+                    };
+                  })
+                }
                 bookDigitalDownloads={
                   uniquePhotos
                     ? books.map((b, i) => ({ bookIndex: i, enabled: b.digitalDownload }))
