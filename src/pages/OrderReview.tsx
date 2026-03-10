@@ -124,7 +124,7 @@ const OrderReview = () => {
                     <div className="flex gap-4">
                       <img
                         src="/lovable-uploads/d741aeb9-21af-45e1-9863-e350da643d42.png"
-                        alt="Personalised Coloring Book"
+                        alt="Personalized Coloring Book"
                         className="w-20 h-20 rounded-xl object-cover flex-shrink-0"
                       />
                       <div className="flex-1 min-w-0 space-y-1">
