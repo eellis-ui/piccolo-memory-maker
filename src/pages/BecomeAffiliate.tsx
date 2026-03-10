@@ -114,18 +114,11 @@ const BecomeAffiliate = () => {
 
       {/* CTA */}
       <section className="relative overflow-hidden">
-        <div className="hidden md:flex absolute left-8 top-0 bottom-0 w-56">
+        <div className="absolute inset-0">
           <img
-            src="/images/hero-grid-3.png"
-            alt="Coloring book gift"
-            className="w-full h-full object-cover rounded-lg"
-          />
-        </div>
-        <div className="hidden md:flex absolute right-8 top-0 bottom-0 w-56">
-          <img
-            src="/images/hero-grid-7.png"
-            alt="Happy customer coloring"
-            className="w-full h-full object-cover"
+            src="/images/lifestyle-book-table.jpg"
+            alt=""
+            className="w-full h-full object-cover opacity-15"
           />
         </div>
         <div className="container mx-auto px-4 text-center max-w-2xl relative z-10 py-24">
