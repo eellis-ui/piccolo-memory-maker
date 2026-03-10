@@ -1,36 +1,20 @@
 
 
-## Plan: Post-Checkout Thank You Banner on Builder Page
-
-### Current Flow
-Checkout opens Shopify in a **new tab** (`window.open`). The original Builder tab remains open. After payment, the customer switches back to the Builder tab.
+## Plan: Sync personalized cover text to shared-photo books
 
 ### Problem
-When customers return to the Builder tab after paying, there's no acknowledgment of their payment and no clear prompt to start uploading photos.
+When a customer personalizes the cover wording for one book in a shared-photo bundle, the `bookAddOns` (containing `bottomTitle`, `dedicationPageText`) is not copied to sibling books — only the `coverData` and DB fields are synced.
 
-### Proposed Changes
+### Changes
 
-**1. `src/pages/Builder.tsx`** — Add a `postCheckout` state
-- Detect a `paid=true` URL parameter OR set it locally after checkout button is clicked
-- When `postCheckout` is true, show a thank-you banner at the top of the builder (above progress steps)
-- Reset the builder to the upload step so they're ready to add photos
-- The banner includes: a confirmation message ("Thank you for your order!"), a prompt ("Now upload your photos to create your coloring book"), and a friendly icon
+**`src/pages/Builder.tsx`** — `handleCoverComplete` function (lines 354-374)
 
-**2. `src/components/builder/CheckoutStep.tsx`** — After opening checkout URL
-- After `window.open(checkoutUrl, '_blank')`, call a new `onCheckoutComplete` callback prop
-- This lets the parent Builder component transition to the post-checkout upload state
+Two fixes in the shared-photo sync block:
 
-**3. `src/pages/Builder.tsx`** — Handle checkout complete
-- Add `onCheckoutComplete` handler that sets `showingCheckout = false`, sets a `postCheckout = true` state, and updates the URL with `&paid=true`
-- The builder then shows the upload step with the thank-you banner on top
+1. **Line 360-366**: Change the DB update to use the active book's `bookAddOns` instead of the basket-level `addOns`:
+   - Use `prev[activeBookIndex].bookAddOns` for `title_page_text`, `dedication_page_enabled`, `dedication_page_text`
 
-### Thank You Banner Design
-A full-width, visually distinct banner (green/success themed) at the top of the builder content area:
-- Check icon + "Thank You For Your Order!"  
-- Subtext: "Your payment was successful. Now let's create your coloring book — start by uploading your favorite photos below."
-- Dismissible with an X button
-
-### What Won't Change
-- The Shopify checkout still opens in a new tab (required by Shopify)
-- All existing builder steps and session persistence remain intact
+2. **Line 369**: Copy `bookAddOns` from the active book to all sibling books in local state:
+   - Change `return { ...b, coverData: data, completed: true, step: "cover" as const };`
+   - To `return { ...b, coverData: data, bookAddOns: prev[activeBookIndex].bookAddOns, completed: true, step: "cover" as const };`
 
