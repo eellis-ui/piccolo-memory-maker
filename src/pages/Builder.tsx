@@ -447,10 +447,10 @@ const Builder = () => {
                     <button
                       key={i}
                       onClick={() => setActiveBookIndex(i)}
-                      className={`flex-1 flex items-center justify-center gap-2 py-2.5 px-3 rounded-xl text-sm font-medium transition-all ${
+                      className={`flex-1 flex items-center justify-center gap-2 py-2.5 px-3 rounded-xl text-sm transition-all ${
                         activeBookIndex === i
-                          ? "bg-background shadow-sm text-foreground"
-                          : "text-background/70 hover:text-background"
+                          ? "bg-background shadow-md text-foreground font-bold"
+                          : "text-background/70 hover:text-background font-medium"
                       }`}
                     >
                       {book.completed ? (
