@@ -24,6 +24,7 @@ interface BookPreviewData {
   bookIndex: number;
   coverGridUrls: (string | null)[];
   pageUrls: (string | null)[];
+  pageLandscape?: boolean[];
 }
 
 interface CheckoutStepProps {
@@ -75,7 +76,7 @@ const MiniFlipbook = ({ bookPreview, bookCount }: { bookPreview: BookPreviewData
               <img
                 src={bookPreview.pageUrls[currentPage - 1]!}
                 alt={`Page ${currentPage}`}
-                className="w-full h-full object-contain"
+                className={`object-contain ${bookPreview.pageLandscape?.[currentPage - 1] ? "rotate-90 max-w-[100%] max-h-[100%]" : "w-full h-full"}`}
               />
             ) : (
               <span className="text-xs text-muted-foreground">Page {currentPage}</span>

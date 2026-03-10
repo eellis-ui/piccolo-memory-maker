@@ -705,6 +705,7 @@ const Builder = () => {
                         photo2?.originalUrl ?? null,
                       ],
                       pageUrls: b.photos.map((p) => p.convertedUrl),
+                      pageLandscape: b.photos.map((p) => p.isLandscape),
                     };
                   })
                 }
