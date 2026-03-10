@@ -340,13 +340,18 @@ const CheckoutStep = ({ pageCount, extraPages, convertedUrls, onBack, onCheckout
                 </div>
               )}
               {digitalCount > 0 && (
-                <div className="flex items-center gap-3">
-                  <Check className="w-5 h-5 text-primary" />
-                  <span>
-                    Digital PDF download × {digitalCount} {digitalCount === 1 ? "book" : "books"} (20 pages each)
-                  </span>
-                  <Badge variant="secondary">Add-on</Badge>
-                </div>
+                <>
+                  <div className="flex items-center gap-3">
+                    <Check className="w-5 h-5 text-primary" />
+                    <span>
+                      Digital PDF download × {digitalCount} {digitalCount === 1 ? "book" : "books"} (20 pages each)
+                    </span>
+                    <Badge variant="secondary">Add-on</Badge>
+                  </div>
+                  <p className="text-xs text-muted-foreground pl-8">
+                    After checkout, come back to this page to create a free account — your digital downloads will be available anytime from your My Orders page.
+                  </p>
+                </>
               )}
             </CardContent>
           </Card>
