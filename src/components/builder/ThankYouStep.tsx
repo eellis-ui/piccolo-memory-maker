@@ -144,7 +144,9 @@ const ThankYouStep = ({ sessionId, orderIds = [], shopifyOrderNumber, hasDigital
             </form>
 
             <p className="text-xs text-muted-foreground text-center">
-              No obligation — just makes it easier to manage your orders.
+              {hasDigitalDownload
+                ? "Create an account to access your digital PDF downloads anytime from your My Orders page — no expiry!"
+                : "No obligation — just makes it easier to manage your orders."}
             </p>
           </CardContent>
         </Card>
