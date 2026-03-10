@@ -57,7 +57,9 @@ const CheckoutStep = ({ pageCount, extraPages, convertedUrls, onBack, onCheckout
   const digitalPrice = digitalCount * DIGITAL_DOWNLOAD_PRICE;
   // Count per-book add-ons
   const titlePageCount = bookAddOnsList.filter(b => b.titlePageEnabled).length;
-  const coverPersonalizeCount = bookAddOnsList.filter(b => b.dedicationPageEnabled).length;
+  const rawCoverPersonalizeCount = bookAddOnsList.filter(b => b.dedicationPageEnabled).length;
+  // Shared-photo bundles: charge once; unique-photos bundles: charge per book
+  const coverPersonalizeCount = rawCoverPersonalizeCount > 0 && !uniquePhotos ? 1 : rawCoverPersonalizeCount;
   const perBookAddOnsTotal = (titlePageCount + coverPersonalizeCount) * addOnPrice;
   const personalizeCoverBooksCount = personalizeCoverFromBasket ? (uniquePhotos ? bookCount : 1) : 0;
   const basketPersonalizeCoverCost = personalizeCoverBooksCount * 1.99;
