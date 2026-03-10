@@ -5,8 +5,9 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
-import { Loader2, DollarSign, ShoppingBag, TrendingUp, Copy, CheckCircle2 } from "lucide-react";
+import { Loader2, DollarSign, ShoppingBag, TrendingUp, Copy, CheckCircle2, Clock, Wallet, BanknoteIcon } from "lucide-react";
 import Navbar from "@/components/layout/Navbar";
 import Footer from "@/components/layout/Footer";
 
@@ -29,6 +30,16 @@ interface AffiliateOrder {
   order_total: number;
   commission: number;
   created_at: string;
+  payout_eligible_at: string | null;
+}
+
+interface AffiliatePayout {
+  id: string;
+  amount: number;
+  status: string;
+  created_at: string;
+  paid_at: string | null;
+  notes: string | null;
 }
 
 const Affiliates = () => {
@@ -36,9 +47,11 @@ const Affiliates = () => {
   const [user, setUser] = useState<any>(null);
   const [affiliate, setAffiliate] = useState<Affiliate | null>(null);
   const [orders, setOrders] = useState<AffiliateOrder[]>([]);
+  const [payouts, setPayouts] = useState<AffiliatePayout[]>([]);
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const [copied, setCopied] = useState(false);
+  const [requestingPayout, setRequestingPayout] = useState(false);
 
   // Auth form state
   const [isLogin, setIsLogin] = useState(true);
@@ -85,18 +98,59 @@ const Affiliates = () => {
 
       if (aff) {
         setAffiliate(aff as Affiliate);
-        // Fetch affiliate orders
-        const { data: affOrders } = await supabase
-          .from("affiliate_orders")
-          .select("*")
-          .eq("affiliate_id", aff.id)
-          .order("created_at", { ascending: false });
-        setOrders((affOrders as AffiliateOrder[]) || []);
+        // Fetch affiliate orders and payouts in parallel
+        const [ordersRes, payoutsRes] = await Promise.all([
+          supabase
+            .from("affiliate_orders")
+            .select("*")
+            .eq("affiliate_id", aff.id)
+            .order("created_at", { ascending: false }),
+          supabase
+            .from("affiliate_payouts")
+            .select("*")
+            .eq("affiliate_id", aff.id)
+            .order("created_at", { ascending: false }),
+        ]);
+        setOrders((ordersRes.data as AffiliateOrder[]) || []);
+        setPayouts((payoutsRes.data as AffiliatePayout[]) || []);
       }
     } catch (err) {
       console.error("Error fetching affiliate data:", err);
     } finally {
       setLoading(false);
+    }
+  };
+
+  // Calculate available and pending balances
+  const now = new Date();
+  const availableCommission = orders
+    .filter(o => o.payout_eligible_at && new Date(o.payout_eligible_at) <= now)
+    .reduce((sum, o) => sum + Number(o.commission), 0);
+  const pendingCommission = orders
+    .filter(o => !o.payout_eligible_at || new Date(o.payout_eligible_at) > now)
+    .reduce((sum, o) => sum + Number(o.commission), 0);
+  const totalPaidOut = payouts
+    .filter(p => p.status !== "rejected")
+    .reduce((sum, p) => sum + Number(p.amount), 0);
+  const availableBalance = Math.max(0, availableCommission - totalPaidOut);
+
+  const handleRequestPayout = async () => {
+    if (!affiliate || availableBalance <= 0) return;
+    setRequestingPayout(true);
+    try {
+      const { error } = await supabase
+        .from("affiliate_payouts")
+        .insert({
+          affiliate_id: affiliate.id,
+          amount: availableBalance,
+        });
+      if (error) throw error;
+      toast.success("Payout request submitted! We'll process it shortly.");
+      fetchAffiliateData(user.id);
+    } catch (err: any) {
+      toast.error(err.message || "Failed to request payout");
+    } finally {
+      setRequestingPayout(false);
     }
   };
 
@@ -165,6 +219,14 @@ const Affiliates = () => {
       setCopied(true);
       toast.success("Discount code copied!");
       setTimeout(() => setCopied(false), 2000);
+    }
+  };
+
+  const payoutStatusColor = (status: string) => {
+    switch (status) {
+      case "paid": return "default";
+      case "rejected": return "destructive";
+      default: return "secondary";
     }
   };
 
@@ -376,7 +438,7 @@ const Affiliates = () => {
           </Card>
 
           {/* Stats Grid */}
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-8">
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-8">
             <Card className="rounded-2xl">
               <CardContent className="p-6 text-center">
                 <ShoppingBag className="w-8 h-8 mx-auto mb-2 text-muted-foreground" />
@@ -393,12 +455,75 @@ const Affiliates = () => {
             </Card>
             <Card className="rounded-2xl">
               <CardContent className="p-6 text-center">
-                <DollarSign className="w-8 h-8 mx-auto mb-2 text-muted-foreground" />
-                <p className="text-3xl font-bold font-display">£{Number(affiliate.total_commission).toFixed(2)}</p>
-                <p className="text-sm text-muted-foreground">Commission Earned</p>
+                <Wallet className="w-8 h-8 mx-auto mb-2 text-muted-foreground" />
+                <p className="text-3xl font-bold font-display">£{availableBalance.toFixed(2)}</p>
+                <p className="text-sm text-muted-foreground">Available</p>
+              </CardContent>
+            </Card>
+            <Card className="rounded-2xl">
+              <CardContent className="p-6 text-center">
+                <Clock className="w-8 h-8 mx-auto mb-2 text-muted-foreground" />
+                <p className="text-3xl font-bold font-display">£{pendingCommission.toFixed(2)}</p>
+                <p className="text-sm text-muted-foreground">Pending (60 days)</p>
               </CardContent>
             </Card>
           </div>
+
+          {/* Payout Request */}
+          <Card className="rounded-3xl mb-8">
+            <CardHeader>
+              <CardTitle className="font-display text-xl flex items-center gap-2">
+                <BanknoteIcon className="w-5 h-5" /> Commission Payouts
+              </CardTitle>
+              <CardDescription>
+                Commission becomes available 60 days after the order. Request a payout when your available balance is above £0.
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="flex items-center justify-between mb-6 p-4 bg-muted/50 rounded-2xl">
+                <div>
+                  <p className="text-sm text-muted-foreground">Available to withdraw</p>
+                  <p className="text-2xl font-bold font-display">£{availableBalance.toFixed(2)}</p>
+                </div>
+                <Button
+                  className="rounded-2xl"
+                  disabled={availableBalance <= 0 || requestingPayout}
+                  onClick={handleRequestPayout}
+                >
+                  {requestingPayout && <Loader2 className="w-4 h-4 mr-2 animate-spin" />}
+                  Request Payout
+                </Button>
+              </div>
+
+              {payouts.length > 0 && (
+                <div className="overflow-x-auto">
+                  <p className="text-sm font-medium text-muted-foreground mb-3">Payout History</p>
+                  <table className="w-full text-sm">
+                    <thead>
+                      <tr className="border-b border-border">
+                        <th className="text-left py-3 px-2 font-medium text-muted-foreground">Date</th>
+                        <th className="text-right py-3 px-2 font-medium text-muted-foreground">Amount</th>
+                        <th className="text-right py-3 px-2 font-medium text-muted-foreground">Status</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {payouts.map((p) => (
+                        <tr key={p.id} className="border-b border-border/50">
+                          <td className="py-3 px-2">{new Date(p.created_at).toLocaleDateString()}</td>
+                          <td className="py-3 px-2 text-right font-medium">£{Number(p.amount).toFixed(2)}</td>
+                          <td className="py-3 px-2 text-right">
+                            <Badge variant={payoutStatusColor(p.status) as any}>
+                              {p.status.charAt(0).toUpperCase() + p.status.slice(1)}
+                            </Badge>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              )}
+            </CardContent>
+          </Card>
 
           {/* Orders Table */}
           <Card className="rounded-3xl">
@@ -421,21 +546,36 @@ const Affiliates = () => {
                         <th className="text-left py-3 px-2 font-medium text-muted-foreground">Date</th>
                         <th className="text-right py-3 px-2 font-medium text-muted-foreground">Order Total</th>
                         <th className="text-right py-3 px-2 font-medium text-muted-foreground">Commission</th>
+                        <th className="text-right py-3 px-2 font-medium text-muted-foreground">Eligible</th>
                       </tr>
                     </thead>
                     <tbody>
-                      {orders.map((order) => (
-                        <tr key={order.id} className="border-b border-border/50">
-                          <td className="py-3 px-2 font-medium">{order.shopify_order_number || "—"}</td>
-                          <td className="py-3 px-2 text-muted-foreground">
-                            {new Date(order.created_at).toLocaleDateString()}
-                          </td>
-                          <td className="py-3 px-2 text-right">£{Number(order.order_total).toFixed(2)}</td>
-                          <td className="py-3 px-2 text-right font-medium text-primary">
-                            £{Number(order.commission).toFixed(2)}
-                          </td>
-                        </tr>
-                      ))}
+                      {orders.map((order) => {
+                        const eligible = order.payout_eligible_at && new Date(order.payout_eligible_at) <= now;
+                        return (
+                          <tr key={order.id} className="border-b border-border/50">
+                            <td className="py-3 px-2 font-medium">{order.shopify_order_number || "—"}</td>
+                            <td className="py-3 px-2 text-muted-foreground">
+                              {new Date(order.created_at).toLocaleDateString()}
+                            </td>
+                            <td className="py-3 px-2 text-right">£{Number(order.order_total).toFixed(2)}</td>
+                            <td className="py-3 px-2 text-right font-medium text-primary">
+                              £{Number(order.commission).toFixed(2)}
+                            </td>
+                            <td className="py-3 px-2 text-right">
+                              {eligible ? (
+                                <Badge variant="default">Available</Badge>
+                              ) : (
+                                <Badge variant="secondary">
+                                  {order.payout_eligible_at
+                                    ? new Date(order.payout_eligible_at).toLocaleDateString()
+                                    : "Pending"}
+                                </Badge>
+                              )}
+                            </td>
+                          </tr>
+                        );
+                      })}
                     </tbody>
                   </table>
                 </div>
@@ -453,6 +593,7 @@ const Affiliates = () => {
                 setUser(null);
                 setAffiliate(null);
                 setOrders([]);
+                setPayouts([]);
               }}
             >
               Sign Out

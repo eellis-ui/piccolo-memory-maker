@@ -64,6 +64,18 @@ const statusColor = (status: string) => {
   }
 };
 
+interface PayoutRow {
+  id: string;
+  affiliate_id: string;
+  amount: number;
+  status: string;
+  created_at: string;
+  paid_at: string | null;
+  notes: string | null;
+  affiliate_name?: string;
+  affiliate_email?: string;
+}
+
 const Admin = () => {
   const navigate = useNavigate();
   const { isAdmin, loading: roleLoading } = useIsAdmin();
@@ -86,6 +98,11 @@ const Admin = () => {
 
   // PDF generation
   const [pdfGenerating, setPdfGenerating] = useState<string | null>(null);
+
+  // Affiliate payouts
+  const [payoutRequests, setPayoutRequests] = useState<PayoutRow[]>([]);
+  const [payoutsLoading, setPayoutsLoading] = useState(false);
+  const [showPayouts, setShowPayouts] = useState(false);
 
   useEffect(() => {
     if (!roleLoading && !isAdmin) navigate("/auth");
