@@ -48,7 +48,7 @@ const UniquePhotosUpsellBanner = () => {
   const bookCount = qualifyingItems.filter((i) => !i.uniquePhotos).reduce((sum, i) => sum + i.quantity, 0);
 
   return (
-    <Card className="rounded-lg border border-border bg-background overflow-hidden">
+    <Card className="rounded-lg border-2 border-foreground bg-background overflow-hidden">
       <CardContent className="p-6">
         <div className="flex items-start gap-4 mb-4">
           <div className="w-10 h-10 rounded-lg bg-foreground flex items-center justify-center shrink-0">
