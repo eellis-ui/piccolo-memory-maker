@@ -207,7 +207,7 @@ const CheckoutStep = ({ pageCount, extraPages, convertedUrls, onBack, onCheckout
         });
       }
 
-      const checkoutUrl = await createShopifyCheckout(lines);
+      const checkoutUrl = await createShopifyCheckout(lines, sessionId || undefined);
       if (checkoutUrl) {
         window.open(checkoutUrl, '_blank');
         setAwaitingPayment(true);
