@@ -8,6 +8,7 @@ import UploadStep, { type LocalImage } from "@/components/builder/UploadStep";
 import ApproveStep from "@/components/builder/ApproveStep";
 import CoverStep from "@/components/builder/CoverStep";
 import CheckoutStep from "@/components/builder/CheckoutStep";
+import RecapStep from "@/components/builder/RecapStep";
 import ThankYouStep from "@/components/builder/ThankYouStep";
 import UniquePhotosUpsellBanner from "@/components/builder/UniquePhotosUpsellBanner";
 import {
