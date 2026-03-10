@@ -424,6 +424,7 @@ const Builder = () => {
               sessionId={sessionId}
               orderIds={books.map(b => b.orderId).filter(Boolean) as string[]}
               shopifyOrderNumber={shopifyOrderNumber}
+              hasDigitalDownload={books.some(b => b.digitalDownload)}
             />
           )}
 
