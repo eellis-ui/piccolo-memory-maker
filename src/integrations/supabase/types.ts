@@ -263,6 +263,10 @@ export type Database = {
         }
         Returns: boolean
       }
+      update_affiliate_totals: {
+        Args: { _affiliate_id: string }
+        Returns: undefined
+      }
     }
     Enums: {
       app_role: "admin" | "user"
