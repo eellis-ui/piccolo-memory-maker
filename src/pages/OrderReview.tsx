@@ -131,7 +131,7 @@ const OrderReview = () => {
                         <div className="flex items-start justify-between gap-2">
                           <span className="font-semibold text-foreground text-sm leading-tight">
                             {lineItem.quantity === 1
-                              ? "Personalised Coloring Book"
+                              ? "Personalized Coloring Book"
                               : `${lineItem.quantity}× Coloring Book Bundle`}
                           </span>
                           <button
