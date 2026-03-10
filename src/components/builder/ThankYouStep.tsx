@@ -1,6 +1,5 @@
 import { useState, useEffect, useRef } from "react";
 import { CheckCircle, UserPlus, Mail, Lock, ArrowRight, PartyPopper } from "lucide-react";
-import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent } from "@/components/ui/card";
@@ -14,11 +13,39 @@ interface ThankYouStepProps {
   hasDigitalDownload?: boolean;
 }
 
-const ThankYouStep = ({ sessionId, orderIds = [], shopifyOrderNumber, hasDigitalDownload }: ThankYouStepProps) => {
+const ThankYouStep = ({ sessionId, orderIds = [], shopifyOrderNumber: initialShopifyOrderNumber, hasDigitalDownload }: ThankYouStepProps) => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [isCreating, setIsCreating] = useState(false);
   const [accountCreated, setAccountCreated] = useState(false);
+  const [shopifyOrderNumber, setShopifyOrderNumber] = useState<string | null>(initialShopifyOrderNumber || null);
+  const pollRef = useRef<ReturnType<typeof setInterval> | null>(null);
+
+  // Poll for the Shopify order number if not yet available
+  useEffect(() => {
+    if (shopifyOrderNumber || !sessionId) return;
+
+    const poll = async () => {
+      const { data } = await supabase
+        .from("orders")
+        .select("shopify_order_number")
+        .eq("builder_session_id", sessionId)
+        .not("shopify_order_number", "is", null)
+        .limit(1);
+
+      if (data && data.length > 0 && data[0].shopify_order_number) {
+        setShopifyOrderNumber(data[0].shopify_order_number);
+        if (pollRef.current) clearInterval(pollRef.current);
+      }
+    };
+
+    poll(); // immediate first check
+    pollRef.current = setInterval(poll, 2000);
+
+    return () => {
+      if (pollRef.current) clearInterval(pollRef.current);
+    };
+  }, [shopifyOrderNumber, sessionId]);
 
   const handleCreateAccount = async (e: React.FormEvent) => {
     e.preventDefault();
