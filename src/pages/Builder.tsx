@@ -375,6 +375,7 @@ const Builder = () => {
 
     const nextIncomplete = books.findIndex((b, i) => i !== activeBookIndex && !b.completed);
     if (nextIncomplete !== -1) {
+      updateBook(nextIncomplete, { step: "upload" });
       setActiveBookIndex(nextIncomplete);
     } else {
       setShowingCheckout(true);
