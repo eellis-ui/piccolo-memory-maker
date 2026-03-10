@@ -1,31 +1,36 @@
 
 
-## Plan: Review Request Email (30 Days Post-Purchase)
+## Plan: Post-Checkout Thank You Banner on Builder Page
 
-### Overview
-Create an edge function that finds orders paid 30+ days ago that haven't had a review request sent, then emails the customer a branded review request. A cron job triggers this daily.
+### Current Flow
+Checkout opens Shopify in a **new tab** (`window.open`). The original Builder tab remains open. After payment, the customer switches back to the Builder tab.
 
-### Changes
+### Problem
+When customers return to the Builder tab after paying, there's no acknowledgment of their payment and no clear prompt to start uploading photos.
 
-**1. Create edge function `supabase/functions/send-review-requests/index.ts`**
-- Query `orders` table for rows where `payment_status = 'paid'`, `review_request_sent = false`, `customer_email IS NOT NULL`, and `created_at <= now() - 30 days`
-- For each matching order, send a branded email using the Lovable transactional email API (`LOVABLE_API_KEY` already exists)
-- The email HTML template will be defined inline in the function — this is the file you edit to control the look and content
-- Mark `review_request_sent = true` after sending
-- Use service role client to bypass RLS
+### Proposed Changes
 
-**2. Register in `supabase/config.toml`**
-- Add `[functions.send-review-requests]` with `verify_jwt = false`
+**1. `src/pages/Builder.tsx`** — Add a `postCheckout` state
+- Detect a `paid=true` URL parameter OR set it locally after checkout button is clicked
+- When `postCheckout` is true, show a thank-you banner at the top of the builder (above progress steps)
+- Reset the builder to the upload step so they're ready to add photos
+- The banner includes: a confirmation message ("Thank you for your order!"), a prompt ("Now upload your photos to create your coloring book"), and a friendly icon
 
-**3. Set up daily cron job**
-- Enable `pg_cron` and `pg_net` extensions
-- Schedule a daily cron job (e.g. 10:00 UTC) that calls the edge function
+**2. `src/components/builder/CheckoutStep.tsx`** — After opening checkout URL
+- After `window.open(checkoutUrl, '_blank')`, call a new `onCheckoutComplete` callback prop
+- This lets the parent Builder component transition to the post-checkout upload state
 
-### Where to find & edit the template
-The email template lives directly in `supabase/functions/send-review-requests/index.ts` as an HTML string. You can edit the subject line, body copy, button text, colors, and layout there. After editing, it deploys automatically.
+**3. `src/pages/Builder.tsx`** — Handle checkout complete
+- Add `onCheckoutComplete` handler that sets `showingCheckout = false`, sets a `postCheckout = true` state, and updates the URL with `&paid=true`
+- The builder then shows the upload step with the thank-you banner on top
 
-### Technical notes
-- The `review_request_sent` column already exists on the `orders` table
-- `LOVABLE_API_KEY` secret is already configured
-- The cron job will run daily and process any orders that crossed the 30-day threshold
+### Thank You Banner Design
+A full-width, visually distinct banner (green/success themed) at the top of the builder content area:
+- Check icon + "Thank You For Your Order!"  
+- Subtext: "Your payment was successful. Now let's create your coloring book — start by uploading your favorite photos below."
+- Dismissible with an X button
+
+### What Won't Change
+- The Shopify checkout still opens in a new tab (required by Shopify)
+- All existing builder steps and session persistence remain intact
 
