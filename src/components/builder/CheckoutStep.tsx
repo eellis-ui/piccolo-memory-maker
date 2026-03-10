@@ -33,7 +33,7 @@ interface CheckoutStepProps {
   extraPages: number;
   convertedUrls: (string | null)[];
   onBack: () => void;
-  onCheckoutComplete?: () => void;
+  onCheckoutComplete?: (shopifyOrderNumber?: string | null) => void;
   bookDigitalDownloads: BookDigitalDownload[];
   onToggleBookDigitalDownload: (bookIndex: number) => void;
   bookAddOnsList: BookAddOnsInfo[];
