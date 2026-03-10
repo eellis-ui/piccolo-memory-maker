@@ -21,6 +21,7 @@ import PrivacyPolicy from "./pages/PrivacyPolicy";
 import RefundPolicy from "./pages/RefundPolicy";
 import TermsOfService from "./pages/TermsOfService";
 import Affiliates from "./pages/Affiliates";
+import BecomeAffiliate from "./pages/BecomeAffiliate";
 import ScrollToTop from "./components/ScrollToTop";
 import ChatWidget from "./components/ChatWidget";
 import { useClaimOrders } from "./hooks/use-claim-orders";
