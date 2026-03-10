@@ -16,11 +16,11 @@ const UniquePhotosUpsellBanner = () => {
 
   if (allEnabled) {
     return (
-      <Card className="rounded-lg border border-border bg-background">
+      <Card className="rounded-lg border border-primary bg-primary/5">
         <CardContent className="p-4 flex items-center justify-between gap-4">
           <div className="flex items-center gap-3">
-            <div className="w-9 h-9 rounded-lg bg-foreground flex items-center justify-center shrink-0">
-              <Images className="w-4 h-4 text-background" />
+            <div className="w-9 h-9 rounded-lg bg-primary/15 flex items-center justify-center shrink-0">
+              <Images className="w-4 h-4 text-primary" />
             </div>
             <div>
               <p className="font-display text-sm font-semibold text-foreground flex items-center gap-2">
