@@ -43,7 +43,7 @@ const ProductImageGallery = ({ images, isLoading }: Props) => {
       <div className="aspect-square w-full overflow-hidden rounded-lg bg-muted mb-3">
         <img
           src={displayImages[safeSelected].url}
-          alt={displayImages[safeSelected].altText || "Personalised coloring book"}
+          alt={displayImages[safeSelected].altText || "Personalized coloring book"}
           className="w-full h-full object-cover"
         />
       </div>

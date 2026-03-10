@@ -154,7 +154,7 @@ const PricingSection = () => {
 
               {/* Title */}
               <h1 className="font-display text-2xl sm:text-3xl md:text-4xl font-bold text-foreground mb-5 uppercase tracking-wide">
-                Personalised Coloring Book
+                Personalized Coloring Book
               </h1>
 
               {/* Feature bullets */}

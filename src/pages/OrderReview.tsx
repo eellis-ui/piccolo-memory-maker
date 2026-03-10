@@ -269,7 +269,7 @@ const OrderReview = () => {
 
                 {personalizeCoverTotal > 0 && (
                   <div className="flex justify-between text-sm">
-                    <span className="text-muted-foreground">Personalised Cover</span>
+                    <span className="text-muted-foreground">Personalized Cover</span>
                     <span className="font-medium">${personalizeCoverTotal.toFixed(2)}</span>
                   </div>
                 )}

@@ -101,7 +101,7 @@ const BasketContent = ({
               <div className="flex-1 min-w-0 space-y-1">
                 <div className="flex items-start justify-between">
                   <span className="font-semibold text-foreground text-sm leading-tight">
-                    {lineItem.quantity === 1 ? 'Personalised Coloring Book' : `${lineItem.quantity}x Coloring Book Bundle`}
+                    {lineItem.quantity === 1 ? 'Personalized Coloring Book' : `${lineItem.quantity}x Coloring Book Bundle`}
                   </span>
                   <button
                   onClick={() => removeItem(lineItem.id)}

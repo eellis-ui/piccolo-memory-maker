@@ -38,8 +38,8 @@ const HeroSection = () => {
 
             {/* Subtitle */}
             <p className="text-base sm:text-lg text-foreground/70 max-w-lg leading-relaxed">
-              Your favourite photos, transformed into hand-drawn line art, and
-              bound into a Personalized colouring book you'll treasure forever.
+              Your favorite photos, transformed into hand-drawn line art, and
+              bound into a personalized coloring book you'll treasure forever.
             </p>
 
             {/* CTA */}

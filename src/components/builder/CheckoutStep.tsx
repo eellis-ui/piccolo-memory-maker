@@ -231,7 +231,7 @@ const CheckoutStep = ({ pageCount, extraPages, convertedUrls, onBack, onCheckout
           merchandiseId: SHOPIFY_VARIANTS.DIGITAL_DOWNLOAD,
           quantity: digitalCount2,
           attributes: [
-            { key: "Add-on for", value: "Personalised Coloring Book" },
+            { key: "Add-on for", value: "Personalized Coloring Book" },
             { key: "_position", value: "4" },
           ],
         });
