@@ -234,7 +234,11 @@ Deno.serve(async (req) => {
     const payload = JSON.parse(body);
     const customerEmail = payload.email || payload.customer?.email;
     const shopifyOrderNumber = payload.name || payload.order_number ? `#${payload.order_number}` : null;
+    const orderTotal = parseFloat(payload.total_price || "0");
     
+    // Extract discount codes used in this order
+    const discountCodes: { code: string; amount: string }[] = payload.discount_codes || [];
+
     // Extract builder_session_id from cart note attributes
     const noteAttributes: { name: string; value: string }[] = payload.note_attributes || [];
     const sessionId = noteAttributes.find(
