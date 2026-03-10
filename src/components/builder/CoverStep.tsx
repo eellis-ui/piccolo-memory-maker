@@ -243,7 +243,7 @@ const CoverStep = ({ availableImages, bookAddOns, onBookAddOnsChange, onCoverCom
                   Personalize Cover
                 </h3>
                 <p className="text-sm text-foreground mt-1">
-                  Replaces "color your memories" with your own custom text on the cover. Max 25 characters — must be family-friendly.
+                  Replaces "color your memories" with your own custom text on the cover. Max 25 characters - must be family-friendly.
                 </p>
               </div>
             </div>
