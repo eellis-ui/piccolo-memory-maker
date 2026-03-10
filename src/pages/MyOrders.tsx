@@ -343,7 +343,25 @@ const MyOrders = () => {
                           </Button>
                         )}
 
-                        {!isDraft && (
+                        {!isDraft && order.digital_download && order.digital_pdf_path ? (
+                          <Button
+                            variant="outline"
+                            className="rounded-2xl ml-auto"
+                            onClick={async () => {
+                              const { data } = await supabase.storage
+                                .from("order-files")
+                                .createSignedUrl(order.digital_pdf_path!, 60 * 60); // 1 hour signed URL
+                              if (data?.signedUrl) {
+                                window.open(data.signedUrl, "_blank");
+                              } else {
+                                toast.error("Could not generate download link");
+                              }
+                            }}
+                          >
+                            <Download className="w-4 h-4 mr-1" />
+                            Download PDF
+                          </Button>
+                        ) : !isDraft && (
                           <div className="ml-auto p-3 rounded-xl border border-dashed border-primary/30 bg-primary/5 flex items-center gap-3">
                             <Download className="w-4 h-4 text-primary shrink-0" />
                             <div className="min-w-0">
