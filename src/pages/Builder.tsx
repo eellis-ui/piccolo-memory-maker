@@ -543,8 +543,8 @@ const Builder = () => {
                     </div>
                     {index < BUILDER_STEPS.filter((s) => s.key !== "checkout").length - 1 && (
                       <div
-                        className={`w-16 sm:w-24 h-0.5 mx-2 ${
-                          index < currentStepIndex ? "bg-primary" : "bg-muted"
+                        className={`w-16 sm:w-24 h-0.5 mx-2 mb-6 ${
+                          index < currentStepIndex ? "bg-foreground" : "bg-muted"
                         }`}
                       />
                     )}
