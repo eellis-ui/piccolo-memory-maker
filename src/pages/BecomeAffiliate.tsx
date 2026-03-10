@@ -51,8 +51,6 @@ const BecomeAffiliate = () => {
   // Signup form
   const [fullName, setFullName] = useState("");
   const [discountCode, setDiscountCode] = useState("");
-  const [instagramHandle, setInstagramHandle] = useState("");
-  const [tiktokHandle, setTiktokHandle] = useState("");
   const [submitting, setSubmitting] = useState(false);
 
   useEffect(() => {
@@ -134,8 +132,6 @@ const BecomeAffiliate = () => {
           body: JSON.stringify({
             full_name: fullName,
             discount_code: discountCode,
-            instagram_handle: instagramHandle || null,
-            tiktok_handle: tiktokHandle || null,
           }),
         },
       );
@@ -249,26 +245,6 @@ const BecomeAffiliate = () => {
                 3–20 characters. This gives customers 10% off.
               </p>
             </div>
-            <div className="space-y-1.5">
-              <Label htmlFor="hero-ig">Instagram (optional)</Label>
-              <Input
-                id="hero-ig"
-                value={instagramHandle}
-                onChange={(e) => setInstagramHandle(e.target.value)}
-                placeholder="@yourhandle"
-                className="rounded-xl"
-              />
-            </div>
-            <div className="space-y-1.5">
-              <Label htmlFor="hero-tt">TikTok (optional)</Label>
-              <Input
-                id="hero-tt"
-                value={tiktokHandle}
-                onChange={(e) => setTiktokHandle(e.target.value)}
-                placeholder="@yourhandle"
-                className="rounded-xl"
-              />
-            </div>
             <Button type="submit" className="w-full rounded-2xl" disabled={submitting}>
               {submitting && <Loader2 className="w-4 h-4 mr-2 animate-spin" />}
               Join Affiliate Program
@@ -284,7 +260,7 @@ const BecomeAffiliate = () => {
       <Navbar />
 
       {/* Hero */}
-      <section className="pt-32 pb-24 bg-cream">
+      <section id="signup-form" className="pt-32 pb-24 bg-cream">
         <div className="container mx-auto px-4 text-center max-w-3xl">
           <h1 className="font-display text-5xl md:text-7xl font-bold text-foreground mb-6 uppercase">
             Share the Love.<br />Earn the Rewards.
@@ -370,11 +346,13 @@ const BecomeAffiliate = () => {
           <p className="text-foreground text-base mb-10 max-w-md mx-auto leading-relaxed">
             It only takes a minute to sign up. No fees, no obligations - just share and earn.
           </p>
-          <Link to="/affiliates">
-            <Button size="lg" className="rounded-lg text-base px-10 py-6 bg-primary text-primary-foreground hover:bg-primary/90">
-              Become an Affiliate
-            </Button>
-          </Link>
+          <Button
+            size="lg"
+            className="rounded-lg text-base px-10 py-6 bg-primary text-primary-foreground hover:bg-primary/90"
+            onClick={() => document.getElementById('signup-form')?.scrollIntoView({ behavior: 'smooth' })}
+          >
+            Become an Affiliate
+          </Button>
         </div>
       </section>
 
