@@ -14,6 +14,96 @@ export type Database = {
   }
   public: {
     Tables: {
+      affiliate_orders: {
+        Row: {
+          affiliate_id: string
+          commission: number
+          created_at: string
+          id: string
+          order_id: string | null
+          order_total: number
+          shopify_order_number: string | null
+        }
+        Insert: {
+          affiliate_id: string
+          commission?: number
+          created_at?: string
+          id?: string
+          order_id?: string | null
+          order_total?: number
+          shopify_order_number?: string | null
+        }
+        Update: {
+          affiliate_id?: string
+          commission?: number
+          created_at?: string
+          id?: string
+          order_id?: string | null
+          order_total?: number
+          shopify_order_number?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "affiliate_orders_affiliate_id_fkey"
+            columns: ["affiliate_id"]
+            isOneToOne: false
+            referencedRelation: "affiliates"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "affiliate_orders_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
+            referencedRelation: "orders"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      affiliates: {
+        Row: {
+          created_at: string
+          discount_code: string
+          email: string
+          full_name: string
+          id: string
+          instagram_handle: string | null
+          shopify_price_rule_id: string | null
+          tiktok_handle: string | null
+          total_commission: number
+          total_orders: number
+          total_revenue: number
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          discount_code: string
+          email: string
+          full_name: string
+          id?: string
+          instagram_handle?: string | null
+          shopify_price_rule_id?: string | null
+          tiktok_handle?: string | null
+          total_commission?: number
+          total_orders?: number
+          total_revenue?: number
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          discount_code?: string
+          email?: string
+          full_name?: string
+          id?: string
+          instagram_handle?: string | null
+          shopify_price_rule_id?: string | null
+          tiktok_handle?: string | null
+          total_commission?: number
+          total_orders?: number
+          total_revenue?: number
+          user_id?: string
+        }
+        Relationships: []
+      }
       order_photos: {
         Row: {
           conversion_status: string
