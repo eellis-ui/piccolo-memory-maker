@@ -114,7 +114,7 @@ const MiniFlipbook = ({ bookPreview, bookCount }: { bookPreview: BookPreviewData
   );
 };
 
-const CheckoutStep = ({ pageCount, extraPages, convertedUrls, onBack, onCheckoutComplete, bookDigitalDownloads, onToggleBookDigitalDownload, bookAddOnsList, bookPreviews = [] }: CheckoutStepProps) => {
+const CheckoutStep = ({ pageCount, extraPages, convertedUrls, onBack, onCheckoutComplete, bookDigitalDownloads, onToggleBookDigitalDownload, bookAddOnsList, bookPreviews = [], sessionId }: CheckoutStepProps) => {
   const { item, setQuantity, pricingTiers, addOnPrice, uniquePhotos, uniquePhotosPrice } = useBasket();
   const personalizeCoverFromBasket = item?.personalizeCover ?? false;
   const [isCheckingOut, setIsCheckingOut] = useState(false);
