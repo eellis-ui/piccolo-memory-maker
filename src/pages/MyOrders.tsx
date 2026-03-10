@@ -56,7 +56,7 @@ const MyOrders = () => {
   const fetchOrders = async () => {
     const { data } = await supabase
       .from("orders")
-      .select("id, status, title_page_text, created_at, tracking_number, shipped_at, extra_pages, builder_session_id")
+      .select("id, status, title_page_text, created_at, tracking_number, shipped_at, extra_pages, builder_session_id, digital_download, digital_pdf_path")
       .order("created_at", { ascending: false });
     if (data) setOrders(data as OrderRow[]);
   };
