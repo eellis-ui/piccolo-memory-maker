@@ -442,12 +442,12 @@ const Builder = () => {
 
             return (
               <div className="max-w-2xl mx-auto mb-8">
-                <div className="flex gap-2 p-1 bg-foreground rounded-2xl">
+                <div className="flex gap-2 p-1 bg-foreground rounded-lg">
                   {books.map((book, i) => (
                     <button
                       key={i}
                       onClick={() => setActiveBookIndex(i)}
-                      className={`flex-1 flex items-center justify-center gap-2 py-2.5 px-3 rounded-xl text-sm transition-all ${
+                      className={`flex-1 flex items-center justify-center gap-2 py-2.5 px-3 rounded-md text-sm transition-all ${
                         activeBookIndex === i
                           ? "bg-background shadow-md text-foreground font-bold"
                           : "text-background/70 hover:text-background font-medium"
