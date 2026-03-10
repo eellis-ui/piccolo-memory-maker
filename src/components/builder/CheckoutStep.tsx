@@ -7,6 +7,7 @@ import { Separator } from "@/components/ui/separator";
 import { Switch } from "@/components/ui/switch";
 import { useBasket, DIGITAL_DOWNLOAD_PRICE } from "@/contexts/BasketContext";
 import { createShopifyCheckout, SHOPIFY_VARIANTS, type CartLineInput } from "@/lib/shopify";
+import logoImg from "@/assets/piccoload-logo.png";
 
 interface BookDigitalDownload {
   bookIndex: number;
