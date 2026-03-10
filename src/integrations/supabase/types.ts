@@ -165,6 +165,7 @@ export type Database = {
           extra_pages: number
           id: string
           payment_status: string
+          review_request_sent: boolean
           shipped_at: string | null
           shopify_order_number: string | null
           status: string
@@ -190,6 +191,7 @@ export type Database = {
           extra_pages?: number
           id?: string
           payment_status?: string
+          review_request_sent?: boolean
           shipped_at?: string | null
           shopify_order_number?: string | null
           status?: string
@@ -215,6 +217,7 @@ export type Database = {
           extra_pages?: number
           id?: string
           payment_status?: string
+          review_request_sent?: boolean
           shipped_at?: string | null
           shopify_order_number?: string | null
           status?: string
@@ -223,6 +226,39 @@ export type Database = {
           tracking_number?: string | null
           unique_photos?: boolean
           user_id?: string | null
+        }
+        Relationships: []
+      }
+      reviews: {
+        Row: {
+          created_at: string
+          email: string | null
+          id: string
+          is_approved: boolean
+          is_verified: boolean
+          rating: number
+          review_text: string
+          reviewer_name: string
+        }
+        Insert: {
+          created_at?: string
+          email?: string | null
+          id?: string
+          is_approved?: boolean
+          is_verified?: boolean
+          rating: number
+          review_text: string
+          reviewer_name: string
+        }
+        Update: {
+          created_at?: string
+          email?: string | null
+          id?: string
+          is_approved?: boolean
+          is_verified?: boolean
+          rating?: number
+          review_text?: string
+          reviewer_name?: string
         }
         Relationships: []
       }
