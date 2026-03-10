@@ -454,6 +454,97 @@ const Admin = () => {
               </Table>
             </div>
           )}
+          {/* Affiliate Payouts Section */}
+          <div className="mt-12">
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="font-display text-2xl font-bold text-foreground">Affiliate Payouts</h2>
+              <Button
+                variant="outline"
+                className="rounded-xl"
+                onClick={() => {
+                  setShowPayouts(!showPayouts);
+                  if (!showPayouts && payoutRequests.length === 0) fetchPayouts();
+                }}
+              >
+                {showPayouts ? "Hide Payouts" : "View Payouts"}
+              </Button>
+            </div>
+            {showPayouts && (
+              payoutsLoading ? (
+                <div className="flex justify-center py-8">
+                  <Loader2 className="w-6 h-6 animate-spin text-primary" />
+                </div>
+              ) : payoutRequests.length === 0 ? (
+                <Card className="rounded-2xl">
+                  <CardContent className="py-8 text-center text-muted-foreground">
+                    No payout requests yet
+                  </CardContent>
+                </Card>
+              ) : (
+                <div className="overflow-x-auto rounded-2xl border">
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead>Affiliate</TableHead>
+                        <TableHead>Date</TableHead>
+                        <TableHead className="text-right">Amount</TableHead>
+                        <TableHead>Status</TableHead>
+                        <TableHead className="text-right">Actions</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {payoutRequests.map((p) => (
+                        <TableRow key={p.id}>
+                          <TableCell>
+                            <span className="font-medium">{p.affiliate_name}</span>
+                            <span className="block text-xs text-muted-foreground">{p.affiliate_email}</span>
+                          </TableCell>
+                          <TableCell className="text-sm">
+                            {new Date(p.created_at).toLocaleDateString()}
+                          </TableCell>
+                          <TableCell className="text-right font-medium">
+                            £{Number(p.amount).toFixed(2)}
+                          </TableCell>
+                          <TableCell>
+                            <Badge variant={p.status === "paid" ? "default" : p.status === "rejected" ? "destructive" : "secondary"}>
+                              {p.status.charAt(0).toUpperCase() + p.status.slice(1)}
+                            </Badge>
+                          </TableCell>
+                          <TableCell className="text-right space-x-1">
+                            {p.status === "pending" && (
+                              <>
+                                <Button
+                                  size="sm"
+                                  variant="outline"
+                                  className="rounded-lg text-xs"
+                                  onClick={() => handlePayoutAction(p.id, "paid")}
+                                >
+                                  Mark Paid
+                                </Button>
+                                <Button
+                                  size="sm"
+                                  variant="ghost"
+                                  className="rounded-lg text-xs text-destructive"
+                                  onClick={() => handlePayoutAction(p.id, "rejected")}
+                                >
+                                  Reject
+                                </Button>
+                              </>
+                            )}
+                            {p.paid_at && (
+                              <span className="text-xs text-muted-foreground">
+                                Paid {new Date(p.paid_at).toLocaleDateString()}
+                              </span>
+                            )}
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                </div>
+              )
+            )}
+          </div>
         </div>
       </main>
       <Footer />
