@@ -48,11 +48,11 @@ const UniquePhotosUpsellBanner = () => {
   const count = qualifyingItems.filter((i) => !i.uniquePhotos).length;
 
   return (
-    <Card className="rounded-3xl border-dashed border-2 border-primary/30 bg-primary/5 overflow-hidden">
+    <Card className="rounded-lg border border-border bg-background overflow-hidden">
       <CardContent className="p-6">
         <div className="flex items-start gap-4 mb-4">
-          <div className="w-10 h-10 rounded-xl bg-secondary/40 flex items-center justify-center shrink-0">
-            <Sparkles className="w-5 h-5 text-secondary-foreground" />
+          <div className="w-10 h-10 rounded-lg bg-foreground flex items-center justify-center shrink-0">
+            <Sparkles className="w-5 h-5 text-background" />
           </div>
           <div className="flex-1">
             <h3 className="font-display text-base font-semibold text-foreground">
@@ -68,17 +68,17 @@ const UniquePhotosUpsellBanner = () => {
 
         <button
           onClick={() => setUniquePhotos(true)}
-          className="w-full flex items-center justify-between p-4 rounded-xl border border-border bg-background hover:border-primary/50 hover:bg-primary/5 transition-all text-left"
+          className="w-full flex items-center justify-between p-4 rounded-lg bg-foreground hover:bg-foreground/90 transition-all text-left"
         >
           <div>
-            <span className="font-semibold text-foreground text-sm">
+            <span className="font-semibold text-background text-sm">
               20 Different Photos Per Book
             </span>
-            <span className="text-xs text-foreground ml-2">
+            <span className="text-xs text-primary ml-2 font-bold">
               +${UNIQUE_PHOTOS_PRICE.toFixed(2)} per bundle
             </span>
           </div>
-          <span className="font-bold text-foreground shrink-0 ml-4">
+          <span className="font-bold text-background shrink-0 ml-4">
             Add to all
           </span>
         </button>
