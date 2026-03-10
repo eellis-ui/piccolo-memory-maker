@@ -584,10 +584,18 @@ const Builder = () => {
               {bookCount > 1 && (
                 <p className="text-center text-sm text-muted-foreground mt-4 flex items-center justify-center gap-1.5">
                   <Copy className="w-3.5 h-3.5" />
-                  Customising{" "}
-                  <span className="font-semibold text-foreground">
-                    Book {activeBookIndex + 1} of {bookCount}
-                  </span>
+                  {uniquePhotos ? (
+                    <>
+                      Customising{" "}
+                      <span className="font-semibold text-foreground">
+                        Book {activeBookIndex + 1} of {bookCount}
+                      </span>
+                    </>
+                  ) : (
+                    <span className="font-semibold text-foreground">
+                      Customising your books
+                    </span>
+                  )}
                 </p>
               )}
             </div>
