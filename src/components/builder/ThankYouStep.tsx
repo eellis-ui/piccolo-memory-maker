@@ -11,7 +11,7 @@ interface ThankYouStepProps {
   orderIds?: string[];
 }
 
-const ThankYouStep = ({ sessionId }: ThankYouStepProps) => {
+const ThankYouStep = ({ sessionId, orderIds = [] }: ThankYouStepProps) => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [isCreating, setIsCreating] = useState(false);

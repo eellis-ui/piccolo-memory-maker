@@ -151,7 +151,7 @@ const RecapStep = ({ books, onContinueToCheckout, onEditBook }: RecapStepProps) 
 
       <div className="flex justify-center pt-4">
         <Button onClick={onContinueToCheckout} className="rounded-2xl px-10 text-base">
-          Continue to Checkout
+          Submit Your Order
         </Button>
       </div>
     </div>
