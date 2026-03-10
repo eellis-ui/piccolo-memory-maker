@@ -418,7 +418,7 @@ const Builder = () => {
 
           {/* ── Post-checkout: Thank You + Create Account ── */}
           {postCheckout && (
-            <ThankYouStep sessionId={sessionId} />
+            <ThankYouStep sessionId={sessionId} orderIds={books.map(b => b.orderId).filter(Boolean) as string[]} />
           )}
 
           {/* ── Multi-book tabs ── */}
@@ -659,7 +659,11 @@ const Builder = () => {
                 }))}
                 onContinueToCheckout={() => {
                   setShowingRecap(false);
-                  setShowingCheckout(true);
+                  setPostCheckout(true);
+                  // Update URL so refresh preserves the state
+                  const newParams = new URLSearchParams(window.location.search);
+                  newParams.set("paid", "true");
+                  window.history.replaceState(null, "", `${window.location.pathname}?${newParams.toString()}`);
                 }}
                 onEditBook={(bookIndex) => {
                   setShowingRecap(false);
