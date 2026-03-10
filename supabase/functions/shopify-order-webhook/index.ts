@@ -332,13 +332,15 @@ Deno.serve(async (req) => {
         if (aff) {
           const commission = orderTotal * 0.1;
 
-          // Insert affiliate order record
+          // Insert affiliate order record with 60-day payout eligibility
+          const payoutEligibleAt = new Date(Date.now() + 60 * 24 * 60 * 60 * 1000).toISOString();
           await admin.from("affiliate_orders").insert({
             affiliate_id: aff.id,
             order_id: orders[0]?.id || null,
             shopify_order_number: shopifyOrderNumber,
             order_total: orderTotal,
             commission: commission,
+            payout_eligible_at: payoutEligibleAt,
           });
 
           // Update affiliate totals

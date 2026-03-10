@@ -64,6 +64,18 @@ const statusColor = (status: string) => {
   }
 };
 
+interface PayoutRow {
+  id: string;
+  affiliate_id: string;
+  amount: number;
+  status: string;
+  created_at: string;
+  paid_at: string | null;
+  notes: string | null;
+  affiliate_name?: string;
+  affiliate_email?: string;
+}
+
 const Admin = () => {
   const navigate = useNavigate();
   const { isAdmin, loading: roleLoading } = useIsAdmin();
@@ -87,6 +99,11 @@ const Admin = () => {
   // PDF generation
   const [pdfGenerating, setPdfGenerating] = useState<string | null>(null);
 
+  // Affiliate payouts
+  const [payoutRequests, setPayoutRequests] = useState<PayoutRow[]>([]);
+  const [payoutsLoading, setPayoutsLoading] = useState(false);
+  const [showPayouts, setShowPayouts] = useState(false);
+
   useEffect(() => {
     if (!roleLoading && !isAdmin) navigate("/auth");
   }, [roleLoading, isAdmin, navigate]);
@@ -102,6 +119,59 @@ const Admin = () => {
     setSelected(new Set());
   };
 
+  const fetchPayouts = async () => {
+    setPayoutsLoading(true);
+    try {
+      // Fetch all payout requests
+      const { data: payoutsData } = await supabase
+        .from("affiliate_payouts")
+        .select("*")
+        .order("created_at", { ascending: false });
+      
+      if (payoutsData && payoutsData.length > 0) {
+        // Get affiliate details for each payout
+        const affiliateIds = [...new Set(payoutsData.map((p: any) => p.affiliate_id))];
+        const { data: affiliates } = await supabase
+          .from("affiliates")
+          .select("id, full_name, email")
+          .in("id", affiliateIds);
+        
+        const affMap = new Map((affiliates || []).map((a: any) => [a.id, a]));
+        const enriched = payoutsData.map((p: any) => {
+          const aff = affMap.get(p.affiliate_id);
+          return {
+            ...p,
+            affiliate_name: aff?.full_name || "Unknown",
+            affiliate_email: aff?.email || "",
+          };
+        });
+        setPayoutRequests(enriched as PayoutRow[]);
+      } else {
+        setPayoutRequests([]);
+      }
+    } catch (err) {
+      console.error("Error fetching payouts:", err);
+    } finally {
+      setPayoutsLoading(false);
+    }
+  };
+
+  const handlePayoutAction = async (payoutId: string, action: "paid" | "rejected") => {
+    const updates: Record<string, any> = { status: action };
+    if (action === "paid") updates.paid_at = new Date().toISOString();
+    
+    const { error } = await supabase
+      .from("affiliate_payouts")
+      .update(updates)
+      .eq("id", payoutId);
+    
+    if (error) {
+      toast.error("Failed to update payout");
+      return;
+    }
+    toast.success(`Payout marked as ${action}`);
+    fetchPayouts();
+  };
   useEffect(() => {
     if (!isAdmin) return;
     fetchOrders();
@@ -384,6 +454,97 @@ const Admin = () => {
               </Table>
             </div>
           )}
+          {/* Affiliate Payouts Section */}
+          <div className="mt-12">
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="font-display text-2xl font-bold text-foreground">Affiliate Payouts</h2>
+              <Button
+                variant="outline"
+                className="rounded-xl"
+                onClick={() => {
+                  setShowPayouts(!showPayouts);
+                  if (!showPayouts && payoutRequests.length === 0) fetchPayouts();
+                }}
+              >
+                {showPayouts ? "Hide Payouts" : "View Payouts"}
+              </Button>
+            </div>
+            {showPayouts && (
+              payoutsLoading ? (
+                <div className="flex justify-center py-8">
+                  <Loader2 className="w-6 h-6 animate-spin text-primary" />
+                </div>
+              ) : payoutRequests.length === 0 ? (
+                <Card className="rounded-2xl">
+                  <CardContent className="py-8 text-center text-muted-foreground">
+                    No payout requests yet
+                  </CardContent>
+                </Card>
+              ) : (
+                <div className="overflow-x-auto rounded-2xl border">
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead>Affiliate</TableHead>
+                        <TableHead>Date</TableHead>
+                        <TableHead className="text-right">Amount</TableHead>
+                        <TableHead>Status</TableHead>
+                        <TableHead className="text-right">Actions</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {payoutRequests.map((p) => (
+                        <TableRow key={p.id}>
+                          <TableCell>
+                            <span className="font-medium">{p.affiliate_name}</span>
+                            <span className="block text-xs text-muted-foreground">{p.affiliate_email}</span>
+                          </TableCell>
+                          <TableCell className="text-sm">
+                            {new Date(p.created_at).toLocaleDateString()}
+                          </TableCell>
+                          <TableCell className="text-right font-medium">
+                            £{Number(p.amount).toFixed(2)}
+                          </TableCell>
+                          <TableCell>
+                            <Badge variant={p.status === "paid" ? "default" : p.status === "rejected" ? "destructive" : "secondary"}>
+                              {p.status.charAt(0).toUpperCase() + p.status.slice(1)}
+                            </Badge>
+                          </TableCell>
+                          <TableCell className="text-right space-x-1">
+                            {p.status === "pending" && (
+                              <>
+                                <Button
+                                  size="sm"
+                                  variant="outline"
+                                  className="rounded-lg text-xs"
+                                  onClick={() => handlePayoutAction(p.id, "paid")}
+                                >
+                                  Mark Paid
+                                </Button>
+                                <Button
+                                  size="sm"
+                                  variant="ghost"
+                                  className="rounded-lg text-xs text-destructive"
+                                  onClick={() => handlePayoutAction(p.id, "rejected")}
+                                >
+                                  Reject
+                                </Button>
+                              </>
+                            )}
+                            {p.paid_at && (
+                              <span className="text-xs text-muted-foreground">
+                                Paid {new Date(p.paid_at).toLocaleDateString()}
+                              </span>
+                            )}
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                </div>
+              )
+            )}
+          </div>
         </div>
       </main>
       <Footer />
