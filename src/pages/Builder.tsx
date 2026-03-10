@@ -659,11 +659,7 @@ const Builder = () => {
                 }))}
                 onContinueToCheckout={() => {
                   setShowingRecap(false);
-                  setPostCheckout(true);
-                  // Update URL so refresh preserves the state
-                  const newParams = new URLSearchParams(window.location.search);
-                  newParams.set("paid", "true");
-                  window.history.replaceState(null, "", `${window.location.pathname}?${newParams.toString()}`);
+                  setShowingCheckout(true);
                 }}
                 onEditBook={(bookIndex) => {
                   setShowingRecap(false);
