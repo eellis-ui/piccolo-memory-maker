@@ -9,9 +9,10 @@ import { toast } from "sonner";
 interface ThankYouStepProps {
   sessionId: string | null;
   orderIds?: string[];
+  shopifyOrderNumber?: string | null;
 }
 
-const ThankYouStep = ({ sessionId, orderIds = [] }: ThankYouStepProps) => {
+const ThankYouStep = ({ sessionId, orderIds = [], shopifyOrderNumber }: ThankYouStepProps) => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [isCreating, setIsCreating] = useState(false);
