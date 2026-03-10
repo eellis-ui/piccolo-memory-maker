@@ -21,6 +21,8 @@ interface OrderRow {
   shipped_at: string | null;
   extra_pages: number;
   builder_session_id: string | null;
+  digital_download: boolean;
+  digital_pdf_path: string | null;
 }
 
 const STEPS = [
