@@ -12,12 +12,14 @@ interface RecapBook {
     title: string;
     subtitle: string;
   } | null;
+  digitalDownload?: boolean;
 }
 
 interface RecapStepProps {
   books: RecapBook[];
   onContinueToCheckout: () => void;
   onEditBook: (bookIndex: number) => void;
+  hasAnyDigitalDownload?: boolean;
 }
 
 const RecapStep = ({ books, onContinueToCheckout, onEditBook }: RecapStepProps) => {
