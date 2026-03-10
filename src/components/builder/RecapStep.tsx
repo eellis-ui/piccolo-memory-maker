@@ -1,5 +1,5 @@
 import { Button } from "@/components/ui/button";
-import { Check, BookOpen } from "lucide-react";
+import { Check, BookOpen, Download, UserPlus } from "lucide-react";
 import type { OrderPhoto, BookAddOnsLocal } from "@/pages/Builder";
 import logoImg from "@/assets/piccoload-logo.png";
 
