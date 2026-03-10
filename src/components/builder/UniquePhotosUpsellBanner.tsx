@@ -45,7 +45,7 @@ const UniquePhotosUpsellBanner = () => {
     );
   }
 
-  const count = qualifyingItems.filter((i) => !i.uniquePhotos).length;
+  const bookCount = qualifyingItems.filter((i) => !i.uniquePhotos).reduce((sum, i) => sum + i.quantity, 0);
 
   return (
     <Card className="rounded-lg border border-border bg-background overflow-hidden">
