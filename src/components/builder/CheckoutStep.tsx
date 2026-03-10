@@ -179,7 +179,7 @@ const CheckoutStep = ({ pageCount, extraPages, convertedUrls, onBack, onCheckout
         {/* Order Summary */}
         <div className="lg:col-span-2 space-y-6">
           {/* What's Included */}
-          <Card className="rounded-3xl">
+          <Card className="rounded-lg border-2 border-foreground">
             <CardHeader>
               <CardTitle className="font-display text-lg">What's Included</CardTitle>
             </CardHeader>
