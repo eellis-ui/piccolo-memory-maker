@@ -597,7 +597,7 @@ const Builder = () => {
           {/* ── Step Content ── */}
           {!postCheckout && (
           <div className="max-w-5xl mx-auto">
-            {!showingCheckout && activeBook && (
+            {!showingCheckout && !showingRecap && activeBook && (
               <>
                 {activeBook.step === "upload" && activeBookIndex === 0 && bookCount > 1 && !uniquePhotos && (
                   <div className="mb-6">
