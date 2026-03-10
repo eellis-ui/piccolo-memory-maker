@@ -68,17 +68,17 @@ const UniquePhotosUpsellBanner = () => {
 
         <button
           onClick={() => setUniquePhotos(true)}
-          className="w-full flex items-center justify-between p-4 rounded-lg bg-foreground hover:bg-foreground/90 transition-all text-left"
+          className="w-full flex items-center justify-between p-4 rounded-lg border-2 border-foreground bg-background hover:bg-muted transition-all text-left"
         >
           <div>
-            <span className="font-semibold text-background text-sm">
+            <span className="font-semibold text-foreground text-sm">
               20 Different Photos Per Book
             </span>
             <span className="text-xs text-primary ml-2 font-bold">
               +${UNIQUE_PHOTOS_PRICE.toFixed(2)} per bundle
             </span>
           </div>
-          <span className="font-bold text-background shrink-0 ml-4">
+          <span className="font-bold text-foreground shrink-0 ml-4">
             Add to all
           </span>
         </button>
