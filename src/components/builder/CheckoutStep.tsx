@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { Check, ShoppingCart, Lock, Minus, Plus, Download, Loader2, Clock, ChevronLeft, ChevronRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -7,6 +7,7 @@ import { Separator } from "@/components/ui/separator";
 import { Switch } from "@/components/ui/switch";
 import { useBasket, DIGITAL_DOWNLOAD_PRICE } from "@/contexts/BasketContext";
 import { createShopifyCheckout, SHOPIFY_VARIANTS, type CartLineInput } from "@/lib/shopify";
+import { getSessionOrders } from "@/lib/guest-api";
 import logoImg from "@/assets/piccoload-logo.png";
 
 interface BookDigitalDownload {
