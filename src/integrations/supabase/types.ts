@@ -226,6 +226,39 @@ export type Database = {
         }
         Relationships: []
       }
+      reviews: {
+        Row: {
+          created_at: string
+          email: string | null
+          id: string
+          is_approved: boolean
+          is_verified: boolean
+          rating: number
+          review_text: string
+          reviewer_name: string
+        }
+        Insert: {
+          created_at?: string
+          email?: string | null
+          id?: string
+          is_approved?: boolean
+          is_verified?: boolean
+          rating: number
+          review_text: string
+          reviewer_name: string
+        }
+        Update: {
+          created_at?: string
+          email?: string | null
+          id?: string
+          is_approved?: boolean
+          is_verified?: boolean
+          rating?: number
+          review_text?: string
+          reviewer_name?: string
+        }
+        Relationships: []
+      }
       user_roles: {
         Row: {
           created_at: string
