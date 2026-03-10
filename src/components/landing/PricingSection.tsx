@@ -99,7 +99,7 @@ const PricingSection = () => {
     const fetchImages = async () => {
       try {
         const data = await storefrontApiRequest(PRODUCT_IMAGES_QUERY, {
-          handle: "personalised-coloring-book",
+          handle: "personalized-coloring-book",
         });
         const edges = data?.data?.product?.images?.edges;
         if (edges && edges.length > 0) {

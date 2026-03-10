@@ -22,7 +22,7 @@ const StorySection = () => {
         <div className="max-w-3xl mx-auto relative z-10">
           <div className="prose prose-lg mx-auto text-center">
             <p className="text-muted-foreground text-lg leading-relaxed mb-6">
-              At Piccolo'd, we believe that the most meaningful gifts come from the heart - and nothing is more personal than your own cherished memories, turned into something you can hold, colour, and treasure forever.
+              At Piccolo'd, we believe that the most meaningful gifts come from the heart - and nothing is more personal than your own cherished memories, turned into something you can hold, color, and treasure forever.
             </p>
             
             <p className="text-muted-foreground text-lg leading-relaxed mb-6">

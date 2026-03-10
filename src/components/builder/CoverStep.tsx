@@ -169,7 +169,7 @@ const CoverStep = ({ availableImages, bookAddOns, onBookAddOnsChange, onCoverCom
                     {subtitle}
                   </p>
 
-                  {/* "colour your memories" */}
+                  {/* "color your memories" */}
                   <p
                     className="leading-none"
                     style={{
