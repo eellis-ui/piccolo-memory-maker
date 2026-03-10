@@ -179,7 +179,7 @@ const OrderReview = () => {
                     {/* What's included */}
                     <div className="space-y-1.5 pt-1">
                       {[
-                        "20-page personalised coloring book",
+                        "20-page personalized coloring book",
                         "High-quality line art conversions",
                         "Custom front cover design",
                         "Premium paper quality",
