@@ -116,9 +116,9 @@ const BecomeAffiliate = () => {
       <section className="relative overflow-hidden">
         <div className="absolute inset-0">
           <img
-            src="/images/lifestyle-book-table.jpg"
+            src="/images/why-piccolo-family.webp"
             alt=""
-            className="w-full h-full object-cover opacity-15"
+            className="w-full h-full object-cover opacity-10"
           />
         </div>
         <div className="container mx-auto px-4 text-center max-w-2xl relative z-10 py-24">
