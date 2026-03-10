@@ -693,6 +693,7 @@ const Builder = () => {
                 pageCount={books[0].photos.length}
                 extraPages={0}
                 convertedUrls={books[0].photos.map((p) => p.convertedUrl)}
+                sessionId={sessionId}
                 bookPreviews={
                   (uniquePhotos ? books : [books[0]]).map((b, i) => {
                     const cover = b.coverData;

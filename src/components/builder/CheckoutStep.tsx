@@ -479,7 +479,7 @@ const CheckoutStep = ({ pageCount, extraPages, convertedUrls, onBack, onCheckout
               </div>
 
               <p className="text-xs text-center text-muted-foreground">
-                Watermarks will be removed after payment. Full-resolution PDF generated within 24 hours.
+                Watermarks will be removed after payment. Full-resolution PDF generated and emailed after purchase.
               </p>
             </CardContent>
           </Card>
