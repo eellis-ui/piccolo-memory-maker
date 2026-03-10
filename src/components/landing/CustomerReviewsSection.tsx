@@ -84,14 +84,20 @@ const CustomerReviewsSection = () => {
   }, []);
 
   const fetchReviews = async () => {
+    console.log("[Reviews] Fetching reviews...");
     try {
-      const { data, error } = await supabase
+      const timeout = new Promise<never>((_, reject) =>
+        setTimeout(() => reject(new Error("Fetch timeout")), 5000)
+      );
+      const query = supabase
         .from("reviews")
         .select("id, reviewer_name, rating, review_text, is_verified, created_at")
         .eq("is_approved", true)
         .order("created_at", { ascending: false });
 
+      const { data, error } = await Promise.race([query, timeout]);
       if (error) throw error;
+      console.log("[Reviews] Fetched", data?.length, "reviews");
       setReviews((data as Review[]) || []);
     } catch (err) {
       console.error("Failed to fetch reviews:", err);
@@ -278,6 +284,10 @@ const CustomerReviewsSection = () => {
       {loading ? (
         <div className="flex justify-center py-12">
           <Loader2 className="w-6 h-6 animate-spin text-muted-foreground" />
+        </div>
+      ) : reviews.length === 0 ? (
+        <div className="text-center py-12 text-muted-foreground">
+          <p className="text-sm">No reviews yet — be the first!</p>
         </div>
       ) : (
         <>
