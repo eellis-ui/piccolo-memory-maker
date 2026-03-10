@@ -420,7 +420,11 @@ const Builder = () => {
 
           {/* ── Post-checkout: Thank You + Create Account ── */}
           {postCheckout && (
-            <ThankYouStep sessionId={sessionId} orderIds={books.map(b => b.orderId).filter(Boolean) as string[]} />
+            <ThankYouStep
+              sessionId={sessionId}
+              orderIds={books.map(b => b.orderId).filter(Boolean) as string[]}
+              shopifyOrderNumber={shopifyOrderNumber}
+            />
           )}
 
           {/* ── Multi-book tabs ── */}
