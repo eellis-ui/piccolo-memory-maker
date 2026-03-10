@@ -61,29 +61,19 @@ const ThankYouStep = ({ sessionId, orderIds = [], shopifyOrderNumber, hasDigital
         </p>
       </div>
 
-      {/* Shopify Order Number */}
-      {shopifyOrderNumber && (
-        <div className="bg-muted/50 border border-border rounded-2xl p-5 space-y-1">
-          <p className="text-sm text-muted-foreground font-medium">Order Number</p>
+      {/* Order Number — single number per order, from Shopify */}
+      <div className="bg-muted/50 border border-border rounded-2xl p-5 space-y-1">
+        <p className="text-sm text-muted-foreground font-medium">Order Number</p>
+        {shopifyOrderNumber ? (
           <p className="font-display text-2xl font-bold text-foreground">
             {shopifyOrderNumber}
           </p>
-        </div>
-      )}
-
-      {/* Internal reference IDs (fallback if no Shopify number) */}
-      {!shopifyOrderNumber && orderIds.length > 0 && (
-        <div className="bg-muted/50 border border-border rounded-2xl p-4 space-y-1">
-          <p className="text-sm text-muted-foreground font-medium">
-            {orderIds.length === 1 ? "Order Reference" : "Order References"}
+        ) : (
+          <p className="font-display text-lg font-bold text-foreground animate-pulse">
+            Confirming…
           </p>
-          {orderIds.map((id) => (
-            <p key={id} className="font-mono text-sm text-foreground font-semibold">
-              {id.slice(0, 8).toUpperCase()}
-            </p>
-          ))}
-        </div>
-      )}
+        )}
+      </div>
 
       {/* Order confirmation details */}
       <div className="flex items-center justify-center gap-3 text-sm text-green-700 bg-green-50 border border-green-200 rounded-2xl p-4">
