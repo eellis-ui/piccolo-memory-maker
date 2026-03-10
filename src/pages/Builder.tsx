@@ -357,16 +357,15 @@ const Builder = () => {
           const isActive = i === activeBookIndex;
           // Persist cover for every non-active book too
           if (!isActive && b.orderId && sessionId) {
+            const activeAddOns = prev[activeBookIndex].bookAddOns;
             updateGuestOrder(sessionId, b.orderId, {
               cover_image_id: data.imageIds[0],
-              title_page_enabled: addOns.titlePageEnabled,
-              title_page_text: addOns.titlePageText,
-              dedication_page_enabled: addOns.dedicationPageEnabled,
-              dedication_page_text: addOns.dedicationPageText,
+              dedication_page_enabled: activeAddOns.dedicationPageEnabled,
+              dedication_page_text: activeAddOns.dedicationPageText,
               builder_step: "cover",
             });
           }
-          return { ...b, coverData: data, completed: true, step: "cover" as const };
+          return { ...b, coverData: data, bookAddOns: prev[activeBookIndex].bookAddOns, completed: true, step: "cover" as const };
         })
       );
       setShowingRecap(true);
