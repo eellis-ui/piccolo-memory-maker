@@ -286,35 +286,21 @@ const CheckoutStep = ({ pageCount, extraPages, convertedUrls, onBack, onCheckout
             </CardContent>
           </Card>
 
-          {/* Preview */}
-          <Card className="rounded-lg border-2 border-foreground">
-            <CardHeader>
-              <CardTitle className="font-display text-lg">Book Preview</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="flex gap-4 overflow-x-auto pb-4">
-                {convertedUrls.map((url, i) => (
-                  <div key={i} className="flex-shrink-0 w-32 aspect-[3/4] bg-cream rounded-xl flex items-center justify-center relative overflow-hidden">
-                    {url ? (
-                      <img src={url} alt={`Page ${i + 1}`} className="w-full h-full object-cover" />
-                    ) : (
-                      <span className="text-xs text-muted-foreground">Page {i + 1}</span>
-                    )}
-                    <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-                      <span className="text-2xl font-display text-foreground/25 rotate-[-30deg] font-bold tracking-widest select-none">
-                        PREVIEW
-                      </span>
-                    </div>
-                  </div>
-                ))}
-                {pageCount > convertedUrls.length && (
-                  <div className="flex-shrink-0 w-32 aspect-[3/4] bg-cream rounded-xl flex items-center justify-center">
-                    <span className="text-xs text-muted-foreground">+{pageCount - convertedUrls.length} more</span>
-                  </div>
-                )}
-              </div>
-            </CardContent>
-          </Card>
+          {/* Book Previews */}
+          {bookPreviews.length > 0 && (
+            <Card className="rounded-lg border-2 border-foreground">
+              <CardHeader>
+                <CardTitle className="font-display text-lg">Book Preview</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className={`grid gap-4 ${bookPreviews.length > 1 ? "grid-cols-2" : "grid-cols-1 max-w-[240px] mx-auto"}`}>
+                  {bookPreviews.map((bp) => (
+                    <MiniFlipbook key={bp.bookIndex} bookPreview={bp} bookCount={bookPreviews.length} />
+                  ))}
+                </div>
+              </CardContent>
+            </Card>
+          )}
         </div>
 
         {/* Price Summary */}
