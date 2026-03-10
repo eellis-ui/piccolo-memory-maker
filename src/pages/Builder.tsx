@@ -544,7 +544,17 @@ const Builder = () => {
               <div className="flex items-center justify-between">
                 {BUILDER_STEPS.filter((s) => s.key !== "checkout").map((step, index, arr) => (
                   <React.Fragment key={step.key}>
-                    <div className="flex flex-col items-center">
+                    <div
+                      className={`flex flex-col items-center ${index < currentStepIndex ? "cursor-pointer" : ""}`}
+                      onClick={() => {
+                        if (index < currentStepIndex) {
+                          const targetStep = BUILDER_STEPS.filter((s) => s.key !== "checkout")[index].key;
+                          setShowingRecap(false);
+                          setShowingCheckout(false);
+                          updateBook(activeBookIndex, { step: targetStep });
+                        }
+                      }}
+                    >
                       <div
                         className={`w-10 h-10 rounded-full flex items-center justify-center text-sm font-bold transition-all ${
                           index < currentStepIndex
