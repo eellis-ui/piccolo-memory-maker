@@ -162,6 +162,10 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      claim_orders_for_user: {
+        Args: { _email: string; _session_id?: string; _user_id: string }
+        Returns: number
+      }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
