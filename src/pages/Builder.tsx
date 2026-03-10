@@ -8,6 +8,7 @@ import UploadStep, { type LocalImage } from "@/components/builder/UploadStep";
 import ApproveStep from "@/components/builder/ApproveStep";
 import CoverStep from "@/components/builder/CoverStep";
 import CheckoutStep from "@/components/builder/CheckoutStep";
+import RecapStep from "@/components/builder/RecapStep";
 import ThankYouStep from "@/components/builder/ThankYouStep";
 import UniquePhotosUpsellBanner from "@/components/builder/UniquePhotosUpsellBanner";
 import {
@@ -70,6 +71,7 @@ const Builder = () => {
   const [books, setBooks] = useState<BookState[]>([]);
   const [activeBookIndex, setActiveBookIndex] = useState(0);
   const [showingCheckout, setShowingCheckout] = useState(false);
+  const [showingRecap, setShowingRecap] = useState(false);
   const [postCheckout, setPostCheckout] = useState(searchParams.get("paid") === "true");
   const [sessionId, setSessionId] = useState<string | null>(null);
   const [initialized, setInitialized] = useState(false);
@@ -367,7 +369,7 @@ const Builder = () => {
           return { ...b, coverData: data, completed: true, step: "cover" as const };
         })
       );
-      setShowingCheckout(true);
+      setShowingRecap(true);
       return;
     }
 
@@ -420,7 +422,7 @@ const Builder = () => {
           )}
 
           {/* ── Multi-book tabs ── */}
-          {!postCheckout && bookCount > 1 && !showingCheckout && (() => {
+          {!postCheckout && bookCount > 1 && !showingCheckout && !showingRecap && (() => {
             // Expand basket items (bundles) into per-book uniquePhotos flags
             const perBookUnique: boolean[] = [];
             items.forEach((basketItem) => {
@@ -595,7 +597,7 @@ const Builder = () => {
           {/* ── Step Content ── */}
           {!postCheckout && (
           <div className="max-w-5xl mx-auto">
-            {!showingCheckout && activeBook && (
+            {!showingCheckout && !showingRecap && activeBook && (
               <>
                 {activeBook.step === "upload" && activeBookIndex === 0 && bookCount > 1 && !uniquePhotos && (
                   <div className="mb-6">
@@ -647,6 +649,26 @@ const Builder = () => {
               </>
             )}
 
+            {showingRecap && (
+              <RecapStep
+                books={books.map((b, i) => ({
+                  index: i,
+                  photos: b.photos,
+                  bookAddOns: b.bookAddOns,
+                  coverData: b.coverData,
+                }))}
+                onContinueToCheckout={() => {
+                  setShowingRecap(false);
+                  setShowingCheckout(true);
+                }}
+                onEditBook={(bookIndex) => {
+                  setShowingRecap(false);
+                  setActiveBookIndex(bookIndex);
+                  updateBook(bookIndex, { completed: false, step: "cover" });
+                }}
+              />
+            )}
+
             {showingCheckout && (
               <CheckoutStep
                 pageCount={books[0].photos.length}
@@ -664,8 +686,7 @@ const Builder = () => {
                 onCheckoutComplete={handleCheckoutComplete}
                 onBack={() => {
                   setShowingCheckout(false);
-                  setActiveBookIndex(bookCount - 1);
-                  updateBook(bookCount - 1, { completed: false, step: "cover" });
+                  setShowingRecap(true);
                 }}
               />
             )}

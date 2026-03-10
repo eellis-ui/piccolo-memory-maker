@@ -316,7 +316,7 @@ const CoverStep = ({ availableImages, bookAddOns, onBookAddOnsChange, onCoverCom
           className="rounded-2xl px-8"
         >
           {canContinue
-            ? (hasMoreBooks ? "Continue to Next Book" : (sharedBookCount && sharedBookCount > 1 ? "Finish Your Books" : "Continue to Checkout"))
+            ? (hasMoreBooks ? "Continue to Next Book" : (sharedBookCount && sharedBookCount > 1 ? "See Your Finished Books" : "Continue to Checkout"))
             : `Select ${2 - selectedIds.length} more photo${2 - selectedIds.length === 1 ? "" : "s"}`}
         </Button>
       </div>
