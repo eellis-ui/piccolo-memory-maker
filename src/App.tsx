@@ -19,8 +19,14 @@ import OrderReview from "./pages/OrderReview";
 import NotFound from "./pages/NotFound";
 import ScrollToTop from "./components/ScrollToTop";
 import ChatWidget from "./components/ChatWidget";
+import { useClaimOrders } from "./hooks/use-claim-orders";
 
 const queryClient = new QueryClient();
+
+const AppInner = () => {
+  useClaimOrders();
+  return null;
+};
 
 const App = () => (
   <QueryClientProvider client={queryClient}>
@@ -29,6 +35,7 @@ const App = () => (
       <Sonner />
       <BrowserRouter>
         <BasketProvider>
+          <AppInner />
           <ScrollToTop />
           <ChatWidget />
           <Routes>
