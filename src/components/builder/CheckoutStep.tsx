@@ -24,6 +24,7 @@ interface BookPreviewData {
   bookIndex: number;
   coverGridUrls: (string | null)[];
   pageUrls: (string | null)[];
+  pageLandscape?: boolean[];
 }
 
 interface CheckoutStepProps {
