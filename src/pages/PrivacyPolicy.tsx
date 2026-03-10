@@ -97,11 +97,10 @@ const PrivacyPolicy = () => {
           <section>
             <h2 className="font-display text-xl font-semibold mb-3">5. Photo & Data Retention</h2>
             <ul className="list-disc pl-5 text-muted-foreground space-y-1">
-              <li>Photos uploaded to create your products are stored securely.</li>
-              <li>All photos and related design files are automatically and permanently deleted 28 days after your order is shipped.</li>
-              <li>We do not store photos beyond this period.</li>
-              <li>Customers must keep their own digital copies if they wish to reorder in the future.</li>
-              <li>Deleted photos cannot be recovered.</li>
+              <li><strong>Original photos are never stored.</strong> Your uploaded photos are processed in real-time to create your custom line-art and are immediately discarded after conversion. We do not retain your original images at any point.</li>
+              <li>The converted line-art files and any associated digital PDF are stored securely in your account for as long as you choose to keep them.</li>
+              <li>You may delete your converted artwork, digital PDF, and order data from your account at any time. Please note that deleting this data from your account does not cancel your order — it simply removes the data from our site. Any orders already in production or shipped will still be fulfilled.</li>
+              <li>Once deleted, your data cannot be recovered. Please ensure you have downloaded any files you wish to keep before deleting.</li>
               <li>Other customer data (e.g., order history, emails, billing addresses) may be retained as legally required for tax, accounting, and fraud prevention.</li>
             </ul>
           </section>
