@@ -327,7 +327,7 @@ const CheckoutStep = ({ pageCount, extraPages, convertedUrls, onBack, onCheckout
                     Add a Digital PDF Download
                   </h3>
                   <p className="text-sm text-muted-foreground mt-1">
-                    Get a printable PDF of your coloring book — print extra copies at home anytime!
+                    Get an instant printable PDF of your coloring book emailed to you, so you have extra copies to color any time!
                   </p>
                 </div>
               </div>
