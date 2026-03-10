@@ -221,143 +221,153 @@ const ApproveStep = ({
       )}
 
       {/* Pages Grid */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-        {photos.map((photo, index) => {
-          const isConverting = convertingIds.has(photo.id);
-          const hasConverted = photo.conversionStatus === "completed" && photo.convertedUrl;
+      <Collapsible>
+        <CollapsibleTrigger asChild>
+          <button className="flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors group">
+            <ChevronDown className="w-4 h-4 transition-transform group-data-[state=open]:rotate-180" />
+            View individual photos ({photos.length})
+          </button>
+        </CollapsibleTrigger>
+        <CollapsibleContent className="pt-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+            {photos.map((photo, index) => {
+              const isConverting = convertingIds.has(photo.id);
+              const hasConverted = photo.conversionStatus === "completed" && photo.convertedUrl;
 
-          return (
-            <div
-              key={photo.id}
-              className={`relative rounded-3xl border-2 overflow-hidden transition-all ${
-                photo.isApproved ? "border-primary shadow-soft" : "border-border"
-              }`}
-            >
-              <div className="absolute top-3 left-3 z-10">
-                <Badge variant="secondary">Page {index + 1}</Badge>
-              </div>
-
-              <button
-                onClick={() => deletePhoto(photo.id)}
-                className="absolute top-3 right-3 z-10 w-7 h-7 rounded-full bg-destructive/90 text-destructive-foreground flex items-center justify-center hover:bg-destructive transition-colors"
-              >
-                <Trash2 className="w-3.5 h-3.5" />
-              </button>
-
-              {/* Image preview area */}
-              <div className="relative bg-muted/30 aspect-[210/297] overflow-hidden">
-                {hasConverted ? (
-                  <div className="absolute inset-0 flex">
-                    <div className="w-1/2 h-full border-r border-border/50 flex items-center justify-center overflow-hidden bg-muted/20 relative">
-                      <img
-                        src={photo.originalUrl}
-                        alt={`Original ${index + 1}`}
-                        className="opacity-60"
-                        style={imgStyle(photo.isLandscape)}
-                      />
-                      <span className="absolute bottom-2 left-2 text-xs text-muted-foreground bg-background/80 px-2 py-1 rounded z-10">
-                        Original
-                      </span>
-                    </div>
-                    <div className="w-1/2 h-full flex items-center justify-center overflow-hidden bg-white relative">
-                      <img
-                        src={photo.convertedUrl!}
-                        alt={`Line art ${index + 1}`}
-                        style={imgStyle(photo.isLandscape)}
-                      />
-                      <div className="absolute inset-0 flex items-center justify-center pointer-events-none z-10">
-                        <span className="text-3xl font-display text-foreground/20 rotate-[-30deg] font-bold tracking-widest select-none">
-                          PREVIEW
-                        </span>
-                      </div>
-                      <span className="absolute bottom-2 right-2 text-xs text-muted-foreground bg-background/80 px-2 py-1 rounded z-20">
-                        Line Art
-                      </span>
-                    </div>
+              return (
+                <div
+                  key={photo.id}
+                  className={`relative rounded-3xl border-2 overflow-hidden transition-all ${
+                    photo.isApproved ? "border-primary shadow-soft" : "border-border"
+                  }`}
+                >
+                  <div className="absolute top-3 left-3 z-10">
+                    <Badge variant="secondary">Page {index + 1}</Badge>
                   </div>
-                ) : (
-                  <div className="absolute inset-0 flex items-center justify-center overflow-hidden bg-muted/20">
-                    <img
-                      src={photo.originalUrl}
-                      alt={`Original ${index + 1}`}
-                      style={imgStyle(photo.isLandscape)}
-                    />
-                    {isConverting && (
-                      <div className="absolute inset-0 bg-background/70 flex flex-col items-center justify-center gap-2 z-10">
-                        <Loader2 className="w-8 h-8 text-primary animate-spin" />
-                        <span className="text-sm text-muted-foreground">Converting...</span>
+
+                  <button
+                    onClick={() => deletePhoto(photo.id)}
+                    className="absolute top-3 right-3 z-10 w-7 h-7 rounded-full bg-destructive/90 text-destructive-foreground flex items-center justify-center hover:bg-destructive transition-colors"
+                  >
+                    <Trash2 className="w-3.5 h-3.5" />
+                  </button>
+
+                  {/* Image preview area */}
+                  <div className="relative bg-muted/30 aspect-[210/297] overflow-hidden">
+                    {hasConverted ? (
+                      <div className="absolute inset-0 flex">
+                        <div className="w-1/2 h-full border-r border-border/50 flex items-center justify-center overflow-hidden bg-muted/20 relative">
+                          <img
+                            src={photo.originalUrl}
+                            alt={`Original ${index + 1}`}
+                            className="opacity-60"
+                            style={imgStyle(photo.isLandscape)}
+                          />
+                          <span className="absolute bottom-2 left-2 text-xs text-muted-foreground bg-background/80 px-2 py-1 rounded z-10">
+                            Original
+                          </span>
+                        </div>
+                        <div className="w-1/2 h-full flex items-center justify-center overflow-hidden bg-white relative">
+                          <img
+                            src={photo.convertedUrl!}
+                            alt={`Line art ${index + 1}`}
+                            style={imgStyle(photo.isLandscape)}
+                          />
+                          <div className="absolute inset-0 flex items-center justify-center pointer-events-none z-10">
+                            <span className="text-3xl font-display text-foreground/20 rotate-[-30deg] font-bold tracking-widest select-none">
+                              PREVIEW
+                            </span>
+                          </div>
+                          <span className="absolute bottom-2 right-2 text-xs text-muted-foreground bg-background/80 px-2 py-1 rounded z-20">
+                            Line Art
+                          </span>
+                        </div>
+                      </div>
+                    ) : (
+                      <div className="absolute inset-0 flex items-center justify-center overflow-hidden bg-muted/20">
+                        <img
+                          src={photo.originalUrl}
+                          alt={`Original ${index + 1}`}
+                          style={imgStyle(photo.isLandscape)}
+                        />
+                        {isConverting && (
+                          <div className="absolute inset-0 bg-background/70 flex flex-col items-center justify-center gap-2 z-10">
+                            <Loader2 className="w-8 h-8 text-primary animate-spin" />
+                            <span className="text-sm text-muted-foreground">Converting...</span>
+                          </div>
+                        )}
                       </div>
                     )}
                   </div>
-                )}
-              </div>
 
-              <div className="p-4 flex items-center justify-between bg-background">
-                <div className="flex gap-2">
-                  {!hasConverted && !isConverting && (
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => convertPhoto(photo.id)}
-                      className="rounded-xl"
-                    >
-                      <RefreshCw className="w-4 h-4 mr-1" />
-                      Convert
-                    </Button>
-                  )}
-                  {hasConverted && !photo.isApproved && (() => {
-                    const retries = retryCounts[photo.id] ?? 0;
-                    const attemptsLeft = MAX_RETRIES_PER_PHOTO - retries;
-                    if (attemptsLeft <= 0) return (
-                      <span className="text-xs text-muted-foreground py-1">Max retries reached</span>
-                    );
-                    return (
+                  <div className="p-4 flex items-center justify-between bg-background">
+                    <div className="flex gap-2">
+                      {!hasConverted && !isConverting && (
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => convertPhoto(photo.id)}
+                          className="rounded-xl"
+                        >
+                          <RefreshCw className="w-4 h-4 mr-1" />
+                          Convert
+                        </Button>
+                      )}
+                      {hasConverted && !photo.isApproved && (() => {
+                        const retries = retryCounts[photo.id] ?? 0;
+                        const attemptsLeft = MAX_RETRIES_PER_PHOTO - retries;
+                        if (attemptsLeft <= 0) return (
+                          <span className="text-xs text-muted-foreground py-1">Max retries reached</span>
+                        );
+                        return (
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => convertPhoto(photo.id)}
+                            disabled={isConverting}
+                            className="rounded-xl text-muted-foreground"
+                          >
+                            <RefreshCw className="w-4 h-4 mr-1" />
+                            Retry ({attemptsLeft} left)
+                          </Button>
+                        );
+                      })()}
+                      {photo.conversionStatus === "failed" && (() => {
+                        const retries = retryCounts[photo.id] ?? 0;
+                        const attemptsLeft = MAX_RETRIES_PER_PHOTO - retries;
+                        if (attemptsLeft <= 0) return null;
+                        return (
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => convertPhoto(photo.id)}
+                            className="rounded-xl text-destructive"
+                          >
+                            <RefreshCw className="w-4 h-4 mr-1" />
+                            Retry ({attemptsLeft} left)
+                          </Button>
+                        );
+                      })()}
+                    </div>
+
+                    {hasConverted && (
                       <Button
-                        variant="ghost"
+                        variant={photo.isApproved ? "default" : "outline"}
                         size="sm"
-                        onClick={() => convertPhoto(photo.id)}
-                        disabled={isConverting}
-                        className="rounded-xl text-muted-foreground"
+                        onClick={() => toggleApproval(photo.id)}
+                        className="rounded-xl"
                       >
-                        <RefreshCw className="w-4 h-4 mr-1" />
-                        Retry ({attemptsLeft} left)
+                        <Check className="w-4 h-4 mr-1" />
+                        {photo.isApproved ? "Approved" : "Approve"}
                       </Button>
-                    );
-                  })()}
-                  {photo.conversionStatus === "failed" && (() => {
-                    const retries = retryCounts[photo.id] ?? 0;
-                    const attemptsLeft = MAX_RETRIES_PER_PHOTO - retries;
-                    if (attemptsLeft <= 0) return null;
-                    return (
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => convertPhoto(photo.id)}
-                        className="rounded-xl text-destructive"
-                      >
-                        <RefreshCw className="w-4 h-4 mr-1" />
-                        Retry ({attemptsLeft} left)
-                      </Button>
-                    );
-                  })()}
+                    )}
+                  </div>
                 </div>
-
-                {hasConverted && (
-                  <Button
-                    variant={photo.isApproved ? "default" : "outline"}
-                    size="sm"
-                    onClick={() => toggleApproval(photo.id)}
-                    className="rounded-xl"
-                  >
-                    <Check className="w-4 h-4 mr-1" />
-                    {photo.isApproved ? "Approved" : "Approve"}
-                  </Button>
-                )}
-              </div>
-            </div>
-          );
-        })}
-      </div>
+              );
+            })}
+          </div>
+        </CollapsibleContent>
+      </Collapsible>
 
       {/* Digital Download Upsell */}
       {allApproved && <DigitalUpsellBanner variant="compact" maxCopies={1} />}
