@@ -260,7 +260,7 @@ const BecomeAffiliate = () => {
       <Navbar />
 
       {/* Hero */}
-      <section className="pt-32 pb-24 bg-cream">
+      <section id="signup-form" className="pt-32 pb-24 bg-cream">
         <div className="container mx-auto px-4 text-center max-w-3xl">
           <h1 className="font-display text-5xl md:text-7xl font-bold text-foreground mb-6 uppercase">
             Share the Love.<br />Earn the Rewards.
