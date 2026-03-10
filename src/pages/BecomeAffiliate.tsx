@@ -82,6 +82,10 @@ const BecomeAffiliate = () => {
             )}
           </div>
         </div>
+
+        <div className="mt-16">
+          <ReviewsBanner />
+        </div>
       </section>
 
       {/* How It Works */}
