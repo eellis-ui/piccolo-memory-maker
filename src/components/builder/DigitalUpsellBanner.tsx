@@ -22,11 +22,11 @@ const DigitalUpsellBanner = ({ variant = "full", maxCopies }: DigitalUpsellBanne
 
   if (variant === "compact") {
     return (
-      <Card className="rounded-3xl border-primary/20 bg-primary/5">
+      <Card className="rounded-lg border-2 border-foreground bg-background">
         <CardContent className="p-4 flex items-center justify-between gap-4">
           <div className="flex items-center gap-3 min-w-0">
-            <div className="w-9 h-9 rounded-xl bg-primary/10 flex items-center justify-center shrink-0">
-              <Download className="w-4 h-4 text-primary" />
+            <div className="w-9 h-9 rounded-lg bg-foreground flex items-center justify-center shrink-0">
+              <Download className="w-4 h-4 text-background" />
             </div>
             <div className="min-w-0">
               <p className="font-display text-sm font-semibold text-foreground">
@@ -37,14 +37,12 @@ const DigitalUpsellBanner = ({ variant = "full", maxCopies }: DigitalUpsellBanne
               </p>
             </div>
           </div>
-          <Button
-            size="sm"
-            variant="outline"
-            className="rounded-xl shrink-0 border-primary/30 hover:bg-primary/10"
+          <span
+            className="font-bold text-foreground shrink-0 ml-4 cursor-pointer hover:text-primary transition-colors"
             onClick={() => setDigitalCopies(digitalCopies + 1)}
           >
             Add {priceLabel}
-          </Button>
+          </span>
         </CardContent>
       </Card>
     );
