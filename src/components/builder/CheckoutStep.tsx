@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Check, ShoppingCart, Lock, Minus, Plus, Download, X, Loader2, Clock } from "lucide-react";
+import { Check, ShoppingCart, Lock, Minus, Plus, Download, Loader2, Clock, ChevronLeft, ChevronRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -7,6 +7,7 @@ import { Separator } from "@/components/ui/separator";
 import { Switch } from "@/components/ui/switch";
 import { useBasket, DIGITAL_DOWNLOAD_PRICE } from "@/contexts/BasketContext";
 import { createShopifyCheckout, SHOPIFY_VARIANTS, type CartLineInput } from "@/lib/shopify";
+import logoImg from "@/assets/piccoload-logo.png";
 
 interface BookDigitalDownload {
   bookIndex: number;
@@ -19,6 +20,12 @@ interface BookAddOnsInfo {
   dedicationPageEnabled: boolean;
 }
 
+interface BookPreviewData {
+  bookIndex: number;
+  coverGridUrls: (string | null)[];
+  pageUrls: (string | null)[];
+}
+
 interface CheckoutStepProps {
   pageCount: number;
   extraPages: number;
@@ -28,9 +35,84 @@ interface CheckoutStepProps {
   bookDigitalDownloads: BookDigitalDownload[];
   onToggleBookDigitalDownload: (bookIndex: number) => void;
   bookAddOnsList: BookAddOnsInfo[];
+  bookPreviews?: BookPreviewData[];
 }
 
-const CheckoutStep = ({ pageCount, extraPages, convertedUrls, onBack, onCheckoutComplete, bookDigitalDownloads, onToggleBookDigitalDownload, bookAddOnsList }: CheckoutStepProps) => {
+const MiniFlipbook = ({ bookPreview, bookCount }: { bookPreview: BookPreviewData; bookCount: number }) => {
+  const [currentPage, setCurrentPage] = useState(0);
+  const totalPages = 1 + bookPreview.pageUrls.length;
+
+  const goBack = () => setCurrentPage((p) => Math.max(0, p - 1));
+  const goForward = () => setCurrentPage((p) => Math.min(totalPages - 1, p + 1));
+
+  return (
+    <div className="flex flex-col items-center gap-2">
+      {bookCount > 1 && (
+        <span className="text-xs font-semibold text-foreground">Book {bookPreview.bookIndex + 1}</span>
+      )}
+      <div className="relative w-full aspect-[3/4] bg-[#fffaf3] rounded-lg overflow-hidden border border-border">
+        {currentPage === 0 ? (
+          <div className="w-full h-full flex flex-col">
+            <div className="flex-1 flex items-center justify-center min-h-0">
+              <img src={logoImg} alt="Piccoload" style={{ width: "50%" }} />
+            </div>
+            <div className="shrink-0 grid grid-cols-2" style={{ margin: "0 8.75%", gap: 0 }}>
+              {bookPreview.coverGridUrls.map((url, idx) => (
+                <div key={idx} className="aspect-square overflow-hidden bg-[#ede8e0]">
+                  {url ? (
+                    <img src={url} alt={`Cover ${idx + 1}`} className="w-full h-full object-cover object-center" />
+                  ) : (
+                    <div className="w-full h-full bg-muted" />
+                  )}
+                </div>
+              ))}
+            </div>
+            <div className="flex-1 min-h-0" />
+          </div>
+        ) : (
+          <div className="w-full h-full flex items-center justify-center bg-white relative">
+            {bookPreview.pageUrls[currentPage - 1] ? (
+              <img
+                src={bookPreview.pageUrls[currentPage - 1]!}
+                alt={`Page ${currentPage}`}
+                className="w-full h-full object-contain"
+              />
+            ) : (
+              <span className="text-xs text-muted-foreground">Page {currentPage}</span>
+            )}
+            <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+              <span className="text-lg font-display text-foreground/20 rotate-[-30deg] font-bold tracking-widest select-none">
+                PREVIEW
+              </span>
+            </div>
+          </div>
+        )}
+
+        {currentPage > 0 && (
+          <button
+            onClick={goBack}
+            className="absolute left-1 top-1/2 -translate-y-1/2 w-6 h-6 rounded-full bg-foreground/70 text-background flex items-center justify-center hover:bg-foreground transition-colors"
+          >
+            <ChevronLeft className="w-3.5 h-3.5" />
+          </button>
+        )}
+        {currentPage < totalPages - 1 && (
+          <button
+            onClick={goForward}
+            className="absolute right-1 top-1/2 -translate-y-1/2 w-6 h-6 rounded-full bg-foreground/70 text-background flex items-center justify-center hover:bg-foreground transition-colors"
+          >
+            <ChevronRight className="w-3.5 h-3.5" />
+          </button>
+        )}
+      </div>
+      <span className="text-xs text-muted-foreground">
+        {currentPage === 0 ? "Cover" : `Page ${currentPage}`} / {totalPages - 1} pages
+      </span>
+    </div>
+  );
+};
+
+const CheckoutStep = ({ pageCount, extraPages, convertedUrls, onBack, onCheckoutComplete, bookDigitalDownloads, onToggleBookDigitalDownload, bookAddOnsList, bookPreviews = [] }: CheckoutStepProps) => {
   const { item, setQuantity, pricingTiers, addOnPrice, uniquePhotos, uniquePhotosPrice } = useBasket();
   const personalizeCoverFromBasket = item?.personalizeCover ?? false;
   const [isCheckingOut, setIsCheckingOut] = useState(false);
@@ -278,35 +360,21 @@ const CheckoutStep = ({ pageCount, extraPages, convertedUrls, onBack, onCheckout
             </CardContent>
           </Card>
 
-          {/* Preview */}
-          <Card className="rounded-lg border-2 border-foreground">
-            <CardHeader>
-              <CardTitle className="font-display text-lg">Book Preview</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="flex gap-4 overflow-x-auto pb-4">
-                {convertedUrls.map((url, i) => (
-                  <div key={i} className="flex-shrink-0 w-32 aspect-[3/4] bg-cream rounded-xl flex items-center justify-center relative overflow-hidden">
-                    {url ? (
-                      <img src={url} alt={`Page ${i + 1}`} className="w-full h-full object-cover" />
-                    ) : (
-                      <span className="text-xs text-muted-foreground">Page {i + 1}</span>
-                    )}
-                    <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-                      <span className="text-2xl font-display text-foreground/25 rotate-[-30deg] font-bold tracking-widest select-none">
-                        PREVIEW
-                      </span>
-                    </div>
-                  </div>
-                ))}
-                {pageCount > convertedUrls.length && (
-                  <div className="flex-shrink-0 w-32 aspect-[3/4] bg-cream rounded-xl flex items-center justify-center">
-                    <span className="text-xs text-muted-foreground">+{pageCount - convertedUrls.length} more</span>
-                  </div>
-                )}
-              </div>
-            </CardContent>
-          </Card>
+          {/* Book Previews */}
+          {bookPreviews.length > 0 && (
+            <Card className="rounded-lg border-2 border-foreground">
+              <CardHeader>
+                <CardTitle className="font-display text-lg">Book Preview</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className={`grid gap-4 ${bookPreviews.length > 1 ? "grid-cols-2" : "grid-cols-1 max-w-[240px] mx-auto"}`}>
+                  {bookPreviews.map((bp) => (
+                    <MiniFlipbook key={bp.bookIndex} bookPreview={bp} bookCount={bookPreviews.length} />
+                  ))}
+                </div>
+              </CardContent>
+            </Card>
+          )}
         </div>
 
         {/* Price Summary */}
