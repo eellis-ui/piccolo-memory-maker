@@ -354,7 +354,7 @@ const MyOrders = () => {
                             onClick={async () => {
                               const { data } = await supabase.storage
                                 .from("order-files")
-                                .createSignedUrl(order.digital_pdf_path!, 60 * 60); // 1 hour signed URL
+                                .createSignedUrl(order.digital_pdf_path!, 60 * 60);
                               if (data?.signedUrl) {
                                 window.open(data.signedUrl, "_blank");
                               } else {
@@ -365,6 +365,14 @@ const MyOrders = () => {
                             <Download className="w-4 h-4 mr-1" />
                             Download PDF
                           </Button>
+                        ) : !isDraft && order.digital_download && !order.digital_pdf_path ? (
+                          <div className="ml-auto p-3 rounded-xl border border-dashed border-muted-foreground/30 bg-muted flex items-center gap-3">
+                            <Loader2 className="w-4 h-4 text-muted-foreground animate-spin shrink-0" />
+                            <div className="min-w-0">
+                              <p className="text-xs font-semibold text-foreground">PDF Generating…</p>
+                              <p className="text-[10px] text-muted-foreground">Your download will be available shortly</p>
+                            </div>
+                          </div>
                         ) : !isDraft && (
                           <div className="ml-auto p-3 rounded-xl border border-dashed border-primary/30 bg-primary/5 flex items-center gap-3">
                             <Download className="w-4 h-4 text-primary shrink-0" />
