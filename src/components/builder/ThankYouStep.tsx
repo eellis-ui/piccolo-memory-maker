@@ -10,9 +10,10 @@ interface ThankYouStepProps {
   sessionId: string | null;
   orderIds?: string[];
   shopifyOrderNumber?: string | null;
+  hasDigitalDownload?: boolean;
 }
 
-const ThankYouStep = ({ sessionId, orderIds = [], shopifyOrderNumber }: ThankYouStepProps) => {
+const ThankYouStep = ({ sessionId, orderIds = [], shopifyOrderNumber, hasDigitalDownload }: ThankYouStepProps) => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [isCreating, setIsCreating] = useState(false);
