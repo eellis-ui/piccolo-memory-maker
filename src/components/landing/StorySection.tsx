@@ -30,7 +30,7 @@ const StorySection = () => {
             </p>
             
             <p className="text-muted-foreground text-lg leading-relaxed">
-              Today, we transform your favourite photos - from silly selfies to treasured family moments - into beautiful line art, bound together in a bespoke coloring book. Whether it's a sentimental gift for someone special, a therapeutic activity to ease anxiety, or a creative keepsake for children, every page tells a story that's uniquely yours.
+              Today, we transform your favorite photos - from silly selfies to treasured family moments - into beautiful line art, bound together in a bespoke coloring book. Whether it's a sentimental gift for someone special, a therapeutic activity to ease anxiety, or a creative keepsake for children, every page tells a story that's uniquely yours.
             </p>
           </div>
 
