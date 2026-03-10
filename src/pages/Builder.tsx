@@ -458,7 +458,7 @@ const Builder = () => {
                       ) : (
                         <BookOpen className="w-3.5 h-3.5 shrink-0" />
                       )}
-                      <span>Book {i + 1}</span>
+                      <span className="font-bold">Book {i + 1}</span>
                     </button>
                   ))}
                 </div>
