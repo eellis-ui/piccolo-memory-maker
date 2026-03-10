@@ -119,6 +119,59 @@ const Admin = () => {
     setSelected(new Set());
   };
 
+  const fetchPayouts = async () => {
+    setPayoutsLoading(true);
+    try {
+      // Fetch all payout requests
+      const { data: payoutsData } = await supabase
+        .from("affiliate_payouts")
+        .select("*")
+        .order("created_at", { ascending: false });
+      
+      if (payoutsData && payoutsData.length > 0) {
+        // Get affiliate details for each payout
+        const affiliateIds = [...new Set(payoutsData.map((p: any) => p.affiliate_id))];
+        const { data: affiliates } = await supabase
+          .from("affiliates")
+          .select("id, full_name, email")
+          .in("id", affiliateIds);
+        
+        const affMap = new Map((affiliates || []).map((a: any) => [a.id, a]));
+        const enriched = payoutsData.map((p: any) => {
+          const aff = affMap.get(p.affiliate_id);
+          return {
+            ...p,
+            affiliate_name: aff?.full_name || "Unknown",
+            affiliate_email: aff?.email || "",
+          };
+        });
+        setPayoutRequests(enriched as PayoutRow[]);
+      } else {
+        setPayoutRequests([]);
+      }
+    } catch (err) {
+      console.error("Error fetching payouts:", err);
+    } finally {
+      setPayoutsLoading(false);
+    }
+  };
+
+  const handlePayoutAction = async (payoutId: string, action: "paid" | "rejected") => {
+    const updates: Record<string, any> = { status: action };
+    if (action === "paid") updates.paid_at = new Date().toISOString();
+    
+    const { error } = await supabase
+      .from("affiliate_payouts")
+      .update(updates)
+      .eq("id", payoutId);
+    
+    if (error) {
+      toast.error("Failed to update payout");
+      return;
+    }
+    toast.success(`Payout marked as ${action}`);
+    fetchPayouts();
+  };
   useEffect(() => {
     if (!isAdmin) return;
     fetchOrders();
