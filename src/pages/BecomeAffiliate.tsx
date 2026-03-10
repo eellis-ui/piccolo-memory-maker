@@ -66,7 +66,7 @@ const BecomeAffiliate = () => {
             {benefits.map((benefit) =>
             <div
               key={benefit.title}
-              className="text-center p-10 rounded-lg border border-border bg-background">
+              className="text-center p-10 rounded-lg border border-border bg-card">
               
                 <span className="font-display text-5xl font-bold text-foreground block mb-4">
                   {benefit.number}
