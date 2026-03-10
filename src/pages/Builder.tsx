@@ -444,24 +444,50 @@ const Builder = () => {
             return (
               <div className="max-w-2xl mx-auto mb-8">
                 <div className="flex gap-2 p-1 bg-foreground rounded-lg">
-                  {books.map((book, i) => (
-                    <button
-                      key={i}
-                      onClick={() => setActiveBookIndex(i)}
-                      className={`flex-1 flex items-center justify-center gap-2 py-2.5 px-3 rounded-md text-sm transition-all ${
-                        activeBookIndex === i
-                          ? "bg-background shadow-md text-foreground font-bold"
-                          : "text-background font-medium"
-                      }`}
-                    >
-                      {book.completed ? (
-                        <Check className="w-3.5 h-3.5 text-primary shrink-0" />
-                      ) : (
-                        <BookOpen className="w-3.5 h-3.5 shrink-0" />
-                      )}
-                      <span className="font-bold">Book {i + 1}</span>
-                    </button>
-                  ))}
+                  {groups.map((group, gi) => {
+                    const isShared = !group.unique;
+                    const groupIndices = Array.from({ length: group.end - group.start + 1 }, (_, k) => group.start + k);
+                    const isGroupActive = isShared && groupIndices.includes(activeBookIndex);
+
+                    return (
+                      <div
+                        key={gi}
+                        className={`flex gap-0.5 flex-1 rounded-md transition-all ${
+                          isShared && isGroupActive
+                            ? "bg-background shadow-md"
+                            : ""
+                        }`}
+                        style={{ flex: groupIndices.length }}
+                      >
+                        {groupIndices.map((i) => {
+                          const book = books[i];
+                          const isActive = activeBookIndex === i;
+                          // For unique books, highlight individually; for shared, the group container handles it
+                          const individualHighlight = group.unique && isActive;
+                          return (
+                            <button
+                              key={i}
+                              onClick={() => setActiveBookIndex(i)}
+                              className={`flex-1 flex items-center justify-center gap-2 py-2.5 px-3 rounded-md text-sm transition-all ${
+                                individualHighlight
+                                  ? "bg-background shadow-md text-foreground font-bold"
+                                  : isGroupActive
+                                    ? "text-foreground font-bold"
+                                    : "text-background font-medium"
+                              }`}
+                            >
+                              {book.completed ? (
+                                <Check className="w-3.5 h-3.5 text-primary shrink-0" />
+                              ) : (
+                                <BookOpen className="w-3.5 h-3.5 shrink-0" />
+                              )}
+                              <span className="font-bold">Book {i + 1}</span>
+                            </button>
+                          );
+                        })}
+                      </div>
+                    );
+                  })}
                 </div>
 
                 {/* Shared / unique photo grouping brackets */}
