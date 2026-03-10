@@ -431,7 +431,7 @@ const Affiliates = () => {
                             {new Date(order.created_at).toLocaleDateString()}
                           </td>
                           <td className="py-3 px-2 text-right">£{Number(order.order_total).toFixed(2)}</td>
-                          <td className="py-3 px-2 text-right font-medium text-green-600">
+                          <td className="py-3 px-2 text-right font-medium text-primary">
                             £{Number(order.commission).toFixed(2)}
                           </td>
                         </tr>
