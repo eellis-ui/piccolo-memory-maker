@@ -268,9 +268,13 @@ const CheckoutStep = ({ pageCount, extraPages, convertedUrls, onBack, onCheckout
           <Button
             variant="outline"
             className="rounded-2xl"
-            onClick={() => {
-              setAwaitingPayment(false);
-              onCheckoutComplete?.();
+            onClick={async () => {
+              const paid = await pollForPayment();
+              if (!paid) {
+                // Fallback: proceed anyway if user insists
+                setAwaitingPayment(false);
+                onCheckoutComplete?.(null);
+              }
             }}
           >
             I've completed payment

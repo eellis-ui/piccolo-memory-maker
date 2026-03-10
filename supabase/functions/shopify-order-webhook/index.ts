@@ -278,6 +278,7 @@ Deno.serve(async (req) => {
         payment_status: "paid",
         status: "paid",
         customer_email: customerEmail || null,
+        shopify_order_number: shopifyOrderNumber || null,
       };
 
       if (hasDigitalDownload) {
