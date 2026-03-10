@@ -13,7 +13,7 @@ const FinalCTABlock = ({ onCtaClick }: FinalCTABlockProps) => {
           Ready to Create Something Special?
         </h2>
         <p className="text-muted-foreground mb-8 text-sm sm:text-base leading-relaxed">
-          Turn your favourite photos into a one-of-a-kind coloring book. It only takes a few minutes.
+          Turn your favorite photos into a one-of-a-kind coloring book. It only takes a few minutes.
         </p>
         <Button onClick={onCtaClick} size="lg" className="rounded-lg py-6 px-10 text-base font-semibold">
           <ShoppingCart className="w-5 h-5 mr-2" />

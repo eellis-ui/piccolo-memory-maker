@@ -221,7 +221,7 @@ const BasketContent = ({
               />
             </div>
           </div>
-          <p className="text-[10px] text-muted-foreground leading-tight">Get all your line art as a printable PDF — colour as many times as you like!</p>
+          <p className="text-[10px] text-muted-foreground leading-tight">Get all your line art as a printable PDF — color as many times as you like!</p>
         </div>
 
         {/* Discounts line */}
