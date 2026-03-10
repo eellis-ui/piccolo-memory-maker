@@ -234,7 +234,11 @@ Deno.serve(async (req) => {
     const payload = JSON.parse(body);
     const customerEmail = payload.email || payload.customer?.email;
     const shopifyOrderNumber = payload.name || payload.order_number ? `#${payload.order_number}` : null;
+    const orderTotal = parseFloat(payload.total_price || "0");
     
+    // Extract discount codes used in this order
+    const discountCodes: { code: string; amount: string }[] = payload.discount_codes || [];
+
     // Extract builder_session_id from cart note attributes
     const noteAttributes: { name: string; value: string }[] = payload.note_attributes || [];
     const sessionId = noteAttributes.find(
@@ -309,6 +313,36 @@ Deno.serve(async (req) => {
           }
         } catch (pdfErr) {
           console.error("PDF generation/email failed for order", order.id, pdfErr);
+        }
+      }
+    }
+
+    // Track affiliate discount codes
+    if (discountCodes.length > 0) {
+      for (const dc of discountCodes) {
+        const code = dc.code?.toUpperCase();
+        if (!code) continue;
+
+        const { data: aff } = await admin
+          .from("affiliates")
+          .select("id")
+          .ilike("discount_code", code)
+          .maybeSingle();
+
+        if (aff) {
+          const commission = orderTotal * 0.1;
+
+          // Insert affiliate order record
+          await admin.from("affiliate_orders").insert({
+            affiliate_id: aff.id,
+            order_id: orders[0]?.id || null,
+            shopify_order_number: shopifyOrderNumber,
+            order_total: orderTotal,
+            commission: commission,
+          });
+
+          // Update affiliate totals
+          await admin.rpc("update_affiliate_totals" as any, { _affiliate_id: aff.id });
         }
       }
     }
