@@ -35,6 +35,7 @@ const App = () => (
       <Sonner />
       <BrowserRouter>
         <BasketProvider>
+          <AppInner />
           <ScrollToTop />
           <ChatWidget />
           <Routes>
