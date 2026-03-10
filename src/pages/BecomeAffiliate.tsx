@@ -1,5 +1,6 @@
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
+import ReviewsBanner from "@/components/landing/ReviewsBanner";
 import Navbar from "@/components/layout/Navbar";
 import Footer from "@/components/layout/Footer";
 
@@ -80,6 +81,10 @@ const BecomeAffiliate = () => {
               </div>
             )}
           </div>
+        </div>
+
+        <div className="mt-16">
+          <ReviewsBanner />
         </div>
       </section>
 
