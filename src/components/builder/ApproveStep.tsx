@@ -207,13 +207,49 @@ const ApproveStep = ({
         </div>
       </div>
 
-      {/* Progress */}
-      <div className="w-full h-2 bg-muted rounded-full overflow-hidden">
-        <div
-          className="h-full bg-primary transition-all duration-300"
-          style={{ width: `${(totalApproved / Math.max(totalPages, 1)) * 100}%` }}
-        />
-      </div>
+      {/* Conversion Progress */}
+      {(() => {
+        const convertedCount = photos.filter((p) => p.conversionStatus === "completed").length;
+        const totalPhotos = photos.length;
+        const isConverting = convertingIds.size > 0;
+        const percent = totalPhotos > 0 ? Math.round((convertedCount / totalPhotos) * 100) : 0;
+        const allConverted = convertedCount === totalPhotos && totalPhotos > 0;
+
+        return (
+          <div className="space-y-1.5">
+            <div className="flex items-center justify-between text-sm">
+              <span className="text-muted-foreground">
+                {isConverting ? (
+                  <span className="flex items-center gap-1.5">
+                    <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                    Converting photos… {convertedCount} of {totalPhotos}
+                  </span>
+                ) : allConverted ? (
+                  <span className="flex items-center gap-1.5 text-green-600 dark:text-green-400">
+                    <Check className="w-3.5 h-3.5" />
+                    All photos converted
+                  </span>
+                ) : (
+                  `${convertedCount} of ${totalPhotos} photos converted`
+                )}
+              </span>
+              <span className="font-medium text-foreground">{percent}%</span>
+            </div>
+            <div className="w-full h-2.5 bg-muted rounded-full overflow-hidden">
+              <div
+                className={`h-full rounded-full transition-all duration-500 ${
+                  allConverted
+                    ? "bg-green-500"
+                    : isConverting
+                    ? "bg-primary animate-pulse"
+                    : "bg-primary"
+                }`}
+                style={{ width: `${percent}%` }}
+              />
+            </div>
+          </div>
+        );
+      })()}
 
       {/* Interactive Book Preview (when all approved) */}
       {allApproved && (
