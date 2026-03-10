@@ -16,16 +16,16 @@ const UniquePhotosUpsellBanner = () => {
 
   if (allEnabled) {
     return (
-      <Card className="rounded-3xl border-primary/30 bg-primary/5">
+      <Card className="rounded-lg border border-border bg-background">
         <CardContent className="p-4 flex items-center justify-between gap-4">
           <div className="flex items-center gap-3">
-            <div className="w-9 h-9 rounded-xl bg-primary/15 flex items-center justify-center shrink-0">
-              <Images className="w-4 h-4 text-primary" />
+            <div className="w-9 h-9 rounded-lg bg-foreground flex items-center justify-center shrink-0">
+              <Images className="w-4 h-4 text-background" />
             </div>
             <div>
               <p className="font-display text-sm font-semibold text-foreground flex items-center gap-2">
                 20 Unique Photos Per Book
-                <Badge variant="secondary" className="text-xs">Added</Badge>
+                <Badge className="text-xs bg-primary text-primary-foreground border-0">Added</Badge>
               </p>
               <p className="text-xs text-foreground">
                 Each book will use different photos
@@ -35,7 +35,7 @@ const UniquePhotosUpsellBanner = () => {
           <Button
             size="sm"
             variant="ghost"
-            className="rounded-xl text-muted-foreground hover:text-destructive shrink-0 text-xs"
+            className="rounded-lg text-muted-foreground hover:text-destructive shrink-0 text-xs"
             onClick={() => setUniquePhotos(false)}
           >
             Remove
