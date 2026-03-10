@@ -132,8 +132,6 @@ const BecomeAffiliate = () => {
           body: JSON.stringify({
             full_name: fullName,
             discount_code: discountCode,
-            instagram_handle: instagramHandle || null,
-            tiktok_handle: tiktokHandle || null,
           }),
         },
       );
