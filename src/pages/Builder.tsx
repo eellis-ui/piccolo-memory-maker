@@ -360,8 +360,6 @@ const Builder = () => {
             const activeAddOns = prev[activeBookIndex].bookAddOns;
             updateGuestOrder(sessionId, b.orderId, {
               cover_image_id: data.imageIds[0],
-              title_page_enabled: activeAddOns.titlePageEnabled,
-              title_page_text: activeAddOns.titlePageText,
               dedication_page_enabled: activeAddOns.dedicationPageEnabled,
               dedication_page_text: activeAddOns.dedicationPageText,
               builder_step: "cover",
