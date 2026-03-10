@@ -384,12 +384,14 @@ const Builder = () => {
     }
   };
 
-  const handleCheckoutComplete = () => {
+  const handleCheckoutComplete = (shopifyNum?: string | null) => {
     setShowingCheckout(false);
     setPostCheckout(true);
+    if (shopifyNum) setShopifyOrderNumber(shopifyNum);
     // Update URL so refresh preserves the state
     const newParams = new URLSearchParams(window.location.search);
     newParams.set("paid", "true");
+    if (shopifyNum) newParams.set("shopifyOrder", shopifyNum);
     window.history.replaceState(null, "", `${window.location.pathname}?${newParams.toString()}`);
   };
 
