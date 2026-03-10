@@ -233,16 +233,16 @@ const CoverStep = ({ availableImages, bookAddOns, onBookAddOnsChange, onCoverCom
           </div>
 
           {/* Cover Add-ons */}
-          <div className="rounded-lg border-2 border-foreground bg-background p-5 space-y-5">
-            <div className="flex items-start gap-4">
-              <div className="w-10 h-10 rounded-lg bg-foreground flex items-center justify-center shrink-0">
-                <Heart className="w-5 h-5 text-background" />
+          <div className="rounded-lg border-2 border-foreground bg-background p-4 space-y-3">
+            <div className="flex items-start gap-3">
+              <div className="w-9 h-9 rounded-lg bg-foreground flex items-center justify-center shrink-0">
+                <Heart className="w-4 h-4 text-background" />
               </div>
               <div className="flex-1">
-                <h3 className="font-display text-base font-semibold text-foreground">
+                <h3 className="font-display text-sm font-semibold text-foreground">
                   Personalize Cover
                 </h3>
-                <p className="text-sm text-foreground mt-1">
+                <p className="text-xs text-foreground mt-0.5">
                   Replaces "color your memories" with your own custom text on the cover. Max 25 characters - must be family-friendly.
                 </p>
               </div>
@@ -251,7 +251,7 @@ const CoverStep = ({ availableImages, bookAddOns, onBookAddOnsChange, onCoverCom
             {!bookAddOns.dedicationPageEnabled ? (
               <button
                 onClick={() => onBookAddOnsChange({ ...bookAddOns, dedicationPageEnabled: true })}
-                className="w-full flex items-center justify-between p-4 rounded-lg border-2 border-foreground bg-background hover:bg-muted transition-all text-left"
+                className="w-full flex items-center justify-between p-3 rounded-lg border-2 border-foreground bg-background hover:bg-muted transition-all text-left"
               >
                 <div>
                   <span className="font-semibold text-foreground text-sm">
@@ -266,7 +266,7 @@ const CoverStep = ({ availableImages, bookAddOns, onBookAddOnsChange, onCoverCom
                 </span>
               </button>
             ) : (
-              <div className="space-y-3 rounded-lg border border-primary bg-primary/5 p-4">
+              <div className="space-y-2 rounded-lg border border-primary bg-primary/5 p-3">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2">
                     <Badge className="text-xs bg-primary text-primary-foreground border-0">Added</Badge>
@@ -280,26 +280,24 @@ const CoverStep = ({ availableImages, bookAddOns, onBookAddOnsChange, onCoverCom
                     Remove
                   </button>
                 </div>
-                <Input
-                  value={bookAddOns.dedicationPageText}
-                  onChange={(e) => {
-                    const val = e.target.value.slice(0, 25);
-                    onBookAddOnsChange({ ...bookAddOns, dedicationPageText: val });
-                  }}
-                  placeholder="e.g. Color your world"
-                  maxLength={25}
-                  className={`rounded-lg ${containsProfanity(bookAddOns.dedicationPageText) ? "border-destructive focus-visible:ring-destructive" : ""}`}
-                />
-                <div className="flex justify-between items-center">
-                  {containsProfanity(bookAddOns.dedicationPageText) ? (
-                    <p className="text-xs text-destructive">Please use family-friendly language.</p>
-                  ) : (
-                    <span />
-                  )}
-                  <p className="text-xs text-muted-foreground ml-auto">
+                <div className="relative">
+                  <Input
+                    value={bookAddOns.dedicationPageText}
+                    onChange={(e) => {
+                      const val = e.target.value.slice(0, 25);
+                      onBookAddOnsChange({ ...bookAddOns, dedicationPageText: val });
+                    }}
+                    placeholder="e.g. Color your world"
+                    maxLength={25}
+                    className={`rounded-lg pr-16 ${containsProfanity(bookAddOns.dedicationPageText) ? "border-destructive focus-visible:ring-destructive" : ""}`}
+                  />
+                  <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-muted-foreground">
                     {bookAddOns.dedicationPageText.length}/25
-                  </p>
+                  </span>
                 </div>
+                {containsProfanity(bookAddOns.dedicationPageText) && (
+                  <p className="text-xs text-destructive">Please use family-friendly language.</p>
+                )}
               </div>
             )}
           </div>
