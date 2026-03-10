@@ -388,6 +388,8 @@ const Builder = () => {
     setShowingCheckout(false);
     setPostCheckout(true);
     if (shopifyNum) setShopifyOrderNumber(shopifyNum);
+    // Clear the cart now that the purchase is complete
+    clear();
     // Update URL so refresh preserves the state
     const newParams = new URLSearchParams(window.location.search);
     newParams.set("paid", "true");
