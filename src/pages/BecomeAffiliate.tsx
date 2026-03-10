@@ -54,25 +54,25 @@ const BecomeAffiliate = () => {
   const [submitting, setSubmitting] = useState(false);
 
   useEffect(() => {
-    let done = false;
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
       setUser(session?.user ?? null);
-      if (session?.user && !done) {
-        done = true;
+      if (session?.user) {
         checkAffiliate(session.user.id);
-      } else if (!session?.user) {
+      } else {
         setCheckingAuth(false);
       }
     });
+
+    // Fallback: ensure we stop loading even if onAuthStateChange is slow
     supabase.auth.getSession().then(({ data: { session } }) => {
       setUser(session?.user ?? null);
-      if (session?.user && !done) {
-        done = true;
+      if (session?.user) {
         checkAffiliate(session.user.id);
-      } else if (!session?.user) {
+      } else {
         setCheckingAuth(false);
       }
     });
+
     return () => subscription.unsubscribe();
   }, []);
 
