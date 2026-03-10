@@ -517,12 +517,12 @@ const Builder = () => {
                   <div key={step.key} className="flex items-center">
                     <div className="flex flex-col items-center">
                       <div
-                        className={`w-10 h-10 rounded-full flex items-center justify-center text-sm font-medium transition-all ${
+                        className={`w-10 h-10 rounded-full flex items-center justify-center text-sm font-bold transition-all ${
                           index < currentStepIndex
-                            ? "bg-primary text-primary-foreground"
+                            ? "bg-foreground text-background"
                             : index === currentStepIndex
-                            ? "bg-primary text-primary-foreground ring-4 ring-primary/20"
-                            : "bg-muted text-muted-foreground"
+                            ? "bg-foreground text-background ring-4 ring-foreground/20"
+                            : "bg-foreground text-background"
                         }`}
                       >
                         {index < currentStepIndex ? (
