@@ -66,10 +66,15 @@ const Affiliates = () => {
   const [tiktokHandle, setTiktokHandle] = useState("");
 
   useEffect(() => {
+    let initialCheckDone = false;
+    
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
       setUser(session?.user ?? null);
       if (session?.user) {
-        fetchAffiliateData(session.user.id);
+        if (!initialCheckDone) {
+          initialCheckDone = true;
+          fetchAffiliateData(session.user.id);
+        }
       } else {
         setLoading(false);
       }
@@ -78,7 +83,10 @@ const Affiliates = () => {
     supabase.auth.getSession().then(({ data: { session } }) => {
       setUser(session?.user ?? null);
       if (session?.user) {
-        fetchAffiliateData(session.user.id);
+        if (!initialCheckDone) {
+          initialCheckDone = true;
+          fetchAffiliateData(session.user.id);
+        }
       } else {
         setLoading(false);
       }
