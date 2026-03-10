@@ -165,6 +165,7 @@ export type Database = {
           extra_pages: number
           id: string
           payment_status: string
+          review_request_sent: boolean
           shipped_at: string | null
           shopify_order_number: string | null
           status: string
@@ -190,6 +191,7 @@ export type Database = {
           extra_pages?: number
           id?: string
           payment_status?: string
+          review_request_sent?: boolean
           shipped_at?: string | null
           shopify_order_number?: string | null
           status?: string
@@ -215,6 +217,7 @@ export type Database = {
           extra_pages?: number
           id?: string
           payment_status?: string
+          review_request_sent?: boolean
           shipped_at?: string | null
           shopify_order_number?: string | null
           status?: string
