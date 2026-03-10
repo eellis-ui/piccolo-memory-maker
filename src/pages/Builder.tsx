@@ -649,6 +649,26 @@ const Builder = () => {
               </>
             )}
 
+            {showingRecap && (
+              <RecapStep
+                books={books.map((b, i) => ({
+                  index: i,
+                  photos: b.photos,
+                  bookAddOns: b.bookAddOns,
+                  coverData: b.coverData,
+                }))}
+                onContinueToCheckout={() => {
+                  setShowingRecap(false);
+                  setShowingCheckout(true);
+                }}
+                onEditBook={(bookIndex) => {
+                  setShowingRecap(false);
+                  setActiveBookIndex(bookIndex);
+                  updateBook(bookIndex, { completed: false, step: "cover" });
+                }}
+              />
+            )}
+
             {showingCheckout && (
               <CheckoutStep
                 pageCount={books[0].photos.length}
@@ -666,8 +686,7 @@ const Builder = () => {
                 onCheckoutComplete={handleCheckoutComplete}
                 onBack={() => {
                   setShowingCheckout(false);
-                  setActiveBookIndex(bookCount - 1);
-                  updateBook(bookCount - 1, { completed: false, step: "cover" });
+                  setShowingRecap(true);
                 }}
               />
             )}
