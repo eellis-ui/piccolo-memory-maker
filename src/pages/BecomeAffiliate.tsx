@@ -113,22 +113,22 @@ const BecomeAffiliate = () => {
       </section>
 
       {/* CTA */}
-      <section className="py-24 relative overflow-hidden">
-        <div className="hidden md:block absolute left-0 top-1/2 -translate-y-1/2 -translate-x-1/4 w-48 h-48">
+      <section className="relative overflow-hidden">
+        <div className="hidden md:flex absolute left-0 top-0 bottom-0 w-64">
           <img
             src="/images/hero-grid-3.png"
             alt="Coloring book gift"
-            className="w-full h-full object-cover rounded-full rotate-[-6deg]"
+            className="w-full h-full object-cover"
           />
         </div>
-        <div className="hidden md:block absolute right-0 top-1/2 -translate-y-1/2 translate-x-1/4 w-44 h-56">
+        <div className="hidden md:flex absolute right-0 top-0 bottom-0 w-64">
           <img
             src="/images/hero-grid-7.png"
             alt="Happy customer coloring"
-            className="w-full h-full object-cover rounded-[2rem] rotate-[6deg]"
+            className="w-full h-full object-cover"
           />
         </div>
-        <div className="container mx-auto px-4 text-center max-w-2xl relative z-10">
+        <div className="container mx-auto px-4 text-center max-w-2xl relative z-10 py-24">
           <h2 className="font-display text-3xl md:text-5xl font-bold text-foreground mb-6 uppercase">
             Ready to Start?
           </h2>
