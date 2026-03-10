@@ -271,6 +271,7 @@ const CoverStep = ({ availableImages, bookAddOns, onBookAddOnsChange, onCoverCom
                   <div className="flex items-center gap-2">
                     <Badge className="text-xs bg-primary text-primary-foreground border-0">Added</Badge>
                     <span className="font-semibold text-foreground text-sm">Custom Cover Text</span>
+                    <span className="text-xs text-primary font-bold">+${addOnPrice.toFixed(2)}</span>
                   </div>
                   <button
                     className="text-xs text-muted-foreground hover:text-destructive transition-colors"
