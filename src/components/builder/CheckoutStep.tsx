@@ -121,18 +121,47 @@ const CheckoutStep = ({ pageCount, extraPages, convertedUrls, onBack, onCheckout
   const [isCheckingOut, setIsCheckingOut] = useState(false);
   const [awaitingPayment, setAwaitingPayment] = useState(false);
 
-  // Listen for tab visibility change to detect return from checkout
+  // Poll for payment confirmation from webhook
+  const pollForPayment = useCallback(async () => {
+    if (!sessionId) return false;
+    try {
+      const orders = await getSessionOrders(sessionId);
+      if (orders && orders.length > 0) {
+        const allPaid = orders.every((o: any) => o.payment_status === "paid");
+        if (allPaid) {
+          const shopifyNum = orders[0]?.shopify_order_number || null;
+          onCheckoutComplete?.(shopifyNum);
+          return true;
+        }
+      }
+    } catch (err) {
+      console.error("Poll error:", err);
+    }
+    return false;
+  }, [sessionId, onCheckoutComplete]);
+
+  // Poll every 5 seconds while awaiting payment, plus on tab visibility change
   useEffect(() => {
     if (!awaitingPayment) return;
-    const handleVisibilityChange = () => {
-      if (document.visibilityState === 'visible' && awaitingPayment) {
-        setAwaitingPayment(false);
-        onCheckoutComplete?.();
+
+    const interval = setInterval(async () => {
+      const paid = await pollForPayment();
+      if (paid) setAwaitingPayment(false);
+    }, 5000);
+
+    const handleVisibilityChange = async () => {
+      if (document.visibilityState === "visible" && awaitingPayment) {
+        const paid = await pollForPayment();
+        if (paid) setAwaitingPayment(false);
       }
     };
-    document.addEventListener('visibilitychange', handleVisibilityChange);
-    return () => document.removeEventListener('visibilitychange', handleVisibilityChange);
-  }, [awaitingPayment, onCheckoutComplete]);
+    document.addEventListener("visibilitychange", handleVisibilityChange);
+
+    return () => {
+      clearInterval(interval);
+      document.removeEventListener("visibilitychange", handleVisibilityChange);
+    };
+  }, [awaitingPayment, pollForPayment]);
 
   const bookCount = item?.quantity ?? 1;
   const basePrice = item?.pricePerBook ?? 35;
