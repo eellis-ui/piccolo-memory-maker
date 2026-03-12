@@ -1,42 +1,25 @@
-import { useState } from "react";
-import { ChevronLeft, ChevronRight } from "lucide-react";
-
-const instagramImages = [
-  "/images/hero-grid-1.jpg",
-  "/images/hero-grid-2.jpg",
-  "/images/hero-grid-3.jpg",
-  "/images/hero-grid-4.jpg",
-  "/images/hero-grid-5.jpg",
-  "/images/hero-grid-6.jpg",
-  "/images/hero-grid-7.jpg",
-];
+import { useEffect } from "react";
 
 const INSTAGRAM_URL = "https://www.instagram.com/officialpiccoload/";
+const ELFSIGHT_WIDGET_ID = "5df81938-ae16-4b59-ba46-f347e3e8f625";
 
 const InstagramSection = () => {
-  const [startIndex, setStartIndex] = useState(0);
-  const visibleCount = 5;
-
-  const canPrev = startIndex > 0;
-  const canNext = startIndex + visibleCount < instagramImages.length;
-
-  const prev = () => {
-    if (canPrev) setStartIndex((i) => i - 1);
-  };
-  const next = () => {
-    if (canNext) setStartIndex((i) => i + 1);
-  };
-
-  const visibleImages = instagramImages.slice(startIndex, startIndex + visibleCount);
+  useEffect(() => {
+    if (document.querySelector('script[src="https://elfsightcdn.com/platform.js"]')) return;
+    const script = document.createElement("script");
+    script.src = "https://elfsightcdn.com/platform.js";
+    script.async = true;
+    document.body.appendChild(script);
+  }, []);
 
   return (
     <section className="py-16 bg-background">
       <div className="text-center mb-10 px-4">
         <h2 className="font-display text-3xl sm:text-4xl lg:text-5xl font-semibold text-foreground uppercase mb-4">
-          Follow Us Instagram
+          Follow Us On Instagram
         </h2>
         <p className="text-muted-foreground text-sm sm:text-base max-w-2xl mx-auto">
-          We love to see you using your Piccoload book! Please tag us on instagram{" "}
+          We love to see you using your Piccoload book! Please tag us on Instagram{" "}
           <a
             href={INSTAGRAM_URL}
             target="_blank"
@@ -49,51 +32,8 @@ const InstagramSection = () => {
         </p>
       </div>
 
-      {/* Carousel */}
-      <div className="relative w-full">
-        {/* Prev button */}
-        {canPrev && (
-          <button
-            onClick={prev}
-            className="absolute left-2 top-1/2 -translate-y-1/2 z-10 bg-background/80 backdrop-blur-sm rounded-full p-2 shadow-md hover:bg-background transition-colors"
-            aria-label="Previous"
-          >
-            <ChevronLeft className="w-6 h-6 text-foreground" />
-          </button>
-        )}
-
-        {/* Next button */}
-        {canNext && (
-          <button
-            onClick={next}
-            className="absolute right-2 top-1/2 -translate-y-1/2 z-10 bg-background/80 backdrop-blur-sm rounded-full p-2 shadow-md hover:bg-background transition-colors"
-            aria-label="Next"
-          >
-            <ChevronRight className="w-6 h-6 text-foreground" />
-          </button>
-        )}
-
-        {/* Images row */}
-        <div className="flex gap-1 overflow-hidden">
-          {visibleImages.map((src, i) => (
-            <a
-              key={startIndex + i}
-              href={INSTAGRAM_URL}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="flex-1 min-w-0"
-            >
-              <div className="aspect-[4/5] overflow-hidden">
-                <img
-                  src={src}
-                  alt="Instagram post from Piccoload"
-                  className="w-full h-full object-cover hover:scale-105 transition-transform duration-300"
-                  loading="lazy"
-                />
-              </div>
-            </a>
-          ))}
-        </div>
+      <div className="max-w-7xl mx-auto px-4">
+        <div className={`elfsight-app-${ELFSIGHT_WIDGET_ID}`} data-elfsight-app-lazy />
       </div>
     </section>
   );
