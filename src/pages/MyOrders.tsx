@@ -63,15 +63,26 @@ const MyOrders = () => {
 
   useEffect(() => {
     let mounted = true;
+    let initialHandled = false;
 
-    // Subscribe FIRST, then session check fires as INITIAL_SESSION event
+    // Safety net: if INITIAL_SESSION never fires within 5s, redirect to auth
+    const timeout = setTimeout(() => {
+      if (mounted && !initialHandled) navigate("/auth");
+    }, 5000);
+
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
       if (!mounted) return;
-      if (event === "INITIAL_SESSION" || event === "SIGNED_IN") {
+
+      if (event === "INITIAL_SESSION" || event === "SIGNED_IN" || event === "TOKEN_REFRESHED") {
+        if (event === "INITIAL_SESSION") {
+          initialHandled = true;
+          clearTimeout(timeout);
+        }
         if (session) {
           setAuthed(true);
           fetchOrders().finally(() => { if (mounted) setLoading(false); });
-        } else {
+        } else if (event === "INITIAL_SESSION") {
+          // Only redirect on INITIAL_SESSION with no session — not on a failed token refresh
           navigate("/auth");
         }
       } else if (event === "SIGNED_OUT") {
@@ -81,6 +92,7 @@ const MyOrders = () => {
 
     return () => {
       mounted = false;
+      clearTimeout(timeout);
       subscription.unsubscribe();
     };
   // eslint-disable-next-line react-hooks/exhaustive-deps
