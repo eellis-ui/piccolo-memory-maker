@@ -64,19 +64,25 @@ const MyOrders = () => {
   useEffect(() => {
     let mounted = true;
     const init = async () => {
-      const { data: { session } } = await supabase.auth.getSession();
-      if (!mounted) return;
-      if (!session?.user) {
-        navigate("/auth");
-        return;
+      try {
+        const { data: { session } } = await supabase.auth.getSession();
+        if (!mounted) return;
+        if (!session?.user) {
+          navigate("/auth");
+          return;
+        }
+        setAuthed(true);
+        await fetchOrders();
+      } catch (err) {
+        console.error("MyOrders init error:", err);
+      } finally {
+        if (mounted) setLoading(false);
       }
-      setAuthed(true);
-      await fetchOrders();
-      if (mounted) setLoading(false);
     };
     init();
     return () => { mounted = false; };
-  }, [navigate]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   // Group draft orders by session so multi-book drafts appear as one entry
   const groupedOrders = (() => {
