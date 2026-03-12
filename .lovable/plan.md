@@ -1,36 +1,15 @@
 
-Goal: get the app install to happen on the correct Shopify store (piccaload), not calmae.
 
-What’s actually happening
-- Your project is connected to: piccaload.myshopify.com.
-- Your screenshot shows your current Shopify login is tied to a different workspace/store (calmae).
-- That means this is an account-access issue, not a button-location issue.
+## Plan: Integrate Elfsight Instagram Feed
 
-Action plan (do these in order)
-1) Force the correct store login
-- Open this exact URL in a private/incognito window:
-  - https://admin.shopify.com/store/piccaload
-- Sign in with the email that has access to Piccaload.
+### Change: `src/components/landing/InstagramSection.tsx`
 
-2) Confirm whether you truly have access to Piccaload
-- If you can enter Piccaload admin: proceed to step 3.
-- If Shopify sends you back to calmae or says no access: you are not added to Piccaload with the right account.
+Replace the static image carousel with the Elfsight embed. The component will:
 
-3) If no access, ask the Piccaload store owner to invite you
-- Owner goes to Shopify Admin → Settings → Users and permissions → Add staff.
-- Invite your exact email.
-- Required permissions:
-  - Manage and install apps and channels
-  - Develop apps (or equivalent app-development permission)
-  - Discounts (recommended for this workflow)
+1. Keep the heading and tagline text
+2. Use a `useEffect` to inject the Elfsight platform script (`https://elfsightcdn.com/platform.js`) once
+3. Render the widget div (`elfsight-app-5df81938-ae16-4b59-ba46-f347e3e8f625`) in place of the current image grid
+4. Remove all the static image array, carousel state, and navigation button logic
 
-4) Then install from inside Piccaload store admin (not Partners dashboard)
-- Piccaload Admin → Settings → Apps and sales channels → Develop apps.
-- If “Develop apps” is blocked, owner must enable custom app development first.
-- Open/create app → API credentials → Install app.
+The static images will serve as a fallback — if Elfsight ever needs to be removed, we can revert easily.
 
-5) If still blocked after invite
-- Fastest fallback: have the Piccaload owner do the install + token generation directly, then share the token with you.
-
-Expected result
-- Once done inside Piccaload admin, installation will no longer target calmae and you can continue with the affiliate setup.
