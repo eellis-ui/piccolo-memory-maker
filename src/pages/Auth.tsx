@@ -22,28 +22,21 @@ const Auth = () => {
   const [checkingSession, setCheckingSession] = useState(true);
 
   useEffect(() => {
-    let resolved = false;
-    const resolve = () => {
-      if (!resolved) {
-        resolved = true;
-        setCheckingSession(false);
-      }
-    };
-
+    // Check once on mount — always clear the spinner regardless of outcome
     supabase.auth.getSession().then(({ data: { session } }) => {
+      setCheckingSession(false);
       if (session) {
         navigate(from, { replace: true });
-        return;
       }
-      resolve();
+    }).catch(() => {
+      setCheckingSession(false);
     });
 
+    // Listen for sign-in after the form is submitted
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
-      if (session && (event === "SIGNED_IN" || event === "TOKEN_REFRESHED")) {
+      if (event === "SIGNED_IN" && session) {
         navigate(from, { replace: true });
-        return;
       }
-      resolve();
     });
 
     return () => subscription.unsubscribe();
