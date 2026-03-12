@@ -499,6 +499,7 @@ const Navbar = () => {
             {!isLoggedIn && (
               <Link
                 to="/auth"
+                state={{ from: "/my-orders" }}
                 className="hidden md:inline-flex text-sm font-medium text-foreground hover:text-foreground/70 transition-colors"
               >
                 Sign In
@@ -547,6 +548,7 @@ const Navbar = () => {
               {!isLoggedIn && (
                 <Link
                   to="/auth"
+                  state={{ from: "/my-orders" }}
                   className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors px-2 py-2"
                   onClick={() => setIsMenuOpen(false)}
                 >
