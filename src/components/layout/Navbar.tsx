@@ -590,17 +590,4 @@ const Navbar = () => {
 };
 
 export default Navbar;
-              <Button asChild className="rounded-lg mx-2">
-                <Link to="/pricing" onClick={() => setIsMenuOpen(false)}>
-                  Start Creating
-                </Link>
-              </Button>
-            </div>
-          </div>
-        }
-      </div>
-    </nav>);
-
-};
-
 export default Navbar;
