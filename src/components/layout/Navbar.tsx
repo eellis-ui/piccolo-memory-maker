@@ -496,7 +496,14 @@ const Navbar = () => {
               hasItems={hasItems}
               itemCount={itemCount}
               basketContentProps={basketContentProps} />
-            
+            {!isLoggedIn && (
+              <Link
+                to="/auth"
+                className="hidden md:inline-flex text-sm font-medium text-foreground hover:text-foreground/70 transition-colors"
+              >
+                Sign In
+              </Link>
+            )}
             <Button asChild className="hidden md:inline-flex rounded-lg px-6 bg-foreground text-background hover:bg-foreground/90">
               <Link to="/pricing">Start Creating</Link>
             </Button>
@@ -537,6 +544,15 @@ const Navbar = () => {
                   My Orders
                 </Link>
             }
+              {!isLoggedIn && (
+                <Link
+                  to="/auth"
+                  className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors px-2 py-2"
+                  onClick={() => setIsMenuOpen(false)}
+                >
+                  Sign In
+                </Link>
+              )}
               <Button asChild className="rounded-lg mx-2">
                 <Link to="/pricing" onClick={() => setIsMenuOpen(false)}>
                   Start Creating
