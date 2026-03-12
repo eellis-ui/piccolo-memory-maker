@@ -342,15 +342,8 @@ const Navbar = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const { items, totalBookCount, removeItem, updateItemQuantity, toggleItemUniquePhotos, digitalCopies, setDigitalCopies, digitalPrice, addOns, addOnsTotal: basketAddOnsTotal, addOnPrice, uniquePhotos, uniquePhotosPrice, activeSessionId, isCartOpen, setIsCartOpen } = useBasket();
   const { isAdmin } = useIsAdmin();
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
-
-  useEffect(() => {
-    supabase.auth.getUser().then(({ data: { user } }) => setIsLoggedIn(!!user));
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_, session) => {
-      setIsLoggedIn(!!session?.user);
-    });
-    return () => subscription.unsubscribe();
-  }, []);
+  const { user } = useAuth();
+  const isLoggedIn = !!user;
 
   const navLinks = [
   { href: "/", label: "Home" },
