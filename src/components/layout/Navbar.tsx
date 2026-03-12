@@ -550,11 +550,22 @@ const Navbar = () => {
               to="/my-orders"
               className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors px-2 py-2 flex items-center gap-1"
               onClick={() => setIsMenuOpen(false)}>
-
                   <ClipboardList className="w-3.5 h-3.5" />
                   My Orders
                 </Link>
             }
+              {isLoggedIn && (
+                <button
+                  onClick={async () => {
+                    setIsMenuOpen(false);
+                    await supabase.auth.signOut();
+                    navigate("/");
+                  }}
+                  className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors px-2 py-2 text-left"
+                >
+                  Sign Out
+                </button>
+              )}
               {!isLoggedIn && (
                 <Link
                   to="/auth"
@@ -565,6 +576,20 @@ const Navbar = () => {
                   Sign In
                 </Link>
               )}
+              <Button asChild className="rounded-lg mx-2">
+                <Link to="/pricing" onClick={() => setIsMenuOpen(false)}>
+                  Start Creating
+                </Link>
+              </Button>
+            </div>
+          </div>
+        }
+      </div>
+    </nav>);
+
+};
+
+export default Navbar;
               <Button asChild className="rounded-lg mx-2">
                 <Link to="/pricing" onClick={() => setIsMenuOpen(false)}>
                   Start Creating
