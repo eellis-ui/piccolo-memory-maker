@@ -1,36 +1,51 @@
 
+Goal: remove the endless loading state on affiliate signup and ensure successful submissions create an active Shopify discount + redirect to the affiliate dashboard.
 
-## Plan: Post-Checkout Thank You Banner on Builder Page
+1) Diagnosis confirmed from runtime
+- The form button stays in loading state for 20+ seconds.
+- During that period, no XHR/fetch request is sent from the page and no new `affiliate-signup` function logs appear.
+- This means the frontend is hanging before the network call (most likely on `supabase.auth.getSession()` inside submit).
+- Separate backend check shows `affiliate-signup` is deployed and reachable, but Shopify returns: `Invalid API key or access token`.
 
-### Current Flow
-Checkout opens Shopify in a **new tab** (`window.open`). The original Builder tab remains open. After payment, the customer switches back to the Builder tab.
+2) Frontend fixes (primary loop fix)
+- Refactor `handleAffiliateSignup` in `src/pages/BecomeAffiliate.tsx` to avoid blocking on `getSession()`:
+  - Use `supabase.functions.invoke("affiliate-signup", { body })` instead of manual `fetch + getSession`.
+  - Add a hard timeout wrapper (`Promise.race`, e.g. 15s) around the entire invoke call.
+  - Keep a submit watchdog fallback (e.g. 20s) that always clears `submitting` even if a promise stalls.
+- Improve failure UX:
+  - Show specific toast for timeout (“Request timed out, please retry”).
+  - Show backend error text when available.
+  - If response indicates user already has affiliate account, redirect to `/affiliates` immediately.
+- Apply the same submit hardening in `src/pages/Affiliates.tsx` (it has the same signup logic and same hang risk).
 
-### Problem
-When customers return to the Builder tab after paying, there's no acknowledgment of their payment and no clear prompt to start uploading photos.
+3) Backend function hardening (`supabase/functions/affiliate-signup/index.ts`)
+- Add timeout + abort protection for each Shopify API call (price rule and discount code creation), so function never hangs indefinitely.
+- Return clearer errors for:
+  - invalid Shopify token/scope
+  - duplicate discount code
+  - upstream timeout
+- Keep behavior strict: only create affiliate row after Shopify discount is successfully created/active.
+- Keep existing redirect expectation unchanged: frontend navigates to `/affiliates` on success.
 
-### Proposed Changes
+4) Shopify activation issue (required for “code created and active”)
+- Current function logs confirm the configured Shopify admin token is invalid.
+- Rotate/update `SHOPIFY_ACCESS_TOKEN` to a valid Admin API token with discount/price rule write scope.
+- After token update, run one live signup verification to confirm:
+  - affiliate row inserted
+  - `shopify_price_rule_id` populated
+  - dashboard redirect works
+  - created discount is active in Shopify
 
-**1. `src/pages/Builder.tsx`** — Add a `postCheckout` state
-- Detect a `paid=true` URL parameter OR set it locally after checkout button is clicked
-- When `postCheckout` is true, show a thank-you banner at the top of the builder (above progress steps)
-- Reset the builder to the upload step so they're ready to add photos
-- The banner includes: a confirmation message ("Thank you for your order!"), a prompt ("Now upload your photos to create your coloring book"), and a friendly icon
+5) Validation checklist
+- `/become-an-affiliate`: click “Join Affiliate Program” should never spin forever.
+- Failed request path: spinner stops, clear toast shown.
+- Success path: redirect to `/affiliates`.
+- Backend logs show successful price rule + discount code creation.
+- Database `affiliates` table contains the new affiliate with uppercase discount code and Shopify price rule id.
 
-**2. `src/components/builder/CheckoutStep.tsx`** — After opening checkout URL
-- After `window.open(checkoutUrl, '_blank')`, call a new `onCheckoutComplete` callback prop
-- This lets the parent Builder component transition to the post-checkout upload state
-
-**3. `src/pages/Builder.tsx`** — Handle checkout complete
-- Add `onCheckoutComplete` handler that sets `showingCheckout = false`, sets a `postCheckout = true` state, and updates the URL with `&paid=true`
-- The builder then shows the upload step with the thank-you banner on top
-
-### Thank You Banner Design
-A full-width, visually distinct banner (green/success themed) at the top of the builder content area:
-- Check icon + "Thank You For Your Order!"  
-- Subtext: "Your payment was successful. Now let's create your coloring book — start by uploading your favorite photos below."
-- Dismissible with an X button
-
-### What Won't Change
-- The Shopify checkout still opens in a new tab (required by Shopify)
-- All existing builder steps and session persistence remain intact
-
+Technical details
+- Files to update:
+  - `src/pages/BecomeAffiliate.tsx`
+  - `src/pages/Affiliates.tsx`
+  - `supabase/functions/affiliate-signup/index.ts`
+- No database schema or RLS migration required for this fix.
