@@ -11,7 +11,7 @@ const TrustBadges = () => {
         <img
           src="/images/payment-icons.png"
           alt="Accepted payment methods: American Express, PayPal, Apple Pay, Google Pay, Visa, Mastercard, Shop Pay"
-          className="h-8 w-auto"
+          className="w-[90%] max-w-sm h-auto mx-auto block"
         />
       </div>
     </div>
