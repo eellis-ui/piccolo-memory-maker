@@ -131,7 +131,15 @@ const BecomeAffiliate = () => {
           password,
           options: { emailRedirectTo: `${window.location.origin}/become-an-affiliate` },
         });
-        if (error) throw error;
+        if (error) {
+          // Detect "user already exists" and auto-switch to login
+          if (error.message?.toLowerCase().includes("already") || error.status === 422) {
+            setIsLogin(true);
+            toast.info("Account already exists — please sign in instead.");
+            return;
+          }
+          throw error;
+        }
         toast.success("Check your email to confirm your account, then come back here!");
       }
     } catch (err: any) {
@@ -148,6 +156,9 @@ const BecomeAffiliate = () => {
       const { data: { session } } = await supabase.auth.getSession();
       if (!session) throw new Error("Not authenticated");
 
+      const controller = new AbortController();
+      const timeout = setTimeout(() => controller.abort(), 15000);
+
       const res = await fetch(
         `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/affiliate-signup`,
         {
@@ -162,8 +173,11 @@ const BecomeAffiliate = () => {
             instagram_handle: instagramHandle || undefined,
             tiktok_handle: tiktokHandle || undefined,
           }),
+          signal: controller.signal,
         },
       );
+
+      clearTimeout(timeout);
 
       const result = await res.json();
       if (!res.ok) throw new Error(result.error || "Failed to sign up");
@@ -171,7 +185,11 @@ const BecomeAffiliate = () => {
       toast.success("Welcome to the affiliate program! 🎉");
       navigate("/affiliates");
     } catch (err: any) {
-      toast.error(err.message);
+      if (err.name === "AbortError") {
+        toast.error("Request timed out. Please try again.");
+      } else {
+        toast.error(err.message);
+      }
     } finally {
       setSubmitting(false);
     }
