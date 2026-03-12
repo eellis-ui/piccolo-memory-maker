@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -12,6 +12,8 @@ import Footer from "@/components/layout/Footer";
 
 const Auth = () => {
   const navigate = useNavigate();
+  const location = useLocation();
+  const from = (location.state as any)?.from || "/my-orders";
   const [isLogin, setIsLogin] = useState(true);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -20,22 +22,33 @@ const Auth = () => {
   const [checkingSession, setCheckingSession] = useState(true);
 
   useEffect(() => {
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
-      if (session) {
-        navigate("/builder");
+    let resolved = false;
+    const resolve = () => {
+      if (!resolved) {
+        resolved = true;
+        setCheckingSession(false);
       }
-      setCheckingSession(false);
-    });
+    };
 
     supabase.auth.getSession().then(({ data: { session } }) => {
       if (session) {
-        navigate("/builder");
+        navigate(from, { replace: true });
+        return;
       }
-      setCheckingSession(false);
+      resolve();
+    });
+
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+      if (session && (event === "SIGNED_IN" || event === "TOKEN_REFRESHED")) {
+        navigate(from, { replace: true });
+        return;
+      }
+      resolve();
     });
 
     return () => subscription.unsubscribe();
-  }, [navigate]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
