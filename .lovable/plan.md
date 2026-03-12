@@ -1,30 +1,36 @@
 
-## Root Cause
 
-The Sign Out button calls `supabase.auth.signOut({ scope: "global" })`. The `scope: "global"` option makes a server-side API call to invalidate all sessions across all devices. If this call fails (network error, permissions, etc.), the `await` throws and `navigate("/")` never runs — silently breaking the button.
+## Plan: Post-Checkout Thank You Banner on Builder Page
 
-The simple fix: use `scope: "local"` (default) which only clears the local session in localStorage without a server round-trip. This is instant and cannot fail. The `onAuthStateChange` in `AuthContext` then fires with `SIGNED_OUT`, sets `session = null`, `user` becomes `null`, and the Navbar reactively hides the Sign Out button and shows Sign In — all correctly.
+### Current Flow
+Checkout opens Shopify in a **new tab** (`window.open`). The original Builder tab remains open. After payment, the customer switches back to the Builder tab.
 
-Additionally, `navigate("/")` should happen regardless of whether signOut succeeded, so it should be wrapped in a try/catch or done unconditionally.
+### Problem
+When customers return to the Builder tab after paying, there's no acknowledgment of their payment and no clear prompt to start uploading photos.
 
-## The Fix — One Change, Two Locations
+### Proposed Changes
 
-In `src/components/layout/Navbar.tsx`, update both the desktop and mobile Sign Out handlers:
+**1. `src/pages/Builder.tsx`** — Add a `postCheckout` state
+- Detect a `paid=true` URL parameter OR set it locally after checkout button is clicked
+- When `postCheckout` is true, show a thank-you banner at the top of the builder (above progress steps)
+- Reset the builder to the upload step so they're ready to add photos
+- The banner includes: a confirmation message ("Thank you for your order!"), a prompt ("Now upload your photos to create your coloring book"), and a friendly icon
 
-**From:**
-```tsx
-await supabase.auth.signOut({ scope: "global" });
-navigate("/");
-```
+**2. `src/components/builder/CheckoutStep.tsx`** — After opening checkout URL
+- After `window.open(checkoutUrl, '_blank')`, call a new `onCheckoutComplete` callback prop
+- This lets the parent Builder component transition to the post-checkout upload state
 
-**To:**
-```tsx
-await supabase.auth.signOut();
-navigate("/");
-```
+**3. `src/pages/Builder.tsx`** — Handle checkout complete
+- Add `onCheckoutComplete` handler that sets `showingCheckout = false`, sets a `postCheckout = true` state, and updates the URL with `&paid=true`
+- The builder then shows the upload step with the thank-you banner on top
 
-Remove `{ scope: "global" }` from both the desktop (line 479) and mobile (line 555) sign out buttons. The default local scope is reliable and instant.
+### Thank You Banner Design
+A full-width, visually distinct banner (green/success themed) at the top of the builder content area:
+- Check icon + "Thank You For Your Order!"  
+- Subtext: "Your payment was successful. Now let's create your coloring book — start by uploading your favorite photos below."
+- Dismissible with an X button
 
-## Files to Change
+### What Won't Change
+- The Shopify checkout still opens in a new tab (required by Shopify)
+- All existing builder steps and session persistence remain intact
 
-- `src/components/layout/Navbar.tsx` — Remove `{ scope: "global" }` from both sign out calls (desktop + mobile)
