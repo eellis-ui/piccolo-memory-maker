@@ -4,6 +4,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { BasketProvider } from "@/contexts/BasketContext";
+import { AuthProvider } from "@/contexts/AuthContext";
 import Index from "./pages/Index";
 import Builder from "./pages/Builder";
 import Auth from "./pages/Auth";
@@ -39,32 +40,34 @@ const App = () => (
       <Toaster />
       <Sonner />
       <BrowserRouter>
-        <BasketProvider>
-          <AppInner />
-          <ScrollToTop />
-          <ChatWidget />
-          <Routes>
-            <Route path="/" element={<Index />} />
-            <Route path="/auth" element={<Auth />} />
-            <Route path="/how-it-works" element={<HowItWorks />} />
-            <Route path="/pricing" element={<Pricing />} />
-            <Route path="/about" element={<About />} />
-            <Route path="/faq" element={<FAQ />} />
-            <Route path="/contact" element={<Contact />} />
-            <Route path="/builder" element={<Builder />} />
-            <Route path="/admin" element={<Admin />} />
-            <Route path="/my-orders" element={<MyOrders />} />
-            <Route path="/reset-password" element={<ResetPassword />} />
-            <Route path="/order-review" element={<OrderReview />} />
-            <Route path="/privacy-policy" element={<PrivacyPolicy />} />
-            <Route path="/refund-policy" element={<RefundPolicy />} />
-            <Route path="/terms-of-service" element={<TermsOfService />} />
-            <Route path="/affiliates" element={<Affiliates />} />
-            <Route path="/become-an-affiliate" element={<BecomeAffiliate />} />
-            {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
-            <Route path="*" element={<NotFound />} />
-          </Routes>
-        </BasketProvider>
+        <AuthProvider>
+          <BasketProvider>
+            <AppInner />
+            <ScrollToTop />
+            <ChatWidget />
+            <Routes>
+              <Route path="/" element={<Index />} />
+              <Route path="/auth" element={<Auth />} />
+              <Route path="/how-it-works" element={<HowItWorks />} />
+              <Route path="/pricing" element={<Pricing />} />
+              <Route path="/about" element={<About />} />
+              <Route path="/faq" element={<FAQ />} />
+              <Route path="/contact" element={<Contact />} />
+              <Route path="/builder" element={<Builder />} />
+              <Route path="/admin" element={<Admin />} />
+              <Route path="/my-orders" element={<MyOrders />} />
+              <Route path="/reset-password" element={<ResetPassword />} />
+              <Route path="/order-review" element={<OrderReview />} />
+              <Route path="/privacy-policy" element={<PrivacyPolicy />} />
+              <Route path="/refund-policy" element={<RefundPolicy />} />
+              <Route path="/terms-of-service" element={<TermsOfService />} />
+              <Route path="/affiliates" element={<Affiliates />} />
+              <Route path="/become-an-affiliate" element={<BecomeAffiliate />} />
+              {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
+              <Route path="*" element={<NotFound />} />
+            </Routes>
+          </BasketProvider>
+        </AuthProvider>
       </BrowserRouter>
     </TooltipProvider>
   </QueryClientProvider>

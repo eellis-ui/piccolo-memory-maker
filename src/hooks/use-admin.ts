@@ -1,38 +1,34 @@
-import { useState, useEffect } from "react";
-import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/contexts/AuthContext";
 
 export const useIsAdmin = () => {
+  const { user, loading: authLoading } = useAuth();
   const [isAdmin, setIsAdmin] = useState(false);
   const [loading, setLoading] = useState(true);
 
+  // Need to import useState from react
+  const [, forceUpdate] = useState(0);
+
+  // Check admin role whenever user changes
   useEffect(() => {
-    const check = async () => {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) {
-        setIsAdmin(false);
-        setLoading(false);
-        return;
-      }
-
-      const { data } = await supabase
-        .from("user_roles")
-        .select("role")
-        .eq("user_id", user.id)
-        .eq("role", "admin")
-        .maybeSingle();
-
-      setIsAdmin(!!data);
+    if (authLoading) return;
+    if (!user) {
+      setIsAdmin(false);
       setLoading(false);
-    };
+      return;
+    }
 
-    check();
-
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(() => {
-      check();
-    });
-
-    return () => subscription.unsubscribe();
-  }, []);
+    const { supabase } = require("@/integrations/supabase/client");
+    supabase
+      .from("user_roles")
+      .select("role")
+      .eq("user_id", user.id)
+      .eq("role", "admin")
+      .maybeSingle()
+      .then(({ data }: { data: any }) => {
+        setIsAdmin(!!data);
+        setLoading(false);
+      });
+  }, [user, authLoading]);
 
   return { isAdmin, loading };
 };

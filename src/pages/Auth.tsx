@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
@@ -9,35 +9,31 @@ import { toast } from "sonner";
 import { Loader2 } from "lucide-react";
 import Navbar from "@/components/layout/Navbar";
 import Footer from "@/components/layout/Footer";
+import { useState } from "react";
+import { useAuth } from "@/contexts/AuthContext";
 
 const Auth = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const from = (location.state as any)?.from || "/my-orders";
+  const { user, loading } = useAuth();
+
   const [isLogin, setIsLogin] = useState(true);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [loading, setLoading] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
   const [forgotPassword, setForgotPassword] = useState(false);
-  const [checkingSession, setCheckingSession] = useState(true);
 
+  // If already logged in (or just signed in), redirect
   useEffect(() => {
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
-      // Redirect if already logged in (INITIAL_SESSION) OR just signed in
-      if ((event === "SIGNED_IN" || event === "INITIAL_SESSION") && session) {
-        navigate(from, { replace: true });
-      }
-      // Always clear the spinner once auth state is known
-      setCheckingSession(false);
-    });
-
-    return () => subscription.unsubscribe();
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+    if (!loading && user) {
+      navigate(from, { replace: true });
+    }
+  }, [user, loading, from, navigate]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setLoading(true);
+    setSubmitting(true);
 
     try {
       if (forgotPassword) {
@@ -63,17 +59,20 @@ const Auth = () => {
     } catch (err: any) {
       toast.error(err.message);
     } finally {
-      setLoading(false);
+      setSubmitting(false);
     }
   };
 
-  if (checkingSession) {
+  if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <Loader2 className="w-8 h-8 animate-spin text-primary" />
       </div>
     );
   }
+
+  // Don't render the form while redirecting (user is set)
+  if (user) return null;
 
   return (
     <div className="min-h-screen bg-background">
@@ -121,8 +120,8 @@ const Auth = () => {
                   />
                 </div>
               )}
-              <Button type="submit" className="w-full rounded-2xl" disabled={loading}>
-                {loading && <Loader2 className="w-4 h-4 mr-2 animate-spin" />}
+              <Button type="submit" className="w-full rounded-2xl" disabled={submitting}>
+                {submitting && <Loader2 className="w-4 h-4 mr-2 animate-spin" />}
                 {forgotPassword ? "Send Reset Link" : isLogin ? "Sign In" : "Sign Up"}
               </Button>
             </form>
