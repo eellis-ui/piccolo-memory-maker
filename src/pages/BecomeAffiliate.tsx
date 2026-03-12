@@ -152,45 +152,49 @@ const BecomeAffiliate = () => {
   const handleAffiliateSignup = async (e: React.FormEvent) => {
     e.preventDefault();
     setSubmitting(true);
+
+    // Watchdog: always clear submitting after 20s no matter what
+    const watchdog = setTimeout(() => {
+      setSubmitting(false);
+      toast.error("Request timed out. Please try again.");
+    }, 20000);
+
     try {
-      const { data: { session } } = await supabase.auth.getSession();
-      if (!session) throw new Error("Not authenticated");
-
-      const controller = new AbortController();
-      const timeout = setTimeout(() => controller.abort(), 15000);
-
-      const res = await fetch(
-        `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/affiliate-signup`,
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${session.access_token}`,
-          },
-          body: JSON.stringify({
+      const result = await Promise.race([
+        supabase.functions.invoke("affiliate-signup", {
+          body: {
             full_name: fullName,
             discount_code: discountCode,
             instagram_handle: instagramHandle || undefined,
             tiktok_handle: tiktokHandle || undefined,
-          }),
-          signal: controller.signal,
-        },
-      );
+          },
+        }),
+        new Promise<never>((_, reject) =>
+          setTimeout(() => reject(new Error("TIMEOUT")), 15000)
+        ),
+      ]);
 
-      clearTimeout(timeout);
-
-      const result = await res.json();
-      if (!res.ok) throw new Error(result.error || "Failed to sign up");
+      const { data, error } = result as { data: any; error: any };
+      if (error) throw new Error(error.message || "Request failed");
+      if (data?.error) {
+        if (data.error.includes("already have an affiliate")) {
+          toast.info("You already have an affiliate account!");
+          navigate("/affiliates");
+          return;
+        }
+        throw new Error(data.error);
+      }
 
       toast.success("Welcome to the affiliate program! 🎉");
       navigate("/affiliates");
     } catch (err: any) {
-      if (err.name === "AbortError") {
+      if (err.message === "TIMEOUT") {
         toast.error("Request timed out. Please try again.");
       } else {
-        toast.error(err.message);
+        toast.error(err.message || "Something went wrong");
       }
     } finally {
+      clearTimeout(watchdog);
       setSubmitting(false);
     }
   };

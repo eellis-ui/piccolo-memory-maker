@@ -188,35 +188,48 @@ const Affiliates = () => {
   const handleAffiliateSignup = async (e: React.FormEvent) => {
     e.preventDefault();
     setSubmitting(true);
-    try {
-      const { data: { session } } = await supabase.auth.getSession();
-      if (!session) throw new Error("Not authenticated");
 
-      const res = await fetch(
-        `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/affiliate-signup`,
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${session.access_token}`,
-          },
-          body: JSON.stringify({
+    const watchdog = setTimeout(() => {
+      setSubmitting(false);
+      toast.error("Request timed out. Please try again.");
+    }, 20000);
+
+    try {
+      const result = await Promise.race([
+        supabase.functions.invoke("affiliate-signup", {
+          body: {
             full_name: fullName,
             discount_code: discountCode,
             instagram_handle: instagramHandle || null,
             tiktok_handle: tiktokHandle || null,
-          }),
-        },
-      );
+          },
+        }),
+        new Promise<never>((_, reject) =>
+          setTimeout(() => reject(new Error("TIMEOUT")), 15000)
+        ),
+      ]);
 
-      const result = await res.json();
-      if (!res.ok) throw new Error(result.error || "Failed to sign up");
+      const { data, error } = result as { data: any; error: any };
+      if (error) throw new Error(error.message || "Request failed");
+      if (data?.error) {
+        if (data.error.includes("already have an affiliate")) {
+          toast.info("You already have an affiliate account!");
+          fetchAffiliateData(user.id);
+          return;
+        }
+        throw new Error(data.error);
+      }
 
       toast.success("Welcome to the affiliate program! 🎉");
       fetchAffiliateData(user.id);
     } catch (err: any) {
-      toast.error(err.message);
+      if (err.message === "TIMEOUT") {
+        toast.error("Request timed out. Please try again.");
+      } else {
+        toast.error(err.message || "Something went wrong");
+      }
     } finally {
+      clearTimeout(watchdog);
       setSubmitting(false);
     }
   };
