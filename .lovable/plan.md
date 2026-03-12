@@ -1,36 +1,36 @@
 
+Goal: get the app install to happen on the correct Shopify store (piccaload), not calmae.
 
-## Plan: Post-Checkout Thank You Banner on Builder Page
+What’s actually happening
+- Your project is connected to: piccaload.myshopify.com.
+- Your screenshot shows your current Shopify login is tied to a different workspace/store (calmae).
+- That means this is an account-access issue, not a button-location issue.
 
-### Current Flow
-Checkout opens Shopify in a **new tab** (`window.open`). The original Builder tab remains open. After payment, the customer switches back to the Builder tab.
+Action plan (do these in order)
+1) Force the correct store login
+- Open this exact URL in a private/incognito window:
+  - https://admin.shopify.com/store/piccaload
+- Sign in with the email that has access to Piccaload.
 
-### Problem
-When customers return to the Builder tab after paying, there's no acknowledgment of their payment and no clear prompt to start uploading photos.
+2) Confirm whether you truly have access to Piccaload
+- If you can enter Piccaload admin: proceed to step 3.
+- If Shopify sends you back to calmae or says no access: you are not added to Piccaload with the right account.
 
-### Proposed Changes
+3) If no access, ask the Piccaload store owner to invite you
+- Owner goes to Shopify Admin → Settings → Users and permissions → Add staff.
+- Invite your exact email.
+- Required permissions:
+  - Manage and install apps and channels
+  - Develop apps (or equivalent app-development permission)
+  - Discounts (recommended for this workflow)
 
-**1. `src/pages/Builder.tsx`** — Add a `postCheckout` state
-- Detect a `paid=true` URL parameter OR set it locally after checkout button is clicked
-- When `postCheckout` is true, show a thank-you banner at the top of the builder (above progress steps)
-- Reset the builder to the upload step so they're ready to add photos
-- The banner includes: a confirmation message ("Thank you for your order!"), a prompt ("Now upload your photos to create your coloring book"), and a friendly icon
+4) Then install from inside Piccaload store admin (not Partners dashboard)
+- Piccaload Admin → Settings → Apps and sales channels → Develop apps.
+- If “Develop apps” is blocked, owner must enable custom app development first.
+- Open/create app → API credentials → Install app.
 
-**2. `src/components/builder/CheckoutStep.tsx`** — After opening checkout URL
-- After `window.open(checkoutUrl, '_blank')`, call a new `onCheckoutComplete` callback prop
-- This lets the parent Builder component transition to the post-checkout upload state
+5) If still blocked after invite
+- Fastest fallback: have the Piccaload owner do the install + token generation directly, then share the token with you.
 
-**3. `src/pages/Builder.tsx`** — Handle checkout complete
-- Add `onCheckoutComplete` handler that sets `showingCheckout = false`, sets a `postCheckout = true` state, and updates the URL with `&paid=true`
-- The builder then shows the upload step with the thank-you banner on top
-
-### Thank You Banner Design
-A full-width, visually distinct banner (green/success themed) at the top of the builder content area:
-- Check icon + "Thank You For Your Order!"  
-- Subtext: "Your payment was successful. Now let's create your coloring book — start by uploading your favorite photos below."
-- Dismissible with an X button
-
-### What Won't Change
-- The Shopify checkout still opens in a new tab (required by Shopify)
-- All existing builder steps and session persistence remain intact
-
+Expected result
+- Once done inside Piccaload admin, installation will no longer target calmae and you can continue with the affiliate setup.
