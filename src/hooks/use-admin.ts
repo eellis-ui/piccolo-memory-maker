@@ -1,3 +1,5 @@
+import { useState, useEffect } from "react";
+import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 
 export const useIsAdmin = () => {
@@ -5,10 +7,6 @@ export const useIsAdmin = () => {
   const [isAdmin, setIsAdmin] = useState(false);
   const [loading, setLoading] = useState(true);
 
-  // Need to import useState from react
-  const [, forceUpdate] = useState(0);
-
-  // Check admin role whenever user changes
   useEffect(() => {
     if (authLoading) return;
     if (!user) {
@@ -17,14 +15,13 @@ export const useIsAdmin = () => {
       return;
     }
 
-    const { supabase } = require("@/integrations/supabase/client");
     supabase
       .from("user_roles")
       .select("role")
       .eq("user_id", user.id)
       .eq("role", "admin")
       .maybeSingle()
-      .then(({ data }: { data: any }) => {
+      .then(({ data }) => {
         setIsAdmin(!!data);
         setLoading(false);
       });
