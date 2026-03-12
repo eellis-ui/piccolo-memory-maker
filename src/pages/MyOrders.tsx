@@ -49,7 +49,7 @@ const MyOrders = () => {
   const navigate = useNavigate();
   const { user, loading } = useAuth();
   const [orders, setOrders] = useState<OrderRow[]>([]);
-  const [ordersLoading, setOrdersLoading] = useState(true);
+  const [ordersLoading, setOrdersLoading] = useState(false);
   const [activeTab, setActiveTab] = useState("all");
   const [deleting, setDeleting] = useState<string | null>(null);
   const [clearingAll, setClearingAll] = useState(false);
