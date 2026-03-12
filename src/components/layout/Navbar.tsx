@@ -496,7 +496,14 @@ const Navbar = () => {
               hasItems={hasItems}
               itemCount={itemCount}
               basketContentProps={basketContentProps} />
-            
+            {!isLoggedIn && (
+              <Link
+                to="/auth"
+                className="hidden md:inline-flex text-sm font-medium text-foreground hover:text-foreground/70 transition-colors"
+              >
+                Sign In
+              </Link>
+            )}
             <Button asChild className="hidden md:inline-flex rounded-lg px-6 bg-foreground text-background hover:bg-foreground/90">
               <Link to="/pricing">Start Creating</Link>
             </Button>
