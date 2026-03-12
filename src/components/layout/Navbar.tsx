@@ -499,6 +499,7 @@ const Navbar = () => {
             {!isLoggedIn && (
               <Link
                 to="/auth"
+                state={{ from: "/my-orders" }}
                 className="hidden md:inline-flex text-sm font-medium text-foreground hover:text-foreground/70 transition-colors"
               >
                 Sign In
