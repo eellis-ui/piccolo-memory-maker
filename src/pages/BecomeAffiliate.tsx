@@ -1,5 +1,5 @@
-import { useState, useEffect } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { useState, useEffect, useRef } from "react";
+import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -12,34 +12,34 @@ import { Loader2 } from "lucide-react";
 import { toast } from "sonner";
 
 const benefits = [
-{
-  number: "10%",
-  title: "Discount for Customers",
-  description: "Get your own unique discount code to share with your audience. Your followers save 10% on every order."
-},
-{
-  number: "10%",
-  title: "Commission for You",
-  description: "Earn 10% commission on every sale made using your code. No caps, no limits."
-},
-{
-  number: "∞",
-  title: "Unlimited Earning",
-  description: "Share your code on Instagram, TikTok, or anywhere you like. We track every sale automatically."
-}];
-
+  {
+    number: "10%",
+    title: "Discount for Customers",
+    description: "Get your own unique discount code to share with your audience. Your followers save 10% on every order."
+  },
+  {
+    number: "10%",
+    title: "Commission for You",
+    description: "Earn 10% commission on every sale made using your code. No caps, no limits."
+  },
+  {
+    number: "∞",
+    title: "Unlimited Earning",
+    description: "Share your code on Instagram, TikTok, or anywhere you like. We track every sale automatically."
+  }
+];
 
 const steps = [
-{ number: "01", text: "Create your affiliate account" },
-{ number: "02", text: "Choose your unique discount code" },
-{ number: "03", text: "Share it with your audience" },
-{ number: "04", text: "Earn commission on every sale" }];
-
+  { number: "01", text: "Create your affiliate account" },
+  { number: "02", text: "Choose your unique discount code" },
+  { number: "03", text: "Share it with your audience" },
+  { number: "04", text: "Earn commission on every sale" }
+];
 
 const BecomeAffiliate = () => {
   const navigate = useNavigate();
+  const isMounted = useRef(true);
   const [user, setUser] = useState<any>(null);
-  const [hasAffiliate, setHasAffiliate] = useState<boolean | null>(null);
   const [checkingAuth, setCheckingAuth] = useState(true);
 
   // Auth form
@@ -51,45 +51,72 @@ const BecomeAffiliate = () => {
   // Signup form
   const [fullName, setFullName] = useState("");
   const [discountCode, setDiscountCode] = useState("");
+  const [instagramHandle, setInstagramHandle] = useState("");
+  const [tiktokHandle, setTiktokHandle] = useState("");
   const [submitting, setSubmitting] = useState(false);
 
   useEffect(() => {
+    isMounted.current = true;
+
+    const checkAffiliateSafe = async (userId: string) => {
+      try {
+        const { data } = await supabase
+          .from("affiliates")
+          .select("id")
+          .eq("user_id", userId)
+          .maybeSingle();
+        if (!isMounted.current) return;
+        if (data) {
+          navigate("/affiliates");
+          return; // don't clear checkingAuth — we're navigating away
+        }
+      } catch (err) {
+        console.error("Affiliate check failed:", err);
+      }
+      if (isMounted.current) setCheckingAuth(false);
+    };
+
+    const initAuth = async () => {
+      try {
+        const { data: { session } } = await supabase.auth.getSession();
+        if (!isMounted.current) return;
+        if (session?.user) {
+          setUser(session.user);
+          await checkAffiliateSafe(session.user.id);
+        } else {
+          setUser(null);
+          setCheckingAuth(false);
+        }
+      } catch (err) {
+        console.error("Auth init failed:", err);
+        if (isMounted.current) setCheckingAuth(false);
+      }
+    };
+
+    initAuth();
+
+    // Timeout safeguard — never spin forever
+    const timeout = setTimeout(() => {
+      if (isMounted.current) setCheckingAuth(false);
+    }, 3000);
+
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
-      setUser(session?.user ?? null);
-      if (session?.user) {
-        checkAffiliate(session.user.id);
+      if (!isMounted.current) return;
+      const newUser = session?.user ?? null;
+      setUser(newUser);
+      if (newUser) {
+        checkAffiliateSafe(newUser.id);
       } else {
         setCheckingAuth(false);
       }
     });
 
-    // Fallback: ensure we stop loading even if onAuthStateChange is slow
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      setUser(session?.user ?? null);
-      if (session?.user) {
-        checkAffiliate(session.user.id);
-      } else {
-        setCheckingAuth(false);
-      }
-    });
-
-    return () => subscription.unsubscribe();
-  }, []);
-
-  const checkAffiliate = async (userId: string) => {
-    const { data } = await supabase
-      .from("affiliates")
-      .select("id")
-      .eq("user_id", userId)
-      .maybeSingle();
-    if (data) {
-      // Already an affiliate, redirect to dashboard
-      navigate("/affiliates");
-    } else {
-      setHasAffiliate(false);
-      setCheckingAuth(false);
-    }
-  };
+    return () => {
+      isMounted.current = false;
+      clearTimeout(timeout);
+      subscription.unsubscribe();
+    };
+  }, [navigate]);
 
   const handleAuth = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -132,6 +159,8 @@ const BecomeAffiliate = () => {
           body: JSON.stringify({
             full_name: fullName,
             discount_code: discountCode,
+            instagram_handle: instagramHandle || undefined,
+            tiktok_handle: tiktokHandle || undefined,
           }),
         },
       );
@@ -148,7 +177,6 @@ const BecomeAffiliate = () => {
     }
   };
 
-  // Determine which form to show in hero
   const renderHeroForm = () => {
     if (checkingAuth) {
       return (
@@ -158,7 +186,6 @@ const BecomeAffiliate = () => {
       );
     }
 
-    // Not logged in — show auth form
     if (!user) {
       return (
         <Card className="rounded-3xl max-w-md mx-auto text-left">
@@ -210,7 +237,6 @@ const BecomeAffiliate = () => {
       );
     }
 
-    // Logged in but not yet an affiliate — show affiliate details form
     return (
       <Card className="rounded-3xl max-w-md mx-auto text-left">
         <CardContent className="p-6">
@@ -244,6 +270,26 @@ const BecomeAffiliate = () => {
               <p className="text-xs text-muted-foreground">
                 3–20 characters. This gives customers 10% off.
               </p>
+            </div>
+            <div className="space-y-1.5">
+              <Label htmlFor="hero-instagram">Instagram Handle (optional)</Label>
+              <Input
+                id="hero-instagram"
+                value={instagramHandle}
+                onChange={(e) => setInstagramHandle(e.target.value)}
+                placeholder="@yourhandle"
+                className="rounded-xl"
+              />
+            </div>
+            <div className="space-y-1.5">
+              <Label htmlFor="hero-tiktok">TikTok Handle (optional)</Label>
+              <Input
+                id="hero-tiktok"
+                value={tiktokHandle}
+                onChange={(e) => setTiktokHandle(e.target.value)}
+                placeholder="@yourhandle"
+                className="rounded-xl"
+              />
             </div>
             <Button type="submit" className="w-full rounded-2xl" disabled={submitting}>
               {submitting && <Loader2 className="w-4 h-4 mr-2 animate-spin" />}
@@ -282,11 +328,11 @@ const BecomeAffiliate = () => {
             Everyone Wins
           </h2>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            {benefits.map((benefit) =>
-            <div
-              key={benefit.title}
-              className="text-left p-8 rounded-lg border border-border bg-cream">
-              
+            {benefits.map((benefit) => (
+              <div
+                key={benefit.title}
+                className="text-left p-8 rounded-lg border border-border bg-cream"
+              >
                 <span className="font-display text-5xl font-bold text-foreground block mb-2">
                   {benefit.number}
                 </span>
@@ -297,10 +343,9 @@ const BecomeAffiliate = () => {
                   {benefit.description}
                 </p>
               </div>
-            )}
+            ))}
           </div>
         </div>
-
         <AffiliateBanner />
       </section>
 
@@ -314,18 +359,18 @@ const BecomeAffiliate = () => {
             How It Works
           </h2>
           <div className="space-y-4">
-            {steps.map((step) =>
-            <div
-              key={step.number}
-              className="flex items-center gap-6 bg-background rounded-lg p-5 border border-border">
-              
+            {steps.map((step) => (
+              <div
+                key={step.number}
+                className="flex items-center gap-6 bg-background rounded-lg p-5 border border-border"
+              >
                 <span className="font-display text-2xl font-bold text-foreground w-10 shrink-0">
                   {step.number}
                 </span>
                 <div className="h-px flex-1 bg-border hidden sm:block" />
                 <p className="text-base text-foreground font-medium flex-1">{step.text}</p>
               </div>
-            )}
+            ))}
           </div>
         </div>
       </section>
@@ -357,8 +402,8 @@ const BecomeAffiliate = () => {
       </section>
 
       <Footer />
-    </div>);
-
+    </div>
+  );
 };
 
 export default BecomeAffiliate;
