@@ -139,3 +139,8 @@
     transform: translateX(-50%);
   }
 }
+
+/* Hide Elfsight branding */
+a[href*="elfsight.com"] {
+  display: none !important;
+}
