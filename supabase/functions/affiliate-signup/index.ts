@@ -13,39 +13,61 @@ function adminClient() {
   );
 }
 
+async function fetchWithTimeout(url: string, options: RequestInit, timeoutMs = 10000): Promise<Response> {
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), timeoutMs);
+  try {
+    return await fetch(url, { ...options, signal: controller.signal });
+  } finally {
+    clearTimeout(timeout);
+  }
+}
+
 async function createShopifyDiscountCode(code: string): Promise<{ priceRuleId: string } | { error: string }> {
   const shopDomain = "piccaload.myshopify.com";
   const accessToken = Deno.env.get("SHOPIFY_ACCESS_TOKEN");
   if (!accessToken) return { error: "Shopify access token not configured" };
 
   // Create a price rule for 10% off
-  const priceRuleRes = await fetch(
-    `https://${shopDomain}/admin/api/2025-07/price_rules.json`,
-    {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "X-Shopify-Access-Token": accessToken,
-      },
-      body: JSON.stringify({
-        price_rule: {
-          title: `AFFILIATE_${code}`,
-          target_type: "line_item",
-          target_selection: "all",
-          allocation_method: "across",
-          value_type: "percentage",
-          value: "-10.0",
-          customer_selection: "all",
-          starts_at: new Date().toISOString(),
-          usage_limit: null,
+  let priceRuleRes: Response;
+  try {
+    priceRuleRes = await fetchWithTimeout(
+      `https://${shopDomain}/admin/api/2025-07/price_rules.json`,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "X-Shopify-Access-Token": accessToken,
         },
-      }),
-    },
-  );
+        body: JSON.stringify({
+          price_rule: {
+            title: `AFFILIATE_${code}`,
+            target_type: "line_item",
+            target_selection: "all",
+            allocation_method: "across",
+            value_type: "percentage",
+            value: "-10.0",
+            customer_selection: "all",
+            starts_at: new Date().toISOString(),
+            usage_limit: null,
+          },
+        }),
+      },
+    );
+  } catch (err) {
+    console.error("Shopify price rule request failed:", err);
+    if (err instanceof DOMException && err.name === "AbortError") {
+      return { error: "Shopify request timed out. Please try again." };
+    }
+    return { error: "Could not reach Shopify. Please try again." };
+  }
 
   if (!priceRuleRes.ok) {
     const errText = await priceRuleRes.text();
     console.error("Price rule creation failed:", errText);
+    if (priceRuleRes.status === 401 || errText.includes("Invalid API key")) {
+      return { error: "Shopify integration error. Please contact support." };
+    }
     return { error: "Failed to create discount in Shopify" };
   }
 
@@ -53,19 +75,25 @@ async function createShopifyDiscountCode(code: string): Promise<{ priceRuleId: s
   const priceRuleId = priceRuleData.price_rule.id;
 
   // Create the discount code under the price rule
-  const discountRes = await fetch(
-    `https://${shopDomain}/admin/api/2025-07/price_rules/${priceRuleId}/discount_codes.json`,
-    {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "X-Shopify-Access-Token": accessToken,
+  let discountRes: Response;
+  try {
+    discountRes = await fetchWithTimeout(
+      `https://${shopDomain}/admin/api/2025-07/price_rules/${priceRuleId}/discount_codes.json`,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "X-Shopify-Access-Token": accessToken,
+        },
+        body: JSON.stringify({
+          discount_code: { code: code.toUpperCase() },
+        }),
       },
-      body: JSON.stringify({
-        discount_code: { code: code.toUpperCase() },
-      }),
-    },
-  );
+    );
+  } catch (err) {
+    console.error("Shopify discount code request failed:", err);
+    return { error: "Shopify request timed out. Please try again." };
+  }
 
   if (!discountRes.ok) {
     const errText = await discountRes.text();
@@ -90,13 +118,17 @@ Deno.serve(async (req) => {
       { global: { headers: { Authorization: authHeader } } },
     );
 
-    const { data: { user }, error: userError } = await supabaseClient.auth.getUser();
-    if (userError || !user) {
+    const token = authHeader.replace("Bearer ", "");
+    const { data: claimsData, error: claimsError } = await supabaseClient.auth.getClaims(token);
+    if (claimsError || !claimsData?.claims) {
       return new Response(JSON.stringify({ error: "Unauthorized" }), {
         status: 401,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
+
+    const userId = claimsData.claims.sub as string;
+    const userEmail = claimsData.claims.email as string;
 
     const body = await req.json();
     const { full_name, instagram_handle, tiktok_handle, discount_code } = body;
@@ -123,7 +155,7 @@ Deno.serve(async (req) => {
     const { data: existing } = await admin
       .from("affiliates")
       .select("id")
-      .eq("user_id", user.id)
+      .eq("user_id", userId)
       .maybeSingle();
 
     if (existing) {
@@ -160,9 +192,9 @@ Deno.serve(async (req) => {
     const { data: affiliate, error: insertError } = await admin
       .from("affiliates")
       .insert({
-        user_id: user.id,
+        user_id: userId,
         full_name,
-        email: user.email,
+        email: userEmail,
         instagram_handle: instagram_handle || null,
         tiktok_handle: tiktok_handle || null,
         discount_code: discount_code.toUpperCase(),
