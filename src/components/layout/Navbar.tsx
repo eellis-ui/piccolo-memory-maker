@@ -544,6 +544,15 @@ const Navbar = () => {
                   My Orders
                 </Link>
             }
+              {!isLoggedIn && (
+                <Link
+                  to="/auth"
+                  className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors px-2 py-2"
+                  onClick={() => setIsMenuOpen(false)}
+                >
+                  Sign In
+                </Link>
+              )}
               <Button asChild className="rounded-lg mx-2">
                 <Link to="/pricing" onClick={() => setIsMenuOpen(false)}>
                   Start Creating
