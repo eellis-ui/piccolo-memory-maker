@@ -11,6 +11,7 @@ import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, 
 import { toast } from "sonner";
 import Navbar from "@/components/layout/Navbar";
 import Footer from "@/components/layout/Footer";
+import { useAuth } from "@/contexts/AuthContext";
 
 interface OrderRow {
   id: string;
@@ -46,57 +47,33 @@ const STATUS_TABS = [
 
 const MyOrders = () => {
   const navigate = useNavigate();
+  const { user, loading } = useAuth();
   const [orders, setOrders] = useState<OrderRow[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [authed, setAuthed] = useState(false);
+  const [ordersLoading, setOrdersLoading] = useState(true);
   const [activeTab, setActiveTab] = useState("all");
   const [deleting, setDeleting] = useState<string | null>(null);
   const [clearingAll, setClearingAll] = useState(false);
 
-  const fetchOrders = async () => {
-    const { data } = await supabase
+  // Redirect to auth if not logged in once loading resolves
+  useEffect(() => {
+    if (!loading && !user) {
+      navigate("/auth", { state: { from: "/my-orders" }, replace: true });
+    }
+  }, [user, loading, navigate]);
+
+  // Fetch orders once user is known
+  useEffect(() => {
+    if (!user) return;
+    setOrdersLoading(true);
+    supabase
       .from("orders")
       .select("id, status, title_page_text, created_at, tracking_number, shipped_at, extra_pages, builder_session_id, digital_download, digital_pdf_path")
-      .order("created_at", { ascending: false });
-    if (data) setOrders(data as OrderRow[]);
-  };
-
-  useEffect(() => {
-    let mounted = true;
-    let initialHandled = false;
-
-    // Safety net: if INITIAL_SESSION never fires within 5s, redirect to auth
-    const timeout = setTimeout(() => {
-      if (mounted && !initialHandled) navigate("/auth");
-    }, 5000);
-
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
-      if (!mounted) return;
-
-      if (event === "INITIAL_SESSION" || event === "SIGNED_IN" || event === "TOKEN_REFRESHED") {
-        if (event === "INITIAL_SESSION") {
-          initialHandled = true;
-          clearTimeout(timeout);
-        }
-        if (session) {
-          setAuthed(true);
-          fetchOrders().finally(() => { if (mounted) setLoading(false); });
-        } else if (event === "INITIAL_SESSION") {
-          // Only redirect on INITIAL_SESSION with no session — not on a failed token refresh
-          navigate("/auth");
-        }
-      } else if (event === "SIGNED_OUT") {
-        navigate("/auth");
-      }
-    });
-
-    return () => {
-      mounted = false;
-      clearTimeout(timeout);
-      subscription.unsubscribe();
-    };
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+      .order("created_at", { ascending: false })
+      .then(({ data }) => {
+        if (data) setOrders(data as OrderRow[]);
+        setOrdersLoading(false);
+      });
+  }, [user]);
 
   // Group draft orders by session so multi-book drafts appear as one entry
   const groupedOrders = (() => {
@@ -118,7 +95,6 @@ const MyOrders = () => {
     return true;
   });
 
-  // Count books in a session for display
   const sessionBookCount = (sessionId: string | null) => {
     if (!sessionId) return 1;
     return orders.filter((o) => o.builder_session_id === sessionId).length;
@@ -127,7 +103,6 @@ const MyOrders = () => {
   const handleDeleteOrder = async (orderId: string, sessionId?: string | null) => {
     setDeleting(orderId);
     try {
-      // If it's a draft with a session, delete all books in the session
       const idsToDelete = sessionId
         ? orders.filter((o) => o.builder_session_id === sessionId).map((o) => o.id)
         : [orderId];
@@ -163,10 +138,8 @@ const MyOrders = () => {
   };
 
   const handleRepeatOrder = async (order: OrderRow) => {
+    if (!user) return;
     try {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) return;
-
       const { data: newOrder, error } = await supabase
         .from("orders")
         .insert({
@@ -190,7 +163,7 @@ const MyOrders = () => {
     }
   };
 
-  if (!authed || loading) {
+  if (loading || ordersLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <Loader2 className="w-8 h-8 animate-spin text-primary" />
@@ -316,7 +289,6 @@ const MyOrders = () => {
                         </div>
                       </div>
 
-                      {/* Progress tracker for non-draft orders */}
                       {!isDraft && (
                         <>
                           <Progress value={progress} className="h-2 mb-4" />
@@ -342,7 +314,6 @@ const MyOrders = () => {
                         </div>
                       )}
 
-                      {/* Action buttons */}
                       <div className="flex items-center gap-2 flex-wrap">
                         {isDraft && (
                           <Button
@@ -397,15 +368,14 @@ const MyOrders = () => {
                             </div>
                           </div>
                         ) : !isDraft && (
-                          <div className="ml-auto p-3 rounded-xl border border-dashed border-primary/30 bg-primary/5 flex items-center gap-3">
-                            <Download className="w-4 h-4 text-primary shrink-0" />
+                          <div className="ml-auto p-3 rounded-xl border border-dashed border-muted-foreground/30 bg-muted flex items-center gap-3">
+                            <Download className="w-4 h-4 text-muted-foreground shrink-0" />
                             <div className="min-w-0">
-                              <p className="text-xs font-semibold text-foreground">Digital Copy</p>
-                              <p className="text-[10px] text-muted-foreground">From $5.99</p>
+                              <p className="text-xs font-semibold text-foreground">Add Digital PDF</p>
+                              <p className="text-[10px] text-muted-foreground">
+                                <Link to="/contact" className="underline underline-offset-2">Contact us</Link> to add a digital copy
+                              </p>
                             </div>
-                            <Button size="sm" className="rounded-xl shrink-0 h-7 text-xs">
-                              Buy PDF
-                            </Button>
                           </div>
                         )}
                       </div>
