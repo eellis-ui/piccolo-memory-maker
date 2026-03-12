@@ -471,15 +471,25 @@ const Navbar = () => {
                   Admin
                 </Link>
               }
-              {isLoggedIn &&
+            {isLoggedIn &&
               <Link
                 to="/my-orders"
                 className="text-sm font-medium text-foreground hover:text-foreground/70 transition-colors flex items-center gap-1">
-
                   <ClipboardList className="w-3.5 h-3.5" />
                   My Orders
                 </Link>
               }
+              {isLoggedIn && (
+                <button
+                  onClick={async () => {
+                    await supabase.auth.signOut();
+                    navigate("/");
+                  }}
+                  className="text-sm font-medium text-foreground hover:text-foreground/70 transition-colors"
+                >
+                  Sign Out
+                </button>
+              )}
             </div>
           </div>
 
