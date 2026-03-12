@@ -471,15 +471,25 @@ const Navbar = () => {
                   Admin
                 </Link>
               }
-              {isLoggedIn &&
+            {isLoggedIn &&
               <Link
                 to="/my-orders"
                 className="text-sm font-medium text-foreground hover:text-foreground/70 transition-colors flex items-center gap-1">
-
                   <ClipboardList className="w-3.5 h-3.5" />
                   My Orders
                 </Link>
               }
+              {isLoggedIn && (
+                <button
+                  onClick={async () => {
+                    await supabase.auth.signOut();
+                    navigate("/");
+                  }}
+                  className="text-sm font-medium text-foreground hover:text-foreground/70 transition-colors"
+                >
+                  Sign Out
+                </button>
+              )}
             </div>
           </div>
 
@@ -540,11 +550,22 @@ const Navbar = () => {
               to="/my-orders"
               className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors px-2 py-2 flex items-center gap-1"
               onClick={() => setIsMenuOpen(false)}>
-
                   <ClipboardList className="w-3.5 h-3.5" />
                   My Orders
                 </Link>
             }
+              {isLoggedIn && (
+                <button
+                  onClick={async () => {
+                    setIsMenuOpen(false);
+                    await supabase.auth.signOut();
+                    navigate("/");
+                  }}
+                  className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors px-2 py-2 text-left"
+                >
+                  Sign Out
+                </button>
+              )}
               {!isLoggedIn && (
                 <Link
                   to="/auth"

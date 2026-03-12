@@ -63,24 +63,26 @@ const MyOrders = () => {
 
   useEffect(() => {
     let mounted = true;
-    const init = async () => {
-      try {
-        const { data: { session } } = await supabase.auth.getSession();
-        if (!mounted) return;
-        if (!session?.user) {
+
+    // Subscribe FIRST, then session check fires as INITIAL_SESSION event
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+      if (!mounted) return;
+      if (event === "INITIAL_SESSION" || event === "SIGNED_IN") {
+        if (session) {
+          setAuthed(true);
+          fetchOrders().finally(() => { if (mounted) setLoading(false); });
+        } else {
           navigate("/auth");
-          return;
         }
-        setAuthed(true);
-        await fetchOrders();
-      } catch (err) {
-        console.error("MyOrders init error:", err);
-      } finally {
-        if (mounted) setLoading(false);
+      } else if (event === "SIGNED_OUT") {
+        navigate("/auth");
       }
+    });
+
+    return () => {
+      mounted = false;
+      subscription.unsubscribe();
     };
-    init();
-    return () => { mounted = false; };
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 

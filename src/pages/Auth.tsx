@@ -22,22 +22,16 @@ const Auth = () => {
   const [checkingSession, setCheckingSession] = useState(true);
 
   useEffect(() => {
-    // Check once on mount — always clear the spinner regardless of outcome
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      setCheckingSession(false);
-      if (session) {
-        navigate(from, { replace: true });
-      }
-    }).catch(() => {
-      setCheckingSession(false);
-    });
-
-    // Listen for sign-in after the form is submitted
+    // Only redirect after an explicit sign-in action (form submission), not on mount.
+    // This breaks the redirect loop where MyOrders → /auth → MyOrders repeats.
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
       if (event === "SIGNED_IN" && session) {
         navigate(from, { replace: true });
       }
     });
+
+    // Clear the checking spinner immediately — no auto-redirect on mount
+    setCheckingSession(false);
 
     return () => subscription.unsubscribe();
   // eslint-disable-next-line react-hooks/exhaustive-deps
