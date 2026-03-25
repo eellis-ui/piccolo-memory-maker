@@ -169,6 +169,11 @@ const ApproveStep = ({
           <p className="text-muted-foreground">
             Reorder your pages. Cover page is created on next page.
           </p>
+          {!uniquePhotos && bookCount > 1 && (
+            <p className="text-sm text-primary font-medium mt-1">
+              These 20 photos will be shared across all {bookCount} books.
+            </p>
+          )}
         </div>
 
         <div className="flex items-center gap-3 flex-wrap">
@@ -404,9 +409,6 @@ const ApproveStep = ({
           </div>
         </CollapsibleContent>
       </Collapsible>
-
-      {/* Digital Download Upsell */}
-      {allApproved && <DigitalUpsellBanner variant="compact" maxCopies={1} />}
 
       {/* Navigation */}
       <div className="flex justify-start pt-4">
