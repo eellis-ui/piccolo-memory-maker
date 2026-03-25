@@ -212,6 +212,9 @@ const ApproveStep = ({
         </div>
       </div>
 
+      {/* Digital Download Upsell */}
+      <DigitalUpsellBanner variant="compact" maxCopies={1} />
+
       {/* Conversion Progress */}
       {(() => {
         const convertedCount = photos.filter((p) => p.conversionStatus === "completed").length;
