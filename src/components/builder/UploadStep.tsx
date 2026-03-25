@@ -297,6 +297,19 @@ const UploadStep = ({ orderId, sessionId, onImagesUploaded, maxImages = 20, init
         </div>
       )}
 
+      {/* Continue Button (top — always visible when photos ready) */}
+      {readyCount > 0 && (
+        <div className="flex justify-end">
+          <Button
+            onClick={handleContinue}
+            disabled={isUploading}
+            className="rounded-2xl px-8"
+          >
+            Continue to Preview
+          </Button>
+        </div>
+      )}
+
       {/* Image Grid */}
       {images.length > 0 && (
         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
@@ -352,9 +365,9 @@ const UploadStep = ({ orderId, sessionId, onImagesUploaded, maxImages = 20, init
         </div>
       )}
 
-      {/* Continue Button */}
+      {/* Continue Button (bottom) */}
       {readyCount > 0 && (
-        <div className="flex justify-end">
+        <div className="flex justify-end sm:hidden">
           <Button
             onClick={handleContinue}
             disabled={isUploading}
