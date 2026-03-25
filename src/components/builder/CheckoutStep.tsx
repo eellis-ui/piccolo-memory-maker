@@ -140,18 +140,21 @@ const CheckoutStep = ({ pageCount, extraPages, convertedUrls, onBack, onCheckout
     return false;
   }, [sessionId, onCheckoutComplete]);
 
-  // Poll every 5 seconds while awaiting payment, plus on tab visibility change
+  // Poll every 2 seconds while awaiting payment, plus on tab visibility change
+  const [checkingNow, setCheckingNow] = useState(false);
   useEffect(() => {
     if (!awaitingPayment) return;
 
     const interval = setInterval(async () => {
       const paid = await pollForPayment();
       if (paid) setAwaitingPayment(false);
-    }, 5000);
+    }, 2000);
 
     const handleVisibilityChange = async () => {
       if (document.visibilityState === "visible" && awaitingPayment) {
+        setCheckingNow(true);
         const paid = await pollForPayment();
+        setCheckingNow(false);
         if (paid) setAwaitingPayment(false);
       }
     };
@@ -186,6 +189,8 @@ const CheckoutStep = ({ pageCount, extraPages, convertedUrls, onBack, onCheckout
 
   const handleCheckout = async () => {
     setIsCheckingOut(true);
+    // Open window immediately in trusted click context to avoid popup blocking
+    const newWindow = window.open('about:blank', '_blank');
     try {
       const lines: CartLineInput[] = [];
 
@@ -238,12 +243,15 @@ const CheckoutStep = ({ pageCount, extraPages, convertedUrls, onBack, onCheckout
       }
 
       const checkoutUrl = await createShopifyCheckout(lines, sessionId || undefined);
-      if (checkoutUrl) {
-        window.open(checkoutUrl, '_blank');
+      if (checkoutUrl && newWindow) {
+        newWindow.location.href = checkoutUrl;
         setAwaitingPayment(true);
+      } else {
+        newWindow?.close();
       }
     } catch (error) {
       console.error('Checkout error:', error);
+      newWindow?.close();
     } finally {
       setIsCheckingOut(false);
     }
@@ -253,16 +261,20 @@ const CheckoutStep = ({ pageCount, extraPages, convertedUrls, onBack, onCheckout
   if (awaitingPayment) {
     return (
       <div className="space-y-8">
-        <div className="max-w-md mx-auto text-center py-16 space-y-6">
+         <div className="max-w-md mx-auto text-center py-16 space-y-6">
           <div className="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center mx-auto">
-            <Clock className="w-8 h-8 text-primary animate-pulse" />
+            {checkingNow ? (
+              <Loader2 className="w-8 h-8 text-primary animate-spin" />
+            ) : (
+              <Clock className="w-8 h-8 text-primary animate-pulse" />
+            )}
           </div>
           <div>
             <h2 className="font-display text-2xl font-semibold text-foreground">
-              Waiting for payment…
+              {checkingNow ? "Checking payment…" : "Waiting for payment…"}
             </h2>
             <p className="text-muted-foreground mt-2">
-              Complete your purchase in the Shopify tab, then come back here.
+              Complete your purchase in the Shopify tab. This page will update automatically.
             </p>
           </div>
           <Button
