@@ -626,7 +626,7 @@ const Builder = () => {
           <div className="max-w-5xl mx-auto">
             {!showingCheckout && !showingRecap && activeBook && (
               <>
-                {activeBook.step === "upload" && activeBookIndex === 0 && bookCount > 1 && !uniquePhotos && (
+                {activeBook.step === "upload" && activeBookIndex === 0 && bookCount > 1 && (
                   <div className="mb-6">
                     <UniquePhotosUpsellBanner />
                   </div>
