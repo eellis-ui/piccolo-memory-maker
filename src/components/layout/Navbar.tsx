@@ -96,7 +96,7 @@ const BasketContent = ({
         <div key={lineItem.id} className="rounded-lg border border-border bg-background p-3 space-y-3">
             <div className="flex gap-3">
               <img
-              src="/lovable-uploads/d741aeb9-21af-45e1-9863-e350da643d42.png"
+              src="/lovable-uploads/67e8bc18-d4da-4d1e-bb5c-8235ea57eb6d.png"
               alt="Personalized Coloring Book"
               className="w-20 h-20 rounded-lg object-cover flex-shrink-0" />
               <div className="flex-1 min-w-0 space-y-1">
