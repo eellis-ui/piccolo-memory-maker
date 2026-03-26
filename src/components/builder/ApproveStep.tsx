@@ -469,13 +469,11 @@ const SortablePhotoCard = ({
 
         const result = await uploadGuestPhoto(sessionId, orderId, file, position, isLandscape);
 
-        // Get signed URL
-        const urls = await getSignedUrls(sessionId, orderId, [result.original_path]);
-        const signedUrl = urls?.[0]?.signedUrl || "";
+        const signedUrl = result.signedUrl || "";
 
         const newPhoto: OrderPhoto = {
           id: result.id,
-          originalPath: result.original_path,
+          originalPath: result.storagePath,
           convertedPath: null,
           pagePosition: position,
           isApproved: false,
