@@ -38,46 +38,52 @@ const HowItWorksSection = () => {
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-0">
           {steps.map((step, index) => (
-            <div
-              key={step.title}
-              className="text-center"
-            >
-              {/* Number + Icon row with connector lines */}
-              <div className="flex items-center justify-center mb-6">
-                {/* Line from previous icon to this number */}
-                {index > 0 ? (
-                  <div className="hidden lg:block flex-1 h-0.5 bg-border" />
-                ) : (
-                  <div className="hidden lg:block flex-1" />
-                )}
-                
-                {/* Step number */}
-                <span className="inline-flex items-center justify-center w-8 h-8 rounded-full bg-primary text-primary-foreground text-sm font-semibold shrink-0">
-                  {index + 1}
-                </span>
-                
-                {/* Line from number to icon */}
-                <div className="hidden lg:block w-4 h-0.5 bg-border" />
-                
-                {/* Icon */}
-                <div className="inline-flex items-center justify-center w-10 h-10 shrink-0">
-                  <step.icon className="w-8 h-8 text-primary" />
+            <div key={step.title}>
+              {/* Mobile connector line between steps */}
+              {index > 0 && (
+                <div className="flex justify-center lg:hidden py-4">
+                  <div className="w-0.5 h-8 bg-border" />
+                </div>
+              )}
+
+              <div className="text-center">
+                {/* Number + Icon row with connector lines */}
+                <div className="flex items-center justify-center mb-6">
+                  {/* Line from previous icon to this number */}
+                  {index > 0 ? (
+                    <div className="hidden lg:block flex-1 h-0.5 bg-border" />
+                  ) : (
+                    <div className="hidden lg:block flex-1" />
+                  )}
+                  
+                  {/* Step number */}
+                  <span className="inline-flex items-center justify-center w-8 h-8 rounded-full bg-primary text-primary-foreground text-sm font-semibold shrink-0">
+                    {index + 1}
+                  </span>
+                  
+                  {/* Line from number to icon */}
+                  <div className="hidden lg:block w-4 h-0.5 bg-border" />
+                  
+                  {/* Icon */}
+                  <div className="inline-flex items-center justify-center w-10 h-10 shrink-0">
+                    <step.icon className="w-8 h-8 text-primary" />
+                  </div>
+                  
+                  {/* Line from icon to next number */}
+                  {index < steps.length - 1 ? (
+                    <div className="hidden lg:block flex-1 h-0.5 bg-border" />
+                  ) : (
+                    <div className="hidden lg:block flex-1" />
+                  )}
                 </div>
                 
-                {/* Line from icon to next number */}
-                {index < steps.length - 1 ? (
-                  <div className="hidden lg:block flex-1 h-0.5 bg-border" />
-                ) : (
-                  <div className="hidden lg:block flex-1" />
-                )}
+                <h3 className="font-display text-xl font-semibold text-foreground mb-3">
+                  {step.title}
+                </h3>
+                <p className="text-muted-foreground text-sm">
+                  {step.description}
+                </p>
               </div>
-              
-              <h3 className="font-display text-xl font-semibold text-foreground mb-3">
-                {step.title}
-              </h3>
-              <p className="text-muted-foreground text-sm">
-                {step.description}
-              </p>
             </div>
           ))}
         </div>
