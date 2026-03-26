@@ -165,7 +165,7 @@ const CoverStep = ({ availableImages, bookAddOns, onBookAddOnsChange, onCoverCom
                     className="uppercase text-foreground leading-none"
                     style={{
                       fontFamily: "'Yuji Syuku', serif",
-                      fontSize: "10px",
+                      fontSize: "14px",
                       letterSpacing: 0,
                     }}
                   >
@@ -177,7 +177,7 @@ const CoverStep = ({ availableImages, bookAddOns, onBookAddOnsChange, onCoverCom
                     className="leading-none"
                     style={{
                       fontFamily: "Bristol, serif",
-                      fontSize: "12px",
+                      fontSize: "16.8px",
                       marginTop: "2.5%",
                       color: "hsl(var(--foreground))",
                     }}
