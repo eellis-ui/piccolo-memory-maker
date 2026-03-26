@@ -245,9 +245,6 @@ const ApproveStep = ({
         </div>
 
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
-          <Badge variant="secondary" className="text-sm py-1 px-3">
-            {totalApproved} of {totalPages} pages approved
-          </Badge>
           {hasUnconverted && (
             <Button
               type="button"
@@ -320,7 +317,7 @@ const ApproveStep = ({
                     All photos converted
                   </span>
                 ) : (
-                  `${convertedCount} of ${totalPhotos} photos converted`
+              `${convertedCount} of ${totalPhotos} photos converted`
                 )}
               </span>
               <span className="font-medium text-foreground">{percent}%</span>
@@ -337,6 +334,34 @@ const ApproveStep = ({
                 style={{ width: `${percent}%` }}
               />
             </div>
+            {/* Approval progress */}
+            {allConverted && (
+              <div className="mt-3 space-y-1.5">
+                <div className="flex items-center justify-between text-sm">
+                  <span className="text-muted-foreground">
+                    {approvedCount === photos.length ? (
+                      <span className="flex items-center gap-1.5 text-green-600 dark:text-green-400">
+                        <Check className="w-3.5 h-3.5" />
+                        All pages approved
+                      </span>
+                    ) : (
+                      `${approvedCount} of ${photos.length} pages approved`
+                    )}
+                  </span>
+                  <span className="font-medium text-foreground">{photos.length > 0 ? Math.round((approvedCount / photos.length) * 100) : 0}%</span>
+                </div>
+                <div className="w-full h-2.5 bg-muted rounded-full overflow-hidden">
+                  <div
+                    className={`h-full rounded-full transition-all duration-500 ${
+                      approvedCount === photos.length
+                        ? "bg-green-500"
+                        : "bg-primary"
+                    }`}
+                    style={{ width: `${photos.length > 0 ? Math.round((approvedCount / photos.length) * 100) : 0}%` }}
+                  />
+                </div>
+              </div>
+            )}
           </div>
         );
       })()}
