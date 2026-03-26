@@ -376,9 +376,10 @@ const ApproveStep = ({
                     <div className="flex gap-2">
                       {!hasConverted && !isConverting && (
                         <Button
+                          type="button"
                           variant="ghost"
                           size="sm"
-                          onClick={() => convertPhoto(photo.id)}
+                          onClick={() => void convertPhoto(photo.id)}
                           className="rounded-xl"
                         >
                           <RefreshCw className="w-4 h-4 mr-1" />
