@@ -8,7 +8,7 @@ const CatBanner = () => {
         <img
           src="/images/banner-cat.png"
           alt="Woman photographing a cat, with the photo converted to a coloring page line art"
-          className="w-full h-full object-cover"
+          className="w-full h-full object-cover object-bottom md:object-center"
           loading="lazy"
         />
       </div>
