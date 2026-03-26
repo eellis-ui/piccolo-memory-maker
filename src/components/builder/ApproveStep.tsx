@@ -412,9 +412,10 @@ const ApproveStep = ({
                         if (attemptsLeft <= 0) return null;
                         return (
                           <Button
+                            type="button"
                             variant="ghost"
                             size="sm"
-                            onClick={() => convertPhoto(photo.id)}
+                            onClick={() => void convertPhoto(photo.id)}
                             className="rounded-xl text-destructive"
                           >
                             <RefreshCw className="w-4 h-4 mr-1" />
