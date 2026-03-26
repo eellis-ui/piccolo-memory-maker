@@ -59,9 +59,70 @@ const ApproveStep = ({
   const totalPages = uniquePhotos ? photos.length : photos.length * bookCount;
   const totalApproved = uniquePhotos ? approvedCount : approvedCount * bookCount;
 
+  const pollForConversion = useCallback(async (photoId: string) => {
+    const MAX_POLLS = 60; // 2 minutes max
+    const POLL_INTERVAL = 2000;
+
+    for (let i = 0; i < MAX_POLLS; i++) {
+      await new Promise((r) => setTimeout(r, POLL_INTERVAL));
+
+      const { data: row } = await supabase
+        .from("order_photos")
+        .select("conversion_status, converted_path")
+        .eq("id", photoId)
+        .single();
+
+      if (!row) continue;
+
+      if (row.conversion_status === "completed" && row.converted_path) {
+        // Fetch a signed URL for the converted image
+        const { data: signedData } = await supabase.storage
+          .from("order-files")
+          .createSignedUrl(row.converted_path, 3600);
+
+        updatePhotos((prev) =>
+          prev.map((p) =>
+            p.id === photoId
+              ? {
+                  ...p,
+                  convertedUrl: signedData?.signedUrl ?? "",
+                  convertedPath: row.converted_path,
+                  conversionStatus: "completed",
+                }
+              : p
+          )
+        );
+        toast.success("Photo converted successfully!");
+        setConvertingIds((prev) => { const next = new Set(prev); next.delete(photoId); return next; });
+        return;
+      }
+
+      if (row.conversion_status === "failed") {
+        updatePhotos((prev) =>
+          prev.map((p) => p.id === photoId ? { ...p, conversionStatus: "failed" } : p)
+        );
+        toast.error("Conversion failed. You can retry.");
+        setConvertingIds((prev) => { const next = new Set(prev); next.delete(photoId); return next; });
+        return;
+      }
+    }
+
+    // Timed out polling
+    updatePhotos((prev) =>
+      prev.map((p) => p.id === photoId ? { ...p, conversionStatus: "failed" } : p)
+    );
+    toast.error("Conversion timed out. Please retry.");
+    setConvertingIds((prev) => { const next = new Set(prev); next.delete(photoId); return next; });
+  }, [updatePhotos]);
+
   const convertPhoto = useCallback(async (photoId: string) => {
     setRetryCounts((prev) => ({ ...prev, [photoId]: (prev[photoId] ?? 0) + 1 }));
     setConvertingIds((prev) => new Set(prev).add(photoId));
+
+    // Optimistically mark as converting in UI
+    updatePhotos((prev) =>
+      prev.map((p) => p.id === photoId ? { ...p, conversionStatus: "converting" } : p)
+    );
 
     try {
       const { data, error } = await supabase.functions.invoke("convert-to-lineart", {
@@ -69,43 +130,24 @@ const ApproveStep = ({
       });
 
       if (error) {
-        // Extract message from FunctionsHttpError body if available
         const msg = (error as any)?.context?.error || error.message || "Conversion failed";
         throw new Error(msg);
       }
 
-      if (data?.success) {
-        updatePhotos((prev) =>
-          prev.map((p) =>
-            p.id === photoId
-              ? {
-                  ...p,
-                  convertedUrl: data.convertedUrl,
-                  convertedPath: data.convertedPath,
-                  conversionStatus: "completed",
-                }
-              : p
-          )
-        );
-        toast.success("Photo converted successfully!");
+      // Function returns immediately with status "converting" — poll DB for result
+      if (data?.status === "converting" || data?.success) {
+        pollForConversion(photoId);
       } else {
-        throw new Error(data?.error || "Conversion failed");
+        throw new Error(data?.error || "Conversion failed to start");
       }
     } catch (err: any) {
-      toast.error(`Conversion failed: ${err.message}`);
+      toast.error(`Could not start conversion: ${err.message}`);
       updatePhotos((prev) =>
-        prev.map((p) =>
-          p.id === photoId ? { ...p, conversionStatus: "failed" } : p
-        )
+        prev.map((p) => p.id === photoId ? { ...p, conversionStatus: "failed" } : p)
       );
-    } finally {
-      setConvertingIds((prev) => {
-        const next = new Set(prev);
-        next.delete(photoId);
-        return next;
-      });
+      setConvertingIds((prev) => { const next = new Set(prev); next.delete(photoId); return next; });
     }
-  }, [updatePhotos]);
+  }, [updatePhotos, pollForConversion]);
 
   const convertAll = async () => {
     const unconverted = photos.filter(
