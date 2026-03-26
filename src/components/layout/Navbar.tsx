@@ -221,14 +221,23 @@ const BasketContent = ({
   <div className="border-t border-border pt-4 space-y-4 flex-shrink-0">
 
         {/* Digital download upsell */}
-        <div className="rounded-lg border border-dashed border-primary/30 bg-primary/5 px-3 py-2 space-y-1">
+        <div className={`rounded-lg border-2 px-4 py-3 space-y-2 transition-all ${
+          digitalCopies > 0
+            ? 'border-primary bg-primary/10'
+            : 'border-primary/50 bg-primary/5 animate-pulse-subtle'
+        }`}>
           <div className="flex items-center justify-between">
-            <div className="flex items-center gap-1.5 min-w-0">
-              <Download className="w-3.5 h-3.5 text-primary shrink-0" />
-              <span className="text-[11px] font-semibold text-foreground">Add Digital PDF</span>
+            <div className="flex items-center gap-2 min-w-0">
+              <div className="w-8 h-8 rounded-full bg-primary/20 flex items-center justify-center shrink-0">
+                <Download className="w-4 h-4 text-primary" />
+              </div>
+              <div>
+                <span className="text-xs font-bold text-foreground block">📥 Add Digital PDF</span>
+                <span className="text-[10px] text-primary font-semibold">Most popular add-on!</span>
+              </div>
             </div>
             <div className="flex items-center gap-2 shrink-0">
-              <span className="text-[11px] font-bold text-foreground">${DIGITAL_DOWNLOAD_PRICE.toFixed(2)}</span>
+              <span className="text-sm font-bold text-foreground">${DIGITAL_DOWNLOAD_PRICE.toFixed(2)}</span>
               <Switch
                 checked={digitalCopies > 0}
                 onCheckedChange={(checked) => setDigitalCopies(checked ? 1 : 0)}
@@ -236,7 +245,7 @@ const BasketContent = ({
               />
             </div>
           </div>
-          <p className="text-[10px] text-muted-foreground leading-tight">Get all your line art as a printable PDF — color as many times as you like!</p>
+          <p className="text-[11px] text-muted-foreground leading-snug">Get all your line art as a <strong className="text-foreground">printable PDF</strong> — color as many times as you like!</p>
         </div>
 
         {/* Discounts line */}
