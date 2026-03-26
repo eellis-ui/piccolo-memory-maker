@@ -346,25 +346,25 @@ const ApproveStep = ({
               <div className="mt-3 space-y-1.5">
                 <div className="flex items-center justify-between text-sm">
                   <span className="text-muted-foreground">
-                    {approvedCount === photos.length ? (
+                    {approvedCount >= totalPhotos ? (
                       <span className="flex items-center gap-1.5 text-green-600 dark:text-green-400">
                         <Check className="w-3.5 h-3.5" />
                         All pages approved
                       </span>
                     ) : (
-                      `${approvedCount} of ${photos.length} pages approved`
+                      `${Math.min(approvedCount, totalPhotos)} of ${totalPhotos} pages approved`
                     )}
                   </span>
-                  <span className="font-medium text-foreground">{photos.length > 0 ? Math.round((approvedCount / photos.length) * 100) : 0}%</span>
+                  <span className="font-medium text-foreground">{totalPhotos > 0 ? Math.round((Math.min(approvedCount, totalPhotos) / totalPhotos) * 100) : 0}%</span>
                 </div>
                 <div className="w-full h-2.5 bg-muted rounded-full overflow-hidden">
                   <div
                     className={`h-full rounded-full transition-all duration-500 ${
-                      approvedCount === photos.length
+                      approvedCount >= totalPhotos
                         ? "bg-green-500"
                         : "bg-primary"
                     }`}
-                    style={{ width: `${photos.length > 0 ? Math.round((approvedCount / photos.length) * 100) : 0}%` }}
+                    style={{ width: `${totalPhotos > 0 ? Math.round((Math.min(approvedCount, totalPhotos) / totalPhotos) * 100) : 0}%` }}
                   />
                 </div>
               </div>
