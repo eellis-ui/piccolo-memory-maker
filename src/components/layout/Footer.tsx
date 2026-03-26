@@ -169,16 +169,11 @@ const Footer = () => {
           </p>
 
           {/* Payment icons */}
-          <div className="flex items-center gap-2">
-            <PaymentIcon label="Apple Pay"><ApplePayIcon /></PaymentIcon>
-            <PaymentIcon label="Google Pay"><GooglePayIcon /></PaymentIcon>
-            <PaymentIcon label="PayPal"><PayPalIcon /></PaymentIcon>
-            <PaymentIcon label="American Express"><AmexIcon /></PaymentIcon>
-            <PaymentIcon label="Visa"><VisaIcon /></PaymentIcon>
-            <PaymentIcon label="Mastercard"><MastercardIcon /></PaymentIcon>
-            <PaymentIcon label="Maestro"><MaestroIcon /></PaymentIcon>
-            <PaymentIcon label="Shop Pay"><ShopPayIcon /></PaymentIcon>
-          </div>
+          <img
+            src="/images/payment-icons.png"
+            alt="Accepted payment methods: American Express, PayPal, Apple Pay, Google Pay, Visa, Mastercard, Shop Pay"
+            className="h-8 w-auto"
+          />
         </div>
       </div>
     </footer>
