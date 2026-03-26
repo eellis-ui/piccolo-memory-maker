@@ -45,6 +45,7 @@ const ApproveStep = ({
   const [retryCounts, setRetryCounts] = useState<Record<string, number>>({});
   const [conversionStartTime, setConversionStartTime] = useState<number | null>(null);
   const [completedInSession, setCompletedInSession] = useState(0);
+  const [hasStartedConversion, setHasStartedConversion] = useState(false);
   const MAX_RETRIES_PER_PHOTO = 3;
 
   const updatePhotos = useCallback((updater: (prev: OrderPhoto[]) => OrderPhoto[]) => {
