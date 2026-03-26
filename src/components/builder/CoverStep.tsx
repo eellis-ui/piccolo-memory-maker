@@ -117,7 +117,7 @@ const CoverStep = ({ availableImages, bookAddOns, onBookAddOnsChange, onCoverCom
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
         {/* Cover Preview */}
-        <div className="order-2 lg:order-1">
+        <div className="order-1 lg:order-1">
           <div className="bg-[#fffaf3] rounded-lg p-4 shadow-soft">
             <div
               className="relative bg-[#fffaf3] overflow-hidden flex flex-col"
