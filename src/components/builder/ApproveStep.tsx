@@ -43,6 +43,8 @@ const ApproveStep = ({
   const [photos, setPhotos] = useState<OrderPhoto[]>(initialPhotos);
   const [convertingIds, setConvertingIds] = useState<Set<string>>(new Set());
   const [retryCounts, setRetryCounts] = useState<Record<string, number>>({});
+  const [conversionStartTime, setConversionStartTime] = useState<number | null>(null);
+  const [completedInSession, setCompletedInSession] = useState(0);
   const MAX_RETRIES_PER_PHOTO = 3;
 
   const updatePhotos = useCallback((updater: (prev: OrderPhoto[]) => OrderPhoto[]) => {
@@ -137,20 +139,24 @@ const ApproveStep = ({
     // Mark ALL photos as converting upfront so UI shows all spinners immediately
     const allIds = new Set(unconverted.map((p) => p.id));
     setConvertingIds(allIds);
+    setConversionStartTime(Date.now());
+    setCompletedInSession(0);
     console.log(`[convertAll] Starting conversion of ${unconverted.length} photos (batches of 3)`);
 
+    let done = 0;
     // Process in batches of 3 to avoid overwhelming the edge function worker
     const BATCH_SIZE = 3;
     for (let i = 0; i < unconverted.length; i += BATCH_SIZE) {
       const batch = unconverted.slice(i, i + BATCH_SIZE);
       console.log(`[convertAll] Batch ${Math.floor(i / BATCH_SIZE) + 1}: ${batch.map(p => p.id.slice(0, 8)).join(', ')}`);
       await Promise.allSettled(batch.map((photo) => convertPhoto(photo.id)));
+      done += batch.length;
+      setCompletedInSession(done);
 
       // Remove completed/failed photos from converting set
       setConvertingIds((prev) => {
         const next = new Set(prev);
         batch.forEach((p) => {
-          // Only remove if the photo is no longer pending
           const current = photos.find((ph) => ph.id === p.id);
           if (!current || current.conversionStatus !== "pending") {
             next.delete(p.id);
@@ -162,6 +168,7 @@ const ApproveStep = ({
 
     // Clear all converting IDs when done
     setConvertingIds(new Set());
+    setConversionStartTime(null);
     console.log(`[convertAll] All conversions complete`);
   };
 
@@ -294,6 +301,18 @@ const ApproveStep = ({
                   <span className="flex items-center gap-1.5">
                     <Loader2 className="w-3.5 h-3.5 animate-spin" />
                     Converting photos… {convertedCount} of {totalPhotos}
+                    {conversionStartTime && completedInSession > 0 && (() => {
+                      const elapsed = (Date.now() - conversionStartTime) / 1000;
+                      const avgPerPhoto = elapsed / completedInSession;
+                      const remaining = Math.max(0, (totalPhotos - convertedCount) * avgPerPhoto);
+                      const mins = Math.floor(remaining / 60);
+                      const secs = Math.round(remaining % 60);
+                      return (
+                        <span className="text-xs ml-1">
+                          (~{mins > 0 ? `${mins}m ` : ""}{secs}s left)
+                        </span>
+                      );
+                    })()}
                   </span>
                 ) : allConverted ? (
                   <span className="flex items-center gap-1.5 text-green-600 dark:text-green-400">
