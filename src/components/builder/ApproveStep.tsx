@@ -1,5 +1,5 @@
 import { useState, useCallback } from "react";
-import { Check, RefreshCw, Loader2, Trash2, ChevronDown, GripVertical } from "lucide-react";
+import { Check, RefreshCw, Loader2, Trash2, ChevronDown, GripVertical, Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   DndContext,
@@ -29,6 +29,8 @@ import type { OrderPhoto } from "@/pages/Builder";
 import {
   updateGuestPhoto,
   deleteGuestPhoto,
+  uploadGuestPhoto,
+  
 } from "@/lib/guest-api";
 
 // Helper: consistent image style for A4 portrait display
@@ -442,6 +444,55 @@ const SortablePhotoCard = ({
     useSensor(KeyboardSensor)
   );
 
+  const MAX_IMAGES = 20;
+  const [isAddingPhotos, setIsAddingPhotos] = useState(false);
+
+  const handleAddPhotos = useCallback(async (files: FileList | null) => {
+    if (!files || files.length === 0) return;
+    const remaining = MAX_IMAGES - photos.length;
+    if (remaining <= 0) return;
+
+    const filesToAdd = Array.from(files).slice(0, remaining);
+    setIsAddingPhotos(true);
+
+    try {
+      for (const file of filesToAdd) {
+        const position = photos.length;
+
+        // Check if landscape
+        const isLandscape = await new Promise<boolean>((resolve) => {
+          const img = new Image();
+          img.onload = () => resolve(img.width > img.height);
+          img.onerror = () => resolve(false);
+          img.src = URL.createObjectURL(file);
+        });
+
+        const result = await uploadGuestPhoto(sessionId, orderId, file, position, isLandscape);
+
+        const signedUrl = result.signedUrl || "";
+
+        const newPhoto: OrderPhoto = {
+          id: result.id,
+          originalPath: result.storagePath,
+          convertedPath: null,
+          pagePosition: position,
+          isApproved: false,
+          conversionStatus: "pending",
+          originalUrl: signedUrl,
+          convertedUrl: null,
+          isLandscape,
+        };
+
+        updatePhotos((prev) => [...prev, newPhoto]);
+      }
+      toast.success(`${filesToAdd.length} photo${filesToAdd.length > 1 ? "s" : ""} added`);
+    } catch (err) {
+      console.error("Upload error:", err);
+      toast.error("Failed to upload photo");
+    } finally {
+      setIsAddingPhotos(false);
+    }
+  }, [photos.length, sessionId, orderId, updatePhotos]);
 
   const handleContinue = () => {
     onApprovalComplete(photos);
@@ -626,6 +677,29 @@ const SortablePhotoCard = ({
                     imgStyle={imgStyle}
                   />
                 ))}
+                {/* Add more photos box */}
+                {photos.length < MAX_IMAGES && (
+                  <label className="relative rounded-lg border-2 border-dashed border-border/60 flex flex-col items-center justify-center aspect-[210/297] cursor-pointer hover:border-foreground/40 hover:bg-muted/30 transition-all">
+                    <input
+                      type="file"
+                      accept="image/jpeg,image/png,image/heic,image/heif,.heic,.heif"
+                      multiple
+                      onChange={(e) => handleAddPhotos(e.target.files)}
+                      className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+                      disabled={isAddingPhotos}
+                    />
+                    {isAddingPhotos ? (
+                      <Loader2 className="w-6 h-6 text-muted-foreground animate-spin" />
+                    ) : (
+                      <>
+                        <Plus className="w-6 h-6 text-muted-foreground" />
+                        <span className="text-[10px] text-muted-foreground mt-1 font-medium">
+                          Add photos ({MAX_IMAGES - photos.length} left)
+                        </span>
+                      </>
+                    )}
+                  </label>
+                )}
               </div>
             </SortableContext>
           </DndContext>
