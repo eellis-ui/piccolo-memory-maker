@@ -130,16 +130,10 @@ const ApproveStep = ({
     const unconverted = photos.filter(
       (p) => p.conversionStatus === "pending" || p.conversionStatus === "failed"
     );
-    console.log(`[convertAll] Starting batch conversion of ${unconverted.length} photos`);
+    console.log(`[convertAll] Starting conversion of ${unconverted.length} photos simultaneously`);
     if (unconverted.length === 0) return;
-
-    const CONCURRENCY = 6;
-    for (let i = 0; i < unconverted.length; i += CONCURRENCY) {
-      const batch = unconverted.slice(i, i + CONCURRENCY);
-      console.log(`[convertAll] Processing batch ${Math.floor(i / CONCURRENCY) + 1}, photos: ${batch.map(p => p.id).join(', ')}`);
-      await Promise.allSettled(batch.map((photo) => convertPhoto(photo.id)));
-    }
-    console.log(`[convertAll] All batches complete`);
+    await Promise.allSettled(unconverted.map((photo) => convertPhoto(photo.id)));
+    console.log(`[convertAll] All conversions complete`);
   };
 
   const toggleApproval = async (id: string) => {
