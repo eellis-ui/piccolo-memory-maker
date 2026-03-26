@@ -133,9 +133,9 @@ const SortablePhotoCard = ({
         <button
           {...attributes}
           {...listeners}
-          className="touch-none cursor-grab active:cursor-grabbing w-5 h-5 flex items-center justify-center rounded bg-foreground/80 text-background"
+          className="touch-none cursor-grab active:cursor-grabbing w-7 h-7 flex items-center justify-center rounded-md bg-foreground text-background shadow-sm"
         >
-          <GripVertical className="w-3 h-3" />
+          <GripVertical className="w-4 h-4" />
         </button>
         <span className="text-[10px] font-body font-semibold uppercase tracking-wider bg-foreground/80 text-background px-2 py-0.5 rounded">
           {index + 1}
