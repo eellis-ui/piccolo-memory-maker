@@ -394,9 +394,10 @@ const ApproveStep = ({
                         );
                         return (
                           <Button
+                            type="button"
                             variant="ghost"
                             size="sm"
-                            onClick={() => convertPhoto(photo.id)}
+                            onClick={() => void convertPhoto(photo.id)}
                             disabled={isConverting}
                             className="rounded-xl text-muted-foreground"
                           >
