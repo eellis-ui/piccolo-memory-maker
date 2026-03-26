@@ -16,7 +16,7 @@ const gridImages = [
 
 const HeroSection = () => {
   return (
-    <section className="bg-background pt-6 md:py-24">
+    <section className="bg-background pt-6 pb-16 md:py-24">
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-16 items-center">
           {/* Image grid - shows first on mobile */}
@@ -34,7 +34,7 @@ const HeroSection = () => {
           </div>
 
           {/* Left column */}
-          <div className="space-y-8 order-last lg:order-first">
+          <div className="space-y-8 order-last lg:order-first text-center lg:text-left items-center lg:items-start flex flex-col">
             {/* Review badge */}
             <div className="inline-flex items-center gap-2.5 bg-foreground text-background rounded-lg px-4 py-2.5">
               <Medal className="w-5 h-5 text-amber-400" />
@@ -51,7 +51,7 @@ const HeroSection = () => {
             </h1>
 
             {/* Subtitle */}
-            <p className="text-base sm:text-lg text-foreground/70 max-w-lg leading-relaxed">
+            <p className="text-base sm:text-lg text-foreground/70 max-w-lg leading-relaxed mx-auto lg:mx-0">
               Your favorite photos, transformed into hand-drawn line art, and
               bound into a personalized coloring book you'll treasure forever.
             </p>
