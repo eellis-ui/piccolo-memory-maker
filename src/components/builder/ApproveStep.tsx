@@ -224,11 +224,12 @@ const ApproveStep = ({
             </Button>
           )}
           {!allApproved && !hasUnconverted && (
-            <Button variant="outline" onClick={approveAll} className="rounded-2xl">
+            <Button type="button" variant="outline" onClick={approveAll} className="rounded-2xl">
               Approve All
             </Button>
           )}
           <Button
+            type="button"
             onClick={handleContinue}
             disabled={!allApproved}
             className="rounded-2xl px-8"
