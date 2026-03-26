@@ -537,15 +537,13 @@ const SortablePhotoCard = ({
               Convert All ({photos.filter((p) => p.conversionStatus === "pending" || p.conversionStatus === "failed").length})
             </Button>
           )}
-          {!allApproved && (
-            <Button
-              type="button"
-              onClick={approveAll}
-              className="rounded-2xl px-8"
-            >
-              Approve All
-            </Button>
-          )}
+          <Button
+            type="button"
+            onClick={allApproved ? () => onApprovalComplete(photos) : approveAll}
+            className="rounded-2xl px-8"
+          >
+            {allApproved ? "Continue to Cover Design" : "Approve All"}
+          </Button>
         </div>
       </div>
 
