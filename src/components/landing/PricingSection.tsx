@@ -258,9 +258,6 @@ const PricingSection = () => {
                       Have 20 different photos in each book!{" "}
                       <span className="font-bold" style={{ color: 'hsl(150, 30%, 45%)' }}>+${UNIQUE_PHOTOS_PRICE.toFixed(2)}</span>
                     </p>
-                    <p className="text-xs text-muted-foreground mt-0.5">
-                      If unticked, all books in the bundle will contain the same photos
-                    </p>
                   </div>
                 </label>
               )}
