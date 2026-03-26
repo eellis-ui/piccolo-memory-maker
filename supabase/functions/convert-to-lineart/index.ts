@@ -7,7 +7,7 @@ const corsHeaders = {
 };
 
 const MAX_RETRIES = 5;
-const RETRY_DELAY_MS = 5000;
+const RETRY_DELAY_MS = 3000;
 
 // Simple in-memory rate limiter
 const RATE_LIMIT_WINDOW = 60000;
@@ -28,6 +28,192 @@ function checkRateLimit(key: string): boolean {
 
 function sleep(ms: number) {
   return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
+async function doConversion(supabase: any, lovableApiKey: string, photoId: string) {
+  const { data: photo, error: photoError } = await supabase
+    .from("order_photos")
+    .select("*")
+    .eq("id", photoId)
+    .single();
+
+  if (photoError || !photo) {
+    console.error("Photo not found for conversion:", photoId);
+    return;
+  }
+
+  const isLandscape = photo?.is_landscape ?? false;
+
+  // Update status to converting
+  await supabase
+    .from("order_photos")
+    .update({ conversion_status: "converting" })
+    .eq("id", photoId);
+
+  // Download the original image and convert to base64
+  const { data: fileData, error: downloadError } = await supabase.storage
+    .from("order-files")
+    .download(photo.original_path);
+
+  if (downloadError || !fileData) {
+    console.error(`Failed to download original image: ${downloadError?.message}`);
+    await supabase.from("order_photos").update({ conversion_status: "failed" }).eq("id", photoId);
+    return;
+  }
+
+  const arrayBuffer = await fileData.arrayBuffer();
+  const uint8 = new Uint8Array(arrayBuffer);
+
+  const CHUNK_SIZE = 32768;
+  const chunks: string[] = [];
+  for (let i = 0; i < uint8.length; i += CHUNK_SIZE) {
+    const slice = uint8.subarray(i, Math.min(i + CHUNK_SIZE, uint8.length));
+    chunks.push(String.fromCharCode(...slice));
+  }
+  const imageBase64Input = btoa(chunks.join(""));
+  const mimeType = fileData.type || "image/jpeg";
+  const dataUrl = `data:${mimeType};base64,${imageBase64Input}`;
+
+  const prompt = `Convert this photo into a clean black-and-white line drawing for a coloring book.
+
+CRITICAL REQUIREMENTS:
+1. ONLY black (#000000) lines on white (#FFFFFF) background. ABSOLUTELY NO COLOR — no green, no brown, no grey, no skin tones, no colored fills of ANY kind. Every area inside outlines must be pure empty white.
+2. PRESERVE THE EXACT LIKENESS of the person in the photo — same face shape, same features, same hair texture and style, same pose, same expression. Do NOT replace the person with a generic or different-looking face. The converted image must be clearly recognizable as the same person.
+3. Use clean, consistent line weight throughout — like a professional coloring book page.
+4. Keep ALL accessories, clothing details, and background elements from the original photo.
+5. NO shading, NO gradients, NO cross-hatching, NO halftones, NO grey areas.
+6. ${isLandscape ? "This is LANDSCAPE — output MUST remain landscape." : "This is PORTRAIT — output MUST remain portrait."}
+7. Maintain the EXACT same orientation, rotation, and aspect ratio as the input.
+
+Output ONLY the converted image, no text.`;
+
+  let imageBase64: string | null = null;
+  let lastError = "";
+
+  for (let attempt = 1; attempt <= MAX_RETRIES; attempt++) {
+    console.log(`AI conversion attempt ${attempt}/${MAX_RETRIES} for photo ${photoId}`);
+
+    const aiResponse = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${lovableApiKey}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        model: "google/gemini-3-pro-image-preview",
+        modalities: ["image", "text"],
+        messages: [
+          {
+            role: "user",
+            content: [
+              { type: "text", text: prompt },
+              { type: "image_url", image_url: { url: dataUrl } },
+            ],
+          },
+        ],
+      }),
+    });
+
+    if (!aiResponse.ok) {
+      const errText = await aiResponse.text();
+      console.error(`AI Gateway HTTP error (${aiResponse.status}):`, errText);
+
+      if (aiResponse.status === 429) {
+        lastError = "Rate limited by AI service";
+        if (attempt < MAX_RETRIES) {
+          await sleep(RETRY_DELAY_MS * attempt);
+          continue;
+        }
+        break;
+      }
+      if (aiResponse.status === 402) {
+        lastError = "AI credits exhausted. Please add funds to continue.";
+        break;
+      }
+      lastError = `AI service error (${aiResponse.status})`;
+      break;
+    }
+
+    const aiResult = await aiResponse.json();
+    const choice = aiResult.choices?.[0];
+    if (choice?.error) {
+      const embeddedCode = choice.error.code;
+      const embeddedMsg = choice.error.message || "";
+      console.error(`Embedded AI error (code ${embeddedCode}):`, embeddedMsg);
+
+      if (embeddedCode === 502 || embeddedCode === 429) {
+        lastError = "AI service temporarily busy";
+        if (attempt < MAX_RETRIES) {
+          await sleep(RETRY_DELAY_MS * attempt);
+          continue;
+        }
+        break;
+      }
+      lastError = `AI error: ${embeddedMsg.substring(0, 100)}`;
+      break;
+    }
+
+    const finishReason = choice?.native_finish_reason;
+    if (finishReason === "IMAGE_PROHIBITED_CONTENT") {
+      lastError = "This photo was blocked by the AI content filter. Try a different photo.";
+      break;
+    }
+
+    const message = choice?.message;
+    if (message?.images && Array.isArray(message.images) && message.images.length > 0) {
+      const imgUrl = message.images[0]?.image_url?.url;
+      if (imgUrl && imgUrl.startsWith("data:image")) {
+        const match = imgUrl.match(/base64,(.+)/);
+        if (match) imageBase64 = match[1];
+      }
+    }
+
+    if (!imageBase64 && typeof message?.content === "string") {
+      const base64Match = message.content.match(/data:image\/[^;]+;base64,([^\s"]+)/);
+      if (base64Match) imageBase64 = base64Match[1];
+    }
+
+    if (imageBase64) {
+      console.log("Successfully extracted image on attempt", attempt);
+      break;
+    }
+
+    console.warn(`Attempt ${attempt}: No image in response. finish_reason: ${finishReason}`);
+    lastError = "AI did not return an image. Please try again.";
+    if (attempt < MAX_RETRIES) {
+      await sleep(RETRY_DELAY_MS);
+    }
+  }
+
+  if (!imageBase64) {
+    console.error("All attempts failed. Last error:", lastError);
+    await supabase.from("order_photos").update({ conversion_status: "failed" }).eq("id", photoId);
+    return;
+  }
+
+  const binaryString = atob(imageBase64);
+  const imageBuffer = new Uint8Array(binaryString.length);
+  for (let i = 0; i < binaryString.length; i++) {
+    imageBuffer[i] = binaryString.charCodeAt(i);
+  }
+
+  const convertedPath = `converted/${photo.order_id}/${photoId}.png`;
+  const { error: uploadError } = await supabase.storage
+    .from("order-files")
+    .upload(convertedPath, imageBuffer, { contentType: "image/png", upsert: true });
+
+  if (uploadError) {
+    console.error(`Storage upload failed: ${uploadError.message}`);
+    await supabase.from("order_photos").update({ conversion_status: "failed" }).eq("id", photoId);
+    return;
+  }
+
+  await supabase.from("order_photos").update({
+    converted_path: convertedPath,
+    conversion_status: "completed",
+  }).eq("id", photoId);
+
+  console.log("Conversion completed successfully for photo", photoId);
 }
 
 Deno.serve(async (req) => {
@@ -65,7 +251,6 @@ Deno.serve(async (req) => {
       const { data: claimsData, error: claimsError } = await authClient.auth.getUser(token);
       if (!claimsError && claimsData?.user) {
         const userId = claimsData.user.id;
-        // Verify ownership via user_id
         const { data: photo, error: photoError } = await supabase
           .from("order_photos")
           .select("*, orders!inner(id, user_id)")
@@ -77,7 +262,6 @@ Deno.serve(async (req) => {
             status: 404, headers: { ...corsHeaders, "Content-Type": "application/json" },
           });
         }
-        // If the order has a user_id, it must match; if null (guest order), fall through to session auth
         if (photo.orders.user_id !== null && photo.orders.user_id !== userId) {
           return new Response(JSON.stringify({ error: "Forbidden" }), {
             status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" },
@@ -98,7 +282,6 @@ Deno.serve(async (req) => {
         });
       }
 
-      // Verify photo belongs to an order with this sessionId
       const { data: photo, error: photoError } = await supabase
         .from("order_photos")
         .select("*, orders!inner(id, builder_session_id)")
@@ -125,196 +308,27 @@ Deno.serve(async (req) => {
       });
     }
 
-    // Get photo record (may already be fetched above, but fetch cleanly for conversion logic)
-    const { data: photo, error: photoError } = await supabase
-      .from("order_photos")
-      .select("*")
-      .eq("id", photoId)
-      .single();
-
-    if (photoError || !photo) {
-      return new Response(JSON.stringify({ error: "Photo not found" }), {
-        status: 404, headers: { ...corsHeaders, "Content-Type": "application/json" },
-      });
-    }
-
-    const isLandscape = photo?.is_landscape ?? false;
-
-    // Update status to converting
+    // Mark as converting immediately
     await supabase
       .from("order_photos")
       .update({ conversion_status: "converting" })
       .eq("id", photoId);
 
-    // Download the original image and convert to base64
-    const { data: fileData, error: downloadError } = await supabase.storage
-      .from("order-files")
-      .download(photo.original_path);
-
-    if (downloadError || !fileData) {
-      throw new Error(`Failed to download original image: ${downloadError?.message}`);
+    // Fire-and-forget: run the heavy AI work in the background so we can return immediately
+    // This avoids the HTTP timeout while the client polls for status
+    const conversionPromise = doConversion(supabase, lovableApiKey, photoId);
+    // @ts-ignore - EdgeRuntime is available in Supabase Edge Functions
+    if (typeof EdgeRuntime !== "undefined" && EdgeRuntime.waitUntil) {
+      // @ts-ignore
+      EdgeRuntime.waitUntil(conversionPromise);
+    } else {
+      // Fallback: just let it run (won't block response)
+      conversionPromise.catch((e) => console.error("Background conversion error:", e));
     }
 
-    const arrayBuffer = await fileData.arrayBuffer();
-    const uint8 = new Uint8Array(arrayBuffer);
-
-    const CHUNK_SIZE = 32768;
-    const chunks: string[] = [];
-    for (let i = 0; i < uint8.length; i += CHUNK_SIZE) {
-      const slice = uint8.subarray(i, Math.min(i + CHUNK_SIZE, uint8.length));
-      chunks.push(String.fromCharCode(...slice));
-    }
-    const imageBase64Input = btoa(chunks.join(""));
-    const mimeType = fileData.type || "image/jpeg";
-    const dataUrl = `data:${mimeType};base64,${imageBase64Input}`;
-
-    const prompt = `Convert this photo into a clean black-and-white line drawing for a coloring book.
-
-CRITICAL REQUIREMENTS:
-1. ONLY black (#000000) lines on white (#FFFFFF) background. ABSOLUTELY NO COLOR — no green, no brown, no grey, no skin tones, no colored fills of ANY kind. Every area inside outlines must be pure empty white.
-2. PRESERVE THE EXACT LIKENESS of the person in the photo — same face shape, same features, same hair texture and style, same pose, same expression. Do NOT replace the person with a generic or different-looking face. The converted image must be clearly recognizable as the same person.
-3. Use clean, consistent line weight throughout — like a professional coloring book page.
-4. Keep ALL accessories, clothing details, and background elements from the original photo.
-5. NO shading, NO gradients, NO cross-hatching, NO halftones, NO grey areas.
-6. ${isLandscape ? "This is LANDSCAPE — output MUST remain landscape." : "This is PORTRAIT — output MUST remain portrait."}
-7. Maintain the EXACT same orientation, rotation, and aspect ratio as the input.
-
-Output ONLY the converted image, no text.`;
-
-    let imageBase64: string | null = null;
-    let lastError = "";
-
-    for (let attempt = 1; attempt <= MAX_RETRIES; attempt++) {
-      console.log(`AI conversion attempt ${attempt}/${MAX_RETRIES}`);
-
-      const aiResponse = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
-        method: "POST",
-        headers: {
-          Authorization: `Bearer ${lovableApiKey}`,
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          model: "google/gemini-3-pro-image-preview",
-          modalities: ["image", "text"],
-          messages: [
-            {
-              role: "user",
-              content: [
-                { type: "text", text: prompt },
-                { type: "image_url", image_url: { url: dataUrl } },
-              ],
-            },
-          ],
-        }),
-      });
-
-      if (!aiResponse.ok) {
-        const errText = await aiResponse.text();
-        console.error(`AI Gateway HTTP error (${aiResponse.status}):`, errText);
-
-        if (aiResponse.status === 429) {
-          lastError = "Rate limited by AI service";
-          if (attempt < MAX_RETRIES) {
-            await sleep(RETRY_DELAY_MS * attempt);
-            continue;
-          }
-          break;
-        }
-        if (aiResponse.status === 402) {
-          lastError = "AI credits exhausted. Please add funds to continue.";
-          break;
-        }
-        lastError = `AI service error (${aiResponse.status})`;
-        break;
-      }
-
-      const aiResult = await aiResponse.json();
-      const choice = aiResult.choices?.[0];
-      if (choice?.error) {
-        const embeddedCode = choice.error.code;
-        const embeddedMsg = choice.error.message || "";
-        console.error(`Embedded AI error (code ${embeddedCode}):`, embeddedMsg);
-
-        if (embeddedCode === 502 || embeddedCode === 429) {
-          lastError = "AI service temporarily busy";
-          if (attempt < MAX_RETRIES) {
-            await sleep(RETRY_DELAY_MS * attempt);
-            continue;
-          }
-          break;
-        }
-        lastError = `AI error: ${embeddedMsg.substring(0, 100)}`;
-        break;
-      }
-
-      const finishReason = choice?.native_finish_reason;
-      if (finishReason === "IMAGE_PROHIBITED_CONTENT") {
-        lastError = "This photo was blocked by the AI content filter. Try a different photo.";
-        break;
-      }
-
-      const message = choice?.message;
-      if (message?.images && Array.isArray(message.images) && message.images.length > 0) {
-        const imgUrl = message.images[0]?.image_url?.url;
-        if (imgUrl && imgUrl.startsWith("data:image")) {
-          const match = imgUrl.match(/base64,(.+)/);
-          if (match) imageBase64 = match[1];
-        }
-      }
-
-      if (!imageBase64 && typeof message?.content === "string") {
-        const base64Match = message.content.match(/data:image\/[^;]+;base64,([^\s"]+)/);
-        if (base64Match) imageBase64 = base64Match[1];
-      }
-
-      if (imageBase64) {
-        console.log("Successfully extracted image on attempt", attempt);
-        break;
-      }
-
-      console.warn(`Attempt ${attempt}: No image in response. finish_reason: ${finishReason}`);
-      lastError = "AI did not return an image. Please try again.";
-      if (attempt < MAX_RETRIES) {
-        await sleep(RETRY_DELAY_MS);
-      }
-    }
-
-    if (!imageBase64) {
-      console.error("All attempts failed. Last error:", lastError);
-      await supabase.from("order_photos").update({ conversion_status: "failed" }).eq("id", photoId);
-      return new Response(
-        JSON.stringify({ error: lastError || "AI did not return an image" }),
-        { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-      );
-    }
-
-    const binaryString = atob(imageBase64);
-    const imageBuffer = new Uint8Array(binaryString.length);
-    for (let i = 0; i < binaryString.length; i++) {
-      imageBuffer[i] = binaryString.charCodeAt(i);
-    }
-
-    const convertedPath = `converted/${photo.order_id}/${photoId}.png`;
-    const { error: uploadError } = await supabase.storage
-      .from("order-files")
-      .upload(convertedPath, imageBuffer, { contentType: "image/png", upsert: true });
-
-    if (uploadError) throw new Error(`Storage upload failed: ${uploadError.message}`);
-
-    await supabase.from("order_photos").update({
-      converted_path: convertedPath,
-      conversion_status: "completed",
-    }).eq("id", photoId);
-
-    // Return signed URL (bucket is private)
-    const { data: signedUrlData, error: signedUrlError } = await supabase.storage
-      .from("order-files")
-      .createSignedUrl(convertedPath, 3600);
-
-    const convertedUrl = signedUrlError ? "" : signedUrlData.signedUrl;
-
+    // Return immediately — client will poll the DB for status
     return new Response(
-      JSON.stringify({ success: true, convertedUrl, convertedPath }),
+      JSON.stringify({ success: true, status: "converting", photoId }),
       { headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
   } catch (error) {
