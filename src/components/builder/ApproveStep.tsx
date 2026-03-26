@@ -229,6 +229,29 @@ const ApproveStep = ({
     toast.success("Photo removed");
   };
 
+  const handleDragEnd = (event: DragEndEvent) => {
+    const { active, over } = event;
+    if (!over || active.id === over.id) return;
+
+    const oldIndex = photos.findIndex((p) => p.id === active.id);
+    const newIndex = photos.findIndex((p) => p.id === over.id);
+    if (oldIndex === -1 || newIndex === -1) return;
+
+    const reordered = arrayMove(photos, oldIndex, newIndex);
+    updatePhotos(() => reordered);
+
+    // Persist new page positions
+    reordered.forEach((photo, i) => {
+      updateGuestPhoto(sessionId, orderId, photo.id, { page_position: i });
+    });
+  };
+
+  const sensors = useSensors(
+    useSensor(PointerSensor, { activationConstraint: { distance: 5 } }),
+    useSensor(TouchSensor, { activationConstraint: { delay: 150, tolerance: 5 } }),
+    useSensor(KeyboardSensor)
+  );
+
   const handleReorder = async (reorderedPhotos: OrderPhoto[]) => {
     updatePhotos(() => reorderedPhotos);
     await Promise.all(
