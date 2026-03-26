@@ -45,6 +45,9 @@ const ApproveStep = ({
   const [retryCounts, setRetryCounts] = useState<Record<string, number>>({});
   const [conversionStartTime, setConversionStartTime] = useState<number | null>(null);
   const [completedInSession, setCompletedInSession] = useState(0);
+  const [hasStartedConversion, setHasStartedConversion] = useState(
+    () => initialPhotos.some((p) => p.conversionStatus === "completed")
+  );
   const MAX_RETRIES_PER_PHOTO = 3;
 
   const updatePhotos = useCallback((updater: (prev: OrderPhoto[]) => OrderPhoto[]) => {
@@ -139,6 +142,7 @@ const ApproveStep = ({
     setConvertingIds(allIds);
     setConversionStartTime(Date.now());
     setCompletedInSession(0);
+    setHasStartedConversion(true);
     console.log(`[convertAll] Starting conversion of ${unconverted.length} photos (batches of 3)`);
 
     let done = 0;
@@ -173,6 +177,7 @@ const ApproveStep = ({
   // Single photo convert (for individual Convert/Retry buttons)
   const convertSinglePhoto = useCallback(async (photoId: string) => {
     setConvertingIds((prev) => new Set(prev).add(photoId));
+    setHasStartedConversion(true);
     await convertPhoto(photoId);
     setConvertingIds((prev) => {
       const next = new Set(prev);
@@ -264,16 +269,18 @@ const ApproveStep = ({
               Approve All
             </Button>
           )}
-          <Button
-            type="button"
-            onClick={handleContinue}
-            disabled={!allApproved}
-            className="rounded-2xl px-8"
-          >
-            {allApproved
-              ? "Continue to Cover Design"
-              : `Approve ${photos.length - approvedCount} more`}
-          </Button>
+          {hasStartedConversion && (
+            <Button
+              type="button"
+              onClick={handleContinue}
+              disabled={!allApproved}
+              className="rounded-2xl px-8"
+            >
+              {allApproved
+                ? "Continue to Cover Design"
+                : `Approve ${photos.length - approvedCount} more`}
+            </Button>
+          )}
         </div>
       </div>
 
