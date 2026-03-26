@@ -570,8 +570,8 @@ const Builder = () => {
                           index < currentStepIndex
                             ? "bg-foreground text-background"
                             : index === currentStepIndex
-                            ? "bg-foreground text-background ring-4 ring-foreground/20"
-                            : "bg-foreground text-background"
+                            ? "bg-primary text-primary-foreground ring-4 ring-primary/20"
+                            : "bg-muted text-muted-foreground"
                         }`}
                       >
                         {index < currentStepIndex ? (
