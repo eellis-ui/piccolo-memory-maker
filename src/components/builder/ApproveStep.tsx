@@ -537,12 +537,7 @@ const SortablePhotoCard = ({
               Convert All ({photos.filter((p) => p.conversionStatus === "pending" || p.conversionStatus === "failed").length})
             </Button>
           )}
-          {!allApproved && !hasUnconverted && (
-            <Button type="button" variant="outline" onClick={approveAll} className="rounded-2xl">
-              Approve All
-            </Button>
-          )}
-          {hasStartedConversion && !allApproved && (
+          {!allApproved && (
             <Button
               type="button"
               onClick={approveAll}
