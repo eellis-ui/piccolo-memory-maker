@@ -11,7 +11,7 @@ const RETRY_DELAY_MS = 5000;
 
 // Simple in-memory rate limiter
 const RATE_LIMIT_WINDOW = 60000;
-const MAX_REQUESTS_PER_WINDOW = 10;
+const MAX_REQUESTS_PER_WINDOW = 25;
 const rateLimitMap = new Map<string, { count: number; resetAt: number }>();
 
 function checkRateLimit(key: string): boolean {
