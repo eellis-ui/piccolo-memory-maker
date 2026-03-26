@@ -1,4 +1,5 @@
 import { Button } from "@/components/ui/button";
+import DigitalUpsellBanner from "./DigitalUpsellBanner";
 import { Check, BookOpen, Download, UserPlus } from "lucide-react";
 import type { OrderPhoto, BookAddOnsLocal } from "@/pages/Builder";
 import logoImg from "@/assets/piccoload-logo.png";
@@ -175,6 +176,9 @@ const RecapStep = ({ books, onContinueToCheckout, onEditBook, hasAnyDigitalDownl
           </div>
         </div>
       )}
+
+      {/* Digital Download Upsell */}
+      <DigitalUpsellBanner variant="compact" maxCopies={1} />
 
       <div className="flex justify-center pt-4">
         <Button onClick={onContinueToCheckout} className="rounded-2xl px-10 text-base">
