@@ -444,6 +444,57 @@ const SortablePhotoCard = ({
     useSensor(KeyboardSensor)
   );
 
+  const MAX_IMAGES = 20;
+  const [isAddingPhotos, setIsAddingPhotos] = useState(false);
+
+  const handleAddPhotos = useCallback(async (files: FileList | null) => {
+    if (!files || files.length === 0) return;
+    const remaining = MAX_IMAGES - photos.length;
+    if (remaining <= 0) return;
+
+    const filesToAdd = Array.from(files).slice(0, remaining);
+    setIsAddingPhotos(true);
+
+    try {
+      for (const file of filesToAdd) {
+        const position = photos.length;
+
+        // Check if landscape
+        const isLandscape = await new Promise<boolean>((resolve) => {
+          const img = new Image();
+          img.onload = () => resolve(img.width > img.height);
+          img.onerror = () => resolve(false);
+          img.src = URL.createObjectURL(file);
+        });
+
+        const result = await uploadGuestPhoto(sessionId, orderId, file, position, isLandscape);
+
+        // Get signed URL
+        const urls = await getSignedUrls(sessionId, orderId, [result.original_path]);
+        const signedUrl = urls?.[0]?.signedUrl || "";
+
+        const newPhoto: OrderPhoto = {
+          id: result.id,
+          originalPath: result.original_path,
+          convertedPath: null,
+          pagePosition: position,
+          isApproved: false,
+          conversionStatus: "pending",
+          originalUrl: signedUrl,
+          convertedUrl: null,
+          isLandscape,
+        };
+
+        updatePhotos((prev) => [...prev, newPhoto]);
+      }
+      toast.success(`${filesToAdd.length} photo${filesToAdd.length > 1 ? "s" : ""} added`);
+    } catch (err) {
+      console.error("Upload error:", err);
+      toast.error("Failed to upload photo");
+    } finally {
+      setIsAddingPhotos(false);
+    }
+  }, [photos.length, sessionId, orderId, updatePhotos]);
 
   const handleContinue = () => {
     onApprovalComplete(photos);
