@@ -2,42 +2,51 @@
 
 ## Problem
 
-"Convert All" fires all 20 photos concurrently via `Promise.allSettled`. This causes two issues:
+`window.open(checkoutUrl, '_blank')` on line 242 is called **after** an `await` (the `createShopifyCheckout` call). Because the `window.open` is no longer in the synchronous call stack of the user's click event, mobile browsers (and many desktop browsers) silently block it as a popup.
 
-1. **Rate limit**: The edge function allows only 10 requests per 60-second window per session — so 10 of 20 immediately get 429'd and show as failed.
-2. **AI gateway overload**: Even the 10 that pass are all hitting the AI gateway simultaneously, leading to 429s/502s from the AI service itself, triggering retries with 5-second × attempt backoff delays.
+## Solution
 
-Combined, this makes "Convert All" for 20 photos extremely slow or mostly failing.
+Open the new window **immediately** on click (synchronously, within the click handler's trust), then navigate it to the checkout URL once the API responds. If the API fails, close the blank window.
 
-## Solution: Client-side concurrency control
+## Changes — `src/components/builder/CheckoutStep.tsx`
 
-Process photos in small batches (3 at a time) with a short stagger, instead of firing all 20 at once. This stays within rate limits and avoids overwhelming the AI gateway.
-
-### Changes
-
-**`src/components/builder/ApproveStep.tsx`** — Replace `convertAll`:
+Update the `handleCheckout` function (~lines 187-250):
 
 ```tsx
-const convertAll = async () => {
-  const unconverted = photos.filter(
-    (p) => p.conversionStatus === "pending" || p.conversionStatus === "failed"
-  );
-  if (unconverted.length === 0) return;
+const handleCheckout = async () => {
+  setIsCheckingOut(true);
+  
+  // Open window immediately (synchronous, trusted click context)
+  const newWindow = window.open('about:blank', '_blank');
+  
+  try {
+    // ... build lines array (unchanged) ...
 
-  const BATCH_SIZE = 3;
-  for (let i = 0; i < unconverted.length; i += BATCH_SIZE) {
-    const batch = unconverted.slice(i, i + BATCH_SIZE);
-    await Promise.allSettled(batch.map((photo) => convertPhoto(photo.id)));
+    const checkoutUrl = await createShopifyCheckout(lines, sessionId || undefined);
+    if (checkoutUrl && newWindow) {
+      newWindow.location.href = checkoutUrl;
+      setAwaitingPayment(true);
+    } else {
+      // API failed or returned null — close the blank tab
+      newWindow?.close();
+    }
+  } catch (error) {
+    console.error('Checkout error:', error);
+    newWindow?.close();
+  } finally {
+    setIsCheckingOut(false);
   }
 };
 ```
 
-This processes 3 photos concurrently, waits for them to finish, then starts the next 3. Total throughput stays high but avoids rate limit rejections.
+**Key change**: `window.open('about:blank', '_blank')` runs synchronously in the click handler, so browsers trust it. Then `newWindow.location.href = checkoutUrl` navigates it after the API call completes.
 
-**`supabase/functions/convert-to-lineart/index.ts`** — Increase rate limit window:
-- Change `MAX_REQUESTS_PER_WINDOW` from 10 → 25 to accommodate legitimate "Convert All" usage within the batched approach.
+## Additionally: Faster polling (from approved plan)
 
-### Files to change
-- `src/components/builder/ApproveStep.tsx` — Batched `convertAll`
-- `supabase/functions/convert-to-lineart/index.ts` — Raise rate limit to 25
+- Reduce polling interval from 5s → 2s (line 148)
+- Add a "Checking…" spinner on visibility change
+
+## Files to change
+
+- `src/components/builder/CheckoutStep.tsx` — Fix popup blocking + faster polling
 
