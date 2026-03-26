@@ -647,7 +647,7 @@ const SortablePhotoCard = ({
           </button>
         </CollapsibleTrigger>
         <CollapsibleContent className="pt-4">
-          <div className="bg-foreground text-background rounded-lg px-4 py-2 mb-3 inline-flex items-center justify-center gap-1.5 max-w-[260px] mx-auto sm:max-w-none sm:mx-0">
+          <div className="flex justify-center mb-3"><div className="bg-foreground text-background rounded-lg px-4 py-2 inline-flex items-center gap-1.5">
             <GripVertical className="w-3.5 h-3.5 shrink-0" />
             <span className="text-xs font-semibold">Drag and drop to rearrange the page order of your book</span>
           </div>
