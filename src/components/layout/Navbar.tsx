@@ -32,6 +32,7 @@ interface BasketContentProps {
   removeItem: (id: string) => void;
   updateItemQuantity: (id: string, newQuantity: number) => void;
   toggleItemUniquePhotos: (id: string) => void;
+  toggleItemPersonalizeCover: (id: string) => void;
   digitalCopies: number;
   setDigitalCopies: (n: number) => void;
   isCheckingOut: boolean;
@@ -52,6 +53,7 @@ const BasketContent = ({
   removeItem,
   updateItemQuantity,
   toggleItemUniquePhotos,
+  toggleItemPersonalizeCover,
   digitalCopies,
   setDigitalCopies,
   isCheckingOut,
@@ -172,19 +174,31 @@ const BasketContent = ({
                 ${UNIQUE_PHOTOS_PRICE.toFixed(2)}
               </span>
             </button>
-            {/* Personalize cover line item */}
-            {lineItem.personalizeCover &&
-          <div className="flex items-center justify-between w-full p-2.5 rounded-lg border border-green-500 bg-green-50 dark:bg-green-950/30 text-xs">
-                <span className="flex items-center gap-1.5">
-                  <Check className="w-3.5 h-3.5 text-green-600" />
-                  <span className="font-semibold text-green-700 dark:text-green-400">Personalized cover</span>
-                  <span className="text-[10px] font-bold uppercase bg-green-500 text-white px-1.5 py-0.5 rounded-full leading-none">Added</span>
-                </span>
-                <span className="font-semibold text-green-700 dark:text-green-400">
-                  ${((lineItem.uniquePhotos ? lineItem.quantity : 1) * 1.99).toFixed(2)}
-                </span>
-              </div>
-          }
+            {/* Personalize cover toggle */}
+            <button
+              onClick={() => toggleItemPersonalizeCover(lineItem.id)}
+              className={`flex items-center justify-between w-full p-2.5 rounded-lg border text-left text-xs transition-all ${
+                lineItem.personalizeCover ?
+                'border-green-500 bg-green-50 dark:bg-green-950/30' :
+                'border-dashed border-muted-foreground/30 bg-transparent hover:border-muted-foreground/50'}`
+              }>
+              <span className="flex items-center gap-1.5">
+                {lineItem.personalizeCover ?
+                  <>
+                    <Check className="w-3.5 h-3.5 text-green-600" />
+                    <span className="font-semibold text-green-700 dark:text-green-400">Personalized cover</span>
+                    <span className="text-[10px] font-bold uppercase bg-green-500 text-white px-1.5 py-0.5 rounded-full leading-none">Added</span>
+                  </> :
+                  <>
+                    <Plus className="w-3.5 h-3.5 text-muted-foreground" />
+                    <span className="font-medium text-muted-foreground">Personalized cover</span>
+                  </>
+                }
+              </span>
+              <span className={`font-semibold ${lineItem.personalizeCover ? 'text-green-700 dark:text-green-400' : 'text-muted-foreground'}`}>
+                ${((lineItem.uniquePhotos ? lineItem.quantity : 1) * 1.99).toFixed(2)}
+              </span>
+            </button>
           </div>);
 
     })}
@@ -416,6 +430,7 @@ const Navbar = () => {
     removeItem,
     updateItemQuantity,
     toggleItemUniquePhotos,
+    toggleItemPersonalizeCover,
     digitalCopies,
     setDigitalCopies,
     isCheckingOut,
