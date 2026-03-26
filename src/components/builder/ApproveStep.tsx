@@ -544,15 +544,13 @@ const SortablePhotoCard = ({
               Approve All
             </Button>
           )}
-          {hasStartedConversion && (
+          {hasStartedConversion && !allApproved && (
             <Button
               type="button"
-              onClick={allApproved ? handleContinue : approveAll}
+              onClick={approveAll}
               className="rounded-2xl px-8"
             >
-              {allApproved
-                ? "Continue to Cover Design"
-                : "Approve All"}
+              Approve All
             </Button>
           )}
         </div>
