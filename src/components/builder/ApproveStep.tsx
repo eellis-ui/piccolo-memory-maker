@@ -1,6 +1,23 @@
 import { useState, useCallback } from "react";
-import { Check, RefreshCw, Loader2, Trash2, ChevronDown } from "lucide-react";
+import { Check, RefreshCw, Loader2, Trash2, ChevronDown, GripVertical } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import {
+  DndContext,
+  closestCenter,
+  KeyboardSensor,
+  PointerSensor,
+  TouchSensor,
+  useSensor,
+  useSensors,
+  type DragEndEvent,
+} from "@dnd-kit/core";
+import {
+  arrayMove,
+  SortableContext,
+  rectSortingStrategy,
+  useSortable,
+} from "@dnd-kit/sortable";
+import { CSS } from "@dnd-kit/utilities";
 
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { supabase } from "@/integrations/supabase/client";
@@ -60,6 +77,196 @@ const ApproveStep = ({
 
   const approvedCount = photos.filter((p) => p.isApproved).length;
   const allApproved = approvedCount === photos.length && photos.length > 0;
+
+// Sortable photo card for drag-and-drop reordering
+interface SortablePhotoCardProps {
+  photo: OrderPhoto;
+  index: number;
+  isConverting: boolean;
+  retryCounts: Record<string, number>;
+  maxRetries: number;
+  onDelete: (id: string) => void;
+  onConvert: (id: string) => void;
+  onToggleApproval: (id: string) => void;
+  imgStyle: (isLandscape: boolean) => React.CSSProperties;
+}
+
+const SortablePhotoCard = ({
+  photo,
+  index,
+  isConverting,
+  retryCounts,
+  maxRetries,
+  onDelete,
+  onConvert,
+  onToggleApproval,
+  imgStyle: getImgStyle,
+}: SortablePhotoCardProps) => {
+  const {
+    attributes,
+    listeners,
+    setNodeRef,
+    transform,
+    transition,
+    isDragging,
+  } = useSortable({ id: photo.id });
+
+  const style: React.CSSProperties = {
+    transform: CSS.Transform.toString(transform),
+    transition,
+    opacity: isDragging ? 0.5 : 1,
+    zIndex: isDragging ? 50 : "auto",
+  };
+
+  const hasConverted = photo.conversionStatus === "completed" && photo.convertedUrl;
+
+  return (
+    <div
+      ref={setNodeRef}
+      style={style}
+      className={`relative rounded-lg overflow-hidden transition-all border ${
+        photo.isApproved ? "border-primary ring-1 ring-primary/20" : "border-border/60"
+      }`}
+    >
+      {/* Drag handle + page number */}
+      <div className="absolute top-2 left-2 z-10 flex items-center gap-1">
+        <button
+          {...attributes}
+          {...listeners}
+          className="touch-none cursor-grab active:cursor-grabbing w-5 h-5 flex items-center justify-center rounded bg-foreground/80 text-background"
+        >
+          <GripVertical className="w-3 h-3" />
+        </button>
+        <span className="text-[10px] font-body font-semibold uppercase tracking-wider bg-foreground/80 text-background px-2 py-0.5 rounded">
+          {index + 1}
+        </span>
+      </div>
+
+      <button
+        onClick={() => onDelete(photo.id)}
+        className="absolute top-2 right-2 z-10 w-6 h-6 rounded-full bg-foreground/70 text-background flex items-center justify-center hover:bg-destructive transition-colors"
+      >
+        <Trash2 className="w-3 h-3" />
+      </button>
+
+      {/* Image preview area */}
+      <div className="relative bg-muted/20 aspect-[210/297] overflow-hidden">
+        {hasConverted ? (
+          <div className="absolute inset-0 flex">
+            <div className="w-1/2 h-full border-r border-border/30 flex items-center justify-center overflow-hidden bg-muted/10 relative">
+              <img
+                src={photo.originalUrl}
+                alt={`Original ${index + 1}`}
+                className="opacity-50"
+                style={getImgStyle(photo.isLandscape)}
+              />
+              <span className="absolute bottom-1 left-1 text-[9px] uppercase tracking-wider text-muted-foreground bg-background/70 px-1.5 py-0.5 rounded z-10">
+                Before
+              </span>
+            </div>
+            <div className="w-1/2 h-full flex items-center justify-center overflow-hidden bg-white relative">
+              <img
+                src={photo.convertedUrl!}
+                alt={`Line art ${index + 1}`}
+                style={getImgStyle(photo.isLandscape)}
+              />
+              <div className="absolute inset-0 flex items-center justify-center pointer-events-none z-10">
+                <span className="text-2xl font-display text-foreground/15 rotate-[-30deg] font-bold tracking-widest select-none">
+                  PREVIEW
+                </span>
+              </div>
+              <span className="absolute bottom-1 right-1 text-[9px] uppercase tracking-wider text-muted-foreground bg-background/70 px-1.5 py-0.5 rounded z-20">
+                After
+              </span>
+            </div>
+          </div>
+        ) : (
+          <div className="absolute inset-0 flex items-center justify-center overflow-hidden bg-muted/10">
+            <img
+              src={photo.originalUrl}
+              alt={`Original ${index + 1}`}
+              style={getImgStyle(photo.isLandscape)}
+            />
+            {isConverting && (
+              <div className="absolute inset-0 bg-background/70 flex flex-col items-center justify-center gap-1.5 z-10">
+                <Loader2 className="w-6 h-6 text-primary animate-spin" />
+                <span className="text-[11px] text-muted-foreground">Converting…</span>
+              </div>
+            )}
+          </div>
+        )}
+      </div>
+
+      {/* Actions — compact bottom bar */}
+      <div className="px-2.5 py-2 flex items-center justify-between bg-background">
+        <div className="flex gap-1">
+          {!hasConverted && !isConverting && (
+            <Button
+              type="button"
+              variant="ghost"
+              size="sm"
+              onClick={() => void onConvert(photo.id)}
+              className="rounded-lg h-7 px-2.5 text-xs"
+            >
+              <RefreshCw className="w-3 h-3 mr-1" />
+              Convert
+            </Button>
+          )}
+          {hasConverted && !photo.isApproved && (() => {
+            const retries = retryCounts[photo.id] ?? 0;
+            const attemptsLeft = maxRetries - retries;
+            if (attemptsLeft <= 0) return (
+              <span className="text-[10px] text-muted-foreground py-1">Max retries</span>
+            );
+            return (
+              <Button
+                type="button"
+                variant="ghost"
+                size="sm"
+                onClick={() => void onConvert(photo.id)}
+                disabled={isConverting}
+                className="rounded-lg h-7 px-2.5 text-xs text-muted-foreground"
+              >
+                <RefreshCw className="w-3 h-3 mr-1" />
+                Retry ({attemptsLeft})
+              </Button>
+            );
+          })()}
+          {photo.conversionStatus === "failed" && (() => {
+            const retries = retryCounts[photo.id] ?? 0;
+            const attemptsLeft = maxRetries - retries;
+            if (attemptsLeft <= 0) return null;
+            return (
+              <Button
+                type="button"
+                variant="ghost"
+                size="sm"
+                onClick={() => void onConvert(photo.id)}
+                className="rounded-lg h-7 px-2.5 text-xs text-destructive"
+              >
+                <RefreshCw className="w-3 h-3 mr-1" />
+                Retry ({attemptsLeft})
+              </Button>
+            );
+          })()}
+        </div>
+
+        {hasConverted && (
+          <Button
+            type="button"
+            variant={photo.isApproved ? "default" : "outline"}
+            size="sm"
+            onClick={() => onToggleApproval(photo.id)}
+            className="rounded-lg h-7 px-2.5 text-xs"
+          >
+            <Check className="w-3 h-3 mr-1" />
+            {photo.isApproved ? "Approved" : "Approve"}
+          </Button>
+        )}
+      </div>
+    </div>
+  );
+};
 
 
   const convertPhoto = useCallback(async (photoId: string) => {
@@ -211,6 +418,29 @@ const ApproveStep = ({
     await deleteGuestPhoto(sessionId, orderId, id, photo?.originalPath);
     toast.success("Photo removed");
   };
+
+  const handleDragEnd = (event: DragEndEvent) => {
+    const { active, over } = event;
+    if (!over || active.id === over.id) return;
+
+    const oldIndex = photos.findIndex((p) => p.id === active.id);
+    const newIndex = photos.findIndex((p) => p.id === over.id);
+    if (oldIndex === -1 || newIndex === -1) return;
+
+    const reordered = arrayMove(photos, oldIndex, newIndex);
+    updatePhotos(() => reordered);
+
+    // Persist new page positions
+    reordered.forEach((photo, i) => {
+      updateGuestPhoto(sessionId, orderId, photo.id, { page_position: i });
+    });
+  };
+
+  const sensors = useSensors(
+    useSensor(PointerSensor, { activationConstraint: { distance: 5 } }),
+    useSensor(TouchSensor, { activationConstraint: { delay: 150, tolerance: 5 } }),
+    useSensor(KeyboardSensor)
+  );
 
   const handleReorder = async (reorderedPhotos: OrderPhoto[]) => {
     updatePhotos(() => reorderedPhotos);
@@ -378,7 +608,7 @@ const ApproveStep = ({
         <BookPreview photos={photos} onReorder={handleReorder} />
       )}
 
-      {/* Pages Grid */}
+      {/* Pages Grid — Drag to reorder */}
       <Collapsible defaultOpen>
         <CollapsibleTrigger asChild>
           <button className="flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors group">
@@ -387,151 +617,30 @@ const ApproveStep = ({
           </button>
         </CollapsibleTrigger>
         <CollapsibleContent className="pt-4">
-          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-2.5">
-            {photos.map((photo, index) => {
-              const isConverting = convertingIds.has(photo.id);
-              const hasConverted = photo.conversionStatus === "completed" && photo.convertedUrl;
-
-              return (
-                <div
-                  key={photo.id}
-                  className={`relative rounded-lg overflow-hidden transition-all border ${
-                    photo.isApproved ? "border-primary ring-1 ring-primary/20" : "border-border/60"
-                  }`}
-                >
-                  {/* Page number + delete — compact overlay */}
-                  <div className="absolute top-2 left-2 z-10">
-                    <span className="text-[10px] font-body font-semibold uppercase tracking-wider bg-foreground/80 text-background px-2 py-0.5 rounded">
-                      {index + 1}
-                    </span>
-                  </div>
-
-                  <button
-                    onClick={() => deletePhoto(photo.id)}
-                    className="absolute top-2 right-2 z-10 w-6 h-6 rounded-full bg-foreground/70 text-background flex items-center justify-center hover:bg-destructive transition-colors"
-                  >
-                    <Trash2 className="w-3 h-3" />
-                  </button>
-
-                  {/* Image preview area */}
-                  <div className="relative bg-muted/20 aspect-[210/297] overflow-hidden">
-                    {hasConverted ? (
-                      <div className="absolute inset-0 flex">
-                        <div className="w-1/2 h-full border-r border-border/30 flex items-center justify-center overflow-hidden bg-muted/10 relative">
-                          <img
-                            src={photo.originalUrl}
-                            alt={`Original ${index + 1}`}
-                            className="opacity-50"
-                            style={imgStyle(photo.isLandscape)}
-                          />
-                          <span className="absolute bottom-1 left-1 text-[9px] uppercase tracking-wider text-muted-foreground bg-background/70 px-1.5 py-0.5 rounded z-10">
-                            Before
-                          </span>
-                        </div>
-                        <div className="w-1/2 h-full flex items-center justify-center overflow-hidden bg-white relative">
-                          <img
-                            src={photo.convertedUrl!}
-                            alt={`Line art ${index + 1}`}
-                            style={imgStyle(photo.isLandscape)}
-                          />
-                          <div className="absolute inset-0 flex items-center justify-center pointer-events-none z-10">
-                            <span className="text-2xl font-display text-foreground/15 rotate-[-30deg] font-bold tracking-widest select-none">
-                              PREVIEW
-                            </span>
-                          </div>
-                          <span className="absolute bottom-1 right-1 text-[9px] uppercase tracking-wider text-muted-foreground bg-background/70 px-1.5 py-0.5 rounded z-20">
-                            After
-                          </span>
-                        </div>
-                      </div>
-                    ) : (
-                      <div className="absolute inset-0 flex items-center justify-center overflow-hidden bg-muted/10">
-                        <img
-                          src={photo.originalUrl}
-                          alt={`Original ${index + 1}`}
-                          style={imgStyle(photo.isLandscape)}
-                        />
-                        {isConverting && (
-                          <div className="absolute inset-0 bg-background/70 flex flex-col items-center justify-center gap-1.5 z-10">
-                            <Loader2 className="w-6 h-6 text-primary animate-spin" />
-                            <span className="text-[11px] text-muted-foreground">Converting…</span>
-                          </div>
-                        )}
-                      </div>
-                    )}
-                  </div>
-
-                  {/* Actions — compact bottom bar */}
-                  <div className="px-2.5 py-2 flex items-center justify-between bg-background">
-                    <div className="flex gap-1">
-                      {!hasConverted && !isConverting && (
-                        <Button
-                          type="button"
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => void convertSinglePhoto(photo.id)}
-                          className="rounded-lg h-7 px-2.5 text-xs"
-                        >
-                          <RefreshCw className="w-3 h-3 mr-1" />
-                          Convert
-                        </Button>
-                      )}
-                      {hasConverted && !photo.isApproved && (() => {
-                        const retries = retryCounts[photo.id] ?? 0;
-                        const attemptsLeft = MAX_RETRIES_PER_PHOTO - retries;
-                        if (attemptsLeft <= 0) return (
-                          <span className="text-[10px] text-muted-foreground py-1">Max retries</span>
-                        );
-                        return (
-                          <Button
-                            type="button"
-                            variant="ghost"
-                            size="sm"
-                            onClick={() => void convertSinglePhoto(photo.id)}
-                            disabled={isConverting}
-                            className="rounded-lg h-7 px-2.5 text-xs text-muted-foreground"
-                          >
-                            <RefreshCw className="w-3 h-3 mr-1" />
-                            Retry ({attemptsLeft})
-                          </Button>
-                        );
-                      })()}
-                      {photo.conversionStatus === "failed" && (() => {
-                        const retries = retryCounts[photo.id] ?? 0;
-                        const attemptsLeft = MAX_RETRIES_PER_PHOTO - retries;
-                        if (attemptsLeft <= 0) return null;
-                        return (
-                          <Button
-                            type="button"
-                            variant="ghost"
-                            size="sm"
-                            onClick={() => void convertSinglePhoto(photo.id)}
-                            className="rounded-lg h-7 px-2.5 text-xs text-destructive"
-                          >
-                            <RefreshCw className="w-3 h-3 mr-1" />
-                            Retry ({attemptsLeft})
-                          </Button>
-                        );
-                      })()}
-                    </div>
-
-                    {hasConverted && (
-                      <Button
-                        type="button"
-                        variant={photo.isApproved ? "default" : "outline"}
-                        size="sm"
-                        onClick={() => toggleApproval(photo.id)}
-                        className="rounded-lg h-7 px-2.5 text-xs"
-                      >
-                        <Check className="w-3 h-3 mr-1" />
-                        {photo.isApproved ? "Approved" : "Approve"}
-                      </Button>
-                    )}
-                  </div>
-                </div>
-              );
-            })}
-          </div>
+          <p className="text-xs text-muted-foreground mb-3 flex items-center gap-1.5">
+            <GripVertical className="w-3.5 h-3.5" />
+            Drag and drop to rearrange the page order of your book
+          </p>
+          <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
+            <SortableContext items={photos.map((p) => p.id)} strategy={rectSortingStrategy}>
+              <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-2.5">
+                {photos.map((photo, index) => (
+                  <SortablePhotoCard
+                    key={photo.id}
+                    photo={photo}
+                    index={index}
+                    isConverting={convertingIds.has(photo.id)}
+                    retryCounts={retryCounts}
+                    maxRetries={MAX_RETRIES_PER_PHOTO}
+                    onDelete={deletePhoto}
+                    onConvert={convertSinglePhoto}
+                    onToggleApproval={toggleApproval}
+                    imgStyle={imgStyle}
+                  />
+                ))}
+              </div>
+            </SortableContext>
+          </DndContext>
         </CollapsibleContent>
       </Collapsible>
 
