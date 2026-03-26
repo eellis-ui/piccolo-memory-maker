@@ -64,13 +64,31 @@ const ApproveStep = ({
     setConvertingIds((prev) => new Set(prev).add(photoId));
 
     try {
+      console.log(`[convert] Starting conversion for photo ${photoId}, session ${sessionId}`);
       const { data, error } = await supabase.functions.invoke("convert-to-lineart", {
         body: { photoId, sessionId },
       });
 
+      console.log(`[convert] Response for ${photoId}:`, { data, error });
+
       if (error) {
-        // Extract message from FunctionsHttpError body if available
-        const msg = (error as any)?.context?.error || error.message || "Conversion failed";
+        // Try to parse the error body for a meaningful message
+        let msg = "Conversion failed";
+        try {
+          if (error instanceof Response || (error as any)?.context) {
+            const body = (error as any)?.context;
+            if (body && typeof body === "object" && body.error) {
+              msg = body.error;
+            } else if (typeof body === "string") {
+              const parsed = JSON.parse(body);
+              msg = parsed.error || msg;
+            }
+          } else {
+            msg = error.message || msg;
+          }
+        } catch {
+          msg = error.message || msg;
+        }
         throw new Error(msg);
       }
 
@@ -92,6 +110,7 @@ const ApproveStep = ({
         throw new Error(data?.error || "Conversion failed");
       }
     } catch (err: any) {
+      console.error(`[convert] Error for ${photoId}:`, err);
       toast.error(`Conversion failed: ${err.message}`);
       updatePhotos((prev) =>
         prev.map((p) =>
@@ -105,19 +124,22 @@ const ApproveStep = ({
         return next;
       });
     }
-  }, [updatePhotos]);
+  }, [sessionId, updatePhotos]);
 
   const convertAll = async () => {
     const unconverted = photos.filter(
       (p) => p.conversionStatus === "pending" || p.conversionStatus === "failed"
     );
+    console.log(`[convertAll] Starting batch conversion of ${unconverted.length} photos`);
     if (unconverted.length === 0) return;
 
     const BATCH_SIZE = 2;
     for (let i = 0; i < unconverted.length; i += BATCH_SIZE) {
       const batch = unconverted.slice(i, i + BATCH_SIZE);
+      console.log(`[convertAll] Processing batch ${Math.floor(i / BATCH_SIZE) + 1}, photos: ${batch.map(p => p.id).join(', ')}`);
       await Promise.allSettled(batch.map((photo) => convertPhoto(photo.id)));
     }
+    console.log(`[convertAll] All batches complete`);
   };
 
   const toggleApproval = async (id: string) => {
@@ -187,8 +209,9 @@ const ApproveStep = ({
           </Badge>
           {hasUnconverted && (
             <Button
+              type="button"
               variant="outline"
-              onClick={convertAll}
+              onClick={() => void convertAll()}
               disabled={convertingIds.size > 0}
               className="rounded-2xl"
             >
@@ -201,11 +224,12 @@ const ApproveStep = ({
             </Button>
           )}
           {!allApproved && !hasUnconverted && (
-            <Button variant="outline" onClick={approveAll} className="rounded-2xl">
+            <Button type="button" variant="outline" onClick={approveAll} className="rounded-2xl">
               Approve All
             </Button>
           )}
           <Button
+            type="button"
             onClick={handleContinue}
             disabled={!allApproved}
             className="rounded-2xl px-8"
@@ -353,9 +377,10 @@ const ApproveStep = ({
                     <div className="flex gap-2">
                       {!hasConverted && !isConverting && (
                         <Button
+                          type="button"
                           variant="ghost"
                           size="sm"
-                          onClick={() => convertPhoto(photo.id)}
+                          onClick={() => void convertPhoto(photo.id)}
                           className="rounded-xl"
                         >
                           <RefreshCw className="w-4 h-4 mr-1" />
@@ -370,9 +395,10 @@ const ApproveStep = ({
                         );
                         return (
                           <Button
+                            type="button"
                             variant="ghost"
                             size="sm"
-                            onClick={() => convertPhoto(photo.id)}
+                            onClick={() => void convertPhoto(photo.id)}
                             disabled={isConverting}
                             className="rounded-xl text-muted-foreground"
                           >
@@ -387,9 +413,10 @@ const ApproveStep = ({
                         if (attemptsLeft <= 0) return null;
                         return (
                           <Button
+                            type="button"
                             variant="ghost"
                             size="sm"
-                            onClick={() => convertPhoto(photo.id)}
+                            onClick={() => void convertPhoto(photo.id)}
                             className="rounded-xl text-destructive"
                           >
                             <RefreshCw className="w-4 h-4 mr-1" />
@@ -401,6 +428,7 @@ const ApproveStep = ({
 
                     {hasConverted && (
                       <Button
+                        type="button"
                         variant={photo.isApproved ? "default" : "outline"}
                         size="sm"
                         onClick={() => toggleApproval(photo.id)}
@@ -420,7 +448,7 @@ const ApproveStep = ({
 
       {/* Navigation */}
       <div className="flex justify-start pt-4">
-        <Button variant="outline" onClick={onBack} className="rounded-2xl">
+        <Button type="button" variant="outline" onClick={onBack} className="rounded-2xl">
           Back to Upload
         </Button>
       </div>
