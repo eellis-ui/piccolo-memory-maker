@@ -29,6 +29,8 @@ import type { OrderPhoto } from "@/pages/Builder";
 import {
   updateGuestPhoto,
   deleteGuestPhoto,
+  uploadGuestPhoto,
+  getSignedUrls,
 } from "@/lib/guest-api";
 
 // Helper: consistent image style for A4 portrait display
