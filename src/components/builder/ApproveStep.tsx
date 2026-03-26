@@ -308,7 +308,7 @@ const ApproveStep = ({
                     {conversionStartTime && completedInSession > 0 && (() => {
                       const elapsed = (Date.now() - conversionStartTime) / 1000;
                       const avgPerPhoto = elapsed / completedInSession;
-                      const remaining = Math.max(0, (totalPhotos - convertedCount) * avgPerPhoto);
+                      const remaining = Math.max(0, (totalPhotos - displayConverted) * avgPerPhoto);
                       const mins = Math.floor(remaining / 60);
                       const secs = Math.round(remaining % 60);
                       return (
@@ -324,7 +324,7 @@ const ApproveStep = ({
                     All photos converted
                   </span>
                 ) : (
-              `${convertedCount} of ${totalPhotos} photos converted`
+              `${displayConverted} of ${totalPhotos} photos converted`
                 )}
               </span>
               <span className="font-medium text-foreground">{percent}%</span>
