@@ -272,13 +272,12 @@ const ApproveStep = ({
           {hasStartedConversion && (
             <Button
               type="button"
-              onClick={handleContinue}
-              disabled={!allApproved}
+              onClick={allApproved ? handleContinue : approveAll}
               className="rounded-2xl px-8"
             >
               {allApproved
                 ? "Continue to Cover Design"
-                : `Approve ${photos.length - approvedCount} more`}
+                : "Approve All"}
             </Button>
           )}
         </div>
