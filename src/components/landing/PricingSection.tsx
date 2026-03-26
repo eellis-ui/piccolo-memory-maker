@@ -254,7 +254,7 @@ const PricingSection = () => {
                     className="mt-0.5"
                   />
                   <div className="flex-1">
-                    <p className="text-sm font-semibold text-foreground">
+                    <p className="text-xs sm:text-sm font-semibold text-foreground">
                       Have 20 different photos in each book!{" "}
                       <span className="text-primary font-bold">+${UNIQUE_PHOTOS_PRICE.toFixed(2)}</span>
                     </p>
