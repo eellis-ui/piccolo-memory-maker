@@ -261,7 +261,7 @@ const UploadStep = ({ orderId, sessionId, onImagesUploaded, maxImages = 20, init
         onDrop={handleDrop}
         onDragOver={handleDragOver}
         onDragLeave={handleDragLeave}
-        className={`relative border-2 border-dashed rounded-lg p-12 text-center transition-all ${
+        className={`relative border-2 border-dashed rounded-lg p-6 sm:p-12 text-center transition-all ${
           isDragging
             ? "border-foreground bg-muted"
             : "border-foreground hover:bg-muted"
@@ -277,8 +277,8 @@ const UploadStep = ({ orderId, sessionId, onImagesUploaded, maxImages = 20, init
         />
 
         <div className="space-y-4">
-          <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-cream">
-            <Upload className="w-8 h-8 text-primary" />
+          <div className="inline-flex items-center justify-center w-10 h-10 sm:w-16 sm:h-16 rounded-2xl bg-cream">
+            <Upload className="w-5 h-5 sm:w-8 sm:h-8 text-primary" />
           </div>
           <div>
             <p className="text-lg font-medium text-foreground">
