@@ -307,7 +307,7 @@ const UploadStep = ({ orderId, sessionId, onImagesUploaded, maxImages = 20, init
 
       {/* Continue Button (top — always visible when photos ready) */}
       {readyCount > 0 && (
-        <div className="flex justify-end">
+        <div className="flex justify-center sm:justify-end">
           <Button
             onClick={handleContinue}
             disabled={isUploading}
@@ -375,7 +375,7 @@ const UploadStep = ({ orderId, sessionId, onImagesUploaded, maxImages = 20, init
 
       {/* Continue Button (bottom) */}
       {readyCount > 0 && (
-        <div className="flex justify-end sm:hidden">
+        <div className="flex justify-center sm:hidden">
           <Button
             onClick={handleContinue}
             disabled={isUploading}
