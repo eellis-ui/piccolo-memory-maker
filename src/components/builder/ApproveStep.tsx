@@ -385,7 +385,7 @@ const ApproveStep = ({
           </button>
         </CollapsibleTrigger>
         <CollapsibleContent className="pt-4">
-          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3">
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-2.5">
             {photos.map((photo, index) => {
               const isConverting = convertingIds.has(photo.id);
               const hasConverted = photo.conversionStatus === "completed" && photo.convertedUrl;
@@ -393,34 +393,37 @@ const ApproveStep = ({
               return (
                 <div
                   key={photo.id}
-                  className={`relative rounded-3xl border-2 overflow-hidden transition-all ${
-                    photo.isApproved ? "border-primary shadow-soft" : "border-border"
+                  className={`relative rounded-lg overflow-hidden transition-all border ${
+                    photo.isApproved ? "border-primary ring-1 ring-primary/20" : "border-border/60"
                   }`}
                 >
-                  <div className="absolute top-3 left-3 z-10">
-                    <Badge variant="secondary">Page {index + 1}</Badge>
+                  {/* Page number + delete — compact overlay */}
+                  <div className="absolute top-2 left-2 z-10">
+                    <span className="text-[10px] font-body font-semibold uppercase tracking-wider bg-foreground/80 text-background px-2 py-0.5 rounded">
+                      {index + 1}
+                    </span>
                   </div>
 
                   <button
                     onClick={() => deletePhoto(photo.id)}
-                    className="absolute top-3 right-3 z-10 w-7 h-7 rounded-full bg-destructive/90 text-destructive-foreground flex items-center justify-center hover:bg-destructive transition-colors"
+                    className="absolute top-2 right-2 z-10 w-6 h-6 rounded-full bg-foreground/70 text-background flex items-center justify-center hover:bg-destructive transition-colors"
                   >
-                    <Trash2 className="w-3.5 h-3.5" />
+                    <Trash2 className="w-3 h-3" />
                   </button>
 
                   {/* Image preview area */}
-                  <div className="relative bg-muted/30 aspect-[210/297] overflow-hidden">
+                  <div className="relative bg-muted/20 aspect-[210/297] overflow-hidden">
                     {hasConverted ? (
                       <div className="absolute inset-0 flex">
-                        <div className="w-1/2 h-full border-r border-border/50 flex items-center justify-center overflow-hidden bg-muted/20 relative">
+                        <div className="w-1/2 h-full border-r border-border/30 flex items-center justify-center overflow-hidden bg-muted/10 relative">
                           <img
                             src={photo.originalUrl}
                             alt={`Original ${index + 1}`}
-                            className="opacity-60"
+                            className="opacity-50"
                             style={imgStyle(photo.isLandscape)}
                           />
-                          <span className="absolute bottom-2 left-2 text-xs text-muted-foreground bg-background/80 px-2 py-1 rounded z-10">
-                            Original
+                          <span className="absolute bottom-1 left-1 text-[9px] uppercase tracking-wider text-muted-foreground bg-background/70 px-1.5 py-0.5 rounded z-10">
+                            Before
                           </span>
                         </div>
                         <div className="w-1/2 h-full flex items-center justify-center overflow-hidden bg-white relative">
@@ -430,43 +433,44 @@ const ApproveStep = ({
                             style={imgStyle(photo.isLandscape)}
                           />
                           <div className="absolute inset-0 flex items-center justify-center pointer-events-none z-10">
-                            <span className="text-3xl font-display text-foreground/20 rotate-[-30deg] font-bold tracking-widest select-none">
+                            <span className="text-2xl font-display text-foreground/15 rotate-[-30deg] font-bold tracking-widest select-none">
                               PREVIEW
                             </span>
                           </div>
-                          <span className="absolute bottom-2 right-2 text-xs text-muted-foreground bg-background/80 px-2 py-1 rounded z-20">
-                            Line Art
+                          <span className="absolute bottom-1 right-1 text-[9px] uppercase tracking-wider text-muted-foreground bg-background/70 px-1.5 py-0.5 rounded z-20">
+                            After
                           </span>
                         </div>
                       </div>
                     ) : (
-                      <div className="absolute inset-0 flex items-center justify-center overflow-hidden bg-muted/20">
+                      <div className="absolute inset-0 flex items-center justify-center overflow-hidden bg-muted/10">
                         <img
                           src={photo.originalUrl}
                           alt={`Original ${index + 1}`}
                           style={imgStyle(photo.isLandscape)}
                         />
                         {isConverting && (
-                          <div className="absolute inset-0 bg-background/70 flex flex-col items-center justify-center gap-2 z-10">
-                            <Loader2 className="w-8 h-8 text-primary animate-spin" />
-                            <span className="text-sm text-muted-foreground">Converting...</span>
+                          <div className="absolute inset-0 bg-background/70 flex flex-col items-center justify-center gap-1.5 z-10">
+                            <Loader2 className="w-6 h-6 text-primary animate-spin" />
+                            <span className="text-[11px] text-muted-foreground">Converting…</span>
                           </div>
                         )}
                       </div>
                     )}
                   </div>
 
-                  <div className="p-4 flex items-center justify-between bg-background">
-                    <div className="flex gap-2">
+                  {/* Actions — compact bottom bar */}
+                  <div className="px-2.5 py-2 flex items-center justify-between bg-background">
+                    <div className="flex gap-1">
                       {!hasConverted && !isConverting && (
                         <Button
                           type="button"
                           variant="ghost"
                           size="sm"
                           onClick={() => void convertSinglePhoto(photo.id)}
-                          className="rounded-xl"
+                          className="rounded-lg h-7 px-2.5 text-xs"
                         >
-                          <RefreshCw className="w-4 h-4 mr-1" />
+                          <RefreshCw className="w-3 h-3 mr-1" />
                           Convert
                         </Button>
                       )}
@@ -474,7 +478,7 @@ const ApproveStep = ({
                         const retries = retryCounts[photo.id] ?? 0;
                         const attemptsLeft = MAX_RETRIES_PER_PHOTO - retries;
                         if (attemptsLeft <= 0) return (
-                          <span className="text-xs text-muted-foreground py-1">Max retries reached</span>
+                          <span className="text-[10px] text-muted-foreground py-1">Max retries</span>
                         );
                         return (
                           <Button
@@ -483,10 +487,10 @@ const ApproveStep = ({
                             size="sm"
                             onClick={() => void convertSinglePhoto(photo.id)}
                             disabled={isConverting}
-                            className="rounded-xl text-muted-foreground"
+                            className="rounded-lg h-7 px-2.5 text-xs text-muted-foreground"
                           >
-                            <RefreshCw className="w-4 h-4 mr-1" />
-                            Retry ({attemptsLeft} left)
+                            <RefreshCw className="w-3 h-3 mr-1" />
+                            Retry ({attemptsLeft})
                           </Button>
                         );
                       })()}
@@ -500,10 +504,10 @@ const ApproveStep = ({
                             variant="ghost"
                             size="sm"
                             onClick={() => void convertSinglePhoto(photo.id)}
-                            className="rounded-xl text-destructive"
+                            className="rounded-lg h-7 px-2.5 text-xs text-destructive"
                           >
-                            <RefreshCw className="w-4 h-4 mr-1" />
-                            Retry ({attemptsLeft} left)
+                            <RefreshCw className="w-3 h-3 mr-1" />
+                            Retry ({attemptsLeft})
                           </Button>
                         );
                       })()}
@@ -515,9 +519,9 @@ const ApproveStep = ({
                         variant={photo.isApproved ? "default" : "outline"}
                         size="sm"
                         onClick={() => toggleApproval(photo.id)}
-                        className="rounded-xl"
+                        className="rounded-lg h-7 px-2.5 text-xs"
                       >
-                        <Check className="w-4 h-4 mr-1" />
+                        <Check className="w-3 h-3 mr-1" />
                         {photo.isApproved ? "Approved" : "Approve"}
                       </Button>
                     )}
