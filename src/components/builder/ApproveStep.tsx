@@ -408,10 +408,12 @@ const SortablePhotoCard = ({
   };
 
   const approveAll = async () => {
-    updatePhotos((prev) => prev.map((p) => ({ ...p, isApproved: true })));
+    const approved = photos.map((p) => ({ ...p, isApproved: true }));
+    updatePhotos(() => approved);
     await Promise.all(
       photos.map((p) => updateGuestPhoto(sessionId, orderId, p.id, { is_approved: true }))
     );
+    onApprovalComplete(approved);
   };
 
   const deletePhoto = async (id: string) => {
@@ -494,9 +496,7 @@ const SortablePhotoCard = ({
     }
   }, [photos.length, sessionId, orderId, updatePhotos]);
 
-  const handleContinue = () => {
-    onApprovalComplete(photos);
-  };
+
 
   const hasUnconverted = photos.some(
     (p) => p.conversionStatus === "pending" || p.conversionStatus === "failed"
@@ -542,15 +542,13 @@ const SortablePhotoCard = ({
               Approve All
             </Button>
           )}
-          {hasStartedConversion && (
+          {hasStartedConversion && !allApproved && (
             <Button
               type="button"
-              onClick={allApproved ? handleContinue : approveAll}
+              onClick={approveAll}
               className="rounded-2xl px-8"
             >
-              {allApproved
-                ? "Continue to Cover Design"
-                : "Approve All"}
+              Approve All
             </Button>
           )}
         </div>
