@@ -237,7 +237,7 @@ const ApproveStep = ({
           )}
         </div>
 
-        <div className="flex items-center gap-3 flex-wrap">
+        <div className="flex items-center justify-between gap-3">
           <Badge variant="secondary" className="text-sm py-1 px-3">
             {totalApproved} of {totalPages} pages approved
           </Badge>
