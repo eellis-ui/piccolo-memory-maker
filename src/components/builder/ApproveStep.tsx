@@ -22,7 +22,7 @@ import { CSS } from "@dnd-kit/utilities";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import BookPreview from "./BookPreview";
+
 import DigitalUpsellBanner from "./DigitalUpsellBanner";
 import { useBasket } from "@/contexts/BasketContext";
 import type { OrderPhoto } from "@/pages/Builder";
@@ -442,14 +442,6 @@ const SortablePhotoCard = ({
     useSensor(KeyboardSensor)
   );
 
-  const handleReorder = async (reorderedPhotos: OrderPhoto[]) => {
-    updatePhotos(() => reorderedPhotos);
-    await Promise.all(
-      reorderedPhotos.map((p, i) =>
-        updateGuestPhoto(sessionId, orderId, p.id, { page_position: i })
-      )
-    );
-  };
 
   const handleContinue = () => {
     onApprovalComplete(photos);
@@ -603,10 +595,6 @@ const SortablePhotoCard = ({
         );
       })()}
 
-      {/* Interactive Book Preview (when all approved) */}
-      {allApproved && (
-        <BookPreview photos={photos} onReorder={handleReorder} />
-      )}
 
       {/* Pages Grid — Drag to reorder */}
       <Collapsible defaultOpen>
