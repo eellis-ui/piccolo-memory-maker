@@ -143,11 +143,11 @@ const ApproveStep = ({
     setConversionStartTime(Date.now());
     setCompletedInSession(0);
     setHasStartedConversion(true);
-    console.log(`[convertAll] Starting conversion of ${unconverted.length} photos (batches of 3)`);
+    console.log(`[convertAll] Starting conversion of ${unconverted.length} photos (batches of 10)`);
 
     let done = 0;
-    // Process in batches of 3 to avoid overwhelming the edge function worker
-    const BATCH_SIZE = 3;
+    // Process in batches of 10 for maximum parallelism
+    const BATCH_SIZE = 10;
     for (let i = 0; i < unconverted.length; i += BATCH_SIZE) {
       const batch = unconverted.slice(i, i + BATCH_SIZE);
       console.log(`[convertAll] Batch ${Math.floor(i / BATCH_SIZE) + 1}: ${batch.map(p => p.id.slice(0, 8)).join(', ')}`);
