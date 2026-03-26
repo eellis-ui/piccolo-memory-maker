@@ -256,7 +256,7 @@ const PricingSection = () => {
                   <div className="flex-1">
                     <p className="text-xs sm:text-sm font-semibold text-foreground">
                       Have 20 different photos in each book!{" "}
-                      <span className="text-foreground font-bold">+${UNIQUE_PHOTOS_PRICE.toFixed(2)}</span>
+                      <span className="text-primary font-bold dark:text-primary/90">+${UNIQUE_PHOTOS_PRICE.toFixed(2)}</span>
                     </p>
                     <p className="text-xs text-muted-foreground mt-0.5">
                       If unticked, all books in the bundle will contain the same photos
