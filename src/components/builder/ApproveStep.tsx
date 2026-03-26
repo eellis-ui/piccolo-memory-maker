@@ -58,8 +58,6 @@ const ApproveStep = ({
   const approvedCount = photos.filter((p) => p.isApproved).length;
   const allApproved = approvedCount === photos.length && photos.length > 0;
 
-  const totalPages = uniquePhotos ? photos.length : photos.length * bookCount;
-  const totalApproved = uniquePhotos ? approvedCount : approvedCount * bookCount;
 
   const convertPhoto = useCallback(async (photoId: string) => {
     setRetryCounts((prev) => ({ ...prev, [photoId]: (prev[photoId] ?? 0) + 1 }));
