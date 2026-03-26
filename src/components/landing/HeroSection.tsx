@@ -19,8 +19,22 @@ const HeroSection = () => {
     <section className="bg-background py-16 md:py-24">
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-16 items-center">
+          {/* Image grid - shows first on mobile */}
+          <div className="grid grid-cols-3 gap-[6px] order-first lg:order-last">
+            {gridImages.map((img, i) => (
+              <div key={i} className="aspect-[10/8] overflow-hidden rounded-lg">
+                <img
+                  src={img.src}
+                  alt={img.alt}
+                  className="w-full h-full object-cover"
+                  loading={i < 3 ? "eager" : "lazy"}
+                />
+              </div>
+            ))}
+          </div>
+
           {/* Left column */}
-          <div className="space-y-8">
+          <div className="space-y-8 order-last lg:order-first">
             {/* Review badge */}
             <div className="inline-flex items-center gap-2.5 bg-foreground text-background rounded-lg px-4 py-2.5">
               <Medal className="w-5 h-5 text-amber-400" />
@@ -48,20 +62,6 @@ const HeroSection = () => {
                 Create My Book
               </Link>
             </Button>
-          </div>
-
-          {/* Right column - 3x3 image grid */}
-          <div className="grid grid-cols-3 gap-[6px]">
-            {gridImages.map((img, i) => (
-              <div key={i} className="aspect-[10/8] overflow-hidden rounded-lg">
-                <img
-                  src={img.src}
-                  alt={img.alt}
-                  className="w-full h-full object-cover"
-                  loading={i < 3 ? "eager" : "lazy"}
-                />
-              </div>
-            ))}
           </div>
         </div>
       </div>
