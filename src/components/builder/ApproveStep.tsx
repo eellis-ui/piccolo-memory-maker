@@ -288,11 +288,14 @@ const ApproveStep = ({
 
       {/* Conversion Progress */}
       {(() => {
+        const isSharedMode = !uniquePhotos && bookCount > 1;
+        const displayTotal = isSharedMode ? Math.min(photos.length, 20) : photos.length;
         const convertedCount = photos.filter((p) => p.conversionStatus === "completed").length;
-        const totalPhotos = photos.length;
+        const displayConverted = Math.min(convertedCount, displayTotal);
+        const totalPhotos = displayTotal;
         const isConverting = convertingIds.size > 0;
-        const percent = totalPhotos > 0 ? Math.round((convertedCount / totalPhotos) * 100) : 0;
-        const allConverted = convertedCount === totalPhotos && totalPhotos > 0;
+        const percent = totalPhotos > 0 ? Math.round((displayConverted / totalPhotos) * 100) : 0;
+        const allConverted = convertedCount >= displayTotal && totalPhotos > 0;
 
         return (
           <div className="space-y-1.5">
@@ -301,11 +304,11 @@ const ApproveStep = ({
                 {isConverting ? (
                   <span className="flex items-center gap-1.5">
                     <Loader2 className="w-3.5 h-3.5 animate-spin" />
-                    Converting photos… {convertedCount} of {totalPhotos}
+                    Converting photos… {displayConverted} of {totalPhotos}
                     {conversionStartTime && completedInSession > 0 && (() => {
                       const elapsed = (Date.now() - conversionStartTime) / 1000;
                       const avgPerPhoto = elapsed / completedInSession;
-                      const remaining = Math.max(0, (totalPhotos - convertedCount) * avgPerPhoto);
+                      const remaining = Math.max(0, (totalPhotos - displayConverted) * avgPerPhoto);
                       const mins = Math.floor(remaining / 60);
                       const secs = Math.round(remaining % 60);
                       return (
@@ -321,7 +324,7 @@ const ApproveStep = ({
                     All photos converted
                   </span>
                 ) : (
-              `${convertedCount} of ${totalPhotos} photos converted`
+              `${displayConverted} of ${totalPhotos} photos converted`
                 )}
               </span>
               <span className="font-medium text-foreground">{percent}%</span>
@@ -343,25 +346,25 @@ const ApproveStep = ({
               <div className="mt-3 space-y-1.5">
                 <div className="flex items-center justify-between text-sm">
                   <span className="text-muted-foreground">
-                    {approvedCount === photos.length ? (
+                    {approvedCount >= totalPhotos ? (
                       <span className="flex items-center gap-1.5 text-green-600 dark:text-green-400">
                         <Check className="w-3.5 h-3.5" />
                         All pages approved
                       </span>
                     ) : (
-                      `${approvedCount} of ${photos.length} pages approved`
+                      `${Math.min(approvedCount, totalPhotos)} of ${totalPhotos} pages approved`
                     )}
                   </span>
-                  <span className="font-medium text-foreground">{photos.length > 0 ? Math.round((approvedCount / photos.length) * 100) : 0}%</span>
+                  <span className="font-medium text-foreground">{totalPhotos > 0 ? Math.round((Math.min(approvedCount, totalPhotos) / totalPhotos) * 100) : 0}%</span>
                 </div>
                 <div className="w-full h-2.5 bg-muted rounded-full overflow-hidden">
                   <div
                     className={`h-full rounded-full transition-all duration-500 ${
-                      approvedCount === photos.length
+                      approvedCount >= totalPhotos
                         ? "bg-green-500"
                         : "bg-primary"
                     }`}
-                    style={{ width: `${photos.length > 0 ? Math.round((approvedCount / photos.length) * 100) : 0}%` }}
+                    style={{ width: `${totalPhotos > 0 ? Math.round((Math.min(approvedCount, totalPhotos) / totalPhotos) * 100) : 0}%` }}
                   />
                 </div>
               </div>
