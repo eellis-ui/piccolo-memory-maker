@@ -408,10 +408,12 @@ const SortablePhotoCard = ({
   };
 
   const approveAll = async () => {
-    updatePhotos((prev) => prev.map((p) => ({ ...p, isApproved: true })));
+    const approved = photos.map((p) => ({ ...p, isApproved: true }));
+    updatePhotos(() => approved);
     await Promise.all(
       photos.map((p) => updateGuestPhoto(sessionId, orderId, p.id, { is_approved: true }))
     );
+    onApprovalComplete(approved);
   };
 
   const deletePhoto = async (id: string) => {
