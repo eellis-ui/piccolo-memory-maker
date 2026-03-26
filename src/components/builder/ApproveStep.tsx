@@ -654,8 +654,8 @@ const SortablePhotoCard = ({
           </button>
         </CollapsibleTrigger>
         <CollapsibleContent className="pt-4">
-          <p className="text-xs text-foreground font-semibold mb-3 flex items-center gap-1.5">
-            <GripVertical className="w-3.5 h-3.5" />
+          <p className="text-xs text-foreground font-semibold mb-3 flex items-center justify-center gap-1.5 max-w-[240px] mx-auto text-center sm:max-w-none sm:mx-0 sm:text-left sm:justify-start">
+            <GripVertical className="w-3.5 h-3.5 shrink-0" />
             Drag and drop to rearrange the page order of your book
           </p>
           <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
