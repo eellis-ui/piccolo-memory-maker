@@ -112,7 +112,12 @@ const ApproveStep = ({
       (p) => p.conversionStatus === "pending" || p.conversionStatus === "failed"
     );
     if (unconverted.length === 0) return;
-    await Promise.allSettled(unconverted.map((photo) => convertPhoto(photo.id)));
+
+    const BATCH_SIZE = 2;
+    for (let i = 0; i < unconverted.length; i += BATCH_SIZE) {
+      const batch = unconverted.slice(i, i + BATCH_SIZE);
+      await Promise.allSettled(batch.map((photo) => convertPhoto(photo.id)));
+    }
   };
 
   const toggleApproval = async (id: string) => {
