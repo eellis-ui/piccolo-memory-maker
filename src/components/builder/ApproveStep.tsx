@@ -1,6 +1,23 @@
 import { useState, useCallback } from "react";
-import { Check, RefreshCw, Loader2, Trash2, ChevronDown } from "lucide-react";
+import { Check, RefreshCw, Loader2, Trash2, ChevronDown, GripVertical } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import {
+  DndContext,
+  closestCenter,
+  KeyboardSensor,
+  PointerSensor,
+  TouchSensor,
+  useSensor,
+  useSensors,
+  type DragEndEvent,
+} from "@dnd-kit/core";
+import {
+  arrayMove,
+  SortableContext,
+  rectSortingStrategy,
+  useSortable,
+} from "@dnd-kit/sortable";
+import { CSS } from "@dnd-kit/utilities";
 
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { supabase } from "@/integrations/supabase/client";
