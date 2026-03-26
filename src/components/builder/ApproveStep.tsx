@@ -1,4 +1,4 @@
-import { useState, useCallback, useRef } from "react";
+import { useState, useCallback } from "react";
 import { Check, RefreshCw, Loader2, Trash2, ChevronDown, GripVertical, Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
@@ -30,7 +30,7 @@ import {
   updateGuestPhoto,
   deleteGuestPhoto,
   uploadGuestPhoto,
-  getSignedUrls,
+  
 } from "@/lib/guest-api";
 
 // Helper: consistent image style for A4 portrait display
