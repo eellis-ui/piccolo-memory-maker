@@ -549,10 +549,9 @@ const Navbar = () => {
             }
               {isLoggedIn && (
                 <button
-                  onClick={async () => {
+                  onClick={() => {
                     setIsMenuOpen(false);
-                    await supabase.auth.signOut();
-                    navigate("/");
+                    supabase.auth.signOut().then(() => navigate("/"));
                   }}
                   className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors px-2 py-2 text-left"
                 >
