@@ -143,7 +143,7 @@ const CoverPage = ({ photos, coverImageIds }: { photos: OrderPhoto[]; coverImage
             className="uppercase text-foreground leading-none"
             style={{
               fontFamily: "'Yuji Syuku', serif",
-              fontSize: "clamp(6px, 1.59vw, 12px)",
+              fontSize: "clamp(12px, 3.18vw, 24px)",
               letterSpacing: 0,
             }}
           >
@@ -153,7 +153,7 @@ const CoverPage = ({ photos, coverImageIds }: { photos: OrderPhoto[]; coverImage
             className="leading-none"
             style={{
               fontFamily: "Bristol, serif",
-              fontSize: "clamp(8px, 1.875vw, 14px)",
+              fontSize: "clamp(16px, 3.75vw, 28px)",
               marginTop: "2.5%",
               color: "hsl(var(--foreground))",
             }}
