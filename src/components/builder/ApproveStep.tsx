@@ -1,5 +1,5 @@
-import { useState, useCallback } from "react";
-import { Check, RefreshCw, Loader2, Trash2, ChevronDown, GripVertical } from "lucide-react";
+import { useState, useCallback, useRef } from "react";
+import { Check, RefreshCw, Loader2, Trash2, ChevronDown, GripVertical, Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   DndContext,
