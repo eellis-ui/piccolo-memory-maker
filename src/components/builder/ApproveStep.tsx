@@ -288,11 +288,14 @@ const ApproveStep = ({
 
       {/* Conversion Progress */}
       {(() => {
+        const isSharedMode = !uniquePhotos && bookCount > 1;
+        const displayTotal = isSharedMode ? Math.min(photos.length, 20) : photos.length;
         const convertedCount = photos.filter((p) => p.conversionStatus === "completed").length;
-        const totalPhotos = photos.length;
+        const displayConverted = Math.min(convertedCount, displayTotal);
+        const totalPhotos = displayTotal;
         const isConverting = convertingIds.size > 0;
-        const percent = totalPhotos > 0 ? Math.round((convertedCount / totalPhotos) * 100) : 0;
-        const allConverted = convertedCount === totalPhotos && totalPhotos > 0;
+        const percent = totalPhotos > 0 ? Math.round((displayConverted / totalPhotos) * 100) : 0;
+        const allConverted = convertedCount >= displayTotal && totalPhotos > 0;
 
         return (
           <div className="space-y-1.5">
