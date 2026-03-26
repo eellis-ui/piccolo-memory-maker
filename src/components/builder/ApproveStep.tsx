@@ -677,6 +677,29 @@ const SortablePhotoCard = ({
                     imgStyle={imgStyle}
                   />
                 ))}
+                {/* Add more photos box */}
+                {photos.length < MAX_IMAGES && (
+                  <label className="relative rounded-lg border-2 border-dashed border-border/60 flex flex-col items-center justify-center aspect-[210/297] cursor-pointer hover:border-foreground/40 hover:bg-muted/30 transition-all">
+                    <input
+                      type="file"
+                      accept="image/jpeg,image/png,image/heic,image/heif,.heic,.heif"
+                      multiple
+                      onChange={(e) => handleAddPhotos(e.target.files)}
+                      className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+                      disabled={isAddingPhotos}
+                    />
+                    {isAddingPhotos ? (
+                      <Loader2 className="w-6 h-6 text-muted-foreground animate-spin" />
+                    ) : (
+                      <>
+                        <Plus className="w-6 h-6 text-muted-foreground" />
+                        <span className="text-[10px] text-muted-foreground mt-1 font-medium">
+                          Add photos ({MAX_IMAGES - photos.length} left)
+                        </span>
+                      </>
+                    )}
+                  </label>
+                )}
               </div>
             </SortableContext>
           </DndContext>
