@@ -14,7 +14,7 @@ const HeroVideoSection = () => {
           </div>
 
           {/* Right – Text content */}
-          <div className="flex flex-col gap-6">
+          <div className="flex flex-col gap-6 text-center lg:text-left items-center lg:items-start">
             <h2 className="font-display text-3xl sm:text-4xl lg:text-5xl font-semibold text-foreground uppercase leading-tight">
               Created From the Moments You Loved the Most
             </h2>
