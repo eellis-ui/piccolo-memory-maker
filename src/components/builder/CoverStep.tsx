@@ -97,7 +97,7 @@ const CoverStep = ({ availableImages, bookAddOns, onBookAddOnsChange, onCoverCom
 
 
       {/* Header */}
-      <div>
+      <div className="text-center">
         <h2 className="font-display text-2xl font-semibold text-foreground">
           Design Your Cover
         </h2>
