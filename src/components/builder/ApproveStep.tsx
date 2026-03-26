@@ -233,7 +233,7 @@ const ApproveStep = ({
             Convert and Approve Your Images
           </h2>
           <p className="text-muted-foreground">
-            Reorder your pages. Cover page is created on next page.
+            Cover page is created on next page.
           </p>
           {!uniquePhotos && bookCount > 1 && (
             <p className="text-sm text-primary font-medium mt-1">
