@@ -31,7 +31,7 @@ const WhyPiccoloSection = () => {
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-16 items-center">
           {/* Left column */}
           <div>
-            <h2 className="font-display text-3xl sm:text-4xl lg:text-5xl font-semibold text-foreground mb-12 uppercase">
+            <h2 className="font-display text-3xl sm:text-4xl lg:text-5xl font-semibold text-foreground mb-12 uppercase text-center lg:text-left">
               Beautifully Created for Long Term Treasuring
             </h2>
 
