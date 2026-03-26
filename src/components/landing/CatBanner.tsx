@@ -2,7 +2,7 @@ import ReviewsBanner from "./ReviewsBanner";
 
 const CatBanner = () => {
   return (
-    <section className="relative w-full">
+    <section className="relative w-full leading-[0]">
       <ReviewsBanner />
       <div className="relative w-full h-[40vh] md:h-[55vh] overflow-hidden -mt-px">
         <img
