@@ -603,10 +603,6 @@ const SortablePhotoCard = ({
         );
       })()}
 
-      {/* Interactive Book Preview (when all approved) */}
-      {allApproved && (
-        <BookPreview photos={photos} onReorder={handleReorder} />
-      )}
 
       {/* Pages Grid — Drag to reorder */}
       <Collapsible defaultOpen>
