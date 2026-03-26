@@ -475,9 +475,8 @@ const Navbar = () => {
               }
               {isLoggedIn && (
                 <button
-                  onClick={async () => {
-                    await supabase.auth.signOut();
-                    navigate("/");
+                  onClick={() => {
+                    supabase.auth.signOut().then(() => navigate("/"));
                   }}
                   className="text-sm font-medium text-foreground hover:text-foreground/70 transition-colors"
                 >
