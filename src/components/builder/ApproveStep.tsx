@@ -496,9 +496,7 @@ const SortablePhotoCard = ({
     }
   }, [photos.length, sessionId, orderId, updatePhotos]);
 
-  const handleContinue = () => {
-    onApprovalComplete(photos);
-  };
+
 
   const hasUnconverted = photos.some(
     (p) => p.conversionStatus === "pending" || p.conversionStatus === "failed"
