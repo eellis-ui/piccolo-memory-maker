@@ -6,25 +6,8 @@ const corsHeaders = {
     "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version",
 };
 
-const MAX_RETRIES = 3;
-const RETRY_DELAY_MS = 2000;
-
-// Simple in-memory rate limiter
-const RATE_LIMIT_WINDOW = 60000;
-const MAX_REQUESTS_PER_WINDOW = 25;
-const rateLimitMap = new Map<string, { count: number; resetAt: number }>();
-
-function checkRateLimit(key: string): boolean {
-  const now = Date.now();
-  const entry = rateLimitMap.get(key);
-  if (!entry || now > entry.resetAt) {
-    rateLimitMap.set(key, { count: 1, resetAt: now + RATE_LIMIT_WINDOW });
-    return true;
-  }
-  if (entry.count >= MAX_REQUESTS_PER_WINDOW) return false;
-  entry.count++;
-  return true;
-}
+const MAX_RETRIES = 2;
+const RETRY_DELAY_MS = 1500;
 
 function sleep(ms: number) {
   return new Promise((resolve) => setTimeout(resolve, ms));
@@ -50,14 +33,24 @@ Deno.serve(async (req) => {
       });
     }
 
-    // --- Authentication: support both user tokens and guest sessions ---
-    let rateLimitKey: string;
+    // --- Fetch photo with order info in a single query for auth + conversion ---
+    const { data: photo, error: photoError } = await supabase
+      .from("order_photos")
+      .select("*, orders!inner(id, user_id, builder_session_id)")
+      .eq("id", photoId)
+      .single() as { data: any; error: any };
 
+    if (photoError || !photo) {
+      return new Response(JSON.stringify({ error: "Photo not found" }), {
+        status: 404, headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
+    // --- Authentication: support both user tokens and guest sessions ---
     const authHeader = req.headers.get("Authorization");
     const token = authHeader?.replace("Bearer ", "") ?? "";
-
-    // Try real user auth first
     let isAuthed = false;
+
     if (token && token !== Deno.env.get("SUPABASE_ANON_KEY")) {
       const authClient = createClient(supabaseUrl, Deno.env.get("SUPABASE_ANON_KEY")!, {
         global: { headers: { Authorization: authHeader! } },
@@ -65,26 +58,12 @@ Deno.serve(async (req) => {
       const { data: claimsData, error: claimsError } = await authClient.auth.getUser(token);
       if (!claimsError && claimsData?.user) {
         const userId = claimsData.user.id;
-        // Verify ownership via user_id
-        const { data: photo, error: photoError } = await supabase
-          .from("order_photos")
-          .select("*, orders!inner(id, user_id)")
-          .eq("id", photoId)
-          .single() as { data: any; error: any };
-
-        if (photoError || !photo) {
-          return new Response(JSON.stringify({ error: "Photo not found" }), {
-            status: 404, headers: { ...corsHeaders, "Content-Type": "application/json" },
-          });
-        }
-        // If the order has a user_id, it must match; if null (guest order), fall through to session auth
         if (photo.orders.user_id !== null && photo.orders.user_id !== userId) {
           return new Response(JSON.stringify({ error: "Forbidden" }), {
             status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" },
           });
         }
         if (photo.orders.user_id === userId) {
-          rateLimitKey = userId;
           isAuthed = true;
         }
       }
@@ -97,48 +76,14 @@ Deno.serve(async (req) => {
           status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" },
         });
       }
-
-      // Verify photo belongs to an order with this sessionId
-      const { data: photo, error: photoError } = await supabase
-        .from("order_photos")
-        .select("*, orders!inner(id, builder_session_id)")
-        .eq("id", photoId)
-        .single() as { data: any; error: any };
-
-      if (photoError || !photo) {
-        return new Response(JSON.stringify({ error: "Photo not found" }), {
-          status: 404, headers: { ...corsHeaders, "Content-Type": "application/json" },
-        });
-      }
       if (photo.orders.builder_session_id !== sessionId) {
         return new Response(JSON.stringify({ error: "Forbidden" }), {
           status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" },
         });
       }
-      rateLimitKey = `session:${sessionId}`;
     }
 
-    // --- Rate limiting ---
-    if (!checkRateLimit(rateLimitKey!)) {
-      return new Response(JSON.stringify({ error: "Rate limit exceeded. Please try again later." }), {
-        status: 429, headers: { ...corsHeaders, "Content-Type": "application/json" },
-      });
-    }
-
-    // Get photo record (may already be fetched above, but fetch cleanly for conversion logic)
-    const { data: photo, error: photoError } = await supabase
-      .from("order_photos")
-      .select("*")
-      .eq("id", photoId)
-      .single();
-
-    if (photoError || !photo) {
-      return new Response(JSON.stringify({ error: "Photo not found" }), {
-        status: 404, headers: { ...corsHeaders, "Content-Type": "application/json" },
-      });
-    }
-
-    const isLandscape = photo?.is_landscape ?? false;
+    const isLandscape = photo.is_landscape ?? false;
 
     // Update status to converting
     await supabase
