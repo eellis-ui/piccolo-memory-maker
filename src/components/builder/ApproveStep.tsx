@@ -652,10 +652,10 @@ const SortablePhotoCard = ({
           </button>
         </CollapsibleTrigger>
         <CollapsibleContent className="pt-4">
-          <p className="text-xs text-foreground font-semibold mb-3 flex items-center justify-center gap-1.5 max-w-[240px] mx-auto text-center sm:max-w-none sm:mx-0 sm:text-left sm:justify-start">
+          <div className="bg-foreground text-background rounded-lg px-4 py-2 mb-3 inline-flex items-center justify-center gap-1.5 max-w-[260px] mx-auto sm:max-w-none sm:mx-0">
             <GripVertical className="w-3.5 h-3.5 shrink-0" />
-            Drag and drop to rearrange the page order of your book
-          </p>
+            <span className="text-xs font-semibold">Drag and drop to rearrange the page order of your book</span>
+          </div>
           <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
             <SortableContext items={photos.map((p) => p.id)} strategy={rectSortingStrategy}>
               <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-2.5">
