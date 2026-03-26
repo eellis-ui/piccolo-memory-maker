@@ -58,6 +58,7 @@ interface BasketContextType {
   uniquePhotos: boolean;
   setUniquePhotos: (val: boolean) => void;
   toggleItemUniquePhotos: (id: string) => void;
+  toggleItemPersonalizeCover: (id: string) => void;
   uniquePhotosPrice: number;
   activeSessionId: string | null;
   setActiveSessionId: (id: string | null) => void;
@@ -96,6 +97,11 @@ export const BasketProvider = ({ children }: { children: ReactNode }) => {
   const toggleItemUniquePhotos = (id: string) => {
     setItems((prev) =>
       prev.map((i) => (i.id === id ? { ...i, uniquePhotos: !i.uniquePhotos } : i))
+    );
+  };
+  const toggleItemPersonalizeCover = (id: string) => {
+    setItems((prev) =>
+      prev.map((i) => (i.id === id ? { ...i, personalizeCover: !i.personalizeCover } : i))
     );
   };
   const [activeSessionId, setActiveSessionId] = useState<string | null>(null);
@@ -192,7 +198,7 @@ export const BasketProvider = ({ children }: { children: ReactNode }) => {
         addOns, setAddOns,
         addOnPrice: ADD_ON_PRICE,
         addOnsTotal,
-        uniquePhotos, setUniquePhotos, toggleItemUniquePhotos,
+        uniquePhotos, setUniquePhotos, toggleItemUniquePhotos, toggleItemPersonalizeCover,
         uniquePhotosPrice: items.filter((i) => i.uniquePhotos).length * UNIQUE_PHOTOS_PRICE,
         activeSessionId, setActiveSessionId,
         isCartOpen, setIsCartOpen,
