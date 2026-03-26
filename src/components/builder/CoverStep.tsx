@@ -121,7 +121,7 @@ const CoverStep = ({ availableImages, bookAddOns, onBookAddOnsChange, onCoverCom
           <div className="bg-[#fffaf3] rounded-lg p-4 shadow-soft">
             <div
               className="relative bg-[#fffaf3] overflow-hidden flex flex-col"
-              style={{ aspectRatio: "3 / 4" }}
+              style={{ aspectRatio: "3 / 4", containerType: "inline-size" }}
             >
               {/* ── Top space: logo centered ── */}
               <div className="flex-1 flex items-center justify-center min-h-0">
@@ -165,7 +165,7 @@ const CoverStep = ({ availableImages, bookAddOns, onBookAddOnsChange, onCoverCom
                     className="uppercase text-foreground leading-none"
                     style={{
                       fontFamily: "'Yuji Syuku', serif",
-                      fontSize: "14px",
+                      fontSize: "3.9cqi",
                       letterSpacing: 0,
                     }}
                   >
@@ -177,7 +177,7 @@ const CoverStep = ({ availableImages, bookAddOns, onBookAddOnsChange, onCoverCom
                     className="leading-none"
                     style={{
                       fontFamily: "Bristol, serif",
-                      fontSize: "16.8px",
+                      fontSize: "4.7cqi",
                       marginTop: "2.5%",
                       color: "hsl(var(--foreground))",
                     }}
