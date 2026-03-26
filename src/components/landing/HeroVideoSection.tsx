@@ -64,7 +64,7 @@ const HeroVideoSection = () => {
                 </div>
                 <div className="text-center">
                   <p className="font-display text-2xl sm:text-3xl text-foreground uppercase">
-                    Up to 20
+                    Up to<br className="sm:hidden" /> 20
                   </p>
                   <p className="text-muted-foreground text-sm mt-1">
                     Memories per book
