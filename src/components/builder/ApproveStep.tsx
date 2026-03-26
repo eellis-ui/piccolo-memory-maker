@@ -64,13 +64,31 @@ const ApproveStep = ({
     setConvertingIds((prev) => new Set(prev).add(photoId));
 
     try {
+      console.log(`[convert] Starting conversion for photo ${photoId}, session ${sessionId}`);
       const { data, error } = await supabase.functions.invoke("convert-to-lineart", {
         body: { photoId, sessionId },
       });
 
+      console.log(`[convert] Response for ${photoId}:`, { data, error });
+
       if (error) {
-        // Extract message from FunctionsHttpError body if available
-        const msg = (error as any)?.context?.error || error.message || "Conversion failed";
+        // Try to parse the error body for a meaningful message
+        let msg = "Conversion failed";
+        try {
+          if (error instanceof Response || (error as any)?.context) {
+            const body = (error as any)?.context;
+            if (body && typeof body === "object" && body.error) {
+              msg = body.error;
+            } else if (typeof body === "string") {
+              const parsed = JSON.parse(body);
+              msg = parsed.error || msg;
+            }
+          } else {
+            msg = error.message || msg;
+          }
+        } catch {
+          msg = error.message || msg;
+        }
         throw new Error(msg);
       }
 
@@ -92,6 +110,7 @@ const ApproveStep = ({
         throw new Error(data?.error || "Conversion failed");
       }
     } catch (err: any) {
+      console.error(`[convert] Error for ${photoId}:`, err);
       toast.error(`Conversion failed: ${err.message}`);
       updatePhotos((prev) =>
         prev.map((p) =>
@@ -105,7 +124,7 @@ const ApproveStep = ({
         return next;
       });
     }
-  }, [updatePhotos]);
+  }, [sessionId, updatePhotos]);
 
   const convertAll = async () => {
     const unconverted = photos.filter(
