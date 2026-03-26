@@ -414,7 +414,7 @@ const ApproveStep = ({
                           type="button"
                           variant="ghost"
                           size="sm"
-                          onClick={() => void convertPhoto(photo.id)}
+                          onClick={() => void convertSinglePhoto(photo.id)}
                           className="rounded-xl"
                         >
                           <RefreshCw className="w-4 h-4 mr-1" />
@@ -432,7 +432,7 @@ const ApproveStep = ({
                             type="button"
                             variant="ghost"
                             size="sm"
-                            onClick={() => void convertPhoto(photo.id)}
+                            onClick={() => void convertSinglePhoto(photo.id)}
                             disabled={isConverting}
                             className="rounded-xl text-muted-foreground"
                           >
@@ -450,7 +450,7 @@ const ApproveStep = ({
                             type="button"
                             variant="ghost"
                             size="sm"
-                            onClick={() => void convertPhoto(photo.id)}
+                            onClick={() => void convertSinglePhoto(photo.id)}
                             className="rounded-xl text-destructive"
                           >
                             <RefreshCw className="w-4 h-4 mr-1" />
