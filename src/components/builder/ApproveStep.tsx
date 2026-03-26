@@ -556,8 +556,6 @@ const SortablePhotoCard = ({
         </div>
       </div>
 
-      {/* Digital Download Upsell */}
-      <DigitalUpsellBanner variant="compact" maxCopies={1} />
 
       {/* Conversion Progress */}
       {(() => {
