@@ -1,7 +1,7 @@
 import { Images, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
+import { Switch } from "@/components/ui/switch";
 import { useBasket, UNIQUE_PHOTOS_PRICE } from "@/contexts/BasketContext";
 
 const UniquePhotosUpsellBanner = () => {
@@ -23,23 +23,18 @@ const UniquePhotosUpsellBanner = () => {
               <Images className="w-4 h-4 text-primary" />
             </div>
             <div>
-              <p className="font-display text-sm font-semibold text-foreground flex items-center gap-2">
+              <p className="font-display text-sm font-semibold text-foreground">
                 20 Unique Photos Per Book
-                <Badge className="text-xs bg-primary text-primary-foreground border-0">Added</Badge>
               </p>
               <p className="text-xs text-foreground">
                 Each book will use different photos
               </p>
             </div>
           </div>
-          <Button
-            size="sm"
-            variant="ghost"
-            className="rounded-lg text-muted-foreground hover:text-destructive shrink-0 text-xs"
-            onClick={() => setUniquePhotos(false)}
-          >
-            Remove
-          </Button>
+          <Switch
+            checked={true}
+            onCheckedChange={() => setUniquePhotos(false)}
+          />
         </CardContent>
       </Card>
     );
