@@ -427,6 +427,7 @@ const ApproveStep = ({
 
                     {hasConverted && (
                       <Button
+                        type="button"
                         variant={photo.isApproved ? "default" : "outline"}
                         size="sm"
                         onClick={() => toggleApproval(photo.id)}
@@ -446,7 +447,7 @@ const ApproveStep = ({
 
       {/* Navigation */}
       <div className="flex justify-start pt-4">
-        <Button variant="outline" onClick={onBack} className="rounded-2xl">
+        <Button type="button" variant="outline" onClick={onBack} className="rounded-2xl">
           Back to Upload
         </Button>
       </div>
