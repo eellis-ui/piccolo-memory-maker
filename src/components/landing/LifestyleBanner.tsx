@@ -16,7 +16,7 @@ const LifestyleBanner = () => {
         {/* Content */}
         <div className="relative z-10 flex items-center justify-center h-full min-h-[50vh] md:min-h-[60vh] px-4">
           <div className="text-center space-y-5">
-            <p className="text-xs sm:text-sm tracking-[0.3em] uppercase text-background/70">
+            <p className="text-xs sm:text-sm tracking-[0.3em] uppercase text-background/80 font-medium">
               Limited Time Only
             </p>
             <h2 className="font-display text-4xl sm:text-5xl md:text-6xl lg:text-7xl uppercase leading-tight text-background">
@@ -25,7 +25,7 @@ const LifestyleBanner = () => {
             <p className="text-lg sm:text-xl md:text-2xl font-display uppercase tracking-wide text-background">
               Up to <span className="text-[#A8C686] drop-shadow-[0_0_12px_rgba(168,198,134,0.6)]">40% Off</span> All Books
             </p>
-            <p className="text-sm sm:text-base text-background/70 max-w-md mx-auto">
+            <p className="text-sm sm:text-base text-background/80 font-medium max-w-md mx-auto">
               Turn your favorite spring memories into a personalized coloring book — at our best price of the year.
             </p>
             <Button
