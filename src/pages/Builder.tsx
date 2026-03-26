@@ -417,7 +417,7 @@ const Builder = () => {
     <div className="min-h-screen bg-background">
       <Navbar />
 
-      <main className="pt-[60px] sm:pt-24 pb-16">
+      <main className="pt-[48px] sm:pt-24 pb-16">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
 
           {/* ── Post-checkout: Thank You + Create Account ── */}
@@ -453,7 +453,7 @@ const Builder = () => {
             });
 
             return (
-              <div className="max-w-2xl mx-auto mb-8">
+              <div className="max-w-2xl mx-auto mb-4">
                 <div className="flex gap-2 p-1 bg-foreground rounded-lg">
                   {groups.map((group, gi) => {
                     const isShared = !group.unique;
