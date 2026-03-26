@@ -304,7 +304,7 @@ const ApproveStep = ({
                 {isConverting ? (
                   <span className="flex items-center gap-1.5">
                     <Loader2 className="w-3.5 h-3.5 animate-spin" />
-                    Converting photos… {convertedCount} of {totalPhotos}
+                    Converting photos… {displayConverted} of {totalPhotos}
                     {conversionStartTime && completedInSession > 0 && (() => {
                       const elapsed = (Date.now() - conversionStartTime) / 1000;
                       const avgPerPhoto = elapsed / completedInSession;
