@@ -209,8 +209,9 @@ const ApproveStep = ({
           </Badge>
           {hasUnconverted && (
             <Button
+              type="button"
               variant="outline"
-              onClick={convertAll}
+              onClick={() => void convertAll()}
               disabled={convertingIds.size > 0}
               className="rounded-2xl"
             >
