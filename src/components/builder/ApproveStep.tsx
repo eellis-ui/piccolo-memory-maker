@@ -442,14 +442,6 @@ const SortablePhotoCard = ({
     useSensor(KeyboardSensor)
   );
 
-  const handleReorder = async (reorderedPhotos: OrderPhoto[]) => {
-    updatePhotos(() => reorderedPhotos);
-    await Promise.all(
-      reorderedPhotos.map((p, i) =>
-        updateGuestPhoto(sessionId, orderId, p.id, { page_position: i })
-      )
-    );
-  };
 
   const handleContinue = () => {
     onApprovalComplete(photos);
