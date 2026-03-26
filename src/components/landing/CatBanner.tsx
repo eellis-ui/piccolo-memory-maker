@@ -2,9 +2,9 @@ import ReviewsBanner from "./ReviewsBanner";
 
 const CatBanner = () => {
   return (
-    <section className="relative w-full leading-[0]">
+    <section className="relative w-full flex flex-col">
       <ReviewsBanner />
-      <div className="relative w-full h-[40vh] md:h-[55vh] overflow-hidden -mt-px">
+      <div className="relative w-full h-[40vh] md:h-[55vh] overflow-hidden">
         <img
           src="/images/banner-cat.png"
           alt="Woman photographing a cat, with the photo converted to a coloring page line art"

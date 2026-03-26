@@ -11,7 +11,7 @@ const items = [
 
 const ReviewsBanner = () => {
   return (
-    <div className="bg-foreground overflow-hidden py-3">
+    <div className="bg-foreground overflow-hidden py-3 mb-0 leading-none">
       <div className="flex animate-[scroll_40s_linear_infinite] w-max">
         {[...items, ...items].map((item, i) => (
           <div key={i} className="flex items-center gap-3.5 px-7 whitespace-nowrap">
