@@ -61,18 +61,23 @@ const ApproveStep = ({
 
   const convertPhoto = useCallback(async (photoId: string) => {
     setRetryCounts((prev) => ({ ...prev, [photoId]: (prev[photoId] ?? 0) + 1 }));
-    setConvertingIds((prev) => new Set(prev).add(photoId));
+    // Don't add to convertingIds here — convertAll handles that for batch UX
 
     try {
       console.log(`[convert] Starting conversion for photo ${photoId}, session ${sessionId}`);
+
+      // Add a 90-second timeout so we don't hang forever
+      const controller = new AbortController();
+      const timeout = setTimeout(() => controller.abort(), 90000);
+
       const { data, error } = await supabase.functions.invoke("convert-to-lineart", {
         body: { photoId, sessionId },
       });
 
+      clearTimeout(timeout);
       console.log(`[convert] Response for ${photoId}:`, { data, error });
 
       if (error) {
-        // Try to parse the error body for a meaningful message
         let msg = "Conversion failed";
         try {
           if (error instanceof Response || (error as any)?.context) {
@@ -106,23 +111,20 @@ const ApproveStep = ({
           )
         );
         toast.success("Photo converted successfully!");
+        return true;
       } else {
         throw new Error(data?.error || "Conversion failed");
       }
     } catch (err: any) {
       console.error(`[convert] Error for ${photoId}:`, err);
-      toast.error(`Conversion failed: ${err.message}`);
+      const msg = err.name === "AbortError" ? "Conversion timed out — please retry" : err.message;
+      toast.error(`Conversion failed: ${msg}`);
       updatePhotos((prev) =>
         prev.map((p) =>
           p.id === photoId ? { ...p, conversionStatus: "failed" } : p
         )
       );
-    } finally {
-      setConvertingIds((prev) => {
-        const next = new Set(prev);
-        next.delete(photoId);
-        return next;
-      });
+      return false;
     }
   }, [sessionId, updatePhotos]);
 
@@ -130,11 +132,49 @@ const ApproveStep = ({
     const unconverted = photos.filter(
       (p) => p.conversionStatus === "pending" || p.conversionStatus === "failed"
     );
-    console.log(`[convertAll] Starting conversion of ${unconverted.length} photos simultaneously`);
     if (unconverted.length === 0) return;
-    await Promise.allSettled(unconverted.map((photo) => convertPhoto(photo.id)));
+
+    // Mark ALL photos as converting upfront so UI shows all spinners immediately
+    const allIds = new Set(unconverted.map((p) => p.id));
+    setConvertingIds(allIds);
+    console.log(`[convertAll] Starting conversion of ${unconverted.length} photos (batches of 3)`);
+
+    // Process in batches of 3 to avoid overwhelming the edge function worker
+    const BATCH_SIZE = 3;
+    for (let i = 0; i < unconverted.length; i += BATCH_SIZE) {
+      const batch = unconverted.slice(i, i + BATCH_SIZE);
+      console.log(`[convertAll] Batch ${Math.floor(i / BATCH_SIZE) + 1}: ${batch.map(p => p.id.slice(0, 8)).join(', ')}`);
+      await Promise.allSettled(batch.map((photo) => convertPhoto(photo.id)));
+
+      // Remove completed/failed photos from converting set
+      setConvertingIds((prev) => {
+        const next = new Set(prev);
+        batch.forEach((p) => {
+          // Only remove if the photo is no longer pending
+          const current = photos.find((ph) => ph.id === p.id);
+          if (!current || current.conversionStatus !== "pending") {
+            next.delete(p.id);
+          }
+        });
+        return next;
+      });
+    }
+
+    // Clear all converting IDs when done
+    setConvertingIds(new Set());
     console.log(`[convertAll] All conversions complete`);
   };
+
+  // Single photo convert (for individual Convert/Retry buttons)
+  const convertSinglePhoto = useCallback(async (photoId: string) => {
+    setConvertingIds((prev) => new Set(prev).add(photoId));
+    await convertPhoto(photoId);
+    setConvertingIds((prev) => {
+      const next = new Set(prev);
+      next.delete(photoId);
+      return next;
+    });
+  }, [convertPhoto]);
 
   const toggleApproval = async (id: string) => {
     const photo = photos.find((p) => p.id === id);
