@@ -6,8 +6,8 @@ const corsHeaders = {
     "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version",
 };
 
-const MAX_RETRIES = 5;
-const RETRY_DELAY_MS = 5000;
+const MAX_RETRIES = 3;
+const RETRY_DELAY_MS = 2000;
 
 // Simple in-memory rate limiter
 const RATE_LIMIT_WINDOW = 60000;
@@ -194,7 +194,7 @@ Output ONLY the converted image, no text.`;
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          model: "google/gemini-3-pro-image-preview",
+          model: "google/gemini-3.1-flash-image-preview",
           modalities: ["image", "text"],
           messages: [
             {
