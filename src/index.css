@@ -141,6 +141,12 @@
 }
 
 /* Hide Elfsight branding */
-a[href*="elfsight.com"] {
+a[href*="elfsight.com"],
+[class*="eapps-instagram-feed-posts-grid-load-more"],
+[class*="eapps-link"],
+[class*="elfsight-app-"] > div > div:last-child a[href*="elfsight"] {
   display: none !important;
+  visibility: hidden !important;
+  height: 0 !important;
+  overflow: hidden !important;
 }
