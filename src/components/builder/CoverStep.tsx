@@ -159,13 +159,11 @@ const CoverStep = ({ availableImages, bookAddOns, onBookAddOnsChange, onCoverCom
                 <div className="flex flex-col items-end" style={{ paddingTop: "2.5%" }}>
                   {/* "FOR KIDS AND ADULTS ALIKE" */}
                   <p
-                    className="uppercase text-foreground leading-none text-right"
+                    className="uppercase text-foreground leading-none"
                     style={{
                       fontFamily: "'Yuji Syuku', serif",
-                      fontSize: "clamp(6px, 1.05vw, 12px)",
+                      fontSize: "1.59vw",
                       letterSpacing: 0,
-                      wordBreak: "keep-all",
-                      overflowWrap: "normal",
                     }}
                   >
                     {subtitle}

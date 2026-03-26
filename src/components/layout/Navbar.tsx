@@ -475,8 +475,9 @@ const Navbar = () => {
               }
               {isLoggedIn && (
                 <button
-                  onClick={() => {
-                    supabase.auth.signOut().then(() => navigate("/"));
+                  onClick={async () => {
+                    await supabase.auth.signOut();
+                    navigate("/");
                   }}
                   className="text-sm font-medium text-foreground hover:text-foreground/70 transition-colors"
                 >
@@ -549,9 +550,10 @@ const Navbar = () => {
             }
               {isLoggedIn && (
                 <button
-                  onClick={() => {
+                  onClick={async () => {
                     setIsMenuOpen(false);
-                    supabase.auth.signOut().then(() => navigate("/"));
+                    await supabase.auth.signOut();
+                    navigate("/");
                   }}
                   className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors px-2 py-2 text-left"
                 >
