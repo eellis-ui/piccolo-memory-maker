@@ -1,4 +1,5 @@
 import { useState } from "react";
+import DigitalUpsellBanner from "./DigitalUpsellBanner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
@@ -93,6 +94,9 @@ const CoverStep = ({ availableImages, bookAddOns, onBookAddOnsChange, onCoverCom
 
   return (
     <div className="space-y-8">
+      {/* Digital Download Upsell */}
+      <DigitalUpsellBanner variant="compact" maxCopies={1} />
+
       {/* Header */}
       <div>
         <h2 className="font-display text-2xl font-semibold text-foreground">
