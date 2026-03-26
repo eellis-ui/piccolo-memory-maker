@@ -25,9 +25,9 @@ const Contact = () => {
     <div className="min-h-screen bg-background">
       <Navbar />
       <main className="pt-16">
-        <section className="py-20 bg-background">
+        <section className="py-12 sm:py-20 bg-background">
           <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="max-w-2xl mx-auto">
+            <div className="max-w-2xl mx-auto text-center sm:text-left">
               <h1 className="font-display text-3xl sm:text-4xl font-bold text-foreground mb-4">
                 WE WOULD LOVE TO HEAR FROM YOU.
               </h1>
