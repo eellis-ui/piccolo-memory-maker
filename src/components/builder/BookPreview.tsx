@@ -104,7 +104,7 @@ const CoverPage = ({ photos, coverImageIds }: { photos: OrderPhoto[]; coverImage
   return (
     <div
       className="w-full h-full flex flex-col overflow-hidden"
-      style={{ backgroundColor: "#fffaf3" }}
+      style={{ backgroundColor: "#fffaf3", containerType: "inline-size" }}
     >
       {/* Logo */}
       <div className="flex-1 flex items-center justify-center min-h-0">
@@ -125,7 +125,7 @@ const CoverPage = ({ photos, coverImageIds }: { photos: OrderPhoto[]; coverImage
                 className="w-full h-full object-cover object-center"
               />
             ) : (
-              <div className="w-full h-full flex items-center justify-center text-muted-foreground" style={{ fontSize: "1.2vw" }}>
+              <div className="w-full h-full flex items-center justify-center text-muted-foreground" style={{ fontSize: "1.2cqi" }}>
                 {idx + 1}
               </div>
             )}
@@ -143,7 +143,7 @@ const CoverPage = ({ photos, coverImageIds }: { photos: OrderPhoto[]; coverImage
             className="uppercase text-foreground leading-none"
             style={{
               fontFamily: "'Yuji Syuku', serif",
-              fontSize: "clamp(12px, 3.18vw, 24px)",
+              fontSize: "3.9cqi",
               letterSpacing: 0,
             }}
           >
@@ -153,7 +153,7 @@ const CoverPage = ({ photos, coverImageIds }: { photos: OrderPhoto[]; coverImage
             className="leading-none"
             style={{
               fontFamily: "Bristol, serif",
-              fontSize: "clamp(16px, 3.75vw, 28px)",
+              fontSize: "4.7cqi",
               marginTop: "2.5%",
               color: "hsl(var(--foreground))",
             }}
