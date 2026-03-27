@@ -134,7 +134,7 @@ const Builder = () => {
                   bottomTitle: order.title_page_text === "My Piccolo'd Colouring Book" || order.title_page_text === "My Piccolo'd Coloring Book" ? "color your memories" : order.title_page_text,
                 },
                 digitalDownload: false,
-                coverData: isCompleted ? { imageIds: [order.cover_image_id, order.cover_image_id], title: order.title_page_text, subtitle: "" } : null,
+                coverData: isCompleted ? { imageIds: [order.cover_image_id, order.cover_image_id_2 || order.cover_image_id], title: order.title_page_text, subtitle: "" } : null,
                 completed: isCompleted,
               } as BookState;
             });
@@ -201,7 +201,7 @@ const Builder = () => {
                     bottomTitle: order.title_page_text === "My Piccolo'd Colouring Book" || order.title_page_text === "My Piccolo'd Coloring Book" ? "color your memories" : order.title_page_text,
                   },
                   digitalDownload: false,
-                  coverData: isCompleted ? { imageIds: [order.cover_image_id, order.cover_image_id], title: order.title_page_text, subtitle: "" } : null,
+                  coverData: isCompleted ? { imageIds: [order.cover_image_id, order.cover_image_id_2 || order.cover_image_id], title: order.title_page_text, subtitle: "" } : null,
                   completed: isCompleted,
                 } as BookState;
               });
