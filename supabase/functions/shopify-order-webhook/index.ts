@@ -53,7 +53,7 @@ const A4_H = 297;
 async function generateAndUploadPdf(admin: ReturnType<typeof adminClient>, orderId: string): Promise<string | null> {
   const { data: order } = await admin
     .from("orders")
-    .select("title_page_text, title_page_enabled, dedication_page_text, dedication_page_enabled, cover_image_id")
+    .select("title_page_text, title_page_enabled, dedication_page_text, dedication_page_enabled, cover_image_id, cover_image_id_2")
     .eq("id", orderId)
     .single();
 
@@ -83,22 +83,105 @@ async function generateAndUploadPdf(admin: ReturnType<typeof adminClient>, order
     doc.text(lines, A4_W / 2, A4_H / 2, { align: "center" });
   }
 
-  // Front cover
-  if (order?.cover_image_id) {
-    const { data: coverPhoto } = await admin
-      .from("order_photos")
-      .select("converted_path, original_path")
-      .eq("id", order.cover_image_id)
-      .single();
-    if (coverPhoto) {
-      const path = coverPhoto.converted_path || coverPhoto.original_path;
-      const b64 = await downloadAsBase64(admin, path);
-      if (b64) addImagePage(b64);
+  // 1. Front cover — composite layout matching admin PDF
+  firstPage = false; // first page is the cover
+
+  // Cream background
+  doc.setFillColor(255, 250, 243);
+  doc.rect(0, 0, A4_W, A4_H, "F");
+
+  // Logo text
+  const logoY = 55;
+  doc.setFontSize(36);
+  doc.setFont("helvetica", "bold");
+  doc.setTextColor(40, 40, 40);
+  doc.text("piccoload", A4_W / 2, logoY, { align: "center" });
+  doc.setFontSize(10);
+  doc.setFont("helvetica", "normal");
+  doc.setTextColor(120, 120, 120);
+  doc.text("FROM PIC TO PEN", A4_W / 2, logoY + 10, { align: "center" });
+
+  // 2x2 photo grid
+  const gridMargin = A4_W * 0.0875;
+  const gridW = A4_W - gridMargin * 2;
+  const cellSize = gridW / 2;
+  const gridTop = 80;
+
+  const coverPhotoId1 = order?.cover_image_id;
+  const coverPhotoId2 = order?.cover_image_id_2 || coverPhotoId1;
+
+  let coverPhoto1Data: { original_path: string; converted_path: string | null } | null = null;
+  let coverPhoto2Data: { original_path: string; converted_path: string | null } | null = null;
+
+  if (coverPhotoId1) {
+    const { data } = await admin.from("order_photos").select("original_path, converted_path").eq("id", coverPhotoId1).single();
+    coverPhoto1Data = data;
+  }
+  if (coverPhotoId2 && coverPhotoId2 !== coverPhotoId1) {
+    const { data } = await admin.from("order_photos").select("original_path, converted_path").eq("id", coverPhotoId2).single();
+    coverPhoto2Data = data;
+  } else if (coverPhotoId2 === coverPhotoId1) {
+    coverPhoto2Data = coverPhoto1Data;
+  }
+
+  const gridPaths = [
+    coverPhoto1Data?.original_path ?? null,
+    coverPhoto1Data?.converted_path ?? null,
+    coverPhoto2Data?.converted_path ?? null,
+    coverPhoto2Data?.original_path ?? null,
+  ];
+
+  const gridPositions = [
+    [gridMargin, gridTop],
+    [gridMargin + cellSize, gridTop],
+    [gridMargin, gridTop + cellSize],
+    [gridMargin + cellSize, gridTop + cellSize],
+  ];
+
+  // Draw placeholder backgrounds
+  doc.setFillColor(237, 232, 224);
+  for (const [x, y] of gridPositions) {
+    doc.rect(x, y, cellSize, cellSize, "F");
+  }
+
+  // Draw images over placeholders
+  for (let i = 0; i < 4; i++) {
+    const path = gridPaths[i];
+    if (!path || path === "deleted") continue;
+    const b64 = await downloadAsBase64(admin, path);
+    if (b64) {
+      try {
+        doc.addImage(`data:image/jpeg;base64,${b64}`, "JPEG", gridPositions[i][0], gridPositions[i][1], cellSize, cellSize);
+      } catch (e) {
+        console.warn(`Failed to add cover grid image ${i}:`, e);
+      }
     }
   }
 
-  // Back cover
-  if (!firstPage) doc.addPage(); else firstPage = false;
+  // Bottom text
+  const textRightX = A4_W - gridMargin;
+  const textTopY = gridTop + cellSize * 2 + 12;
+
+  const subtitle = order?.dedication_page_enabled && order?.dedication_page_text?.trim()
+    ? order.dedication_page_text.trim().toUpperCase()
+    : "FOR KIDS AND ADULTS ALIKE";
+
+  doc.setFontSize(14);
+  doc.setFont("helvetica", "normal");
+  doc.setTextColor(40, 40, 40);
+  doc.text(subtitle, textRightX, textTopY, { align: "right" });
+
+  const bottomTitle = order?.dedication_page_enabled && order?.dedication_page_text?.trim()
+    ? order.dedication_page_text.trim()
+    : "color your memories";
+
+  doc.setFontSize(18);
+  doc.setFont("helvetica", "italic");
+  doc.setTextColor(40, 40, 40);
+  doc.text(bottomTitle, textRightX, textTopY + 10, { align: "right" });
+
+  // 2. Back cover
+  doc.addPage();
   doc.setFillColor(255, 255, 255);
   doc.rect(0, 0, A4_W, A4_H, "F");
   doc.setFontSize(10);
@@ -106,20 +189,22 @@ async function generateAndUploadPdf(admin: ReturnType<typeof adminClient>, order
   doc.setTextColor(180, 180, 180);
   doc.text("piccolo'd", A4_W / 2, A4_H - 10, { align: "center" });
 
-  // Title page
+  // 3. Title page
   if (order?.title_page_enabled && order?.title_page_text) {
     addTextPage(order.title_page_text, 28, "bold");
   }
 
-  // Dedication page
+  // 4. Dedication page
   if (order?.dedication_page_enabled && order?.dedication_page_text) {
     addTextPage(order.dedication_page_text, 16, "italic");
   }
 
-  // Photo pages
+  // 5. Line art pages in order, skipping cover images
+  const coverIds = new Set([coverPhotoId1, coverPhotoId2].filter(Boolean));
   for (const photo of photos) {
-    if (order?.cover_image_id && photo.id === order.cover_image_id) continue;
+    if (coverIds.has(photo.id)) continue;
     const path = photo.converted_path || photo.original_path;
+    if (!path || path === "deleted") continue;
     const b64 = await downloadAsBase64(admin, path);
     if (!b64) continue;
     addImagePage(b64);
@@ -291,7 +376,30 @@ Deno.serve(async (req) => {
 
       await admin.from("orders").update(updates).eq("id", order.id);
 
-      // Delete original uploaded photos from storage (keep only line-art)
+      // Generate and email PDF BEFORE deleting originals (cover grid needs original photos)
+      if (hasDigitalDownload && customerEmail) {
+        try {
+          const pdfPath = await generateAndUploadPdf(admin, order.id);
+          if (pdfPath) {
+            await admin
+              .from("orders")
+              .update({ digital_pdf_path: pdfPath })
+              .eq("id", order.id);
+
+            const { data: signedData } = await admin.storage
+              .from("order-files")
+              .createSignedUrl(pdfPath, 60 * 60 * 24 * 7);
+
+            if (signedData?.signedUrl) {
+              await sendDownloadEmail(customerEmail, signedData.signedUrl, order.id);
+            }
+          }
+        } catch (pdfErr) {
+          console.error("PDF generation/email failed for order", order.id, pdfErr);
+        }
+      }
+
+      // Delete original uploaded photos from storage AFTER PDF generation (keep only line-art)
       try {
         const { data: photos } = await admin
           .from("order_photos")
@@ -312,31 +420,6 @@ Deno.serve(async (req) => {
         }
       } catch (cleanupErr) {
         console.error("Original photo cleanup failed for order", order.id, cleanupErr);
-      }
-
-      // Generate and email PDF if digital download was purchased
-      if (hasDigitalDownload && customerEmail) {
-        try {
-          const pdfPath = await generateAndUploadPdf(admin, order.id);
-          if (pdfPath) {
-            // Save path for permanent access
-            await admin
-              .from("orders")
-              .update({ digital_pdf_path: pdfPath })
-              .eq("id", order.id);
-
-            // Create signed URL valid for 7 days
-            const { data: signedData } = await admin.storage
-              .from("order-files")
-              .createSignedUrl(pdfPath, 60 * 60 * 24 * 7); // 7 days
-
-            if (signedData?.signedUrl) {
-              await sendDownloadEmail(customerEmail, signedData.signedUrl, order.id);
-            }
-          }
-        } catch (pdfErr) {
-          console.error("PDF generation/email failed for order", order.id, pdfErr);
-        }
       }
     }
 
