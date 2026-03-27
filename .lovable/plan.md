@@ -1,29 +1,39 @@
 
 
-## Plan: Fix Digital Download PDF to Include Full Book Layout
+## Plan: Fix Auth State Reliability
 
 ### Problem
-The digital download PDF generated for customers (in the webhook) uses a simplified layout — just a single cover image and basic line art pages. It should match the full branded book layout (cover with logo, 2×2 grid, text, back cover, title/dedication pages, then line art in order). Additionally, there's a bug: original photos are deleted *before* the PDF is generated, so the cover grid images (which reference `original_path`) will fail.
+Two related bugs:
+1. **False "signed in" state**: A stale/expired session token in localStorage causes `user` to appear truthy, showing "Sign Out" instead of "Sign In" — but the session is actually dead.
+2. **Pages get stuck loading**: If the `INITIAL_SESSION` event from Supabase never fires (or is delayed), `loading` stays `true` forever, causing the Auth page and My Orders page to show infinite spinners.
 
-### Changes
+### Root Cause
+`AuthContext` relies solely on the `INITIAL_SESSION` event to clear `loading`. There's no fallback. And when Supabase restores an expired session from localStorage, it briefly sets `user` before eventually clearing it — but if the token refresh fails silently, the stale user persists.
 
-**1. Fix execution order in `shopify-order-webhook/index.ts`**
-- Move the "delete original photos" block to *after* the PDF generation block. Currently originals are deleted at lines 294–315, then PDF is generated at line 320. The cover grid needs `original_path` data, so deletion must happen last.
+### Fix — Single file: `src/contexts/AuthContext.tsx`
 
-**2. Update `generateAndUploadPdf` in `shopify-order-webhook/index.ts`**
-- Replace the simple cover rendering (lines 86–98) with the full branded composite layout matching the admin `generate-pdf` function:
-  - Cream background, "piccoload" logo, 2×2 photo grid (original + converted for both cover photos), subtitle/title text
-  - Back cover page with branding
-  - Title and dedication pages
-  - Line art pages in `page_position` order, skipping cover images
-- Fetch `cover_image_id_2` alongside existing fields in the order query (line 56)
+1. **Add a safety timeout** (3 seconds) that forces `loading: false` if `INITIAL_SESSION` hasn't fired yet
+2. **Add an explicit `getSession()` call** after setting up the listener as a fallback to ensure session state is resolved — if no valid session exists, it will return `null` and clear the stale state
+3. **Handle `SIGNED_OUT` event** explicitly to ensure `session` is set to `null` immediately
 
-**3. No UI changes needed**
-- `MyOrders.tsx` already shows the "Download PDF" button when `digital_pdf_path` is set, and prompts account creation in the email. The digital download flow and account-gating are already in place.
+```typescript
+useEffect(() => {
+  const { data: { subscription } } = supabase.auth.onAuthStateChange((event, newSession) => {
+    setSession(newSession);
+    if (event === "INITIAL_SESSION" || event === "SIGNED_OUT") {
+      setLoading(false);
+    }
+  });
 
-### Technical Details
+  // Fallback: if INITIAL_SESSION never fires, resolve after 3s
+  const timeout = setTimeout(() => setLoading(false), 3000);
 
-- The webhook's inline `generateAndUploadPdf` function will be updated to mirror the admin `generate-pdf` logic (cover composite, back cover, text pages, photo pages)
-- Order query updated: `select("title_page_text, title_page_enabled, dedication_page_text, dedication_page_enabled, cover_image_id, cover_image_id_2")`
-- Execution order: update payment status → generate PDF → send email → delete originals
+  return () => {
+    subscription.unsubscribe();
+    clearTimeout(timeout);
+  };
+}, []);
+```
+
+No other files need changes — the Navbar logic (`!!user`) is correct once the auth state is reliable.
 
