@@ -134,7 +134,7 @@ const Builder = () => {
                   bottomTitle: order.title_page_text === "My Piccolo'd Colouring Book" || order.title_page_text === "My Piccolo'd Coloring Book" ? "color your memories" : order.title_page_text,
                 },
                 digitalDownload: false,
-                coverData: isCompleted ? { imageIds: [order.cover_image_id, order.cover_image_id], title: order.title_page_text, subtitle: "" } : null,
+                coverData: isCompleted ? { imageIds: [order.cover_image_id, order.cover_image_id_2 || order.cover_image_id], title: order.title_page_text, subtitle: "" } : null,
                 completed: isCompleted,
               } as BookState;
             });
@@ -201,7 +201,7 @@ const Builder = () => {
                     bottomTitle: order.title_page_text === "My Piccolo'd Colouring Book" || order.title_page_text === "My Piccolo'd Coloring Book" ? "color your memories" : order.title_page_text,
                   },
                   digitalDownload: false,
-                  coverData: isCompleted ? { imageIds: [order.cover_image_id, order.cover_image_id], title: order.title_page_text, subtitle: "" } : null,
+                  coverData: isCompleted ? { imageIds: [order.cover_image_id, order.cover_image_id_2 || order.cover_image_id], title: order.title_page_text, subtitle: "" } : null,
                   completed: isCompleted,
                 } as BookState;
               });
@@ -343,6 +343,7 @@ const Builder = () => {
     if (book.orderId && sessionId) {
       await updateGuestOrder(sessionId, book.orderId, {
         cover_image_id: data.imageIds[0],
+        cover_image_id_2: data.imageIds[1],
         title_page_enabled: addOns.titlePageEnabled,
         title_page_text: addOns.titlePageText,
         dedication_page_enabled: addOns.dedicationPageEnabled,
@@ -361,6 +362,7 @@ const Builder = () => {
             const activeAddOns = prev[activeBookIndex].bookAddOns;
             updateGuestOrder(sessionId, b.orderId, {
               cover_image_id: data.imageIds[0],
+              cover_image_id_2: data.imageIds[1],
               dedication_page_enabled: activeAddOns.dedicationPageEnabled,
               dedication_page_text: activeAddOns.dedicationPageText,
               builder_step: "cover",

@@ -81,9 +81,9 @@ const RecapStep = ({ books, onContinueToCheckout, onEditBook, hasAnyDigitalDownl
 
               {/* Mini cover preview */}
               <div className="bg-[#fffaf3] rounded-lg p-3 shadow-soft">
-                <div
+              <div
                   className="relative bg-[#fffaf3] overflow-hidden flex flex-col"
-                  style={{ aspectRatio: "3 / 4" }}
+                  style={{ aspectRatio: "3 / 4", containerType: "inline-size" }}
                 >
                   <div className="flex-1 flex items-center justify-center min-h-0">
                     <img
@@ -121,7 +121,7 @@ const RecapStep = ({ books, onContinueToCheckout, onEditBook, hasAnyDigitalDownl
                         className="uppercase text-foreground leading-none"
                         style={{
                           fontFamily: "'Yuji Syuku', serif",
-                          fontSize: "clamp(6px, 1.4vw, 10px)",
+                          fontSize: "3.9cqi",
                           letterSpacing: 0,
                         }}
                       >
@@ -131,7 +131,7 @@ const RecapStep = ({ books, onContinueToCheckout, onEditBook, hasAnyDigitalDownl
                         className="leading-none"
                         style={{
                           fontFamily: "Bristol, serif",
-                          fontSize: "clamp(7px, 1.6vw, 12px)",
+                          fontSize: "4.7cqi",
                           marginTop: "2.5%",
                           color: "hsl(var(--foreground))",
                         }}
