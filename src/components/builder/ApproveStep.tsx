@@ -62,6 +62,7 @@ const ApproveStep = ({
   const bookCount = item?.quantity ?? 1;
 
   const [photos, setPhotos] = useState<OrderPhoto[]>(initialPhotos);
+  const [activeDragId, setActiveDragId] = useState<string | null>(null);
   const [convertingIds, setConvertingIds] = useState<Set<string>>(new Set());
   const [retryCounts, setRetryCounts] = useState<Record<string, number>>({});
   const [conversionStartTime, setConversionStartTime] = useState<number | null>(null);
@@ -426,7 +427,12 @@ const SortablePhotoCard = ({
     toast.success("Photo removed");
   };
 
+  const handleDragStart = (event: DragStartEvent) => {
+    setActiveDragId(event.active.id as string);
+  };
+
   const handleDragEnd = (event: DragEndEvent) => {
+    setActiveDragId(null);
     const { active, over } = event;
     if (!over || active.id === over.id) return;
 
@@ -444,8 +450,8 @@ const SortablePhotoCard = ({
   };
 
   const sensors = useSensors(
-    useSensor(PointerSensor, { activationConstraint: { distance: 5 } }),
-    useSensor(TouchSensor, { activationConstraint: { delay: 150, tolerance: 5 } }),
+    useSensor(PointerSensor, { activationConstraint: { distance: 8 } }),
+    useSensor(TouchSensor, { activationConstraint: { delay: 200, tolerance: 8 } }),
     useSensor(KeyboardSensor)
   );
 
