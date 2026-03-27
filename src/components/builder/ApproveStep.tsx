@@ -204,17 +204,17 @@ const SortablePhotoCard = ({
       </div>
 
       {/* Actions — compact bottom bar */}
-      <div className="px-2.5 py-2 flex items-center justify-between bg-background">
-        <div className="flex gap-1">
+      <div className="px-1.5 py-1.5 flex items-center justify-between bg-background gap-1">
+        <div className="flex gap-1 min-w-0">
           {!hasConverted && !isConverting && (
             <Button
               type="button"
               variant="ghost"
               size="sm"
               onClick={() => void onConvert(photo.id)}
-              className="rounded-lg h-7 px-2.5 text-xs"
+              className="rounded-md h-6 px-1.5 text-[10px]"
             >
-              <RefreshCw className="w-3 h-3 mr-1" />
+              <RefreshCw className="w-2.5 h-2.5 mr-0.5" />
               Convert
             </Button>
           )}
@@ -222,7 +222,7 @@ const SortablePhotoCard = ({
             const retries = retryCounts[photo.id] ?? 0;
             const attemptsLeft = maxRetries - retries;
             if (attemptsLeft <= 0) return (
-              <span className="text-[10px] text-muted-foreground py-1">Max retries</span>
+              <span className="text-[9px] text-muted-foreground py-1">Max retries</span>
             );
             return (
               <Button
@@ -231,9 +231,9 @@ const SortablePhotoCard = ({
                 size="sm"
                 onClick={() => void onConvert(photo.id)}
                 disabled={isConverting}
-                className="rounded-lg h-7 px-2.5 text-xs text-muted-foreground"
+                className="rounded-md h-6 px-1.5 text-[10px] text-destructive hover:text-destructive"
               >
-                <RefreshCw className="w-3 h-3 mr-1" />
+                <RefreshCw className="w-2.5 h-2.5 mr-0.5" />
                 Retry ({attemptsLeft})
               </Button>
             );
@@ -248,9 +248,9 @@ const SortablePhotoCard = ({
                 variant="ghost"
                 size="sm"
                 onClick={() => void onConvert(photo.id)}
-                className="rounded-lg h-7 px-2.5 text-xs text-destructive"
+                className="rounded-md h-6 px-1.5 text-[10px] text-destructive hover:text-destructive"
               >
-                <RefreshCw className="w-3 h-3 mr-1" />
+                <RefreshCw className="w-2.5 h-2.5 mr-0.5" />
                 Retry ({attemptsLeft})
               </Button>
             );
@@ -263,9 +263,9 @@ const SortablePhotoCard = ({
             variant={photo.isApproved ? "default" : "outline"}
             size="sm"
             onClick={() => onToggleApproval(photo.id)}
-            className="rounded-lg h-7 px-2.5 text-xs"
+            className="rounded-md h-6 px-1.5 text-[10px] shrink-0"
           >
-            <Check className="w-3 h-3 mr-1" />
+            <Check className="w-2.5 h-2.5 mr-0.5" />
             {photo.isApproved ? "Approved" : "Approve"}
           </Button>
         )}

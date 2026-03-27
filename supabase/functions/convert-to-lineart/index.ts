@@ -113,16 +113,17 @@ Deno.serve(async (req) => {
     const mimeType = fileData.type || "image/jpeg";
     const dataUrl = `data:${mimeType};base64,${imageBase64Input}`;
 
-    const prompt = `Convert this photo into a clean black-and-white line drawing for a coloring book.
+    const prompt = `Convert this photo into a clean black-and-white LINE DRAWING for a coloring book.
 
 CRITICAL REQUIREMENTS:
-1. ONLY black (#000000) lines on white (#FFFFFF) background. ABSOLUTELY NO COLOR — no green, no brown, no grey, no skin tones, no colored fills of ANY kind. Every area inside outlines must be pure empty white.
-2. PRESERVE THE EXACT LIKENESS of the person in the photo — same face shape, same features, same hair texture and style, same pose, same expression. Do NOT replace the person with a generic or different-looking face. The converted image must be clearly recognizable as the same person.
-3. Use clean, consistent line weight throughout — like a professional coloring book page.
-4. Keep ALL accessories, clothing details, and background elements from the original photo.
-5. NO shading, NO gradients, NO cross-hatching, NO halftones, NO grey areas.
-6. ${isLandscape ? "This is LANDSCAPE — output MUST remain landscape." : "This is PORTRAIT — output MUST remain portrait."}
-7. Maintain the EXACT same orientation, rotation, and aspect ratio as the input.
+1. OUTLINES ONLY — every element must be represented as thin black (#000000) outlines/contours on a pure white (#FFFFFF) background. NEVER fill or flood any area with solid black. Hair, clothing, shadows, dark objects — ALL must be drawn as OUTLINES ONLY, never filled in. Think of it as a coloring book page where every area is left empty/white for someone to color in.
+2. ABSOLUTELY NO COLOR — no green, no brown, no grey, no skin tones, no colored fills of ANY kind. Every area enclosed by outlines must be pure empty white space.
+3. PRESERVE THE EXACT LIKENESS of the person in the photo — same face shape, same features, same hair texture and style, same pose, same expression. Do NOT replace the person with a generic or different-looking face. The converted image must be clearly recognizable as the same person.
+4. Use clean, consistent thin line weight throughout — like a professional coloring book page.
+5. Keep ALL accessories, clothing details, and background elements from the original photo, but render them as OUTLINES ONLY.
+6. NO shading, NO gradients, NO cross-hatching, NO halftones, NO grey areas, NO solid black fills. Areas that are dark in the photo (e.g. dark hair, dark clothing) should still be drawn as empty outlines, NOT filled with black.
+7. ${isLandscape ? "This is LANDSCAPE — output MUST remain landscape." : "This is PORTRAIT — output MUST remain portrait."}
+8. Maintain the EXACT same orientation, rotation, and aspect ratio as the input.
 
 Output ONLY the converted image, no text.`;
 
