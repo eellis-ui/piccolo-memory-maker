@@ -194,6 +194,7 @@ export type Database = {
           builder_session_id: string | null
           builder_step: string
           cover_image_id: string | null
+          cover_image_id_2: string | null
           cover_position_x: number
           cover_position_y: number
           cover_zoom: number
@@ -220,6 +221,7 @@ export type Database = {
           builder_session_id?: string | null
           builder_step?: string
           cover_image_id?: string | null
+          cover_image_id_2?: string | null
           cover_position_x?: number
           cover_position_y?: number
           cover_zoom?: number
@@ -246,6 +248,7 @@ export type Database = {
           builder_session_id?: string | null
           builder_step?: string
           cover_image_id?: string | null
+          cover_image_id_2?: string | null
           cover_position_x?: number
           cover_position_y?: number
           cover_zoom?: number

@@ -1,0 +1,1 @@
+ALTER TABLE public.orders ADD COLUMN cover_image_id_2 uuid DEFAULT NULL;
