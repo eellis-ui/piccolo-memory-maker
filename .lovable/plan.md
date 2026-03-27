@@ -1,34 +1,12 @@
 
 
-## What's been happening
+## Plan: Update Webhook Secret
 
-You've been approving browser navigation requests (to test checkout URLs), not code deployments. The actual code fix — forcing checkout URLs to use `piccaload.myshopify.com` instead of `piccoload.com` — was already applied to `src/lib/shopify.ts` in an earlier message.
+The `SHOPIFY_WEBHOOK_SECRET` already exists but may have a different value. I'll update it to match the signing secret from your Shopify webhooks page:
 
-However, there's one remaining issue: the `channel=online_store` query parameter is **not** being added to the checkout URL. The Shopify skill docs say this parameter is required for the checkout to work properly.
+`2618decf7274795de6f56bee868276bea3e05855453bcdad8c52c9443626301f`
 
-## Plan
-
-**Single file change: `src/lib/shopify.ts`**
-
-Update `formatCheckoutUrl` to also append the `channel=online_store` query parameter:
-
-```typescript
-function formatCheckoutUrl(checkoutUrl: string): string {
-  try {
-    const url = new URL(checkoutUrl);
-    url.host = SHOPIFY_STORE_PERMANENT_DOMAIN;
-    url.protocol = 'https:';
-    url.searchParams.set('channel', 'online_store');
-    return url.toString();
-  } catch {
-    return checkoutUrl;
-  }
-}
-```
-
-This is a one-line addition. The domain rewrite is already in place; this ensures the checkout page routes through the correct Shopify sales channel.
-
-## What to test after
-
-Go through the full builder flow (Upload → Approve → Cover → Checkout → click "Secure Checkout") and confirm the Shopify payment page loads in the new tab instead of showing a 404.
+### Steps
+1. Use the `add_secret` tool to set `SHOPIFY_WEBHOOK_SECRET` to the value you provided
+2. Test by sending a test notification from Shopify's webhook settings page, then check the backend function logs to confirm the signature passes
 
