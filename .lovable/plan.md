@@ -1,29 +1,29 @@
 
 
-## Plan: Delete Original Photos After Order Payment
+## Plan: Fix Digital Download PDF to Include Full Book Layout
 
 ### Problem
-When an order is paid, the customer's original uploaded photos remain in storage. Per the privacy policy and user request, only the converted line-art should be kept; originals must be deleted.
+The digital download PDF generated for customers (in the webhook) uses a simplified layout — just a single cover image and basic line art pages. It should match the full branded book layout (cover with logo, 2×2 grid, text, back cover, title/dedication pages, then line art in order). Additionally, there's a bug: original photos are deleted *before* the PDF is generated, so the cover grid images (which reference `original_path`) will fail.
 
 ### Changes
 
-**1. Update `shopify-order-webhook` Edge Function** (`supabase/functions/shopify-order-webhook/index.ts`)
+**1. Fix execution order in `shopify-order-webhook/index.ts`**
+- Move the "delete original photos" block to *after* the PDF generation block. Currently originals are deleted at lines 294–315, then PDF is generated at line 320. The cover grid needs `original_path` data, so deletion must happen last.
 
-After updating each order's payment status (around line 292), add a cleanup step:
+**2. Update `generateAndUploadPdf` in `shopify-order-webhook/index.ts`**
+- Replace the simple cover rendering (lines 86–98) with the full branded composite layout matching the admin `generate-pdf` function:
+  - Cream background, "piccoload" logo, 2×2 photo grid (original + converted for both cover photos), subtitle/title text
+  - Back cover page with branding
+  - Title and dedication pages
+  - Line art pages in `page_position` order, skipping cover images
+- Fetch `cover_image_id_2` alongside existing fields in the order query (line 56)
 
-- Query all `order_photos` for the order where `original_path` is not null
-- Delete each original file from the `order-files` storage bucket using `admin.storage.from("order-files").remove([...paths])`
-- Update each `order_photos` row to set `original_path` to a sentinel value like `'deleted'` (or null if the column allows it — currently it's `NOT NULL`, so use `'deleted'`)
-- This ensures the "Order Files" dialog only shows "Line Art" buttons for completed orders (originals will 404 / be hidden)
-
-**2. Update MyOrders page** (`src/pages/MyOrders.tsx`)
-
-- Hide the "Original" download button when `original_path` is `'deleted'` or missing, so users only see the "Line Art" button for paid orders
+**3. No UI changes needed**
+- `MyOrders.tsx` already shows the "Download PDF" button when `digital_pdf_path` is set, and prompts account creation in the email. The digital download flow and account-gating are already in place.
 
 ### Technical Details
 
-- Storage deletion: `admin.storage.from("order-files").remove(originalPaths)` — batch delete all originals for each order
-- DB update: `UPDATE order_photos SET original_path = 'deleted' WHERE order_id = ? AND original_path != 'deleted'`
-- No migration needed — `original_path` is `text NOT NULL`, so `'deleted'` is a valid value
-- The cleanup runs after PDF generation so the PDF can still use converted paths (it already prefers `converted_path`)
+- The webhook's inline `generateAndUploadPdf` function will be updated to mirror the admin `generate-pdf` logic (cover composite, back cover, text pages, photo pages)
+- Order query updated: `select("title_page_text, title_page_enabled, dedication_page_text, dedication_page_enabled, cover_image_id, cover_image_id_2")`
+- Execution order: update payment status → generate PDF → send email → delete originals
 
