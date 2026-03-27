@@ -59,7 +59,10 @@ const CART_CREATE_MUTATION = `
 function formatCheckoutUrl(checkoutUrl: string): string {
   try {
     const url = new URL(checkoutUrl);
-    url.searchParams.set('channel', 'online_store');
+    // Force the checkout URL to use the .myshopify.com domain
+    // The custom domain (piccoload.com) doesn't properly route /cart/c/ checkout paths
+    url.host = SHOPIFY_STORE_PERMANENT_DOMAIN;
+    url.protocol = 'https:';
     return url.toString();
   } catch {
     return checkoutUrl;
