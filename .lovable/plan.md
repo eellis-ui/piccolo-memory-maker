@@ -1,21 +1,23 @@
 
 
-## Fix: Shopify Checkout 404 — Re-add `channel=online_store`
+## What's been happening
 
-### Problem
-The previous fix **removed** the `channel=online_store` parameter from checkout URLs, but this parameter is actually **required** for Shopify checkouts to work when using the Storefront API. Without it, Shopify doesn't know which sales channel to route the checkout through, resulting in a 404.
+You've been approving browser navigation requests (to test checkout URLs), not code deployments. The actual code fix — forcing checkout URLs to use `piccaload.myshopify.com` instead of `piccoload.com` — was already applied to `src/lib/shopify.ts` in an earlier message.
 
-Since password protection is confirmed off, the real fix is to **add back** the `channel=online_store` parameter.
+However, there's one remaining issue: the `channel=online_store` query parameter is **not** being added to the checkout URL. The Shopify skill docs say this parameter is required for the checkout to work properly.
 
-### Solution
-**One file change: `src/lib/shopify.ts`**
+## Plan
 
-Restore `formatCheckoutUrl` to append `channel=online_store`:
+**Single file change: `src/lib/shopify.ts`**
+
+Update `formatCheckoutUrl` to also append the `channel=online_store` query parameter:
 
 ```typescript
 function formatCheckoutUrl(checkoutUrl: string): string {
   try {
     const url = new URL(checkoutUrl);
+    url.host = SHOPIFY_STORE_PERMANENT_DOMAIN;
+    url.protocol = 'https:';
     url.searchParams.set('channel', 'online_store');
     return url.toString();
   } catch {
@@ -24,11 +26,9 @@ function formatCheckoutUrl(checkoutUrl: string): string {
 }
 ```
 
-### Why This Should Work
-- Password protection is disabled (user confirmed)
-- The `channel=online_store` parameter tells Shopify to route checkout through the Online Store channel, which is the standard channel for processing payments
-- Without this parameter, the checkout URL may point to the Headless channel which might not have checkout properly configured on this store
+This is a one-line addition. The domain rewrite is already in place; this ensures the checkout page routes through the correct Shopify sales channel.
 
-### Additional Debugging
-If the 404 persists after this change, the products may not be "available" on the Online Store sales channel in Shopify. The user would need to check **Products → [each product] → Sales channels** in Shopify admin and ensure "Online Store" is checked.
+## What to test after
+
+Go through the full builder flow (Upload → Approve → Cover → Checkout → click "Secure Checkout") and confirm the Shopify payment page loads in the new tab instead of showing a 404.
 
