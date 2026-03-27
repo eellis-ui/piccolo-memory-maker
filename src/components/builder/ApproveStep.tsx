@@ -9,7 +9,9 @@ import {
   TouchSensor,
   useSensor,
   useSensors,
+  DragOverlay,
   type DragEndEvent,
+  type DragStartEvent,
 } from "@dnd-kit/core";
 import {
   arrayMove,
@@ -60,6 +62,7 @@ const ApproveStep = ({
   const bookCount = item?.quantity ?? 1;
 
   const [photos, setPhotos] = useState<OrderPhoto[]>(initialPhotos);
+  const [activeDragId, setActiveDragId] = useState<string | null>(null);
   const [convertingIds, setConvertingIds] = useState<Set<string>>(new Set());
   const [retryCounts, setRetryCounts] = useState<Record<string, number>>({});
   const [conversionStartTime, setConversionStartTime] = useState<number | null>(null);
@@ -114,10 +117,11 @@ const SortablePhotoCard = ({
   } = useSortable({ id: photo.id });
 
   const style: React.CSSProperties = {
-    transform: CSS.Transform.toString(transform),
-    transition,
-    opacity: isDragging ? 0.5 : 1,
+    transform: CSS.Translate.toString(transform),
+    transition: isDragging ? "none" : transition,
+    opacity: isDragging ? 0.3 : 1,
     zIndex: isDragging ? 50 : "auto",
+    willChange: isDragging ? "transform" : undefined,
   };
 
   const hasConverted = photo.conversionStatus === "completed" && photo.convertedUrl;
@@ -423,7 +427,12 @@ const SortablePhotoCard = ({
     toast.success("Photo removed");
   };
 
+  const handleDragStart = (event: DragStartEvent) => {
+    setActiveDragId(event.active.id as string);
+  };
+
   const handleDragEnd = (event: DragEndEvent) => {
+    setActiveDragId(null);
     const { active, over } = event;
     if (!over || active.id === over.id) return;
 
@@ -441,8 +450,8 @@ const SortablePhotoCard = ({
   };
 
   const sensors = useSensors(
-    useSensor(PointerSensor, { activationConstraint: { distance: 5 } }),
-    useSensor(TouchSensor, { activationConstraint: { delay: 150, tolerance: 5 } }),
+    useSensor(PointerSensor, { activationConstraint: { distance: 8 } }),
+    useSensor(TouchSensor, { activationConstraint: { delay: 200, tolerance: 8 } }),
     useSensor(KeyboardSensor)
   );
 
@@ -651,7 +660,7 @@ const SortablePhotoCard = ({
               <span className="text-xs font-semibold">Drag and drop to rearrange the page order of your book</span>
             </div>
           </div>
-          <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
+          <DndContext sensors={sensors} collisionDetection={closestCenter} onDragStart={handleDragStart} onDragEnd={handleDragEnd}>
             <SortableContext items={photos.map((p) => p.id)} strategy={rectSortingStrategy}>
               <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-2.5">
                 {photos.map((photo, index) => (
@@ -693,6 +702,28 @@ const SortablePhotoCard = ({
                 )}
               </div>
             </SortableContext>
+            <DragOverlay dropAnimation={{ duration: 200, easing: "ease" }}>
+              {activeDragId ? (() => {
+                const dragPhoto = photos.find((p) => p.id === activeDragId);
+                const dragIndex = photos.findIndex((p) => p.id === activeDragId);
+                if (!dragPhoto) return null;
+                return (
+                  <div className="rounded-lg overflow-hidden border-2 border-primary shadow-2xl bg-background" style={{ width: "100%", maxWidth: 200 }}>
+                    <div className="relative bg-muted/20 aspect-[210/297] overflow-hidden">
+                      <img
+                        src={dragPhoto.convertedUrl || dragPhoto.originalUrl}
+                        alt={`Page ${dragIndex + 1}`}
+                        className="w-full h-full object-contain"
+                        style={dragPhoto.isLandscape ? { transform: "rotate(90deg)", width: "100%", height: "auto" } : undefined}
+                      />
+                    </div>
+                    <div className="px-2.5 py-1.5 bg-background text-center">
+                      <span className="text-xs font-semibold text-foreground">Page {dragIndex + 1}</span>
+                    </div>
+                  </div>
+                );
+              })() : null}
+            </DragOverlay>
           </DndContext>
         </CollapsibleContent>
       </Collapsible>
