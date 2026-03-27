@@ -63,6 +63,7 @@ function formatCheckoutUrl(checkoutUrl: string): string {
     // The custom domain (piccoload.com) doesn't properly route /cart/c/ checkout paths
     url.host = SHOPIFY_STORE_PERMANENT_DOMAIN;
     url.protocol = 'https:';
+    url.searchParams.set('channel', 'online_store');
     return url.toString();
   } catch {
     return checkoutUrl;
