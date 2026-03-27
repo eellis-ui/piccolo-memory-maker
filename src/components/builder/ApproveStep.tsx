@@ -9,7 +9,9 @@ import {
   TouchSensor,
   useSensor,
   useSensors,
+  DragOverlay,
   type DragEndEvent,
+  type DragStartEvent,
 } from "@dnd-kit/core";
 import {
   arrayMove,
@@ -114,10 +116,11 @@ const SortablePhotoCard = ({
   } = useSortable({ id: photo.id });
 
   const style: React.CSSProperties = {
-    transform: CSS.Transform.toString(transform),
-    transition,
-    opacity: isDragging ? 0.5 : 1,
+    transform: CSS.Translate.toString(transform),
+    transition: isDragging ? "none" : transition,
+    opacity: isDragging ? 0.3 : 1,
     zIndex: isDragging ? 50 : "auto",
+    willChange: isDragging ? "transform" : undefined,
   };
 
   const hasConverted = photo.conversionStatus === "completed" && photo.convertedUrl;
