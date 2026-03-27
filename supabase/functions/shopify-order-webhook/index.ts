@@ -376,7 +376,30 @@ Deno.serve(async (req) => {
 
       await admin.from("orders").update(updates).eq("id", order.id);
 
-      // Delete original uploaded photos from storage (keep only line-art)
+      // Generate and email PDF BEFORE deleting originals (cover grid needs original photos)
+      if (hasDigitalDownload && customerEmail) {
+        try {
+          const pdfPath = await generateAndUploadPdf(admin, order.id);
+          if (pdfPath) {
+            await admin
+              .from("orders")
+              .update({ digital_pdf_path: pdfPath })
+              .eq("id", order.id);
+
+            const { data: signedData } = await admin.storage
+              .from("order-files")
+              .createSignedUrl(pdfPath, 60 * 60 * 24 * 7);
+
+            if (signedData?.signedUrl) {
+              await sendDownloadEmail(customerEmail, signedData.signedUrl, order.id);
+            }
+          }
+        } catch (pdfErr) {
+          console.error("PDF generation/email failed for order", order.id, pdfErr);
+        }
+      }
+
+      // Delete original uploaded photos from storage AFTER PDF generation (keep only line-art)
       try {
         const { data: photos } = await admin
           .from("order_photos")
@@ -397,31 +420,6 @@ Deno.serve(async (req) => {
         }
       } catch (cleanupErr) {
         console.error("Original photo cleanup failed for order", order.id, cleanupErr);
-      }
-
-      // Generate and email PDF if digital download was purchased
-      if (hasDigitalDownload && customerEmail) {
-        try {
-          const pdfPath = await generateAndUploadPdf(admin, order.id);
-          if (pdfPath) {
-            // Save path for permanent access
-            await admin
-              .from("orders")
-              .update({ digital_pdf_path: pdfPath })
-              .eq("id", order.id);
-
-            // Create signed URL valid for 7 days
-            const { data: signedData } = await admin.storage
-              .from("order-files")
-              .createSignedUrl(pdfPath, 60 * 60 * 24 * 7); // 7 days
-
-            if (signedData?.signedUrl) {
-              await sendDownloadEmail(customerEmail, signedData.signedUrl, order.id);
-            }
-          }
-        } catch (pdfErr) {
-          console.error("PDF generation/email failed for order", order.id, pdfErr);
-        }
       }
     }
 
