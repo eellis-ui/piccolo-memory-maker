@@ -1,11 +1,23 @@
 
 
-## Plan: Tighten spacing between navbar and book tabs
+## Fix: Shopify Checkout 404 Error
 
-**Single file change: `src/pages/Builder.tsx`**
+### Problem
+The `formatCheckoutUrl` function on line 59-67 of `src/lib/shopify.ts` forces `channel=online_store` onto every checkout URL. Since your store uses the Storefront API (headless) rather than the Online Store sales channel, this parameter points Shopify to a channel that isn't configured for your setup, resulting in a 404.
 
-1. **Line 420** — Reduce mobile top padding from `pt-[60px]` to `pt-[48px]` (keep `sm:pt-24`)
-2. **Line 456** — Reduce tabs container bottom margin from `mb-8` to `mb-4`
+### Solution
+**One file change: `src/lib/shopify.ts`**
 
-These two changes bring the book selector bar closer to the navbar, matching the screenshot reference.
+Simplify `formatCheckoutUrl` to return the checkout URL exactly as Shopify's Cart API provides it:
+
+```typescript
+function formatCheckoutUrl(checkoutUrl: string): string {
+  return checkoutUrl;
+}
+```
+
+This lets Shopify route the checkout through whichever sales channel your storefront token is associated with (Headless), which is where checkout actually works.
+
+### Why It Works
+Your Shopify store is on a paid Basic plan, so checkout is enabled. The Storefront API already returns a valid checkout URL for the correct sales channel. Overriding it with `channel=online_store` redirects to a channel that may not have checkout configured, causing the 404.
 
