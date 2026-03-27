@@ -19,16 +19,20 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // Single listener for the entire app — set up BEFORE any getSession call
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, newSession) => {
       setSession(newSession);
-      // INITIAL_SESSION always fires first; use it to clear the loading state
-      if (event === "INITIAL_SESSION") {
+      if (event === "INITIAL_SESSION" || event === "SIGNED_OUT") {
         setLoading(false);
       }
     });
 
-    return () => subscription.unsubscribe();
+    // Fallback: if INITIAL_SESSION never fires, resolve after 3s
+    const timeout = setTimeout(() => setLoading(false), 3000);
+
+    return () => {
+      subscription.unsubscribe();
+      clearTimeout(timeout);
+    };
   }, []);
 
   return (
