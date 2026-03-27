@@ -76,6 +76,42 @@ const MyOrders = () => {
       });
   }, [user]);
 
+  // Auto-trigger PDF generation for paid digital orders missing PDF
+  useEffect(() => {
+    if (!user || orders.length === 0) return;
+
+    const pendingOrders = orders.filter(
+      (o) => o.digital_download && !o.digital_pdf_path && o.status !== "draft" && !generatingPdf.has(o.id)
+    );
+
+    if (pendingOrders.length === 0) return;
+
+    for (const order of pendingOrders) {
+      setGeneratingPdf((prev) => new Set(prev).add(order.id));
+
+      supabase.functions
+        .invoke("generate-customer-pdf", { body: { orderId: order.id } })
+        .then(({ data, error }) => {
+          if (error) {
+            console.error("PDF generation failed for", order.id, error);
+            return;
+          }
+          if (data?.pdfPath) {
+            setOrders((prev) =>
+              prev.map((o) => (o.id === order.id ? { ...o, digital_pdf_path: data.pdfPath } : o))
+            );
+          }
+        })
+        .finally(() => {
+          setGeneratingPdf((prev) => {
+            const next = new Set(prev);
+            next.delete(order.id);
+            return next;
+          });
+        });
+    }
+  }, [orders, user]);
+
   // Group draft orders by session so multi-book drafts appear as one entry
   const groupedOrders = (() => {
     const sessionSeen = new Set<string>();
