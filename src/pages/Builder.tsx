@@ -369,7 +369,7 @@ const Builder = () => {
           return { ...b, coverData: data, bookAddOns: prev[activeBookIndex].bookAddOns, completed: true, step: "cover" as const };
         })
       );
-      setShowingRecap(true);
+      setShowingCheckout(true);
       return;
     }
 
@@ -744,7 +744,10 @@ const Builder = () => {
                 onCheckoutComplete={handleCheckoutComplete}
                 onBack={() => {
                   setShowingCheckout(false);
-                  setShowingRecap(true);
+                  // Go back to the last book's cover step
+                  const lastBookIndex = books.length - 1;
+                  setActiveBookIndex(lastBookIndex);
+                  updateBook(lastBookIndex, { completed: false, step: "cover" });
                 }}
               />
             )}
