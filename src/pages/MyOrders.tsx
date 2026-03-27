@@ -53,6 +53,7 @@ const MyOrders = () => {
   const [activeTab, setActiveTab] = useState("all");
   const [deleting, setDeleting] = useState<string | null>(null);
   const [clearingAll, setClearingAll] = useState(false);
+  const [generatingPdf, setGeneratingPdf] = useState<Set<string>>(new Set());
 
   // Redirect to auth if not logged in once loading resolves
   useEffect(() => {
