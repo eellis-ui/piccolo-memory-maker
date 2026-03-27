@@ -291,6 +291,29 @@ Deno.serve(async (req) => {
 
       await admin.from("orders").update(updates).eq("id", order.id);
 
+      // Delete original uploaded photos from storage (keep only line-art)
+      try {
+        const { data: photos } = await admin
+          .from("order_photos")
+          .select("original_path")
+          .eq("order_id", order.id)
+          .neq("original_path", "deleted");
+
+        if (photos && photos.length > 0) {
+          const pathsToRemove = photos.map((p) => p.original_path).filter(Boolean);
+          if (pathsToRemove.length > 0) {
+            await admin.storage.from("order-files").remove(pathsToRemove);
+          }
+          await admin
+            .from("order_photos")
+            .update({ original_path: "deleted" })
+            .eq("order_id", order.id);
+          console.log(`Deleted ${pathsToRemove.length} original photos for order ${order.id}`);
+        }
+      } catch (cleanupErr) {
+        console.error("Original photo cleanup failed for order", order.id, cleanupErr);
+      }
+
       // Generate and email PDF if digital download was purchased
       if (hasDigitalDownload && customerEmail) {
         try {
