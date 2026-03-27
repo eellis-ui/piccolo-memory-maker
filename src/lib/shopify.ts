@@ -57,15 +57,18 @@ const CART_CREATE_MUTATION = `
 `;
 
 function formatCheckoutUrl(checkoutUrl: string): string {
+  console.log('[Shopify] Raw checkout URL from API:', checkoutUrl);
   try {
     const url = new URL(checkoutUrl);
-    // Force the checkout URL to use the .myshopify.com domain
-    // The custom domain (piccoload.com) doesn't properly route /cart/c/ checkout paths
+    console.log('[Shopify] Original host:', url.host, '→ Rewriting to:', SHOPIFY_STORE_PERMANENT_DOMAIN);
     url.host = SHOPIFY_STORE_PERMANENT_DOMAIN;
     url.protocol = 'https:';
     url.searchParams.set('channel', 'online_store');
-    return url.toString();
-  } catch {
+    const finalUrl = url.toString();
+    console.log('[Shopify] Final checkout URL:', finalUrl);
+    return finalUrl;
+  } catch (e) {
+    console.error('[Shopify] Failed to format checkout URL:', e);
     return checkoutUrl;
   }
 }
