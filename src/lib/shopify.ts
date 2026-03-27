@@ -57,13 +57,7 @@ const CART_CREATE_MUTATION = `
 `;
 
 function formatCheckoutUrl(checkoutUrl: string): string {
-  try {
-    const url = new URL(checkoutUrl);
-    url.searchParams.set('channel', 'online_store');
-    return url.toString();
-  } catch {
-    return checkoutUrl;
-  }
+  return checkoutUrl;
 }
 
 export interface CartLineAttribute {
