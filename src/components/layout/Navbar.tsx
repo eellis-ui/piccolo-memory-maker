@@ -270,7 +270,7 @@ const BasketContent = ({
             onNavigateToBuilder();
           }}
         >
-          Go To Next Step
+          Go To Next Step — ${grandTotal.toFixed(2)}
         </Button>
 
         {/* Payment trust badges */}
