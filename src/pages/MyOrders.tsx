@@ -1,7 +1,6 @@
 import { useEffect, useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
-import { generateAndUploadPdf } from "@/lib/generate-pdf-client";
 import { Loader2, Package, CheckCircle2, Truck, Printer, FileText, Pencil, Download, Trash2, RefreshCw, X } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -25,9 +24,6 @@ interface OrderRow {
   builder_session_id: string | null;
   digital_download: boolean;
   digital_pdf_path: string | null;
-  order_name: string | null;
-  line_items: any[] | null;
-  production_pdf_path: string | null;
 }
 
 const STEPS = [
@@ -72,7 +68,7 @@ const MyOrders = () => {
     setOrdersLoading(true);
     supabase
       .from("orders")
-      .select("id, status, title_page_text, created_at, tracking_number, shipped_at, extra_pages, builder_session_id, digital_download, digital_pdf_path, order_name, line_items, production_pdf_path")
+      .select("id, status, title_page_text, created_at, tracking_number, shipped_at, extra_pages, builder_session_id, digital_download, digital_pdf_path")
       .order("created_at", { ascending: false })
       .then(({ data }) => {
         if (data) setOrders(data as OrderRow[]);
@@ -80,52 +76,40 @@ const MyOrders = () => {
       });
   }, [user]);
 
-  // Auto-trigger PDF generation client-side for paid orders missing production PDF
+  // Auto-trigger PDF generation for paid digital orders missing PDF
   useEffect(() => {
     if (!user || orders.length === 0) return;
 
     const pendingOrders = orders.filter(
-      (o) => !o.production_pdf_path && o.status !== "draft" && !generatingPdf.has(o.id)
+      (o) => o.digital_download && !o.digital_pdf_path && o.status !== "draft" && !generatingPdf.has(o.id)
     );
 
     if (pendingOrders.length === 0) return;
 
-    // Process one at a time to avoid overwhelming the browser
-    const order = pendingOrders[0];
-    setGeneratingPdf((prev) => new Set(prev).add(order.id));
+    for (const order of pendingOrders) {
+      setGeneratingPdf((prev) => new Set(prev).add(order.id));
 
-    generateAndUploadPdf(order.id)
-      .then(async (pdfPath) => {
-        setOrders((prev) =>
-          prev.map((o) =>
-            o.id === order.id
-              ? { ...o, production_pdf_path: pdfPath, digital_pdf_path: o.digital_download ? pdfPath : o.digital_pdf_path }
-              : o
-          )
-        );
-
-        // Send email if digital download customer
-        if (order.digital_download) {
-          await supabase.functions.invoke("generate-customer-pdf", {
-            body: { orderId: order.id, action: "send-email" },
+      supabase.functions
+        .invoke("generate-customer-pdf", { body: { orderId: order.id } })
+        .then(({ data, error }) => {
+          if (error) {
+            console.error("PDF generation failed for", order.id, error);
+            return;
+          }
+          if (data?.pdfPath) {
+            setOrders((prev) =>
+              prev.map((o) => (o.id === order.id ? { ...o, digital_pdf_path: data.pdfPath } : o))
+            );
+          }
+        })
+        .finally(() => {
+          setGeneratingPdf((prev) => {
+            const next = new Set(prev);
+            next.delete(order.id);
+            return next;
           });
-        }
-
-        // Cleanup original photos now that PDF exists
-        await supabase.functions.invoke("generate-customer-pdf", {
-          body: { orderId: order.id, action: "cleanup" },
         });
-      })
-      .catch((err) => {
-        console.error("PDF generation failed for", order.id, err);
-      })
-      .finally(() => {
-        setGeneratingPdf((prev) => {
-          const next = new Set(prev);
-          next.delete(order.id);
-          return next;
-        });
-      });
+    }
   }, [orders, user]);
 
   // Group draft orders by session so multi-book drafts appear as one entry
@@ -299,7 +283,7 @@ const MyOrders = () => {
                           <div className="flex items-center gap-2 mb-1">
                             {isDraft && <Pencil className="w-4 h-4 text-muted-foreground" />}
                             <h3 className="font-display text-lg font-semibold">
-                              {order.order_name || order.title_page_text || "Untitled Book"}
+                              {order.title_page_text || "Untitled Book"}
                             </h3>
                             {isDraft && booksInSession > 1 && (
                               <Badge variant="outline" className="text-[10px]">{booksInSession} books</Badge>
@@ -308,11 +292,6 @@ const MyOrders = () => {
                           <p className="text-xs text-muted-foreground">
                             {isDraft ? "Started" : "Ordered"} {new Date(order.created_at).toLocaleDateString()}
                           </p>
-                          {!isDraft && order.line_items && order.line_items.length > 0 && (
-                            <p className="text-xs text-muted-foreground mt-1">
-                              {order.line_items.map((item: any) => item.title || item.name).filter(Boolean).join(", ")}
-                            </p>
-                          )}
                         </div>
                         <div className="flex items-center gap-2">
                           <Badge variant="secondary">

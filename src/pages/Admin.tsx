@@ -1,8 +1,7 @@
 import { useEffect, useState } from "react";
-import { useNavigate, Navigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useIsAdmin } from "@/hooks/use-admin";
-import { generateAndUploadPdf, generatePdfClientSide } from "@/lib/generate-pdf-client";
 import {
   Loader2, Package, Trash2, Edit2, Truck, Download, ChevronDown, X, Save, FileText,
 } from "lucide-react";
@@ -41,10 +40,6 @@ interface OrderRow {
   tracking_number: string | null;
   shipped_at: string | null;
   user_id: string | null;
-  order_name: string | null;
-  line_items: any[] | null;
-  production_pdf_path: string | null;
-  digital_download: boolean;
 }
 
 interface PhotoRow {
@@ -109,7 +104,9 @@ const Admin = () => {
   const [payoutsLoading, setPayoutsLoading] = useState(false);
   const [showPayouts, setShowPayouts] = useState(false);
 
-  // Auth guard handled in render below
+  useEffect(() => {
+    if (!roleLoading && !isAdmin) navigate("/auth");
+  }, [roleLoading, isAdmin, navigate]);
 
   const fetchOrders = async () => {
     const { data, error } = await supabase
@@ -193,42 +190,37 @@ const Admin = () => {
     setPhotosLoading(false);
   };
 
-  // Generate PDF client-side and download
+  // Generate and download PDF for an order
   const downloadPdf = async (orderId: string) => {
     setPdfGenerating(orderId);
     try {
-      toast.info("Generating PDF... This may take a moment.");
-      const { blob } = await generatePdfClientSide({ orderId });
+      const { data: { session } } = await supabase.auth.getSession();
+      const res = await fetch(
+        `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/generate-pdf`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "Authorization": `Bearer ${session?.access_token}`,
+            "apikey": import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY,
+          },
+          body: JSON.stringify({ orderId }),
+        }
+      );
+      if (!res.ok) {
+        const err = await res.json();
+        toast.error(err.error || "Failed to generate PDF");
+        return;
+      }
+      const blob = await res.blob();
       const url = URL.createObjectURL(blob);
       const a = document.createElement("a");
       a.href = url;
       a.download = `order-${orderId.slice(0, 8)}.pdf`;
       a.click();
       URL.revokeObjectURL(url);
-
-      // Also upload as production PDF if not already stored
-      const order = orders.find((o) => o.id === orderId);
-      if (order && !order.production_pdf_path) {
-        const pdfPath = `production-pdfs/${orderId}/coloring-book.pdf`;
-        await supabase.storage.from("order-files").upload(pdfPath, blob, {
-          contentType: "application/pdf",
-          upsert: true,
-        });
-        await supabase.from("orders").update({ production_pdf_path: pdfPath }).eq("id", orderId);
-        setOrders((prev) => prev.map((o) => o.id === orderId ? { ...o, production_pdf_path: pdfPath } : o));
-
-        // Send email + cleanup via edge function
-        await supabase.functions.invoke("generate-customer-pdf", {
-          body: { orderId, action: "send-email" },
-        });
-        await supabase.functions.invoke("generate-customer-pdf", {
-          body: { orderId, action: "cleanup" },
-        });
-      }
-
-      toast.success("PDF downloaded!");
-    } catch (e: any) {
-      toast.error(e?.message || "Failed to generate PDF");
+    } catch (e) {
+      toast.error("Failed to generate PDF");
     } finally {
       setPdfGenerating(null);
     }
@@ -312,16 +304,12 @@ const Admin = () => {
     else setSelected(new Set(orders.map((o) => o.id)));
   };
 
-  if (roleLoading) {
+  if (roleLoading || (!isAdmin && !roleLoading)) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <Loader2 className="w-8 h-8 animate-spin text-primary" />
       </div>
     );
-  }
-
-  if (!isAdmin) {
-    return <Navigate to="/auth" replace />;
   }
 
   return (
@@ -396,7 +384,7 @@ const Admin = () => {
                         />
                       </TableCell>
                       <TableCell className="font-medium">
-                        {order.order_name || order.title_page_text || "Untitled Book"}
+                        {order.title_page_text || "Untitled Book"}
                         <span className="block text-xs text-muted-foreground">{order.id.slice(0, 8)}…</span>
                       </TableCell>
                       <TableCell className="text-sm">
@@ -411,25 +399,15 @@ const Admin = () => {
                         {order.tracking_number || "—"}
                       </TableCell>
                       <TableCell className="text-sm text-muted-foreground">
-                        {order.line_items && order.line_items.length > 0
-                          ? order.line_items.map((item: any) => item.title || item.name).filter(Boolean).join(", ") || "—"
-                          : "—"}
-                        {order.extra_pages > 0 && <span className="block">+{order.extra_pages} pages</span>}
-                        {order.unique_photos && <span className="block">Unique photos</span>}
-                        {order.digital_download && <Badge variant="outline" className="mt-1 text-[10px]">Digital</Badge>}
+                        {order.extra_pages > 0 && <span>+{order.extra_pages} pages </span>}
+                        {order.unique_photos && <span>· Unique </span>}
                       </TableCell>
                        <TableCell className="text-right space-x-1">
                         <Button
                           size="sm"
                           variant="ghost"
-                          onClick={() => {
-                            if (order.production_pdf_path) {
-                              downloadFile(order.production_pdf_path, `order-${order.id.slice(0, 8)}.pdf`);
-                            } else {
-                              downloadPdf(order.id);
-                            }
-                          }}
-                          title="Download Production PDF"
+                          onClick={() => downloadPdf(order.id)}
+                          title="Download PDF"
                           disabled={pdfGenerating === order.id}
                         >
                           {pdfGenerating === order.id
