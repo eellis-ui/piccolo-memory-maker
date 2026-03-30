@@ -71,7 +71,7 @@ const MyOrders = () => {
     setOrdersLoading(true);
     supabase
       .from("orders")
-      .select("id, status, title_page_text, created_at, tracking_number, shipped_at, extra_pages, builder_session_id, digital_download, digital_pdf_path")
+      .select("id, status, title_page_text, created_at, tracking_number, shipped_at, extra_pages, builder_session_id, digital_download, digital_pdf_path, order_name, line_items, production_pdf_path")
       .order("created_at", { ascending: false })
       .then(({ data }) => {
         if (data) setOrders(data as OrderRow[]);
@@ -79,12 +79,12 @@ const MyOrders = () => {
       });
   }, [user]);
 
-  // Auto-trigger PDF generation for paid digital orders missing PDF
+  // Auto-trigger PDF generation for ALL paid orders missing production PDF
   useEffect(() => {
     if (!user || orders.length === 0) return;
 
     const pendingOrders = orders.filter(
-      (o) => o.digital_download && !o.digital_pdf_path && o.status !== "draft" && !generatingPdf.has(o.id)
+      (o) => !o.production_pdf_path && o.status !== "draft" && !generatingPdf.has(o.id)
     );
 
     if (pendingOrders.length === 0) return;
@@ -101,7 +101,11 @@ const MyOrders = () => {
           }
           if (data?.pdfPath) {
             setOrders((prev) =>
-              prev.map((o) => (o.id === order.id ? { ...o, digital_pdf_path: data.pdfPath } : o))
+              prev.map((o) =>
+                o.id === order.id
+                  ? { ...o, production_pdf_path: data.pdfPath, digital_pdf_path: o.digital_download ? data.pdfPath : o.digital_pdf_path }
+                  : o
+              )
             );
           }
         })
