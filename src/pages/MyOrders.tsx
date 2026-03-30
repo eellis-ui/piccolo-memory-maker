@@ -290,7 +290,7 @@ const MyOrders = () => {
                           <div className="flex items-center gap-2 mb-1">
                             {isDraft && <Pencil className="w-4 h-4 text-muted-foreground" />}
                             <h3 className="font-display text-lg font-semibold">
-                              {order.title_page_text || "Untitled Book"}
+                              {order.order_name || order.title_page_text || "Untitled Book"}
                             </h3>
                             {isDraft && booksInSession > 1 && (
                               <Badge variant="outline" className="text-[10px]">{booksInSession} books</Badge>
