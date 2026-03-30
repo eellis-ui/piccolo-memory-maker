@@ -109,9 +109,7 @@ const Admin = () => {
   const [payoutsLoading, setPayoutsLoading] = useState(false);
   const [showPayouts, setShowPayouts] = useState(false);
 
-  useEffect(() => {
-    if (!roleLoading && !isAdmin) navigate("/auth");
-  }, [roleLoading, isAdmin, navigate]);
+  // Auth guard handled in render below
 
   const fetchOrders = async () => {
     const { data, error } = await supabase
@@ -314,10 +312,18 @@ const Admin = () => {
     else setSelected(new Set(orders.map((o) => o.id)));
   };
 
-  if (roleLoading || (!isAdmin && !roleLoading)) {
+  if (roleLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <Loader2 className="w-8 h-8 animate-spin text-primary" />
+      </div>
+    );
+  }
+
+  if (!isAdmin) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <p className="text-muted-foreground">Access denied. Redirecting...</p>
       </div>
     );
   }
