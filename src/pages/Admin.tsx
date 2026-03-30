@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Navigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useIsAdmin } from "@/hooks/use-admin";
 import { generateAndUploadPdf, generatePdfClientSide } from "@/lib/generate-pdf-client";
@@ -321,11 +321,7 @@ const Admin = () => {
   }
 
   if (!isAdmin) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <p className="text-muted-foreground">Access denied. Redirecting...</p>
-      </div>
-    );
+    return <Navigate to="/auth" replace />;
   }
 
   return (
