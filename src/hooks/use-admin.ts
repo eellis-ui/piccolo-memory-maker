@@ -15,14 +15,14 @@ export const useIsAdmin = () => {
       return;
     }
 
-    supabase
-      .from("user_roles")
-      .select("role")
-      .eq("user_id", user.id)
-      .eq("role", "admin")
-      .maybeSingle()
-      .then(({ data }) => {
-        setIsAdmin(!!data);
+    supabase.rpc("has_role", { _user_id: user.id, _role: "admin" })
+      .then(({ data, error }) => {
+        if (error) {
+          console.error("Admin role check failed:", error);
+          setIsAdmin(false);
+        } else {
+          setIsAdmin(!!data);
+        }
         setLoading(false);
       });
   }, [user, authLoading]);
