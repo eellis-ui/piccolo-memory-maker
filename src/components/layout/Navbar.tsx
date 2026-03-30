@@ -491,10 +491,10 @@ const Navbar = () => {
               }
             {!authLoading && isLoggedIn &&
               <Link
-                to="/my-orders"
+                to="/account"
                 className="text-sm font-medium text-foreground hover:text-foreground/70 transition-colors flex items-center gap-1">
                   <ClipboardList className="w-3.5 h-3.5" />
-                  My Orders
+                  My Account
                 </Link>
               }
               {!authLoading && isLoggedIn && (
@@ -565,11 +565,11 @@ const Navbar = () => {
             }
               {!authLoading && isLoggedIn &&
             <Link
-              to="/my-orders"
+              to="/account"
               className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors px-2 py-2 flex items-center gap-1"
               onClick={() => setIsMenuOpen(false)}>
                   <ClipboardList className="w-3.5 h-3.5" />
-                  My Orders
+                  My Account
                 </Link>
             }
               {!authLoading && isLoggedIn && (
