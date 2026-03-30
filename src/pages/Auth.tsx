@@ -57,7 +57,12 @@ const Auth = () => {
         toast.success("Check your email to confirm your account!");
       }
     } catch (err: any) {
-      toast.error(err.message);
+      if (isLogin && err.message === "Invalid login credentials") {
+        toast.error("No account found with that email. Would you like to create one?");
+        setIsLogin(false);
+      } else {
+        toast.error(err.message);
+      }
     } finally {
       setSubmitting(false);
     }
