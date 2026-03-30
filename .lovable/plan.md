@@ -1,33 +1,32 @@
 
 
-## Plan: Fix Sign Out Button
+## Admin Dashboard — Already Exists, Needs Enhancements
 
-### Problem
-The Sign Out button calls `supabase.auth.signOut()` but the user remains logged in. This is likely because `signOut()` with `global` scope (default) makes a network request to invalidate the server-side session, and if that request fails (network issue, CORS, etc.), the local session is not cleared.
+The admin dashboard at `/admin` already exists with core functionality (order list, edit, delete, PDF download, photo viewer, affiliate payouts). However, it's missing several important order details. Here's what I'll improve:
 
-### Fix — 1 file
+### Changes to `src/pages/Admin.tsx`
 
-**`src/components/layout/Navbar.tsx`** — Two changes to the sign out handler (both desktop at line 502 and mobile at line 577):
+**1. Show more order details in the table**
+- Add **Customer Email** column
+- Add **Shopify Order** column (order_name like #1042)
+- Add **Line Items** summary (e.g. "1x Colouring Book, 1x Digital Download")
+- Add **Digital Download** and **Unique Photos** badges
 
-1. Use `{ scope: 'local' }` to ensure local session is always cleared regardless of server reachability
-2. Add a manual `setSession(null)` fallback if signOut somehow doesn't trigger the auth listener
-3. Add error handling with a toast so failures are visible
+**2. Update the `OrderRow` interface** to include the missing fields:
+- `customer_email`, `shopify_order_number`, `order_name`, `line_items`, `digital_download`, `production_pdf_path`
 
-The updated handler:
-```typescript
-onClick={async () => {
-  const { error } = await supabase.auth.signOut({ scope: 'local' });
-  if (error) {
-    console.error('Sign out error:', error);
-  }
-  navigate("/");
-}}
-```
+**3. Add Production PDF download button**
+- For orders that have a `production_pdf_path`, show a direct download button to fetch the pre-generated PDF from storage
+- Keep the existing on-demand PDF generation button as a fallback
 
-Using `scope: 'local'` clears the local session immediately (removes tokens from localStorage) without needing a server roundtrip. The `onAuthStateChange` listener will then fire with `SIGNED_OUT`, setting session to `null` in AuthContext, which flips `isLoggedIn` to `false` and shows the Sign In button.
+**4. Add order detail expansion or detail view**
+- Clicking an order row opens a detail panel/dialog showing all fields: customer email, line items breakdown, all status info, dates, tracking, and links to download each book's PDF
+
+### No database changes needed
+All the data already exists in the `orders` table — just needs to be displayed.
 
 ### File Changes
 | File | Change |
 |------|--------|
-| `src/components/layout/Navbar.tsx` | Add `{ scope: 'local' }` to both signOut calls (desktop + mobile) |
+| `src/pages/Admin.tsx` | Expand OrderRow interface, add customer/order columns, production PDF download, detail view |
 
