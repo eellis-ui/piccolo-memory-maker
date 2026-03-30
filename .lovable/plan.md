@@ -1,55 +1,34 @@
 
 
-## Plan: Fix Order Details, Production PDF, and Customer PDF
+## Plan: Fix Admin Page Loading + Photo Deletion Safety
 
-### Problems
-1. **Order cards show "Untitled Book"** — Shopify order name and line items aren't stored or displayed
-2. **`generate-customer-pdf` hits CPU Time exceeded** — jsPDF with cover composition + multiple image downloads is too heavy for edge functions
-3. **No distinction between production PDF (admin) and customer PDF** — admin needs a PDF for every paid order; customer only sees PDF if they bought the digital upsell
-
-### Solution
-
-#### 1. Database Migration
-Add three columns to `orders`:
-- `order_name` (text) — stores Shopify order name (e.g. "#1042")
-- `line_items` (jsonb, default `'[]'`) — stores Shopify line items for display
-- `production_pdf_path` (text) — path to the production PDF for admin use
-
-#### 2. Webhook Update (`shopify-order-webhook/index.ts`)
-Store `order_name` and `line_items` from the Shopify payload when updating order status to "paid":
+### Problem 1: Admin page stuck on spinner
+Line 317 in `Admin.tsx`:
 ```typescript
-updates.order_name = payload.name || null;
-updates.line_items = payload.line_items || [];
+if (roleLoading || (!isAdmin && !roleLoading))
 ```
+The condition `(!isAdmin && !roleLoading)` is always true when `isAdmin` is false, so the page never renders — it shows the spinner forever even for an authenticated admin (because there's a brief moment where `isAdmin` is false before the role query completes, and the `useEffect` redirect on line 113 races with the render guard).
 
-#### 3. Fix `generate-customer-pdf` — Dual-Purpose + CPU Fix
-Rename the function's role to handle BOTH production and customer PDFs:
-- **Remove** the `digital_download` gate — generate for ALL paid orders
-- **Store** the PDF as `production_pdf_path` on every order
-- **Additionally** set `digital_pdf_path` and send email ONLY if `digital_download` is true
-- **Fix CPU timeout**: Skip the heavy cover composition (4 image downloads + grid layout). Use a simple title-only cover page instead. The full branded cover is already available via the admin's on-demand `generate-pdf` function.
-- This keeps the function well within CPU budget (just sequential line art pages)
+**Fix**: Replace with a simple sequential guard:
+```typescript
+if (roleLoading) {
+  return <Loader2 spinner />;
+}
+if (!isAdmin) {
+  return <Navigate to="/auth" replace />;
+}
+```
+Remove the `useEffect` redirect on lines 112-114 since the render guard handles it.
 
-#### 4. Admin UI (`Admin.tsx`)
-- Update `OrderRow` interface to include `order_name`, `line_items`, `production_pdf_path`, `digital_download`
-- Show `order_name` in the Title column (fallback to `title_page_text`)
-- Show line items summary in the Details column
-- Add a dedicated "Download Production PDF" button that uses `production_pdf_path` signed URL when available, falls back to the existing on-demand `generate-pdf` function
-- Auto-trigger production PDF generation for orders missing `production_pdf_path`
+### Problem 2: Photos deleted before PDF exists
+In `MyOrders.tsx`, the cleanup action fires after `generateAndUploadPdf` succeeds. This is correct in the current code. However, if the PDF generation fails or the user never visits My Orders, photos sit around but are never deleted prematurely — this is safe.
 
-#### 5. MyOrders Auto-Trigger Update (`MyOrders.tsx`)
-- Trigger `generate-customer-pdf` for ALL paid orders missing `production_pdf_path` (not just digital ones)
-- Keep customer-facing download button visible ONLY for `digital_download` orders
-- Update `OrderRow` interface to include `order_name` and `line_items`
-- Display `order_name` instead of `title_page_text` for paid orders
-- Show line items summary on paid order cards
+The real issue is that PDF generation only triggers when someone visits My Orders. For the admin, it should also auto-trigger from the Admin page.
+
+**Fix**: Add the same auto-trigger logic to `Admin.tsx` — when the admin page loads and detects paid orders without `production_pdf_path`, generate PDFs client-side one at a time. Only call cleanup after successful generation.
 
 ### File Changes
 | File | Change |
 |------|--------|
-| Migration SQL | Add `order_name`, `line_items`, `production_pdf_path` columns |
-| `supabase/functions/shopify-order-webhook/index.ts` | Store order_name + line_items |
-| `supabase/functions/generate-customer-pdf/index.ts` | Remove digital-only gate, store production_pdf_path, simplify cover to fix CPU |
-| `src/pages/Admin.tsx` | Show order name, items, production PDF download |
-| `src/pages/MyOrders.tsx` | Show order name/items, trigger for all paid orders, gate download on digital_download |
+| `src/pages/Admin.tsx` | Fix auth guard (line 317), remove useEffect redirect, add auto-trigger PDF generation for orders missing production_pdf_path |
 
