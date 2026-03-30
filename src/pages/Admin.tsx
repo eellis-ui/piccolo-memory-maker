@@ -40,6 +40,10 @@ interface OrderRow {
   tracking_number: string | null;
   shipped_at: string | null;
   user_id: string | null;
+  order_name: string | null;
+  line_items: any[] | null;
+  production_pdf_path: string | null;
+  digital_download: boolean;
 }
 
 interface PhotoRow {
@@ -384,7 +388,7 @@ const Admin = () => {
                         />
                       </TableCell>
                       <TableCell className="font-medium">
-                        {order.title_page_text || "Untitled Book"}
+                        {order.order_name || order.title_page_text || "Untitled Book"}
                         <span className="block text-xs text-muted-foreground">{order.id.slice(0, 8)}…</span>
                       </TableCell>
                       <TableCell className="text-sm">
@@ -399,15 +403,25 @@ const Admin = () => {
                         {order.tracking_number || "—"}
                       </TableCell>
                       <TableCell className="text-sm text-muted-foreground">
-                        {order.extra_pages > 0 && <span>+{order.extra_pages} pages </span>}
-                        {order.unique_photos && <span>· Unique </span>}
+                        {order.line_items && order.line_items.length > 0
+                          ? order.line_items.map((item: any) => item.title || item.name).filter(Boolean).join(", ") || "—"
+                          : "—"}
+                        {order.extra_pages > 0 && <span className="block">+{order.extra_pages} pages</span>}
+                        {order.unique_photos && <span className="block">Unique photos</span>}
+                        {order.digital_download && <Badge variant="outline" className="mt-1 text-[10px]">Digital</Badge>}
                       </TableCell>
                        <TableCell className="text-right space-x-1">
                         <Button
                           size="sm"
                           variant="ghost"
-                          onClick={() => downloadPdf(order.id)}
-                          title="Download PDF"
+                          onClick={() => {
+                            if (order.production_pdf_path) {
+                              downloadFile(order.production_pdf_path, `order-${order.id.slice(0, 8)}.pdf`);
+                            } else {
+                              downloadPdf(order.id);
+                            }
+                          }}
+                          title="Download Production PDF"
                           disabled={pdfGenerating === order.id}
                         >
                           {pdfGenerating === order.id

@@ -206,7 +206,10 @@ export type Database = {
           digital_pdf_path: string | null
           extra_pages: number
           id: string
+          line_items: Json | null
+          order_name: string | null
           payment_status: string
+          production_pdf_path: string | null
           review_request_sent: boolean
           shipped_at: string | null
           shopify_order_number: string | null
@@ -233,7 +236,10 @@ export type Database = {
           digital_pdf_path?: string | null
           extra_pages?: number
           id?: string
+          line_items?: Json | null
+          order_name?: string | null
           payment_status?: string
+          production_pdf_path?: string | null
           review_request_sent?: boolean
           shipped_at?: string | null
           shopify_order_number?: string | null
@@ -260,7 +266,10 @@ export type Database = {
           digital_pdf_path?: string | null
           extra_pages?: number
           id?: string
+          line_items?: Json | null
+          order_name?: string | null
           payment_status?: string
+          production_pdf_path?: string | null
           review_request_sent?: boolean
           shipped_at?: string | null
           shopify_order_number?: string | null
