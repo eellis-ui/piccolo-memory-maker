@@ -499,9 +499,12 @@ const Navbar = () => {
               }
               {!authLoading && isLoggedIn && (
                 <button
-                  onClick={async () => {
-                    await supabase.auth.signOut({ scope: 'local' });
-                    navigate("/");
+                  onClick={() => {
+                    supabase.auth.signOut({ scope: 'local' }).then(() => {
+                      window.location.href = "/";
+                    }).catch(() => {
+                      window.location.href = "/";
+                    });
                   }}
                   className="text-sm font-medium text-foreground hover:text-foreground/70 transition-colors"
                 >
@@ -574,10 +577,13 @@ const Navbar = () => {
             }
               {!authLoading && isLoggedIn && (
                 <button
-                  onClick={async () => {
+                  onClick={() => {
                     setIsMenuOpen(false);
-                    await supabase.auth.signOut({ scope: 'local' });
-                    navigate("/");
+                    supabase.auth.signOut({ scope: 'local' }).then(() => {
+                      window.location.href = "/";
+                    }).catch(() => {
+                      window.location.href = "/";
+                    });
                   }}
                   className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors px-2 py-2 text-left"
                 >
