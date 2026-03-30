@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useIsAdmin } from "@/hooks/use-admin";
 import {
-  Loader2, Package, Trash2, Edit2, Truck, Download, ChevronDown, X, Save, FileText,
+  Loader2, Package, Trash2, Edit2, Truck, Download, ChevronDown, X, Save, FileText, Eye, Mail, ShoppingBag,
 } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -24,6 +24,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { toast } from "sonner";
 import Navbar from "@/components/layout/Navbar";
 import Footer from "@/components/layout/Footer";
+import type { Json } from "@/integrations/supabase/types";
 
 const ORDER_STATUSES = ["draft", "paid", "converted", "sent_to_print", "shipped"] as const;
 
@@ -40,6 +41,15 @@ interface OrderRow {
   tracking_number: string | null;
   shipped_at: string | null;
   user_id: string | null;
+  customer_email: string | null;
+  shopify_order_number: string | null;
+  order_name: string | null;
+  line_items: Json | null;
+  digital_download: boolean;
+  production_pdf_path: string | null;
+  payment_status: string;
+  cover_image_id: string | null;
+  cover_image_id_2: string | null;
 }
 
 interface PhotoRow {
@@ -62,6 +72,13 @@ const statusColor = (status: string) => {
     case "shipped": return "default";
     default: return "outline";
   }
+};
+
+const formatLineItems = (lineItems: Json | null): string => {
+  if (!lineItems || !Array.isArray(lineItems)) return "—";
+  return (lineItems as Array<{ title?: string; quantity?: number }>)
+    .map((item) => `${item.quantity || 1}x ${item.title || "Item"}`)
+    .join(", ");
 };
 
 interface PayoutRow {
@@ -104,6 +121,11 @@ const Admin = () => {
   const [payoutsLoading, setPayoutsLoading] = useState(false);
   const [showPayouts, setShowPayouts] = useState(false);
 
+  // Detail view dialog
+  const [detailOrder, setDetailOrder] = useState<OrderRow | null>(null);
+  const [detailPhotos, setDetailPhotos] = useState<PhotoRow[]>([]);
+  const [detailPhotosLoading, setDetailPhotosLoading] = useState(false);
+
   useEffect(() => {
     if (!roleLoading && !isAdmin) navigate("/auth");
   }, [roleLoading, isAdmin, navigate]);
@@ -122,14 +144,12 @@ const Admin = () => {
   const fetchPayouts = async () => {
     setPayoutsLoading(true);
     try {
-      // Fetch all payout requests
       const { data: payoutsData } = await supabase
         .from("affiliate_payouts")
         .select("*")
         .order("created_at", { ascending: false });
       
       if (payoutsData && payoutsData.length > 0) {
-        // Get affiliate details for each payout
         const affiliateIds = [...new Set(payoutsData.map((p: any) => p.affiliate_id))];
         const { data: affiliates } = await supabase
           .from("affiliates")
@@ -172,6 +192,7 @@ const Admin = () => {
     toast.success(`Payout marked as ${action}`);
     fetchPayouts();
   };
+
   useEffect(() => {
     if (!isAdmin) return;
     fetchOrders();
@@ -188,6 +209,19 @@ const Admin = () => {
       .order("page_position");
     setPhotos((data as PhotoRow[]) || []);
     setPhotosLoading(false);
+  };
+
+  // Open detail view
+  const openDetail = async (order: OrderRow) => {
+    setDetailOrder(order);
+    setDetailPhotosLoading(true);
+    const { data } = await supabase
+      .from("order_photos")
+      .select("*")
+      .eq("order_id", order.id)
+      .order("page_position");
+    setDetailPhotos((data as PhotoRow[]) || []);
+    setDetailPhotosLoading(false);
   };
 
   // Generate and download PDF for an order
@@ -224,6 +258,23 @@ const Admin = () => {
     } finally {
       setPdfGenerating(null);
     }
+  };
+
+  // Download production PDF from storage
+  const downloadProductionPdf = async (order: OrderRow) => {
+    if (!order.production_pdf_path) return;
+    const { data, error } = await supabase.storage
+      .from("order-files")
+      .createSignedUrl(order.production_pdf_path, 3600);
+    if (error || !data?.signedUrl) {
+      toast.error("Could not generate download link");
+      return;
+    }
+    const a = document.createElement("a");
+    a.href = data.signedUrl;
+    a.download = `production-${order.order_name || order.id.slice(0, 8)}.pdf`;
+    a.target = "_blank";
+    a.click();
   };
 
   // Download a file from storage
@@ -364,11 +415,13 @@ const Admin = () => {
                         className="rounded border-border"
                       />
                     </TableHead>
-                    <TableHead>Title</TableHead>
+                    <TableHead>Order</TableHead>
+                    <TableHead>Customer</TableHead>
                     <TableHead>Date</TableHead>
                     <TableHead>Status</TableHead>
+                    <TableHead>Line Items</TableHead>
                     <TableHead>Tracking</TableHead>
-                    <TableHead>Details</TableHead>
+                    <TableHead>Flags</TableHead>
                     <TableHead className="text-right">Actions</TableHead>
                   </TableRow>
                 </TableHeader>
@@ -384,8 +437,18 @@ const Admin = () => {
                         />
                       </TableCell>
                       <TableCell className="font-medium">
-                        {order.title_page_text || "Untitled Book"}
+                        {order.order_name || order.title_page_text || "Untitled Book"}
                         <span className="block text-xs text-muted-foreground">{order.id.slice(0, 8)}…</span>
+                      </TableCell>
+                      <TableCell className="text-sm">
+                        {order.customer_email ? (
+                          <span className="flex items-center gap-1">
+                            <Mail className="w-3 h-3 text-muted-foreground" />
+                            {order.customer_email}
+                          </span>
+                        ) : (
+                          <span className="text-muted-foreground">—</span>
+                        )}
                       </TableCell>
                       <TableCell className="text-sm">
                         {new Date(order.created_at).toLocaleDateString()}
@@ -395,19 +458,49 @@ const Admin = () => {
                           {statusLabel(order.status)}
                         </Badge>
                       </TableCell>
+                      <TableCell className="text-sm text-muted-foreground max-w-[200px] truncate">
+                        {formatLineItems(order.line_items)}
+                      </TableCell>
                       <TableCell className="text-sm text-muted-foreground">
                         {order.tracking_number || "—"}
                       </TableCell>
-                      <TableCell className="text-sm text-muted-foreground">
-                        {order.extra_pages > 0 && <span>+{order.extra_pages} pages </span>}
-                        {order.unique_photos && <span>· Unique </span>}
+                      <TableCell>
+                        <div className="flex flex-wrap gap-1">
+                          {order.digital_download && (
+                            <Badge variant="secondary" className="text-[10px] px-1.5 py-0">Digital</Badge>
+                          )}
+                          {order.unique_photos && (
+                            <Badge variant="secondary" className="text-[10px] px-1.5 py-0">Unique</Badge>
+                          )}
+                          {order.extra_pages > 0 && (
+                            <Badge variant="outline" className="text-[10px] px-1.5 py-0">+{order.extra_pages}pg</Badge>
+                          )}
+                        </div>
                       </TableCell>
-                       <TableCell className="text-right space-x-1">
+                      <TableCell className="text-right space-x-1">
+                        <Button
+                          size="sm"
+                          variant="ghost"
+                          onClick={() => openDetail(order)}
+                          title="View order details"
+                        >
+                          <Eye className="w-4 h-4" />
+                        </Button>
+                        {order.production_pdf_path && (
+                          <Button
+                            size="sm"
+                            variant="ghost"
+                            onClick={() => downloadProductionPdf(order)}
+                            title="Download production PDF"
+                          >
+                            <Download className="w-4 h-4" />
+                          </Button>
+                        )}
                         <Button
                           size="sm"
                           variant="ghost"
                           onClick={() => downloadPdf(order.id)}
-                          title="Download PDF"
+                          title="Generate & download PDF"
                           disabled={pdfGenerating === order.id}
                         >
                           {pdfGenerating === order.id
@@ -420,7 +513,7 @@ const Admin = () => {
                           onClick={() => openPhotos(order.id)}
                           title="View individual photos"
                         >
-                          <Download className="w-4 h-4" />
+                          <ShoppingBag className="w-4 h-4" />
                         </Button>
                         <Button
                           size="sm"
@@ -454,6 +547,7 @@ const Admin = () => {
               </Table>
             </div>
           )}
+
           {/* Affiliate Payouts Section */}
           <div className="mt-12">
             <div className="flex items-center justify-between mb-4">
@@ -548,6 +642,166 @@ const Admin = () => {
         </div>
       </main>
       <Footer />
+
+      {/* Order Detail Dialog */}
+      <Dialog open={!!detailOrder} onOpenChange={(o) => !o && setDetailOrder(null)}>
+        <DialogContent className="sm:max-w-2xl max-h-[85vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>Order Details — {detailOrder?.order_name || detailOrder?.id.slice(0, 8)}</DialogTitle>
+            <DialogDescription>Full order information and downloads</DialogDescription>
+          </DialogHeader>
+          {detailOrder && (
+            <div className="space-y-6">
+              {/* Customer & Order Info */}
+              <div className="grid grid-cols-2 gap-4 text-sm">
+                <div>
+                  <p className="text-muted-foreground text-xs uppercase font-medium mb-1">Customer Email</p>
+                  <p className="font-medium">{detailOrder.customer_email || "—"}</p>
+                </div>
+                <div>
+                  <p className="text-muted-foreground text-xs uppercase font-medium mb-1">Shopify Order</p>
+                  <p className="font-medium">{detailOrder.order_name || detailOrder.shopify_order_number || "—"}</p>
+                </div>
+                <div>
+                  <p className="text-muted-foreground text-xs uppercase font-medium mb-1">Status</p>
+                  <Badge variant={statusColor(detailOrder.status) as any}>
+                    {statusLabel(detailOrder.status)}
+                  </Badge>
+                </div>
+                <div>
+                  <p className="text-muted-foreground text-xs uppercase font-medium mb-1">Payment</p>
+                  <p className="font-medium">{statusLabel(detailOrder.payment_status)}</p>
+                </div>
+                <div>
+                  <p className="text-muted-foreground text-xs uppercase font-medium mb-1">Created</p>
+                  <p>{new Date(detailOrder.created_at).toLocaleString()}</p>
+                </div>
+                <div>
+                  <p className="text-muted-foreground text-xs uppercase font-medium mb-1">Tracking</p>
+                  <p>{detailOrder.tracking_number || "—"}</p>
+                </div>
+                {detailOrder.shipped_at && (
+                  <div>
+                    <p className="text-muted-foreground text-xs uppercase font-medium mb-1">Shipped</p>
+                    <p>{new Date(detailOrder.shipped_at).toLocaleString()}</p>
+                  </div>
+                )}
+                <div>
+                  <p className="text-muted-foreground text-xs uppercase font-medium mb-1">Order ID</p>
+                  <p className="text-xs font-mono">{detailOrder.id}</p>
+                </div>
+              </div>
+
+              {/* Book Details */}
+              <div>
+                <p className="text-muted-foreground text-xs uppercase font-medium mb-2">Book Details</p>
+                <div className="rounded-xl border p-3 space-y-1 text-sm">
+                  <p><span className="text-muted-foreground">Title:</span> {detailOrder.title_page_text}</p>
+                  {detailOrder.dedication_page_enabled && (
+                    <p><span className="text-muted-foreground">Dedication:</span> {detailOrder.dedication_page_text || "—"}</p>
+                  )}
+                  <div className="flex gap-2 mt-2">
+                    {detailOrder.digital_download && <Badge variant="secondary">Digital Download</Badge>}
+                    {detailOrder.unique_photos && <Badge variant="secondary">Unique Photos</Badge>}
+                    {detailOrder.extra_pages > 0 && <Badge variant="outline">+{detailOrder.extra_pages} Extra Pages</Badge>}
+                  </div>
+                </div>
+              </div>
+
+              {/* Line Items */}
+              {detailOrder.line_items && Array.isArray(detailOrder.line_items) && (detailOrder.line_items as any[]).length > 0 && (
+                <div>
+                  <p className="text-muted-foreground text-xs uppercase font-medium mb-2">Line Items</p>
+                  <div className="rounded-xl border divide-y">
+                    {(detailOrder.line_items as Array<{ title?: string; quantity?: number; price?: string }>).map((item, i) => (
+                      <div key={i} className="p-3 flex justify-between text-sm">
+                        <span>{item.quantity || 1}x {item.title || "Item"}</span>
+                        {item.price && <span className="text-muted-foreground">£{item.price}</span>}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* PDF Downloads */}
+              <div>
+                <p className="text-muted-foreground text-xs uppercase font-medium mb-2">PDF Downloads</p>
+                <div className="flex flex-wrap gap-2">
+                  {detailOrder.production_pdf_path && (
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="rounded-xl"
+                      onClick={() => downloadProductionPdf(detailOrder)}
+                    >
+                      <Download className="w-4 h-4 mr-1" /> Production PDF
+                    </Button>
+                  )}
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="rounded-xl"
+                    onClick={() => downloadPdf(detailOrder.id)}
+                    disabled={pdfGenerating === detailOrder.id}
+                  >
+                    {pdfGenerating === detailOrder.id
+                      ? <Loader2 className="w-4 h-4 mr-1 animate-spin" />
+                      : <FileText className="w-4 h-4 mr-1" />}
+                    Generate PDF
+                  </Button>
+                </div>
+              </div>
+
+              {/* Photos */}
+              <div>
+                <p className="text-muted-foreground text-xs uppercase font-medium mb-2">
+                  Photos ({detailPhotos.length})
+                </p>
+                {detailPhotosLoading ? (
+                  <div className="flex justify-center py-4">
+                    <Loader2 className="w-5 h-5 animate-spin text-primary" />
+                  </div>
+                ) : detailPhotos.length === 0 ? (
+                  <p className="text-sm text-muted-foreground">No photos uploaded</p>
+                ) : (
+                  <div className="space-y-2 max-h-60 overflow-y-auto">
+                    {detailPhotos.map((p) => (
+                      <div key={p.id} className="flex items-center justify-between border rounded-xl p-3">
+                        <div className="text-sm">
+                          <p className="font-medium">Page {p.page_position + 1}</p>
+                          <p className="text-muted-foreground text-xs">
+                            {statusLabel(p.conversion_status)} {p.is_landscape && "· Landscape"}
+                          </p>
+                        </div>
+                        <div className="flex gap-1">
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            className="rounded-lg text-xs"
+                            onClick={() => downloadFile(p.original_path, `page-${p.page_position + 1}-original`)}
+                          >
+                            Original
+                          </Button>
+                          {p.converted_path && (
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              className="rounded-lg text-xs"
+                              onClick={() => downloadFile(p.converted_path!, `page-${p.page_position + 1}-lineart`)}
+                            >
+                              Line Art
+                            </Button>
+                          )}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
 
       {/* Edit Order Dialog */}
       <Dialog open={!!editOrder} onOpenChange={(o) => !o && setEditOrder(null)}>
