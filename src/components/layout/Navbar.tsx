@@ -500,7 +500,7 @@ const Navbar = () => {
               {!authLoading && isLoggedIn && (
                 <button
                   onClick={async () => {
-                    await supabase.auth.signOut();
+                    await supabase.auth.signOut({ scope: 'local' });
                     navigate("/");
                   }}
                   className="text-sm font-medium text-foreground hover:text-foreground/70 transition-colors"
@@ -576,7 +576,7 @@ const Navbar = () => {
                 <button
                   onClick={async () => {
                     setIsMenuOpen(false);
-                    await supabase.auth.signOut();
+                    await supabase.auth.signOut({ scope: 'local' });
                     navigate("/");
                   }}
                   className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors px-2 py-2 text-left"
