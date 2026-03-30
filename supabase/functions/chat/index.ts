@@ -1,5 +1,7 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 
+const SITE_URL = Deno.env.get("SITE_URL") || "https://piccoload.com";
+
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Headers":
@@ -62,7 +64,7 @@ ${pricing}
 ${delivery}
 
 ## Getting Started
-Direct customers to the builder at https://piccolo-memory-maker.lovable.app/builder to create their book. The whole process takes about 5–10 minutes.
+Direct customers to the builder at ${SITE_URL}/builder to create their book. The whole process takes about 5–10 minutes.
 
 ## FAQs
 - **What photo formats are accepted?** JPG, PNG, HEIC, and WebP. Minimum 500×500 px for best results.
@@ -76,7 +78,7 @@ Direct customers to the builder at https://piccolo-memory-maker.lovable.app/buil
 
 ## Contact
 - Email: hello@piccoload.com
-- Website: https://piccolo-memory-maker.lovable.app
+- Website: ${SITE_URL}
 `;
 }
 
@@ -86,24 +88,33 @@ serve(async (req) => {
   try {
     const { messages, locale } = await req.json();
     const systemPrompt = buildSystemPrompt(locale === "US" ? "US" : "UK");
-    const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
-    if (!LOVABLE_API_KEY) throw new Error("LOVABLE_API_KEY is not configured");
+    const googleApiKey = Deno.env.get("GOOGLE_AI_API_KEY");
+    if (!googleApiKey) throw new Error("GOOGLE_AI_API_KEY is not configured");
 
-    const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${LOVABLE_API_KEY}`,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        model: "google/gemini-3-flash-preview",
-        messages: [
-          { role: "system", content: systemPrompt },
-          ...messages,
-        ],
-        stream: true,
-      }),
-    });
+    // Convert OpenAI message format to Google Gemini format.
+    // The system prompt becomes the first user message + a model acknowledgment,
+    // then the actual conversation messages follow.
+    const geminiContents = [
+      { role: "user", parts: [{ text: systemPrompt }] },
+      { role: "model", parts: [{ text: "Understood. I'm ready to help Piccoload customers." }] },
+      ...messages.map((m: { role: string; content: string }) => ({
+        role: m.role === "assistant" ? "model" : "user",
+        parts: [{ text: m.content }],
+      })),
+    ];
+
+    const response = await fetch(
+      `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:streamGenerateContent?alt=sse&key=${googleApiKey}`,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          contents: geminiContents,
+        }),
+      }
+    );
 
     if (!response.ok) {
       if (response.status === 429) {
@@ -112,21 +123,47 @@ serve(async (req) => {
           { status: 429, headers: { ...corsHeaders, "Content-Type": "application/json" } }
         );
       }
-      if (response.status === 402) {
-        return new Response(
-          JSON.stringify({ error: "Service temporarily unavailable. Please contact hello@piccoload.com." }),
-          { status: 402, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-        );
-      }
       const text = await response.text();
-      console.error("AI gateway error:", response.status, text);
+      console.error("Google AI error:", response.status, text);
       return new Response(
         JSON.stringify({ error: "Something went wrong. Please try again." }),
         { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
 
-    return new Response(response.body, {
+    // Google Gemini SSE format differs from OpenAI's.
+    // Transform Google's `candidates[0].content.parts[0].text` into
+    // OpenAI-compatible `choices[0].delta.content` chunks for the frontend.
+    const transformStream = new TransformStream({
+      transform(chunk, controller) {
+        const text = new TextDecoder().decode(chunk);
+        const lines = text.split("\n");
+        for (const line of lines) {
+          if (!line.startsWith("data: ")) continue;
+          const jsonStr = line.slice(6).trim();
+          if (jsonStr === "[DONE]") {
+            controller.enqueue(new TextEncoder().encode("data: [DONE]\n\n"));
+            continue;
+          }
+          try {
+            const parsed = JSON.parse(jsonStr);
+            const textPart = parsed.candidates?.[0]?.content?.parts?.[0]?.text;
+            if (textPart !== undefined) {
+              const openAiChunk = {
+                choices: [{ delta: { content: textPart } }],
+              };
+              controller.enqueue(
+                new TextEncoder().encode(`data: ${JSON.stringify(openAiChunk)}\n\n`)
+              );
+            }
+          } catch {
+            // Skip unparseable lines
+          }
+        }
+      },
+    });
+
+    return new Response(response.body!.pipeThrough(transformStream), {
       headers: { ...corsHeaders, "Content-Type": "text/event-stream" },
     });
   } catch (e) {
