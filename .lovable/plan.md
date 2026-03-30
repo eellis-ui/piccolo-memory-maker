@@ -1,52 +1,55 @@
 
 
-## Plan: Fix PDF Generation Timeout — Decouple from Webhook
+## Plan: Fix Order Details, Production PDF, and Customer PDF
 
-### Problem
-The `shopify-order-webhook` edge function is hitting **CPU Time exceeded** errors because inline PDF generation (downloading multiple images, encoding base64, compositing with jsPDF) is too heavy for the webhook's CPU budget. The webhook times out, so:
-- Customer never gets their PDF
-- Original photos may not get cleaned up
-- The "PDF Generating…" spinner in My Orders spins forever
+### Problems
+1. **Order cards show "Untitled Book"** — Shopify order name and line items aren't stored or displayed
+2. **`generate-customer-pdf` hits CPU Time exceeded** — jsPDF with cover composition + multiple image downloads is too heavy for edge functions
+3. **No distinction between production PDF (admin) and customer PDF** — admin needs a PDF for every paid order; customer only sees PDF if they bought the digital upsell
 
-### Solution: Decouple PDF generation from the webhook
+### Solution
 
-**1. Strip PDF generation and photo cleanup from `shopify-order-webhook/index.ts`**
-- Remove the `generateAndUploadPdf` function and all PDF-related logic (~lines 52–229)
-- Remove the `downloadAsBase64` helper and jsPDF import
-- Remove the photo deletion block
-- The webhook becomes lightweight: just update order status to "paid", set flags, handle affiliates
+#### 1. Database Migration
+Add three columns to `orders`:
+- `order_name` (text) — stores Shopify order name (e.g. "#1042")
+- `line_items` (jsonb, default `'[]'`) — stores Shopify line items for display
+- `production_pdf_path` (text) — path to the production PDF for admin use
 
-**2. Create new edge function `generate-customer-pdf/index.ts`**
-- Accepts `{ orderId }` — no user auth required (uses service role key internally)
-- Validates the order exists and has `digital_download = true`
-- Checks if `digital_pdf_path` is already set (idempotent — skip if PDF exists)
-- Generates the full branded PDF (same logic as admin `generate-pdf`: cover grid, back cover, title/dedication pages, line art pages)
-- Uploads to storage, updates `digital_pdf_path` on the order
-- Sends the download email to `customer_email`
-- Deletes original photos after successful generation
-- Returns `{ pdfPath }` on success
+#### 2. Webhook Update (`shopify-order-webhook/index.ts`)
+Store `order_name` and `line_items` from the Shopify payload when updating order status to "paid":
+```typescript
+updates.order_name = payload.name || null;
+updates.line_items = payload.line_items || [];
+```
 
-**3. Update `MyOrders.tsx` — auto-trigger PDF generation**
-- When the page detects a paid order with `digital_download = true` and `digital_pdf_path = null`, automatically call the `generate-customer-pdf` function
-- On success, refresh the order list so the "Download PDF" button appears instantly
-- Add a guard to prevent duplicate calls (track in-flight requests by order ID)
+#### 3. Fix `generate-customer-pdf` — Dual-Purpose + CPU Fix
+Rename the function's role to handle BOTH production and customer PDFs:
+- **Remove** the `digital_download` gate — generate for ALL paid orders
+- **Store** the PDF as `production_pdf_path` on every order
+- **Additionally** set `digital_pdf_path` and send email ONLY if `digital_download` is true
+- **Fix CPU timeout**: Skip the heavy cover composition (4 image downloads + grid layout). Use a simple title-only cover page instead. The full branded cover is already available via the admin's on-demand `generate-pdf` function.
+- This keeps the function well within CPU budget (just sequential line art pages)
 
-**4. Admin PDF remains unchanged**
-- The existing `generate-pdf` edge function continues to work independently for admin downloads
-- Admins can generate/download PDFs instantly from the admin dashboard as before
+#### 4. Admin UI (`Admin.tsx`)
+- Update `OrderRow` interface to include `order_name`, `line_items`, `production_pdf_path`, `digital_download`
+- Show `order_name` in the Title column (fallback to `title_page_text`)
+- Show line items summary in the Details column
+- Add a dedicated "Download Production PDF" button that uses `production_pdf_path` signed URL when available, falls back to the existing on-demand `generate-pdf` function
+- Auto-trigger production PDF generation for orders missing `production_pdf_path`
 
-### Technical Details
-
-- The webhook drops from ~200+ lines of PDF logic to just status updates — well within CPU limits
-- The new function gets its own CPU budget, solving the timeout
-- Idempotent check (`digital_pdf_path` already set?) prevents duplicate generation
-- Customer sees PDF available within seconds of landing on My Orders, not 5–10 minutes
-- Photo cleanup moves into the new function, happening right after PDF generation succeeds
+#### 5. MyOrders Auto-Trigger Update (`MyOrders.tsx`)
+- Trigger `generate-customer-pdf` for ALL paid orders missing `production_pdf_path` (not just digital ones)
+- Keep customer-facing download button visible ONLY for `digital_download` orders
+- Update `OrderRow` interface to include `order_name` and `line_items`
+- Display `order_name` instead of `title_page_text` for paid orders
+- Show line items summary on paid order cards
 
 ### File Changes
-| File | Action |
+| File | Change |
 |------|--------|
-| `supabase/functions/shopify-order-webhook/index.ts` | Remove PDF gen, photo cleanup, jsPDF import |
-| `supabase/functions/generate-customer-pdf/index.ts` | **New** — PDF gen + email + cleanup |
-| `src/pages/MyOrders.tsx` | Add auto-trigger for PDF generation |
+| Migration SQL | Add `order_name`, `line_items`, `production_pdf_path` columns |
+| `supabase/functions/shopify-order-webhook/index.ts` | Store order_name + line_items |
+| `supabase/functions/generate-customer-pdf/index.ts` | Remove digital-only gate, store production_pdf_path, simplify cover to fix CPU |
+| `src/pages/Admin.tsx` | Show order name, items, production PDF download |
+| `src/pages/MyOrders.tsx` | Show order name/items, trigger for all paid orders, gate download on digital_download |
 
