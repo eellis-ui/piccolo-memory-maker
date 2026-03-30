@@ -1,32 +1,56 @@
 
 
-## Admin Dashboard — Already Exists, Needs Enhancements
+## Plan: Debug & Fix Admin Button Not Showing
 
-The admin dashboard at `/admin` already exists with core functionality (order list, edit, delete, PDF download, photo viewer, affiliate payouts). However, it's missing several important order details. Here's what I'll improve:
+### Root Cause (Most Likely)
+The `useIsAdmin` hook query to `user_roles` may be silently failing — the `.then()` destructures `{ data }` but ignores `{ error }`. If the query errors (e.g., RLS timing, network), `data` is `null` and `isAdmin` stays `false` with no indication of failure.
 
-### Changes to `src/pages/Admin.tsx`
+The database confirms matilda@herbertandellis.com **does** have the admin role, and the code logic is correct. This points to a silent query failure.
 
-**1. Show more order details in the table**
-- Add **Customer Email** column
-- Add **Shopify Order** column (order_name like #1042)
-- Add **Line Items** summary (e.g. "1x Colouring Book, 1x Digital Download")
-- Add **Digital Download** and **Unique Photos** badges
+### Fix — `src/hooks/use-admin.ts`
 
-**2. Update the `OrderRow` interface** to include the missing fields:
-- `customer_email`, `shopify_order_number`, `order_name`, `line_items`, `digital_download`, `production_pdf_path`
+1. **Add error handling** — log errors so failures are visible
+2. **Add a retry mechanism** — if the first query fails (common on initial page load when auth token isn't ready), retry once after a short delay
+3. **Use the `has_role` RPC** instead of querying `user_roles` directly — this is a `SECURITY DEFINER` function that bypasses RLS entirely, making it more reliable
 
-**3. Add Production PDF download button**
-- For orders that have a `production_pdf_path`, show a direct download button to fetch the pre-generated PDF from storage
-- Keep the existing on-demand PDF generation button as a fallback
+Updated hook:
+```typescript
+export const useIsAdmin = () => {
+  const { user, loading: authLoading } = useAuth();
+  const [isAdmin, setIsAdmin] = useState(false);
+  const [loading, setLoading] = useState(true);
 
-**4. Add order detail expansion or detail view**
-- Clicking an order row opens a detail panel/dialog showing all fields: customer email, line items breakdown, all status info, dates, tracking, and links to download each book's PDF
+  useEffect(() => {
+    if (authLoading) return;
+    if (!user) {
+      setIsAdmin(false);
+      setLoading(false);
+      return;
+    }
 
-### No database changes needed
-All the data already exists in the `orders` table — just needs to be displayed.
+    supabase.rpc("has_role", { _user_id: user.id, _role: "admin" })
+      .then(({ data, error }) => {
+        if (error) {
+          console.error("Admin role check failed:", error);
+          setIsAdmin(false);
+        } else {
+          setIsAdmin(!!data);
+        }
+        setLoading(false);
+      });
+  }, [user, authLoading]);
+
+  return { isAdmin, loading };
+};
+```
+
+### Why This Fixes It
+- The `has_role` RPC is `SECURITY DEFINER` — it runs with elevated privileges and doesn't depend on RLS policies on `user_roles`, eliminating potential permission/timing issues
+- Error handling ensures failures are visible in the console for debugging
+- This is the same function already used throughout the RLS policies, so it's proven reliable
 
 ### File Changes
 | File | Change |
 |------|--------|
-| `src/pages/Admin.tsx` | Expand OrderRow interface, add customer/order columns, production PDF download, detail view |
+| `src/hooks/use-admin.ts` | Switch from direct `user_roles` query to `has_role` RPC call with error handling |
 
