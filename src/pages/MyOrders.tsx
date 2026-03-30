@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
+import { generateAndUploadPdf } from "@/lib/generate-pdf-client";
 import { Loader2, Package, CheckCircle2, Truck, Printer, FileText, Pencil, Download, Trash2, RefreshCw, X } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -79,7 +80,7 @@ const MyOrders = () => {
       });
   }, [user]);
 
-  // Auto-trigger PDF generation for ALL paid orders missing production PDF
+  // Auto-trigger PDF generation client-side for paid orders missing production PDF
   useEffect(() => {
     if (!user || orders.length === 0) return;
 
@@ -89,34 +90,42 @@ const MyOrders = () => {
 
     if (pendingOrders.length === 0) return;
 
-    for (const order of pendingOrders) {
-      setGeneratingPdf((prev) => new Set(prev).add(order.id));
+    // Process one at a time to avoid overwhelming the browser
+    const order = pendingOrders[0];
+    setGeneratingPdf((prev) => new Set(prev).add(order.id));
 
-      supabase.functions
-        .invoke("generate-customer-pdf", { body: { orderId: order.id } })
-        .then(({ data, error }) => {
-          if (error) {
-            console.error("PDF generation failed for", order.id, error);
-            return;
-          }
-          if (data?.pdfPath) {
-            setOrders((prev) =>
-              prev.map((o) =>
-                o.id === order.id
-                  ? { ...o, production_pdf_path: data.pdfPath, digital_pdf_path: o.digital_download ? data.pdfPath : o.digital_pdf_path }
-                  : o
-              )
-            );
-          }
-        })
-        .finally(() => {
-          setGeneratingPdf((prev) => {
-            const next = new Set(prev);
-            next.delete(order.id);
-            return next;
+    generateAndUploadPdf(order.id)
+      .then(async (pdfPath) => {
+        setOrders((prev) =>
+          prev.map((o) =>
+            o.id === order.id
+              ? { ...o, production_pdf_path: pdfPath, digital_pdf_path: o.digital_download ? pdfPath : o.digital_pdf_path }
+              : o
+          )
+        );
+
+        // Send email if digital download customer
+        if (order.digital_download) {
+          await supabase.functions.invoke("generate-customer-pdf", {
+            body: { orderId: order.id, action: "send-email" },
           });
+        }
+
+        // Cleanup original photos now that PDF exists
+        await supabase.functions.invoke("generate-customer-pdf", {
+          body: { orderId: order.id, action: "cleanup" },
         });
-    }
+      })
+      .catch((err) => {
+        console.error("PDF generation failed for", order.id, err);
+      })
+      .finally(() => {
+        setGeneratingPdf((prev) => {
+          const next = new Set(prev);
+          next.delete(order.id);
+          return next;
+        });
+      });
   }, [orders, user]);
 
   // Group draft orders by session so multi-book drafts appear as one entry
