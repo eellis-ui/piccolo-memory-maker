@@ -299,6 +299,11 @@ const MyOrders = () => {
                           <p className="text-xs text-muted-foreground">
                             {isDraft ? "Started" : "Ordered"} {new Date(order.created_at).toLocaleDateString()}
                           </p>
+                          {!isDraft && order.line_items && order.line_items.length > 0 && (
+                            <p className="text-xs text-muted-foreground mt-1">
+                              {order.line_items.map((item: any) => item.title || item.name).filter(Boolean).join(", ")}
+                            </p>
+                          )}
                         </div>
                         <div className="flex items-center gap-2">
                           <Badge variant="secondary">
