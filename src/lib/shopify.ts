@@ -57,16 +57,12 @@ const CART_CREATE_MUTATION = `
 `;
 
 function formatCheckoutUrl(checkoutUrl: string): string {
-  console.log('[Shopify] Raw checkout URL from API:', checkoutUrl);
   try {
     const url = new URL(checkoutUrl);
-    console.log('[Shopify] Original host:', url.host, '→ Rewriting to:', SHOPIFY_STORE_PERMANENT_DOMAIN);
     url.host = SHOPIFY_STORE_PERMANENT_DOMAIN;
     url.protocol = 'https:';
     url.searchParams.set('channel', 'online_store');
-    const finalUrl = url.toString();
-    console.log('[Shopify] Final checkout URL:', finalUrl);
-    return finalUrl;
+    return url.toString();
   } catch (e) {
     console.error('[Shopify] Failed to format checkout URL:', e);
     return checkoutUrl;
