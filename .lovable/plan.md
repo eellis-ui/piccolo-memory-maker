@@ -1,34 +1,34 @@
 
 
-## Plan: Fix Admin Page Loading + Photo Deletion Safety
+## Plan: Fix Admin Page Stuck on Loading Spinner
 
-### Problem 1: Admin page stuck on spinner
-Line 317 in `Admin.tsx`:
+### Root Cause Analysis
+The guard code at line 315 looks correct, but there's a potential issue in `useIsAdmin` hook: if the `onAuthStateChange` `INITIAL_SESSION` event fires with `SIGNED_IN` instead (which can happen on some Supabase versions), `loading` in AuthContext stays `true` until the 3s fallback timeout. Combined with no error handling on the role query, `roleLoading` could stay `true` indefinitely if something unexpected happens.
+
+### Fix (2 files)
+
+**1. `src/contexts/AuthContext.tsx`** — Set `loading=false` on ALL auth events, not just `INITIAL_SESSION` and `SIGNED_OUT`:
 ```typescript
-if (roleLoading || (!isAdmin && !roleLoading))
+supabase.auth.onAuthStateChange((_event, newSession) => {
+  setSession(newSession);
+  setLoading(false);  // Always resolve loading on any auth event
+});
 ```
-The condition `(!isAdmin && !roleLoading)` is always true when `isAdmin` is false, so the page never renders — it shows the spinner forever even for an authenticated admin (because there's a brief moment where `isAdmin` is false before the role query completes, and the `useEffect` redirect on line 113 races with the render guard).
 
-**Fix**: Replace with a simple sequential guard:
+**2. `src/hooks/use-admin.ts`** — Add error handling so `loading` always resolves, even if the query fails:
 ```typescript
-if (roleLoading) {
-  return <Loader2 spinner />;
-}
-if (!isAdmin) {
-  return <Navigate to="/auth" replace />;
-}
+supabase
+  .from("user_roles")
+  .select("role")
+  .eq("user_id", user.id)
+  .eq("role", "admin")
+  .maybeSingle()
+  .then(({ data, error }) => {
+    if (error) console.error("Role check failed:", error);
+    setIsAdmin(!!data);
+    setLoading(false);
+  });
 ```
-Remove the `useEffect` redirect on lines 112-114 since the render guard handles it.
 
-### Problem 2: Photos deleted before PDF exists
-In `MyOrders.tsx`, the cleanup action fires after `generateAndUploadPdf` succeeds. This is correct in the current code. However, if the PDF generation fails or the user never visits My Orders, photos sit around but are never deleted prematurely — this is safe.
-
-The real issue is that PDF generation only triggers when someone visits My Orders. For the admin, it should also auto-trigger from the Admin page.
-
-**Fix**: Add the same auto-trigger logic to `Admin.tsx` — when the admin page loads and detects paid orders without `production_pdf_path`, generate PDFs client-side one at a time. Only call cleanup after successful generation.
-
-### File Changes
-| File | Change |
-|------|--------|
-| `src/pages/Admin.tsx` | Fix auth guard (line 317), remove useEffect redirect, add auto-trigger PDF generation for orders missing production_pdf_path |
+These two changes ensure the auth loading state always resolves promptly, and the role check always completes — preventing the spinner from getting stuck.
 
