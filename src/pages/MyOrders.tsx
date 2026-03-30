@@ -24,6 +24,9 @@ interface OrderRow {
   builder_session_id: string | null;
   digital_download: boolean;
   digital_pdf_path: string | null;
+  order_name: string | null;
+  line_items: any[] | null;
+  production_pdf_path: string | null;
 }
 
 const STEPS = [

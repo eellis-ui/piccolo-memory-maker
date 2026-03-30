@@ -40,6 +40,10 @@ interface OrderRow {
   tracking_number: string | null;
   shipped_at: string | null;
   user_id: string | null;
+  order_name: string | null;
+  line_items: any[] | null;
+  production_pdf_path: string | null;
+  digital_download: boolean;
 }
 
 interface PhotoRow {
