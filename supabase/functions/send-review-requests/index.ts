@@ -13,8 +13,9 @@ const corsHeaders = {
 const EMAIL_SUBJECT = "How did you enjoy your Piccolo colouring book? 🎨";
 
 function buildEmailHtml(customerName?: string): string {
+  const siteUrl = Deno.env.get("SITE_URL") || "https://piccoload.com";
   const greeting = customerName ? `Hi ${customerName}` : "Hi there";
-  const reviewUrl = "https://piccolo-memory-maker.lovable.app/#reviews";
+  const reviewUrl = `${siteUrl}/#reviews`;
 
   return `
 <!DOCTYPE html>
@@ -34,7 +35,7 @@ function buildEmailHtml(customerName?: string): string {
           <tr>
             <td align="center" style="padding-bottom:32px;">
               <img
-                src="https://piccolo-memory-maker.lovable.app/lovable-uploads/piccoload-logo-main.png"
+                src="${siteUrl}/images/piccoload-logo-main.png"
                 alt="Piccolo"
                 width="140"
                 style="display:block;"
@@ -99,7 +100,8 @@ Deno.serve(async (req) => {
   try {
     const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
     const serviceRoleKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
-    const lovableApiKey = Deno.env.get("LOVABLE_API_KEY")!;
+    const resendApiKey = Deno.env.get("RESEND_API_KEY")!;
+    const fromEmail = Deno.env.get("FROM_EMAIL") || "Piccoload <hello@piccoload.com>";
 
     const supabase = createClient(supabaseUrl, serviceRoleKey);
 
@@ -134,20 +136,20 @@ Deno.serve(async (req) => {
 
     for (const order of orders) {
       try {
-        // Send email via Lovable transactional email API
+        // Send email via Resend transactional email API
         const emailRes = await fetch(
-          "https://api.lovable.dev/api/v1/emails/send",
+          "https://api.resend.com/emails",
           {
             method: "POST",
             headers: {
               "Content-Type": "application/json",
-              Authorization: `Bearer ${lovableApiKey}`,
+              Authorization: `Bearer ${resendApiKey}`,
             },
             body: JSON.stringify({
-              to: order.customer_email,
+              from: fromEmail,
+              to: [order.customer_email],
               subject: EMAIL_SUBJECT,
               html: buildEmailHtml(),
-              purpose: "transactional",
             }),
           }
         );
