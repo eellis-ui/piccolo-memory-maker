@@ -31,61 +31,60 @@ const A4_W = 210;
 const A4_H = 297;
 
 async function sendDownloadEmail(customerEmail: string, downloadUrl: string, orderId: string) {
-  const apiKey = Deno.env.get("LOVABLE_API_KEY");
-  if (!apiKey) {
-    console.error("LOVABLE_API_KEY not set — cannot send email");
+  const resendApiKey = Deno.env.get("RESEND_API_KEY");
+  if (!resendApiKey) {
+    console.error("RESEND_API_KEY not set — cannot send email");
     return;
   }
 
-  const projectId = Deno.env.get("SUPABASE_URL")?.match(/\/\/([^.]+)/)?.[1];
+  const fromEmail = Deno.env.get("FROM_EMAIL") || "Piccoload <hello@piccoload.com>";
 
   const html = `
     <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; max-width: 600px; margin: 0 auto; padding: 40px 20px;">
       <div style="text-align: center; margin-bottom: 32px;">
-        <h1 style="font-size: 24px; color: #1a1a1a; margin: 0;">Your Digital Coloring Book is Ready! 🎨</h1>
+        <h1 style="font-size: 24px; color: #1a1a1a; margin: 0;">Your Digital Colouring Book is Ready!</h1>
       </div>
       <p style="font-size: 16px; color: #333; line-height: 1.6;">
-        Thank you for your purchase! Your personalized coloring book PDF is ready to download.
+        Thank you for your purchase! Your personalised colouring book PDF is ready to download.
       </p>
       <div style="text-align: center; margin: 32px 0;">
-        <a href="${downloadUrl}" 
+        <a href="${downloadUrl}"
            style="display: inline-block; background-color: #1a1a1a; color: #ffffff; padding: 14px 32px; border-radius: 12px; text-decoration: none; font-weight: 600; font-size: 16px;">
           Download Your PDF
         </a>
       </div>
       <p style="font-size: 14px; color: #666; line-height: 1.6;">
-        This download link is valid for <strong>7 days</strong>. To access your digital download anytime, 
-        create an account on our website and find it in your <strong>My Orders</strong> page — it'll be available indefinitely.
+        This download link is valid for <strong>7 days</strong>. To access your digital download anytime,
+        create an account on our website and find it in your <strong>My Orders</strong> page.
       </p>
       <p style="font-size: 14px; color: #666; line-height: 1.6;">
         Order reference: <strong>${orderId.slice(0, 8).toUpperCase()}</strong>
       </p>
       <hr style="border: none; border-top: 1px solid #eee; margin: 32px 0;" />
       <p style="font-size: 12px; color: #999; text-align: center;">
-        piccolo'd — Personalised Coloring Books
+        piccolo'd — Personalised Colouring Books
       </p>
     </div>
   `;
 
   try {
-    const response = await fetch(`https://api.lovable.dev/v1/email/send`, {
+    const response = await fetch("https://api.resend.com/emails", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        Authorization: `Bearer ${apiKey}`,
+        Authorization: `Bearer ${resendApiKey}`,
       },
       body: JSON.stringify({
-        project_id: projectId,
-        to: customerEmail,
-        subject: "Your Digital Coloring Book is Ready! 🎨",
+        from: fromEmail,
+        to: [customerEmail],
+        subject: "Your Digital Colouring Book is Ready!",
         html,
-        purpose: "transactional",
       }),
     });
 
     if (!response.ok) {
       const text = await response.text();
-      console.error("Email send failed:", response.status, text);
+      console.error("Resend email failed:", response.status, text);
     } else {
       console.log("Download email sent to", customerEmail);
     }
