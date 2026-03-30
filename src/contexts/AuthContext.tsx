@@ -26,12 +26,14 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       }
     });
 
-    // Fallback: if INITIAL_SESSION never fires, resolve after 3s
-    const timeout = setTimeout(() => setLoading(false), 3000);
+    // Immediate fallback: validate any existing token in localStorage
+    supabase.auth.getSession().then(({ data: { session: existing } }) => {
+      setSession(existing);
+      setLoading(false);
+    });
 
     return () => {
       subscription.unsubscribe();
-      clearTimeout(timeout);
     };
   }, []);
 
