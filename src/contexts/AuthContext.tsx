@@ -19,11 +19,9 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, newSession) => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, newSession) => {
       setSession(newSession);
-      if (event === "INITIAL_SESSION" || event === "SIGNED_OUT") {
-        setLoading(false);
-      }
+      setLoading(false);
     });
 
     // Immediate fallback: validate any existing token in localStorage
@@ -32,8 +30,12 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       setLoading(false);
     });
 
+    // Safety timeout: guarantee loading resolves even if Supabase is unresponsive
+    const timeout = setTimeout(() => setLoading(false), 3000);
+
     return () => {
       subscription.unsubscribe();
+      clearTimeout(timeout);
     };
   }, []);
 
