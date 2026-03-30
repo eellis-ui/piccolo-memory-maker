@@ -15,15 +15,12 @@ export const useIsAdmin = () => {
       return;
     }
 
+    // Use the SECURITY DEFINER function to bypass RLS
     supabase
-      .from("user_roles")
-      .select("role")
-      .eq("user_id", user.id)
-      .eq("role", "admin")
-      .maybeSingle()
+      .rpc("has_role", { _user_id: user.id, _role: "admin" })
       .then(({ data, error }) => {
         if (error) console.error("Role check failed:", error);
-        setIsAdmin(!!data);
+        setIsAdmin(data === true);
         setLoading(false);
       });
   }, [user, authLoading]);
