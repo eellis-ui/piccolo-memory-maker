@@ -19,11 +19,9 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, newSession) => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, newSession) => {
       setSession(newSession);
-      if (event === "INITIAL_SESSION" || event === "SIGNED_OUT") {
-        setLoading(false);
-      }
+      setLoading(false);
     });
 
     // Fallback: if INITIAL_SESSION never fires, resolve after 3s
