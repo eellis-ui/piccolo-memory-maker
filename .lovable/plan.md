@@ -1,34 +1,28 @@
 
 
-## Plan: Fix Admin Page Stuck on Loading Spinner
+## Plan: Fix Sign In/Out Flow and Improve Auth UX
 
-### Root Cause Analysis
-The guard code at line 315 looks correct, but there's a potential issue in `useIsAdmin` hook: if the `onAuthStateChange` `INITIAL_SESSION` event fires with `SIGNED_IN` instead (which can happen on some Supabase versions), `loading` in AuthContext stays `true` until the 3s fallback timeout. Combined with no error handling on the role query, `roleLoading` could stay `true` indefinitely if something unexpected happens.
+### Current State
+The code already has Sign In / Sign Out buttons in the navbar, admin gating via `has_role` RPC, and order access on My Orders. The main issues are:
 
-### Fix (2 files)
+1. **Admin page stuck on spinner** — already fixed in the latest commit (you're viewing an older preview). Restore to latest or refresh the live preview.
+2. **Login failure doesn't guide to sign-up** — when someone enters an unrecognized email, Supabase returns a generic "Invalid login credentials" error. The user wants a prompt to create an account instead.
+3. **Visitors should always start signed out** — this already works (no auto-login without credentials), but we should ensure the Auth page defaults to the login view.
 
-**1. `src/contexts/AuthContext.tsx`** — Set `loading=false` on ALL auth events, not just `INITIAL_SESSION` and `SIGNED_OUT`:
-```typescript
-supabase.auth.onAuthStateChange((_event, newSession) => {
-  setSession(newSession);
-  setLoading(false);  // Always resolve loading on any auth event
-});
-```
+### Changes
 
-**2. `src/hooks/use-admin.ts`** — Add error handling so `loading` always resolves, even if the query fails:
-```typescript
-supabase
-  .from("user_roles")
-  .select("role")
-  .eq("user_id", user.id)
-  .eq("role", "admin")
-  .maybeSingle()
-  .then(({ data, error }) => {
-    if (error) console.error("Role check failed:", error);
-    setIsAdmin(!!data);
-    setLoading(false);
-  });
-```
+**File: `src/pages/Auth.tsx`**
+- In the `catch` block for login errors, detect the "Invalid login credentials" message and show a friendlier toast: "No account found with that email. Would you like to create one?" and auto-switch to the Sign Up form (`setIsLogin(false)`).
+- Keep all other error messages as-is.
 
-These two changes ensure the auth loading state always resolves promptly, and the role check always completes — preventing the spinner from getting stuck.
+### What Already Works (No Changes Needed)
+- **Sign In button** in navbar (desktop + mobile) when logged out → links to `/auth`
+- **Sign Out button** in navbar when logged in → calls `supabase.auth.signOut()` and redirects to home
+- **My Orders** link appears only when logged in → shows past orders and digital PDFs
+- **Admin link** appears only for admin-role users → full order dashboard
+- **Auth guard on Admin page** → redirects non-admins to `/auth`
+- **Visitors start signed out** → session only exists if user explicitly signs in
+
+### Summary
+This is a single-file change to `Auth.tsx` that improves the login error UX by detecting unrecognized emails and prompting the user to sign up instead.
 
