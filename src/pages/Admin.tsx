@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useIsAdmin } from "@/hooks/use-admin";
+import { generateAndUploadPdf, generatePdfClientSide } from "@/lib/generate-pdf-client";
 import {
   Loader2, Package, Trash2, Edit2, Truck, Download, ChevronDown, X, Save, FileText,
 } from "lucide-react";
@@ -194,37 +195,42 @@ const Admin = () => {
     setPhotosLoading(false);
   };
 
-  // Generate and download PDF for an order
+  // Generate PDF client-side and download
   const downloadPdf = async (orderId: string) => {
     setPdfGenerating(orderId);
     try {
-      const { data: { session } } = await supabase.auth.getSession();
-      const res = await fetch(
-        `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/generate-pdf`,
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            "Authorization": `Bearer ${session?.access_token}`,
-            "apikey": import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY,
-          },
-          body: JSON.stringify({ orderId }),
-        }
-      );
-      if (!res.ok) {
-        const err = await res.json();
-        toast.error(err.error || "Failed to generate PDF");
-        return;
-      }
-      const blob = await res.blob();
+      toast.info("Generating PDF... This may take a moment.");
+      const { blob } = await generatePdfClientSide({ orderId });
       const url = URL.createObjectURL(blob);
       const a = document.createElement("a");
       a.href = url;
       a.download = `order-${orderId.slice(0, 8)}.pdf`;
       a.click();
       URL.revokeObjectURL(url);
-    } catch (e) {
-      toast.error("Failed to generate PDF");
+
+      // Also upload as production PDF if not already stored
+      const order = orders.find((o) => o.id === orderId);
+      if (order && !order.production_pdf_path) {
+        const pdfPath = `production-pdfs/${orderId}/coloring-book.pdf`;
+        await supabase.storage.from("order-files").upload(pdfPath, blob, {
+          contentType: "application/pdf",
+          upsert: true,
+        });
+        await supabase.from("orders").update({ production_pdf_path: pdfPath }).eq("id", orderId);
+        setOrders((prev) => prev.map((o) => o.id === orderId ? { ...o, production_pdf_path: pdfPath } : o));
+
+        // Send email + cleanup via edge function
+        await supabase.functions.invoke("generate-customer-pdf", {
+          body: { orderId, action: "send-email" },
+        });
+        await supabase.functions.invoke("generate-customer-pdf", {
+          body: { orderId, action: "cleanup" },
+        });
+      }
+
+      toast.success("PDF downloaded!");
+    } catch (e: any) {
+      toast.error(e?.message || "Failed to generate PDF");
     } finally {
       setPdfGenerating(null);
     }
