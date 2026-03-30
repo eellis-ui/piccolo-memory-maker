@@ -21,7 +21,8 @@ export const useIsAdmin = () => {
       .eq("user_id", user.id)
       .eq("role", "admin")
       .maybeSingle()
-      .then(({ data }) => {
+      .then(({ data, error }) => {
+        if (error) console.error("Role check failed:", error);
         setIsAdmin(!!data);
         setLoading(false);
       });
