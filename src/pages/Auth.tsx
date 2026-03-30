@@ -23,6 +23,7 @@ const Auth = () => {
   const [password, setPassword] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const [forgotPassword, setForgotPassword] = useState(false);
+  const [signupHint, setSignupHint] = useState("");
 
   // If already logged in (or just signed in), redirect
   useEffect(() => {
@@ -57,7 +58,12 @@ const Auth = () => {
         toast.success("Check your email to confirm your account!");
       }
     } catch (err: any) {
-      toast.error(err.message);
+      if (isLogin && err.message === "Invalid login credentials") {
+        setIsLogin(false);
+        setSignupHint("No account found with that email — create one below.");
+      } else {
+        toast.error(err.message);
+      }
     } finally {
       setSubmitting(false);
     }
@@ -92,6 +98,11 @@ const Auth = () => {
             </CardDescription>
           </CardHeader>
           <CardContent>
+            {signupHint && (
+              <div className="mb-4 p-3 rounded-xl bg-primary/10 text-primary text-sm text-center font-medium">
+                {signupHint}
+              </div>
+            )}
             <form onSubmit={handleSubmit} className="space-y-4">
               <div className="space-y-2">
                 <Label htmlFor="email">Email</Label>
@@ -135,7 +146,7 @@ const Auth = () => {
                 </button>
               )}
               <button
-                onClick={() => { setIsLogin(!isLogin); setForgotPassword(false); }}
+                onClick={() => { setIsLogin(!isLogin); setForgotPassword(false); setSignupHint(""); }}
                 className="text-sm text-muted-foreground hover:text-foreground transition-colors"
               >
                 {forgotPassword

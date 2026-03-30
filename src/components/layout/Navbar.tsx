@@ -365,7 +365,7 @@ const Navbar = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const { items, totalBookCount, removeItem, updateItemQuantity, toggleItemUniquePhotos, toggleItemPersonalizeCover, digitalCopies, setDigitalCopies, digitalPrice, addOns, addOnsTotal: basketAddOnsTotal, addOnPrice, uniquePhotos, uniquePhotosPrice, activeSessionId, isCartOpen, setIsCartOpen } = useBasket();
   const { isAdmin } = useIsAdmin();
-  const { user } = useAuth();
+  const { user, loading: authLoading } = useAuth();
   const isLoggedIn = !!user;
 
   const navLinks = [
@@ -489,7 +489,7 @@ const Navbar = () => {
                   Admin
                 </Link>
               }
-            {isLoggedIn &&
+            {!authLoading && isLoggedIn &&
               <Link
                 to="/my-orders"
                 className="text-sm font-medium text-foreground hover:text-foreground/70 transition-colors flex items-center gap-1">
@@ -497,7 +497,7 @@ const Navbar = () => {
                   My Orders
                 </Link>
               }
-              {isLoggedIn && (
+              {!authLoading && isLoggedIn && (
                 <button
                   onClick={async () => {
                     await supabase.auth.signOut();
@@ -524,7 +524,7 @@ const Navbar = () => {
               hasItems={hasItems}
               itemCount={itemCount}
               basketContentProps={basketContentProps} />
-            {!isLoggedIn && (
+            {!authLoading && !isLoggedIn && (
               <Link
                 to="/auth"
                 state={{ from: "/my-orders" }}
@@ -563,7 +563,7 @@ const Navbar = () => {
                   Admin
                 </Link>
             }
-              {isLoggedIn &&
+              {!authLoading && isLoggedIn &&
             <Link
               to="/my-orders"
               className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors px-2 py-2 flex items-center gap-1"
@@ -572,7 +572,7 @@ const Navbar = () => {
                   My Orders
                 </Link>
             }
-              {isLoggedIn && (
+              {!authLoading && isLoggedIn && (
                 <button
                   onClick={async () => {
                     setIsMenuOpen(false);
@@ -584,7 +584,7 @@ const Navbar = () => {
                   Sign Out
                 </button>
               )}
-              {!isLoggedIn && (
+              {!authLoading && !isLoggedIn && (
                 <Link
                   to="/auth"
                   state={{ from: "/my-orders" }}
