@@ -1,25 +1,29 @@
 
 
-## Plan: Fix Sign In / Sign Out Flow
+## Plan: Ensure Sign In / Sign Out Buttons Always Appear
 
-### Current State
-The Navbar and Auth page code is structurally correct — Sign In shows when not logged in, Sign Out when logged in. The root cause of the "stuck" state is the AuthContext loading issue (already fixed with the 3-second timeout). Two additional improvements are needed:
+### Problem
+The Sign In and Sign Out buttons are conditionally rendered with `!authLoading && ...`, but there's a potential race condition where `loading` could stay `true` if both the `onAuthStateChange` listener and `getSession()` encounter issues. Also, the `onAuthStateChange` callback only sets `loading = false` for `INITIAL_SESSION` and `SIGNED_OUT` events — other events like `TOKEN_REFRESHED` or `SIGNED_IN` don't clear loading.
 
-### Changes
+### Fix — 2 files
 
-**1. `src/contexts/AuthContext.tsx` — Add explicit `getSession()` fallback**
-The current fix has a 3-second timeout, but we should also add an explicit `getSession()` call after the listener is set up. This ensures that if a stale token exists in localStorage, it gets validated immediately rather than waiting 3 seconds. If the session is expired/invalid, Supabase returns `null`, clearing the false "signed in" state.
+**1. `src/contexts/AuthContext.tsx` — Guarantee loading resolves**
+- Set `loading = false` on ALL auth state change events, not just `INITIAL_SESSION` and `SIGNED_OUT`
+- Keep the `getSession()` fallback
+- Add a safety timeout (3 seconds) as a last resort if both mechanisms fail
 
-**2. `src/pages/Auth.tsx` — Auto-detect unrecognized email on login failure**
-When a user tries to sign in and gets "Invalid login credentials", automatically switch to the sign-up form and show a helpful message like "No account found with that email — create one below." This replaces the current generic error toast.
-
-**3. `src/components/layout/Navbar.tsx` — Hide auth-dependent links while loading**
-Currently the Navbar reads `user` from AuthContext but doesn't check `loading`. During the loading period, `user` is null so "Sign In" briefly flashes even for logged-in users (and vice versa with stale tokens). Add `loading` check: while auth is loading, hide both Sign In and Sign Out to prevent flicker.
+**2. `src/components/layout/Navbar.tsx` — Show Sign In as default when not loading**
+- No logic changes needed — the current conditionals are correct. The fix is entirely in AuthContext resolving `loading` reliably.
 
 ### File Changes
 | File | Change |
 |------|--------|
-| `src/contexts/AuthContext.tsx` | Add `getSession()` call after listener setup as immediate fallback |
-| `src/pages/Auth.tsx` | Catch "Invalid login credentials" error → switch to signup mode with message |
-| `src/components/layout/Navbar.tsx` | Use `loading` from `useAuth()` to hide auth buttons until resolved |
+| `src/contexts/AuthContext.tsx` | Set `loading = false` on every `onAuthStateChange` event + add 3s safety timeout |
+
+### What this fixes
+- Sign In button appears immediately for unauthenticated visitors (no more hidden state)
+- Sign Out button appears for logged-in users
+- My Orders link appears for logged-in users
+- Admin link appears for admin users
+- No more stuck loading states
 
