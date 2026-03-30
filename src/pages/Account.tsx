@@ -158,9 +158,10 @@ const Account = () => {
           <Button
             variant="ghost"
             className="w-full rounded-2xl text-destructive hover:bg-destructive/10"
-            onClick={async () => {
-              await supabase.auth.signOut({ scope: "local" });
-              navigate("/");
+            onClick={() => {
+              supabase.auth.signOut({ scope: "local" }).finally(() => {
+                window.location.href = "/";
+              });
             }}
           >
             <LogOut className="w-4 h-4 mr-2" />
