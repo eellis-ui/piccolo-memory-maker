@@ -414,8 +414,14 @@ const Admin = () => {
                         <Button
                           size="sm"
                           variant="ghost"
-                          onClick={() => downloadPdf(order.id)}
-                          title="Download PDF"
+                          onClick={() => {
+                            if (order.production_pdf_path) {
+                              downloadFile(order.production_pdf_path, `order-${order.id.slice(0, 8)}.pdf`);
+                            } else {
+                              downloadPdf(order.id);
+                            }
+                          }}
+                          title="Download Production PDF"
                           disabled={pdfGenerating === order.id}
                         >
                           {pdfGenerating === order.id
