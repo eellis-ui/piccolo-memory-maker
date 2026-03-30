@@ -21,7 +21,7 @@ Deno.serve(async (req) => {
   try {
     const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
     const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
-    const lovableApiKey = Deno.env.get("LOVABLE_API_KEY")!;
+    const googleApiKey = Deno.env.get("GOOGLE_AI_API_KEY")!;
 
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
@@ -111,7 +111,6 @@ Deno.serve(async (req) => {
     }
     const imageBase64Input = btoa(chunks.join(""));
     const mimeType = fileData.type || "image/jpeg";
-    const dataUrl = `data:${mimeType};base64,${imageBase64Input}`;
 
     const prompt = `Convert this photo into a clean black-and-white LINE DRAWING for a coloring book.
 
@@ -133,26 +132,33 @@ Output ONLY the converted image, no text.`;
     for (let attempt = 1; attempt <= MAX_RETRIES; attempt++) {
       console.log(`AI conversion attempt ${attempt}/${MAX_RETRIES}`);
 
-      const aiResponse = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
-        method: "POST",
-        headers: {
-          Authorization: `Bearer ${lovableApiKey}`,
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          model: "google/gemini-2.5-flash-image",
-          modalities: ["image", "text"],
-          messages: [
-            {
-              role: "user",
-              content: [
-                { type: "text", text: prompt },
-                { type: "image_url", image_url: { url: dataUrl } },
-              ],
+      const aiResponse = await fetch(
+        `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-05-20:generateContent?key=${googleApiKey}`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            contents: [
+              {
+                parts: [
+                  { text: prompt },
+                  {
+                    inlineData: {
+                      mimeType: mimeType,
+                      data: imageBase64Input,
+                    },
+                  },
+                ],
+              },
+            ],
+            generationConfig: {
+              responseModalities: ["TEXT", "IMAGE"],
             },
-          ],
-        }),
-      });
+          }),
+        }
+      );
 
       if (!aiResponse.ok) {
         const errText = await aiResponse.text();
@@ -166,8 +172,8 @@ Output ONLY the converted image, no text.`;
           }
           break;
         }
-        if (aiResponse.status === 402) {
-          lastError = "AI credits exhausted. Please add funds to continue.";
+        if (aiResponse.status === 403) {
+          lastError = "Invalid or unauthorized Google AI API key.";
           break;
         }
         lastError = `AI service error (${aiResponse.status})`;
@@ -175,42 +181,21 @@ Output ONLY the converted image, no text.`;
       }
 
       const aiResult = await aiResponse.json();
-      const choice = aiResult.choices?.[0];
-      if (choice?.error) {
-        const embeddedCode = choice.error.code;
-        const embeddedMsg = choice.error.message || "";
-        console.error(`Embedded AI error (code ${embeddedCode}):`, embeddedMsg);
+      const candidate = aiResult.candidates?.[0];
 
-        if (embeddedCode === 502 || embeddedCode === 429) {
-          lastError = "AI service temporarily busy";
-          if (attempt < MAX_RETRIES) {
-            await sleep(RETRY_DELAY_MS * attempt);
-            continue;
-          }
-          break;
-        }
-        lastError = `AI error: ${embeddedMsg.substring(0, 100)}`;
-        break;
-      }
-
-      const finishReason = choice?.native_finish_reason;
-      if (finishReason === "IMAGE_PROHIBITED_CONTENT") {
+      const finishReason = candidate?.finishReason;
+      if (finishReason === "SAFETY" || finishReason === "PROHIBITED_CONTENT") {
         lastError = "This photo was blocked by the AI content filter. Try a different photo.";
         break;
       }
 
-      const message = choice?.message;
-      if (message?.images && Array.isArray(message.images) && message.images.length > 0) {
-        const imgUrl = message.images[0]?.image_url?.url;
-        if (imgUrl && imgUrl.startsWith("data:image")) {
-          const match = imgUrl.match(/base64,(.+)/);
-          if (match) imageBase64 = match[1];
+      const parts: Array<{ text?: string; inlineData?: { mimeType: string; data: string } }> =
+        candidate?.content?.parts ?? [];
+      for (const part of parts) {
+        if (part.inlineData?.data) {
+          imageBase64 = part.inlineData.data;
+          break;
         }
-      }
-
-      if (!imageBase64 && typeof message?.content === "string") {
-        const base64Match = message.content.match(/data:image\/[^;]+;base64,([^\s"]+)/);
-        if (base64Match) imageBase64 = base64Match[1];
       }
 
       if (imageBase64) {
