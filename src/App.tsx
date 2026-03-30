@@ -23,6 +23,7 @@ import RefundPolicy from "./pages/RefundPolicy";
 import TermsOfService from "./pages/TermsOfService";
 import Affiliates from "./pages/Affiliates";
 import BecomeAffiliate from "./pages/BecomeAffiliate";
+import Account from "./pages/Account";
 import ScrollToTop from "./components/ScrollToTop";
 import ChatWidget from "./components/ChatWidget";
 import { useClaimOrders } from "./hooks/use-claim-orders";
@@ -56,6 +57,7 @@ const App = () => (
               <Route path="/builder" element={<Builder />} />
               <Route path="/admin" element={<Admin />} />
               <Route path="/my-orders" element={<MyOrders />} />
+              <Route path="/account" element={<Account />} />
               <Route path="/reset-password" element={<ResetPassword />} />
               <Route path="/order-review" element={<OrderReview />} />
               <Route path="/privacy-policy" element={<PrivacyPolicy />} />
