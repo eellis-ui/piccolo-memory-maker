@@ -47,6 +47,36 @@ const ThankYouStep = ({ sessionId, orderIds = [], shopifyOrderNumber: initialSho
     };
   }, [shopifyOrderNumber, sessionId]);
 
+  // Trigger PDF generation for digital download orders immediately after payment
+  useEffect(() => {
+    if (!sessionId || !hasDigitalDownload) return;
+
+    const triggerPdfGeneration = async () => {
+      try {
+        const { data: orders } = await supabase
+          .from("orders")
+          .select("id, digital_download, digital_pdf_path")
+          .eq("builder_session_id", sessionId)
+          .eq("digital_download", true);
+
+        if (!orders) return;
+
+        for (const order of orders) {
+          if (order.digital_pdf_path) continue; // already generated
+          supabase.functions
+            .invoke("generate-customer-pdf", { body: { orderId: order.id } })
+            .then(({ error }) => {
+              if (error) console.error("PDF generation failed for", order.id, error);
+            });
+        }
+      } catch (err) {
+        console.error("Failed to trigger PDF generation:", err);
+      }
+    };
+
+    triggerPdfGeneration();
+  }, [sessionId, hasDigitalDownload]);
+
   const handleCreateAccount = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!email || !password) return;
@@ -111,7 +141,7 @@ const ThankYouStep = ({ sessionId, orderIds = [], shopifyOrderNumber: initialSho
 
       {/* Create account card */}
       {!accountCreated ? (
-        <Card className="rounded-3xl text-left">
+        <Card className="rounded-3xl text-left border-2 border-primary/30">
           <CardContent className="p-6 space-y-5">
             <div className="flex items-start gap-3">
               <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center shrink-0">
@@ -122,7 +152,9 @@ const ThankYouStep = ({ sessionId, orderIds = [], shopifyOrderNumber: initialSho
                   Create an Account
                 </h2>
                 <p className="text-sm text-muted-foreground mt-1">
-                  Track your order, reorder easily, and save your designs for next time.
+                  {hasDigitalDownload
+                    ? "Create an account to access your digital PDF downloads anytime from your My Orders page. Without an account, your download link expires in 7 days."
+                    : "Track your order, reorder easily, and save your designs for next time."}
                 </p>
               </div>
             </div>

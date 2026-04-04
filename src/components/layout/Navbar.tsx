@@ -370,7 +370,6 @@ const Navbar = () => {
 
   const navLinks = [
   { href: "/", label: "Home" },
-  { href: "/pricing", label: "Shop" },
   { href: "/about", label: "Our Story" },
   { href: "/contact", label: "Contact Us" }];
 

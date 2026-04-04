@@ -1,6 +1,6 @@
 import { Button } from "@/components/ui/button";
 import DigitalUpsellBanner from "./DigitalUpsellBanner";
-import { Check, BookOpen, Download, UserPlus } from "lucide-react";
+import { Check, BookOpen, Download, UserPlus, Info } from "lucide-react";
 import type { OrderPhoto, BookAddOnsLocal } from "@/pages/Builder";
 import logoImg from "@/assets/piccoload-logo.png";
 
@@ -150,6 +150,23 @@ const RecapStep = ({ books, onContinueToCheckout, onEditBook, hasAnyDigitalDownl
             </div>
           );
         })}
+      </div>
+
+      {/* Important: Come back after payment note */}
+      <div className="max-w-3xl mx-auto rounded-2xl border-2 border-amber-300/50 bg-amber-50 dark:bg-amber-950/20 p-5 space-y-3">
+        <div className="flex items-start gap-3">
+          <div className="w-9 h-9 rounded-xl bg-amber-100 dark:bg-amber-900/30 flex items-center justify-center shrink-0">
+            <Info className="w-4.5 h-4.5 text-amber-600 dark:text-amber-400" />
+          </div>
+          <div>
+            <h3 className="font-display text-sm font-semibold text-foreground">
+              Important: Come Back After Payment
+            </h3>
+            <p className="text-sm text-muted-foreground mt-1">
+              After completing your payment on Shopify, <strong>return to this tab</strong> to confirm your order. You'll then be able to <strong>create a free account</strong> and log in to access any digital PDFs included in your order.
+            </p>
+          </div>
+        </div>
       </div>
 
       {/* Digital Download Note */}
