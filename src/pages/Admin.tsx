@@ -309,6 +309,51 @@ const Admin = () => {
       return;
     }
     toast.success("Order updated");
+
+    // If status changed, send customer email notification and sync to Shopify
+    const statusChanged = editForm.status && editForm.status !== editOrder.status;
+    const trackingChanged = editForm.tracking_number && editForm.tracking_number !== editOrder.tracking_number;
+
+    if (statusChanged || trackingChanged) {
+      // Send customer status email
+      supabase.functions
+        .invoke("notify-order-status", {
+          body: {
+            orderId: editOrder.id,
+            newStatus: editForm.status || editOrder.status,
+            trackingNumber: editForm.tracking_number || editOrder.tracking_number,
+          },
+        })
+        .then(({ error: emailErr }) => {
+          if (emailErr) {
+            console.error("Email notification failed:", emailErr);
+            toast.error("Order saved but email notification failed");
+          } else {
+            toast.success("Customer notified via email");
+          }
+        });
+
+      // Sync fulfillment/tracking to Shopify
+      if (editForm.status === "shipped" && (editForm.tracking_number || editOrder.tracking_number)) {
+        supabase.functions
+          .invoke("sync-shopify-fulfillment", {
+            body: {
+              orderId: editOrder.id,
+              newStatus: editForm.status,
+              trackingNumber: editForm.tracking_number || editOrder.tracking_number,
+            },
+          })
+          .then(({ error: shopifyErr }) => {
+            if (shopifyErr) {
+              console.error("Shopify sync failed:", shopifyErr);
+              toast.error("Shopify tracking sync failed");
+            } else {
+              toast.success("Shopify updated with tracking");
+            }
+          });
+      }
+    }
+
     setEditOrder(null);
     fetchOrders();
   };
