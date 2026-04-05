@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useIsAdmin } from "@/hooks/use-admin";
 import {
-  Loader2, Package, Trash2, Edit2, Truck, Download, ChevronDown, X, Save, FileText, Eye, Mail, ShoppingBag,
+  Loader2, Package, Trash2, Edit2, Truck, Download, ChevronDown, X, Save, FileText, Eye, Mail, ShoppingBag, ImagePlus, ArrowUp, ArrowDown, Instagram,
 } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -126,6 +126,13 @@ const Admin = () => {
   const [detailPhotos, setDetailPhotos] = useState<PhotoRow[]>([]);
   const [detailPhotosLoading, setDetailPhotosLoading] = useState(false);
 
+  // Instagram images management
+  interface SiteImage { id: string; section: string; image_path: string; alt_text: string; sort_order: number; created_at: string; }
+  const [showInstagram, setShowInstagram] = useState(false);
+  const [instagramImages, setInstagramImages] = useState<SiteImage[]>([]);
+  const [instagramLoading, setInstagramLoading] = useState(false);
+  const [instagramUploading, setInstagramUploading] = useState(false);
+
   useEffect(() => {
     if (!roleLoading && !isAdmin) navigate("/auth");
   }, [roleLoading, isAdmin, navigate]);
@@ -191,6 +198,69 @@ const Admin = () => {
     }
     toast.success(`Payout marked as ${action}`);
     fetchPayouts();
+  };
+
+  // ── Instagram image management ──
+  const fetchInstagramImages = async () => {
+    setInstagramLoading(true);
+    const { data, error } = await supabase
+      .from("site_images")
+      .select("*")
+      .eq("section", "instagram")
+      .order("sort_order");
+    if (!error && data) setInstagramImages(data as SiteImage[]);
+    setInstagramLoading(false);
+  };
+
+  const handleInstagramUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files;
+    if (!files || files.length === 0) return;
+    setInstagramUploading(true);
+    const maxSort = instagramImages.length > 0 ? Math.max(...instagramImages.map(i => i.sort_order)) : -1;
+
+    for (let i = 0; i < files.length; i++) {
+      const file = files[i];
+      const ext = file.name.split(".").pop() || "jpg";
+      const storagePath = `site-images/instagram/${crypto.randomUUID()}.${ext}`;
+
+      const { error: uploadErr } = await supabase.storage
+        .from("order-files")
+        .upload(storagePath, file, { contentType: file.type, upsert: false });
+
+      if (uploadErr) {
+        toast.error(`Upload failed: ${file.name}`);
+        continue;
+      }
+
+      await supabase.from("site_images").insert({
+        section: "instagram",
+        image_path: storagePath,
+        alt_text: "Piccoload coloring book",
+        sort_order: maxSort + 1 + i,
+      });
+    }
+
+    toast.success("Photos uploaded");
+    e.target.value = "";
+    fetchInstagramImages();
+    setInstagramUploading(false);
+  };
+
+  const deleteInstagramImage = async (img: SiteImage) => {
+    await supabase.storage.from("order-files").remove([img.image_path]);
+    await supabase.from("site_images").delete().eq("id", img.id);
+    toast.success("Photo deleted");
+    fetchInstagramImages();
+  };
+
+  const moveInstagramImage = async (index: number, direction: "up" | "down") => {
+    const swapIndex = direction === "up" ? index - 1 : index + 1;
+    if (swapIndex < 0 || swapIndex >= instagramImages.length) return;
+    const a = instagramImages[index];
+    const b = instagramImages[swapIndex];
+    await supabase.from("site_images").update({ sort_order: b.sort_order }).eq("id", a.id);
+    await supabase.from("site_images").update({ sort_order: a.sort_order }).eq("id", b.id);
+    fetchInstagramImages();
   };
 
   useEffect(() => {
@@ -635,6 +705,111 @@ const Admin = () => {
                       ))}
                     </TableBody>
                   </Table>
+                </div>
+              )
+            )}
+          </div>
+
+          {/* Instagram Photos Section */}
+          <div className="mt-12">
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="font-display text-2xl font-bold text-foreground flex items-center gap-2">
+                <Instagram className="w-6 h-6" />
+                Instagram Photos
+              </h2>
+              <Button
+                variant="outline"
+                className="rounded-xl"
+                onClick={() => {
+                  setShowInstagram(!showInstagram);
+                  if (!showInstagram && instagramImages.length === 0) fetchInstagramImages();
+                }}
+              >
+                {showInstagram ? "Hide" : "Manage Photos"}
+              </Button>
+            </div>
+            {showInstagram && (
+              instagramLoading ? (
+                <div className="flex justify-center py-8">
+                  <Loader2 className="w-6 h-6 animate-spin text-primary" />
+                </div>
+              ) : (
+                <div className="space-y-4">
+                  <div className="flex items-center gap-3">
+                    <label className="cursor-pointer">
+                      <input
+                        type="file"
+                        accept="image/*"
+                        multiple
+                        className="hidden"
+                        onChange={handleInstagramUpload}
+                        disabled={instagramUploading}
+                      />
+                      <div className="inline-flex items-center gap-2 px-4 py-2 rounded-xl border border-input bg-background hover:bg-muted transition-colors text-sm font-medium">
+                        {instagramUploading ? <Loader2 className="w-4 h-4 animate-spin" /> : <ImagePlus className="w-4 h-4" />}
+                        {instagramUploading ? "Uploading…" : "Upload Photos"}
+                      </div>
+                    </label>
+                    <p className="text-xs text-muted-foreground">
+                      {instagramImages.length} photo{instagramImages.length !== 1 ? "s" : ""} — 6 shown on site
+                    </p>
+                  </div>
+
+                  {instagramImages.length === 0 ? (
+                    <Card className="rounded-2xl">
+                      <CardContent className="py-8 text-center text-muted-foreground">
+                        No Instagram photos yet. Upload some to display on the landing page.
+                      </CardContent>
+                    </Card>
+                  ) : (
+                    <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-3">
+                      {instagramImages.map((img, idx) => {
+                        const { data: urlData } = supabase.storage.from("order-files").getPublicUrl(img.image_path);
+                        return (
+                          <div key={img.id} className="relative group rounded-xl overflow-hidden border border-border">
+                            <div className="aspect-square">
+                              <img
+                                src={urlData.publicUrl}
+                                alt={img.alt_text}
+                                className="w-full h-full object-cover"
+                              />
+                            </div>
+                            <div className="absolute inset-0 bg-black/0 group-hover:bg-black/40 transition-colors flex items-center justify-center gap-1 opacity-0 group-hover:opacity-100">
+                              <Button
+                                size="sm"
+                                variant="ghost"
+                                className="h-8 w-8 p-0 text-white hover:bg-white/20"
+                                onClick={() => moveInstagramImage(idx, "up")}
+                                disabled={idx === 0}
+                              >
+                                <ArrowUp className="w-4 h-4" />
+                              </Button>
+                              <Button
+                                size="sm"
+                                variant="ghost"
+                                className="h-8 w-8 p-0 text-white hover:bg-white/20"
+                                onClick={() => moveInstagramImage(idx, "down")}
+                                disabled={idx === instagramImages.length - 1}
+                              >
+                                <ArrowDown className="w-4 h-4" />
+                              </Button>
+                              <Button
+                                size="sm"
+                                variant="ghost"
+                                className="h-8 w-8 p-0 text-red-400 hover:bg-red-500/20"
+                                onClick={() => deleteInstagramImage(img)}
+                              >
+                                <Trash2 className="w-4 h-4" />
+                              </Button>
+                            </div>
+                            <div className="absolute top-1 left-1 bg-black/60 text-white text-[10px] font-mono px-1.5 py-0.5 rounded">
+                              {idx + 1}
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  )}
                 </div>
               )
             )}

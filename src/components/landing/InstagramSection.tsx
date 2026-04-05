@@ -1,15 +1,43 @@
-import { useEffect } from "react";
+import { useState, useEffect } from "react";
+import { Instagram } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
 
 const INSTAGRAM_URL = "https://www.instagram.com/officialpiccoload/";
-const ELFSIGHT_WIDGET_ID = "5df81938-ae16-4b59-ba46-f347e3e8f625";
+
+/** Fallback images used when no admin-uploaded photos exist yet */
+const FALLBACK_POSTS = [
+  { src: "/images/instagram/instagram-1.jpg", alt: "Piccoload coloring book" },
+  { src: "/images/instagram/instagram-2.jpg", alt: "Piccoload coloring book" },
+  { src: "/images/instagram/instagram-3.jpg", alt: "Piccoload coloring book" },
+  { src: "/images/instagram/instagram-4.jpg", alt: "Piccoload coloring book" },
+  { src: "/images/instagram/instagram-5.jpg", alt: "Piccoload coloring book" },
+  { src: "/images/instagram/instagram-6.jpg", alt: "Piccoload coloring book" },
+];
 
 const InstagramSection = () => {
+  const [posts, setPosts] = useState(FALLBACK_POSTS);
+
   useEffect(() => {
-    if (document.querySelector('script[src="https://elfsightcdn.com/platform.js"]')) return;
-    const script = document.createElement("script");
-    script.src = "https://elfsightcdn.com/platform.js";
-    script.async = true;
-    document.body.appendChild(script);
+    const load = async () => {
+      const { data } = await supabase
+        .from("site_images")
+        .select("image_path, alt_text")
+        .eq("section", "instagram")
+        .order("sort_order")
+        .limit(6);
+
+      if (data && data.length > 0) {
+        setPosts(
+          data.map((row) => {
+            const { data: urlData } = supabase.storage
+              .from("order-files")
+              .getPublicUrl(row.image_path);
+            return { src: urlData.publicUrl, alt: row.alt_text || "Piccoload coloring book" };
+          })
+        );
+      }
+    };
+    load();
   }, []);
 
   return (
@@ -32,8 +60,40 @@ const InstagramSection = () => {
         </p>
       </div>
 
-      <div className="max-w-7xl mx-auto px-4">
-        <div className={`elfsight-app-${ELFSIGHT_WIDGET_ID}`} data-elfsight-app-lazy />
+      <div className="max-w-5xl mx-auto px-4">
+        <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 sm:gap-3">
+          {posts.map((post, i) => (
+            <a
+              key={i}
+              href={INSTAGRAM_URL}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="group relative aspect-square overflow-hidden rounded-lg bg-muted"
+            >
+              <img
+                src={post.src}
+                alt={post.alt}
+                loading="lazy"
+                className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
+              />
+              <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors duration-300 flex items-center justify-center">
+                <Instagram className="w-8 h-8 text-white opacity-0 group-hover:opacity-100 transition-opacity duration-300 drop-shadow-lg" />
+              </div>
+            </a>
+          ))}
+        </div>
+      </div>
+
+      <div className="text-center mt-8">
+        <a
+          href={INSTAGRAM_URL}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="inline-flex items-center gap-2 bg-foreground text-background px-6 py-3 rounded-full font-medium text-sm hover:bg-foreground/90 transition-colors"
+        >
+          <Instagram className="w-5 h-5" />
+          @officialpiccoload
+        </a>
       </div>
     </section>
   );

@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useCallback } from "react";
 import { Check, BookOpen, Copy, Link2, Sparkles } from "lucide-react";
+import { Button } from "@/components/ui/button";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { useBasket } from "@/contexts/BasketContext";
 import Navbar from "@/components/layout/Navbar";
@@ -76,6 +77,7 @@ const Builder = () => {
   const [shopifyOrderNumber, setShopifyOrderNumber] = useState<string | null>(searchParams.get("shopifyOrder") || null);
   const [sessionId, setSessionId] = useState<string | null>(null);
   const [initialized, setInitialized] = useState(false);
+  const [initError, setInitError] = useState(false);
 
   // Save step to DB whenever it changes
   const persistStep = useCallback(async (orderId: string, step: BuilderStep) => {
@@ -140,6 +142,20 @@ const Builder = () => {
             });
 
             setBooks(restoredBooks);
+
+            // Check if orders are already paid (user returning to tab after payment)
+            const paidOrder = existingOrders.find((o: any) => o.payment_status === "paid");
+            if (paidOrder) {
+              setPostCheckout(true);
+              if (paidOrder.shopify_order_number) setShopifyOrderNumber(paidOrder.shopify_order_number);
+              // Update URL so refresh preserves the state
+              const newParams = new URLSearchParams(window.location.search);
+              newParams.set("paid", "true");
+              if (paidOrder.shopify_order_number) newParams.set("shopifyOrder", paidOrder.shopify_order_number);
+              window.history.replaceState(null, "", `${window.location.pathname}?${newParams.toString()}`);
+              setInitialized(true);
+              return;
+            }
 
             if (restoredBooks.every((b) => b.completed)) {
               setShowingCheckout(true);
@@ -208,6 +224,19 @@ const Builder = () => {
 
               setBooks(restoredBooks);
 
+              // Check if orders are already paid (user returning after payment)
+              const paidOrder = existingOrders.find((o: any) => o.payment_status === "paid");
+              if (paidOrder) {
+                setPostCheckout(true);
+                if (paidOrder.shopify_order_number) setShopifyOrderNumber(paidOrder.shopify_order_number);
+                const paidParams = new URLSearchParams(window.location.search);
+                paidParams.set("paid", "true");
+                if (paidOrder.shopify_order_number) paidParams.set("shopifyOrder", paidOrder.shopify_order_number);
+                window.history.replaceState(null, "", `${window.location.pathname}?${paidParams.toString()}`);
+                setInitialized(true);
+                return;
+              }
+
               if (restoredBooks.every((b) => b.completed)) {
                 setShowingCheckout(true);
               }
@@ -270,12 +299,42 @@ const Builder = () => {
         setBooks(newBooks);
       } catch (err) {
         console.error("Failed to create orders:", err);
+        setInitError(true);
       }
       setInitialized(true);
     };
     init();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  // Re-check payment status when tab becomes visible (handles user returning after Shopify payment)
+  useEffect(() => {
+    if (!sessionId || postCheckout) return;
+
+    const checkPaymentOnVisibility = async () => {
+      if (document.visibilityState !== "visible") return;
+      try {
+        const orders = await getSessionOrders(sessionId);
+        if (orders && orders.length > 0) {
+          const paidOrder = orders.find((o: any) => o.payment_status === "paid");
+          if (paidOrder) {
+            setPostCheckout(true);
+            if (paidOrder.shopify_order_number) setShopifyOrderNumber(paidOrder.shopify_order_number);
+            const newParams = new URLSearchParams(window.location.search);
+            newParams.set("paid", "true");
+            if (paidOrder.shopify_order_number) newParams.set("shopifyOrder", paidOrder.shopify_order_number);
+            window.history.replaceState(null, "", `${window.location.pathname}?${newParams.toString()}`);
+            clear();
+          }
+        }
+      } catch (err) {
+        console.error("Visibility payment check error:", err);
+      }
+    };
+
+    document.addEventListener("visibilitychange", checkPaymentOnVisibility);
+    return () => document.removeEventListener("visibilitychange", checkPaymentOnVisibility);
+  }, [sessionId, postCheckout]);
 
   const updateBook = (index: number, patch: Partial<BookState>) => {
     setBooks((prev) => prev.map((b, i) => {
@@ -344,10 +403,10 @@ const Builder = () => {
       await updateGuestOrder(sessionId, book.orderId, {
         cover_image_id: data.imageIds[0],
         cover_image_id_2: data.imageIds[1],
-        title_page_enabled: addOns.titlePageEnabled,
-        title_page_text: addOns.titlePageText,
-        dedication_page_enabled: addOns.dedicationPageEnabled,
-        dedication_page_text: addOns.dedicationPageText,
+        title_page_enabled: book.bookAddOns.bottomTitle !== "color your memories",
+        title_page_text: book.bookAddOns.bottomTitle || "color your memories",
+        dedication_page_enabled: book.bookAddOns.dedicationPageEnabled,
+        dedication_page_text: book.bookAddOns.dedicationPageText,
         builder_step: "cover",
       });
     }
@@ -363,6 +422,8 @@ const Builder = () => {
             updateGuestOrder(sessionId, b.orderId, {
               cover_image_id: data.imageIds[0],
               cover_image_id_2: data.imageIds[1],
+              title_page_enabled: activeAddOns.bottomTitle !== "color your memories",
+              title_page_text: activeAddOns.bottomTitle || "color your memories",
               dedication_page_enabled: activeAddOns.dedicationPageEnabled,
               dedication_page_text: activeAddOns.dedicationPageText,
               builder_step: "cover",
@@ -408,8 +469,24 @@ const Builder = () => {
       <div className="min-h-screen bg-background">
         <Navbar />
         <main className="pt-24 pb-16 flex flex-col items-center justify-center min-h-[60vh] gap-4">
-          <div className="w-10 h-10 border-2 border-primary border-t-transparent rounded-full animate-spin" />
-          <p className="text-sm text-muted-foreground">Setting up your book…</p>
+          {initError || initialized ? (
+            <>
+              <p className="text-sm text-muted-foreground">
+                Something went wrong setting up your book.
+              </p>
+              <Button
+                onClick={() => navigate("/pricing")}
+                className="rounded-xl"
+              >
+                Go Back to Start
+              </Button>
+            </>
+          ) : (
+            <>
+              <div className="w-10 h-10 border-2 border-primary border-t-transparent rounded-full animate-spin" />
+              <p className="text-sm text-muted-foreground">Setting up your book…</p>
+            </>
+          )}
         </main>
       </div>
     );
@@ -711,6 +788,9 @@ const Builder = () => {
                     const cover = b.coverData;
                     const photo1 = cover ? b.photos.find((p) => p.id === cover.imageIds[0]) : null;
                     const photo2 = cover ? b.photos.find((p) => p.id === cover.imageIds[1]) : null;
+                    const subtitle = b.bookAddOns.dedicationPageEnabled && b.bookAddOns.dedicationPageText.trim()
+                      ? b.bookAddOns.dedicationPageText.trim().toUpperCase()
+                      : "FOR KIDS AND ADULTS ALIKE";
                     return {
                       bookIndex: uniquePhotos ? i : 0,
                       coverGridUrls: [
@@ -721,6 +801,8 @@ const Builder = () => {
                       ],
                       pageUrls: b.photos.map((p) => p.convertedUrl),
                       pageLandscape: b.photos.map((p) => p.isLandscape),
+                      coverSubtitle: subtitle,
+                      coverBottomTitle: b.bookAddOns.bottomTitle || "color your memories",
                     };
                   })
                 }

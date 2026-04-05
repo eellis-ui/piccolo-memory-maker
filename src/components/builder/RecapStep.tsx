@@ -1,6 +1,7 @@
 import { Button } from "@/components/ui/button";
 import DigitalUpsellBanner from "./DigitalUpsellBanner";
-import { Check, BookOpen, Download, UserPlus } from "lucide-react";
+import { Check, BookOpen, Download, UserPlus, LogIn } from "lucide-react";
+import { Link } from "react-router-dom";
 import type { OrderPhoto, BookAddOnsLocal } from "@/pages/Builder";
 import logoImg from "@/assets/piccoload-logo.png";
 
@@ -176,6 +177,39 @@ const RecapStep = ({ books, onContinueToCheckout, onEditBook, hasAnyDigitalDownl
           </div>
         </div>
       )}
+
+      {/* Account creation reminder — shown to ALL orders */}
+      <div className="max-w-3xl mx-auto rounded-2xl border-2 border-amber-200 bg-amber-50 p-5 space-y-3">
+        <div className="flex items-start gap-3">
+          <div className="w-9 h-9 rounded-xl bg-amber-100 flex items-center justify-center shrink-0">
+            <UserPlus className="w-4.5 h-4.5 text-amber-700" />
+          </div>
+          <div>
+            <h3 className="font-display text-sm font-semibold text-foreground">
+              Important: Come Back Here After Payment
+            </h3>
+            <p className="text-sm text-muted-foreground mt-1">
+              After completing payment on the next page, <strong>come back to this tab</strong> and create a free account.
+              This lets you access any digital PDFs included in your order and track your order status from your My Orders page.
+            </p>
+            {hasAnyDigitalDownload && (
+              <p className="text-sm text-foreground mt-2 font-bold">
+                To access your digital PDF, please create an account using the same email you use during checkout — your PDF will be waiting in your My Orders page.
+              </p>
+            )}
+          </div>
+        </div>
+        <div className="flex items-center gap-2 pl-12">
+          <LogIn className="w-4 h-4 text-amber-700 shrink-0" />
+          <p className="text-sm text-muted-foreground">
+            Already have an account?{" "}
+            <Link to="/auth" className="text-primary font-medium underline hover:text-primary/80">
+              Sign in here
+            </Link>{" "}
+            after payment to see your order.
+          </p>
+        </div>
+      </div>
 
       {/* Digital Download Upsell */}
       <DigitalUpsellBanner variant="compact" maxCopies={1} />
