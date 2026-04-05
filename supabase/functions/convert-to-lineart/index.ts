@@ -112,17 +112,19 @@ Deno.serve(async (req) => {
     const imageBase64Input = btoa(chunks.join(""));
     const mimeType = fileData.type || "image/jpeg";
 
-    const prompt = `Convert this photo into a clean black-and-white LINE DRAWING for a coloring book.
+    const prompt = `Convert this photo into a clean coloring book LINE DRAWING.
 
-CRITICAL REQUIREMENTS:
-1. OUTLINES ONLY — every element must be represented as thin black (#000000) outlines/contours on a pure white (#FFFFFF) background. NEVER fill or flood any area with solid black. Hair, clothing, shadows, dark objects — ALL must be drawn as OUTLINES ONLY, never filled in. Think of it as a coloring book page where every area is left empty/white for someone to color in.
-2. ABSOLUTELY NO COLOR — no green, no brown, no grey, no skin tones, no colored fills of ANY kind. Every area enclosed by outlines must be pure empty white space.
-3. PRESERVE THE EXACT LIKENESS of the person in the photo — same face shape, same features, same hair texture and style, same pose, same expression. Do NOT replace the person with a generic or different-looking face. The converted image must be clearly recognizable as the same person.
-4. Use clean, consistent thin line weight throughout — like a professional coloring book page.
-5. Keep ALL accessories, clothing details, and background elements from the original photo, but render them as OUTLINES ONLY.
-6. NO shading, NO gradients, NO cross-hatching, NO halftones, NO grey areas, NO solid black fills. Areas that are dark in the photo (e.g. dark hair, dark clothing) should still be drawn as empty outlines, NOT filled with black.
-7. ${isLandscape ? "This is LANDSCAPE — output MUST remain landscape." : "This is PORTRAIT — output MUST remain portrait."}
-8. Maintain the EXACT same orientation, rotation, and aspect ratio as the input.
+ABSOLUTE RULES — NO EXCEPTIONS:
+- The output MUST be ONLY thin black lines on a pure white background. Nothing else.
+- Every single area between lines MUST be pure white (#FFFFFF). NO area should EVER be filled with black, grey, or any shade darker than white.
+- Dark areas in the original photo (black hair, dark clothing, shadows, dark skin, dark objects) must be converted to OUTLINES ONLY — the inside of those outlines must be WHITE, never filled in.
+- NO shading. NO gradients. NO grey tones. NO cross-hatching. NO halftones. NO solid fills of any kind.
+- Think of the output as a page in a children's coloring book — every enclosed area is empty white space waiting to be colored in by hand.
+- PRESERVE THE EXACT LIKENESS — same face, same features, same hair, same pose, same expression. The person must be clearly recognizable.
+- Keep all accessories, clothing details, and background elements as outlines.
+- Use clean, consistent thin line weight throughout.
+- ${isLandscape ? "This is LANDSCAPE — output MUST remain landscape." : "This is PORTRAIT — output MUST remain portrait."}
+- Maintain the EXACT same orientation and aspect ratio as the input.
 
 Output ONLY the converted image, no text.`;
 
@@ -133,7 +135,7 @@ Output ONLY the converted image, no text.`;
       console.log(`AI conversion attempt ${attempt}/${MAX_RETRIES}`);
 
       const aiResponse = await fetch(
-        `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-05-20:generateContent?key=${googleApiKey}`,
+        `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-image:generateContent?key=${googleApiKey}`,
         {
           method: "POST",
           headers: {

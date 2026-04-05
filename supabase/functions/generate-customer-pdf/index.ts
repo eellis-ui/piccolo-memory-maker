@@ -14,17 +14,59 @@ function adminClient() {
   );
 }
 
-async function downloadAsBase64(admin: ReturnType<typeof adminClient>, path: string): Promise<string | null> {
+/**
+ * Download an image and resize it to fit within maxDim x maxDim using OffscreenCanvas.
+ * Returns a JPEG base64 string at reduced quality to stay within memory limits.
+ */
+async function downloadAndResizeAsBase64(
+  admin: ReturnType<typeof adminClient>,
+  path: string,
+  maxDim = 1200,
+  quality = 0.7,
+): Promise<string | null> {
   const { data, error } = await admin.storage.from("order-files").download(path);
   if (error || !data) return null;
-  const arrayBuffer = await data.arrayBuffer();
-  const bytes = new Uint8Array(arrayBuffer);
-  let b64 = "";
-  const chunkSize = 32768;
-  for (let i = 0; i < bytes.length; i += chunkSize) {
-    b64 += String.fromCharCode(...bytes.subarray(i, i + chunkSize));
+
+  try {
+    const arrayBuffer = await data.arrayBuffer();
+    const blob = new Blob([arrayBuffer], { type: "image/jpeg" });
+    const imageBitmap = await createImageBitmap(blob);
+
+    let { width, height } = imageBitmap;
+
+    // Scale down if larger than maxDim
+    if (width > maxDim || height > maxDim) {
+      const scale = maxDim / Math.max(width, height);
+      width = Math.round(width * scale);
+      height = Math.round(height * scale);
+    }
+
+    const canvas = new OffscreenCanvas(width, height);
+    const ctx = canvas.getContext("2d")!;
+    ctx.drawImage(imageBitmap, 0, 0, width, height);
+    imageBitmap.close();
+
+    const resizedBlob = await canvas.convertToBlob({ type: "image/jpeg", quality });
+    const resizedBuffer = await resizedBlob.arrayBuffer();
+    const bytes = new Uint8Array(resizedBuffer);
+    let b64 = "";
+    const chunkSize = 32768;
+    for (let i = 0; i < bytes.length; i += chunkSize) {
+      b64 += String.fromCharCode(...bytes.subarray(i, i + chunkSize));
+    }
+    return btoa(b64);
+  } catch (e) {
+    console.warn("Image resize failed, falling back to raw base64:", e);
+    // Fallback: return raw base64 without resize
+    const arrayBuffer = await data.arrayBuffer();
+    const bytes = new Uint8Array(arrayBuffer);
+    let b64 = "";
+    const chunkSize = 32768;
+    for (let i = 0; i < bytes.length; i += chunkSize) {
+      b64 += String.fromCharCode(...bytes.subarray(i, i + chunkSize));
+    }
+    return btoa(b64);
   }
-  return btoa(b64);
 }
 
 const A4_W = 210;
@@ -151,7 +193,7 @@ Deno.serve(async (req) => {
       });
     }
 
-    // Generate PDF
+    // Generate PDF — images are resized to reduce memory usage
     const doc = new jsPDF({ unit: "mm", format: "a4", orientation: "portrait" });
     let firstPage = true;
 
@@ -226,10 +268,11 @@ Deno.serve(async (req) => {
       doc.rect(x, y, cellSize, cellSize, "F");
     }
 
+    // Cover grid — use smaller images (800px max) for the cover thumbnails
     for (let i = 0; i < 4; i++) {
       const path = gridPaths[i];
       if (!path || path === "deleted") continue;
-      const b64 = await downloadAsBase64(admin, path);
+      const b64 = await downloadAndResizeAsBase64(admin, path, 800, 0.65);
       if (b64) {
         try {
           doc.addImage(`data:image/jpeg;base64,${b64}`, "JPEG", gridPositions[i][0], gridPositions[i][1], cellSize, cellSize);
@@ -279,15 +322,19 @@ Deno.serve(async (req) => {
       addTextPage(order.dedication_page_text, 16, "italic");
     }
 
-    // 5. Line art pages
+    // 5. Line art pages — process one at a time to limit memory
     const coverIds = new Set([coverPhotoId1, coverPhotoId2].filter(Boolean));
     for (const photo of photos) {
       if (coverIds.has(photo.id)) continue;
       const path = photo.converted_path || photo.original_path;
       if (!path || path === "deleted") continue;
-      const b64 = await downloadAsBase64(admin, path);
-      if (!b64) continue;
-      addImagePage(b64);
+      try {
+        const b64 = await downloadAndResizeAsBase64(admin, path, 1200, 0.75);
+        if (!b64) continue;
+        addImagePage(b64);
+      } catch (e) {
+        console.warn(`Skipping photo ${photo.id}:`, e);
+      }
     }
 
     const pdfBytes = doc.output("arraybuffer");

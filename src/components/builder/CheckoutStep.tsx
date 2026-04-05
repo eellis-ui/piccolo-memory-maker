@@ -26,6 +26,8 @@ interface BookPreviewData {
   coverGridUrls: (string | null)[];
   pageUrls: (string | null)[];
   pageLandscape?: boolean[];
+  coverSubtitle?: string;
+  coverBottomTitle?: string;
 }
 
 interface CheckoutStepProps {
@@ -70,7 +72,16 @@ const MiniFlipbook = ({ bookPreview, bookCount }: { bookPreview: BookPreviewData
                 </div>
               ))}
             </div>
-            <div className="flex-1 min-h-0" />
+            <div className="flex-1 flex flex-col justify-start min-h-0" style={{ paddingRight: "8.75%" }}>
+              <div className="flex flex-col items-end" style={{ paddingTop: "2.5%" }}>
+                <p className="uppercase text-foreground leading-none" style={{ fontFamily: "'Yuji Syuku', serif", fontSize: "3.9cqi", letterSpacing: 0 }}>
+                  {bookPreview.coverSubtitle || "FOR KIDS AND ADULTS ALIKE"}
+                </p>
+                <p className="leading-none" style={{ fontFamily: "Bristol, serif", fontSize: "4.7cqi", marginTop: "2.5%", color: "hsl(var(--foreground))" }}>
+                  {bookPreview.coverBottomTitle || "color your memories"}
+                </p>
+              </div>
+            </div>
           </div>
         ) : (
           <div className="w-full h-full flex items-center justify-center bg-white relative">
@@ -243,8 +254,14 @@ const CheckoutStep = ({ pageCount, extraPages, convertedUrls, onBack, onCheckout
       }
 
       const checkoutUrl = await createShopifyCheckout(lines, sessionId || undefined);
-      if (checkoutUrl && newWindow) {
-        newWindow.location.href = checkoutUrl;
+      if (checkoutUrl) {
+        if (newWindow) {
+          newWindow.location.href = checkoutUrl;
+        } else {
+          // Popup was blocked — open in same tab
+          window.location.href = checkoutUrl;
+          return;
+        }
         setAwaitingPayment(true);
       } else {
         newWindow?.close();
@@ -510,8 +527,19 @@ const CheckoutStep = ({ pageCount, extraPages, convertedUrls, onBack, onCheckout
                 </div>
               </div>
 
-              <Button 
-                className="w-full rounded-2xl py-6 text-base mt-4" 
+              {digitalCount > 0 && (
+                <div className="mt-4 p-3 rounded-xl bg-amber-50 border border-amber-200">
+                  <p className="text-sm font-bold text-foreground">
+                    To access your digital PDF after purchase, create a free account using the same email you use at checkout.
+                  </p>
+                  <p className="text-xs text-muted-foreground mt-1">
+                    Your PDF will be waiting in your My Orders page. Already have an account? Just sign in after payment.
+                  </p>
+                </div>
+              )}
+
+              <Button
+                className="w-full rounded-2xl py-6 text-base mt-4"
                 size="lg"
                 onClick={handleCheckout}
                 disabled={isCheckingOut}
@@ -530,7 +558,7 @@ const CheckoutStep = ({ pageCount, extraPages, convertedUrls, onBack, onCheckout
               </div>
 
               <p className="text-xs text-center text-muted-foreground">
-                Watermarks will be removed after payment. Full-resolution PDF generated and emailed after purchase.
+                Watermarks will be removed after payment.
               </p>
             </CardContent>
           </Card>

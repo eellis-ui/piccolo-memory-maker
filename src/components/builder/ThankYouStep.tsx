@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from "react";
-import { CheckCircle, UserPlus, Mail, Lock, ArrowRight, PartyPopper } from "lucide-react";
+import { CheckCircle, UserPlus, Mail, Lock, ArrowRight, PartyPopper, LogIn } from "lucide-react";
+import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent } from "@/components/ui/card";
@@ -196,8 +197,18 @@ const ThankYouStep = ({ sessionId, orderIds = [], shopifyOrderNumber: initialSho
             <p className="text-xs text-muted-foreground text-center">
               {hasDigitalDownload
                 ? "Create an account to access your digital PDF downloads anytime from your My Orders page — no expiry!"
-                : "No obligation — just makes it easier to manage your orders."}
+                : "Create an account to access any digital PDFs included in your order and track your order from your My Orders page."}
             </p>
+
+            <div className="flex items-center justify-center gap-2 pt-2 border-t border-border">
+              <LogIn className="w-4 h-4 text-muted-foreground" />
+              <p className="text-sm text-muted-foreground">
+                Already have an account?{" "}
+                <Link to="/auth" state={{ from: "/my-orders" }} className="text-primary font-medium underline hover:text-primary/80">
+                  Sign in here
+                </Link>
+              </p>
+            </div>
           </CardContent>
         </Card>
       ) : (

@@ -1,24 +1,45 @@
-import { Instagram, Heart, MessageCircle } from "lucide-react";
+import { useState, useEffect } from "react";
+import { Instagram } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
 
 const INSTAGRAM_URL = "https://www.instagram.com/officialpiccoload/";
 
-/**
- * To update the feed, drop square-ish photos into public/images/instagram/
- * and update this array. Use 6, 9, or 12 images for a clean grid.
- */
-const FEED_IMAGES: { src: string; alt: string; likes: number; comments: number }[] = [
-  { src: "/images/hero-grid-1.jpg", alt: "Coloring book on table", likes: 124, comments: 8 },
-  { src: "/images/hero-grid-2.jpg", alt: "Line art portrait", likes: 97, comments: 5 },
-  { src: "/images/hero-grid-3.jpg", alt: "Family coloring book", likes: 215, comments: 12 },
-  { src: "/images/hero-grid-4.jpg", alt: "Pet line art", likes: 183, comments: 14 },
-  { src: "/images/hero-grid-5.jpg", alt: "Before and after", likes: 156, comments: 9 },
-  { src: "/images/hero-grid-6.jpg", alt: "Coloring in progress", likes: 201, comments: 11 },
-  { src: "/images/hero-grid-7.jpg", alt: "Gift wrapping a book", likes: 142, comments: 7 },
-  { src: "/images/hero-grid-8.jpg", alt: "Finished coloring page", likes: 178, comments: 10 },
-  { src: "/images/hero-grid-9.jpg", alt: "Happy customer", likes: 234, comments: 16 },
+/** Fallback images used when no admin-uploaded photos exist yet */
+const FALLBACK_POSTS = [
+  { src: "/images/instagram/instagram-1.jpg", alt: "Piccoload coloring book" },
+  { src: "/images/instagram/instagram-2.jpg", alt: "Piccoload coloring book" },
+  { src: "/images/instagram/instagram-3.jpg", alt: "Piccoload coloring book" },
+  { src: "/images/instagram/instagram-4.jpg", alt: "Piccoload coloring book" },
+  { src: "/images/instagram/instagram-5.jpg", alt: "Piccoload coloring book" },
+  { src: "/images/instagram/instagram-6.jpg", alt: "Piccoload coloring book" },
 ];
 
 const InstagramSection = () => {
+  const [posts, setPosts] = useState(FALLBACK_POSTS);
+
+  useEffect(() => {
+    const load = async () => {
+      const { data } = await supabase
+        .from("site_images")
+        .select("image_path, alt_text")
+        .eq("section", "instagram")
+        .order("sort_order")
+        .limit(6);
+
+      if (data && data.length > 0) {
+        setPosts(
+          data.map((row) => {
+            const { data: urlData } = supabase.storage
+              .from("order-files")
+              .getPublicUrl(row.image_path);
+            return { src: urlData.publicUrl, alt: row.alt_text || "Piccoload coloring book" };
+          })
+        );
+      }
+    };
+    load();
+  }, []);
+
   return (
     <section className="py-16 bg-background">
       <div className="text-center mb-10 px-4">
@@ -39,49 +60,39 @@ const InstagramSection = () => {
         </p>
       </div>
 
-      {/* Instagram-style grid */}
       <div className="max-w-5xl mx-auto px-4">
-        <div className="grid grid-cols-3 gap-1 sm:gap-3">
-          {FEED_IMAGES.map((img, idx) => (
+        <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 sm:gap-3">
+          {posts.map((post, i) => (
             <a
-              key={idx}
+              key={i}
               href={INSTAGRAM_URL}
               target="_blank"
               rel="noopener noreferrer"
-              className="group relative aspect-square overflow-hidden rounded-sm sm:rounded-md bg-muted"
+              className="group relative aspect-square overflow-hidden rounded-lg bg-muted"
             >
               <img
-                src={img.src}
-                alt={img.alt}
+                src={post.src}
+                alt={post.alt}
                 loading="lazy"
                 className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
               />
-              {/* Hover overlay */}
-              <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity duration-200 flex items-center justify-center gap-4 sm:gap-6">
-                <span className="flex items-center gap-1.5 text-white text-sm sm:text-base font-semibold">
-                  <Heart className="w-4 h-4 sm:w-5 sm:h-5 fill-white" />
-                  {img.likes}
-                </span>
-                <span className="flex items-center gap-1.5 text-white text-sm sm:text-base font-semibold">
-                  <MessageCircle className="w-4 h-4 sm:w-5 sm:h-5 fill-white" />
-                  {img.comments}
-                </span>
+              <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors duration-300 flex items-center justify-center">
+                <Instagram className="w-8 h-8 text-white opacity-0 group-hover:opacity-100 transition-opacity duration-300 drop-shadow-lg" />
               </div>
             </a>
           ))}
         </div>
       </div>
 
-      {/* Follow button */}
       <div className="text-center mt-8">
         <a
           href={INSTAGRAM_URL}
           target="_blank"
           rel="noopener noreferrer"
-          className="inline-flex items-center gap-2 rounded-full border-2 border-foreground px-6 py-2.5 text-sm font-semibold text-foreground hover:bg-foreground hover:text-background transition-colors"
+          className="inline-flex items-center gap-2 bg-foreground text-background px-6 py-3 rounded-full font-medium text-sm hover:bg-foreground/90 transition-colors"
         >
-          <Instagram className="w-4 h-4" />
-          Follow @officialpiccoload
+          <Instagram className="w-5 h-5" />
+          @officialpiccoload
         </a>
       </div>
     </section>

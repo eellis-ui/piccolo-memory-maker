@@ -82,7 +82,7 @@ const PricingSection = () => {
   const [selectedQuantity, setSelectedQuantity] = useState(2);
   const [pendingUniquePhotos, setPendingUniquePhotos] = useState(false);
   const [pendingPersonalizeCover, setPendingPersonalizeCover] = useState(false);
-  const { addToCart, setIsCartOpen } = useBasket();
+  const { addToCart, setIsCartOpen, clear } = useBasket();
   const navigate = useNavigate();
   const [productImages, setProductImages] = useState<ProductImage[]>([
     { url: "/images/product-hero.png", altText: "Personalized Coloring Book" },
@@ -107,7 +107,7 @@ const PricingSection = () => {
             url: e.node.url,
             altText: e.node.altText,
           }));
-          setProductImages((prev) => [prev[0], ...shopifyImages]);
+          setProductImages(shopifyImages);
         }
       } catch (err) {
         console.error("Failed to fetch product images:", err);
@@ -123,6 +123,7 @@ const PricingSection = () => {
   const totalPrice = selectedTier.price + (pendingUniquePhotos ? UNIQUE_PHOTOS_PRICE : 0) + personalizeCoverCount * PERSONALIZE_COVER_PRICE;
 
   const handleAddToBasket = () => {
+    clear();
     addToCart(selectedQuantity, { uniquePhotos: pendingUniquePhotos, personalizeCover: pendingPersonalizeCover });
     setIsCartOpen(true);
   };
@@ -199,7 +200,10 @@ const PricingSection = () => {
                   return (
                     <button
                       key={tier.quantity}
-                      onClick={() => setSelectedQuantity(tier.quantity)}
+                      onClick={() => {
+                        setSelectedQuantity(tier.quantity);
+                        if (tier.quantity === 1) setPendingUniquePhotos(false);
+                      }}
                       className={`w-full relative flex items-center gap-4 p-4 rounded-lg border-2 transition-all text-left ${
                         isSelected
                           ? "border-primary bg-primary/5 shadow-sm"
@@ -245,8 +249,8 @@ const PricingSection = () => {
                 })}
               </div>
 
-              {/* Unique photos upsell */}
-              {(
+              {/* Unique photos upsell — only for multi-book orders */}
+              {selectedQuantity > 1 && (
                 <label className="flex items-start gap-3 p-4 rounded-lg border border-border bg-background mb-3 cursor-pointer">
                   <Checkbox
                     checked={pendingUniquePhotos}
@@ -348,16 +352,11 @@ const PricingSection = () => {
 
       {/* 9. Final CTA Block */}
       <FinalCTABlock onCtaClick={() => {
+        clear();
         addToCart(selectedQuantity, { uniquePhotos: pendingUniquePhotos, personalizeCover: pendingPersonalizeCover });
         setIsCartOpen(true);
       }} />
 
-      {/* 10. Sticky Mobile CTA */}
-      <StickyMobileCTA
-        price={totalPrice.toFixed(2)}
-        onCtaClick={handleAddToBasket}
-        triggerRef={ctaButtonRef}
-      />
     </>
   );
 };

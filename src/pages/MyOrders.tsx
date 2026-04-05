@@ -12,6 +12,8 @@ import { toast } from "sonner";
 import Navbar from "@/components/layout/Navbar";
 import Footer from "@/components/layout/Footer";
 import { useAuth } from "@/contexts/AuthContext";
+import { createShopifyCheckout, SHOPIFY_VARIANTS } from "@/lib/shopify";
+import { ShoppingCart } from "lucide-react";
 
 interface OrderRow {
   id: string;
@@ -405,15 +407,29 @@ const MyOrders = () => {
                             </div>
                           </div>
                         ) : !isDraft && (
-                          <div className="ml-auto p-3 rounded-xl border border-dashed border-muted-foreground/30 bg-muted flex items-center gap-3">
-                            <Download className="w-4 h-4 text-muted-foreground shrink-0" />
-                            <div className="min-w-0">
-                              <p className="text-xs font-semibold text-foreground">Add Digital PDF</p>
-                              <p className="text-[10px] text-muted-foreground">
-                                <Link to="/contact" className="underline underline-offset-2">Contact us</Link> to add a digital copy
-                              </p>
-                            </div>
-                          </div>
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            className="ml-auto rounded-xl text-xs gap-1.5"
+                            onClick={async () => {
+                              try {
+                                const checkoutUrl = await createShopifyCheckout(
+                                  [{
+                                    merchandiseId: SHOPIFY_VARIANTS.DIGITAL_DOWNLOAD,
+                                    quantity: 1,
+                                    attributes: [{ key: "Add-on for", value: "Personalized Coloring Book" }],
+                                  }],
+                                  order.builder_session_id || undefined,
+                                );
+                                if (checkoutUrl) window.open(checkoutUrl, "_blank");
+                              } catch {
+                                toast.error("Could not create checkout");
+                              }
+                            }}
+                          >
+                            <ShoppingCart className="w-3.5 h-3.5" />
+                            Buy Digital PDF — $9.99
+                          </Button>
                         )}
                       </div>
                     </CardContent>
