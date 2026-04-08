@@ -112,17 +112,24 @@ Deno.serve(async (req) => {
     const imageBase64Input = btoa(chunks.join(""));
     const mimeType = fileData.type || "image/jpeg";
 
-    const prompt = `Convert this photo into a clean black-and-white LINE DRAWING for a coloring book.
+    const prompt = `Convert this photo into a BLACK-AND-WHITE LINE DRAWING suitable for a printed coloring book page.
 
-CRITICAL REQUIREMENTS:
-1. OUTLINES ONLY — every element must be represented as thin black (#000000) outlines/contours on a pure white (#FFFFFF) background. NEVER fill or flood any area with solid black. Hair, clothing, shadows, dark objects — ALL must be drawn as OUTLINES ONLY, never filled in. Think of it as a coloring book page where every area is left empty/white for someone to color in.
-2. ABSOLUTELY NO COLOR — no green, no brown, no grey, no skin tones, no colored fills of ANY kind. Every area enclosed by outlines must be pure empty white space.
-3. PRESERVE THE EXACT LIKENESS of the person in the photo — same face shape, same features, same hair texture and style, same pose, same expression. Do NOT replace the person with a generic or different-looking face. The converted image must be clearly recognizable as the same person.
-4. Use clean, consistent thin line weight throughout — like a professional coloring book page.
-5. Keep ALL accessories, clothing details, and background elements from the original photo, but render them as OUTLINES ONLY.
-6. NO shading, NO gradients, NO cross-hatching, NO halftones, NO grey areas, NO solid black fills. Areas that are dark in the photo (e.g. dark hair, dark clothing) should still be drawn as empty outlines, NOT filled with black.
-7. ${isLandscape ? "This is LANDSCAPE — output MUST remain landscape." : "This is PORTRAIT — output MUST remain portrait."}
-8. Maintain the EXACT same orientation, rotation, and aspect ratio as the input.
+STYLE — BOLD ILLUSTRATED COLORING BOOK:
+- Draw BOLD, CONFIDENT outlines using medium-to-thick marker-weight lines — like a professional coloring book illustrator
+- Use VARIED line weights: slightly thicker outlines for main subjects and key shapes, slightly thinner lines for fine details and background elements
+- Every enclosed area must be PURE WHITE (left empty for coloring in)
+- Lines must be CLEAN, SMOOTH, and WELL-DEFINED — no sketchy, scratchy, or wispy strokes
+- Think high-quality published coloring book, NOT a pencil sketch or digital edge detection
+
+CRITICAL RULES:
+1. BLACK LINES (#000000) on PURE WHITE (#FFFFFF) background ONLY
+2. ABSOLUTELY NO fills, shading, gradients, cross-hatching, halftones, or grey areas
+3. Dark areas in the photo (dark hair, dark clothing, shadows) must be drawn as OUTLINES ONLY — never filled with solid black
+4. NO color of any kind — no green, brown, grey, or skin tones
+5. PRESERVE THE EXACT LIKENESS of every person — same face shape, same features, same hair texture/style, same pose, same expression. The result must be clearly recognizable as the same person(s)
+6. Keep ALL accessories, clothing details, and background elements, rendered as bold outlines
+7. ${isLandscape ? "LANDSCAPE orientation — output MUST remain landscape" : "PORTRAIT orientation — output MUST remain portrait"}
+8. Maintain the EXACT same orientation, rotation, and aspect ratio as the input
 
 Output ONLY the converted image, no text.`;
 
@@ -133,7 +140,7 @@ Output ONLY the converted image, no text.`;
       console.log(`AI conversion attempt ${attempt}/${MAX_RETRIES}`);
 
       const aiResponse = await fetch(
-        `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-05-20:generateContent?key=${googleApiKey}`,
+        `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-image:generateContent?key=${googleApiKey}`,
         {
           method: "POST",
           headers: {

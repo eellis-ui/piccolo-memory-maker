@@ -54,12 +54,12 @@ const UploadStep = ({ orderId, sessionId, onImagesUploaded, maxImages = 20, init
     return result;
   };
 
-  // Normalize image orientation and compress to max 1024px for faster AI conversion
+  // Normalize image orientation and compress to max 2048px for quality AI conversion
   const normalizeImage = (blob: Blob): Promise<{ blob: Blob; isLandscape: boolean }> => {
     return new Promise((resolve, reject) => {
       const img = new window.Image();
       img.onload = () => {
-        const MAX_DIM = 1024;
+        const MAX_DIM = 2048;
         let w = img.naturalWidth;
         let h = img.naturalHeight;
         if (w > MAX_DIM || h > MAX_DIM) {
@@ -77,7 +77,7 @@ const UploadStep = ({ orderId, sessionId, onImagesUploaded, maxImages = 20, init
         canvas.toBlob(
           (result) => (result ? resolve({ blob: result, isLandscape }) : reject(new Error("Canvas toBlob failed"))),
           "image/jpeg",
-          0.85
+          0.92
         );
         URL.revokeObjectURL(img.src);
       };
