@@ -55,7 +55,7 @@ const MiniFlipbook = ({ bookPreview, bookCount }: { bookPreview: BookPreviewData
       {bookCount > 1 && (
         <span className="text-xs font-semibold text-foreground">Book {bookPreview.bookIndex + 1}</span>
       )}
-      <div className="relative w-full aspect-[3/4] bg-[#fffaf3] rounded-lg overflow-hidden border border-border">
+      <div className="relative w-full aspect-[3/4] bg-[#fffaf3] rounded-lg overflow-hidden border border-border" style={{ containerType: "inline-size" }}>
         {currentPage === 0 ? (
           <div className="w-full h-full flex flex-col">
             <div className="flex-1 flex items-center justify-center min-h-0">
@@ -89,7 +89,7 @@ const MiniFlipbook = ({ bookPreview, bookCount }: { bookPreview: BookPreviewData
               <img
                 src={bookPreview.pageUrls[currentPage - 1]!}
                 alt={`Page ${currentPage}`}
-                className={`object-contain ${bookPreview.pageLandscape?.[currentPage - 1] ? "rotate-90 max-w-[100%] max-h-[100%]" : "w-full h-full"}`}
+                className={`w-full h-full object-cover ${bookPreview.pageLandscape?.[currentPage - 1] ? "rotate-90 scale-[1.42]" : ""}`}
               />
             ) : (
               <span className="text-xs text-muted-foreground">Page {currentPage}</span>

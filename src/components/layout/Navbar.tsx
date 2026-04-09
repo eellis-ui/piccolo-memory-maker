@@ -1,8 +1,8 @@
 import { Link, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { Menu, X, ShoppingCart, Minus, Plus, Trash2, Shield, ClipboardList, Sparkles, Tag, Check, Download, Loader2, Lock } from "lucide-react";
+import { Menu, X, ShoppingCart, Minus, Plus, Trash2, Shield, ClipboardList, Sparkles, Tag, Check, Download, Loader2, Lock, Users } from "lucide-react";
 import { createShopifyCheckout, SHOPIFY_VARIANTS, type CartLineInput } from "@/lib/shopify";
-import { useState, useCallback } from "react";
+import { useState, useCallback, useEffect } from "react";
 import { useBasket, UNIQUE_PHOTOS_PRICE, DIGITAL_DOWNLOAD_PRICE, PERSONALIZE_COVER_PRICE } from "@/contexts/BasketContext";
 import { useIsAdmin } from "@/hooks/use-admin";
 import { supabase } from "@/integrations/supabase/client";
@@ -367,9 +367,18 @@ const Navbar = () => {
   const { isAdmin } = useIsAdmin();
   const { user, loading: authLoading } = useAuth();
   const isLoggedIn = !!user;
+  const [isAffiliate, setIsAffiliate] = useState(false);
+
+  useEffect(() => {
+    if (!user) { setIsAffiliate(false); return; }
+    supabase.from("affiliates").select("id").eq("user_id", user.id).maybeSingle()
+      .then(({ data }) => setIsAffiliate(!!data))
+      .catch(() => setIsAffiliate(false));
+  }, [user]);
 
   const navLinks = [
   { href: "/", label: "Home" },
+  { href: "/pricing", label: "Shop" },
   { href: "/about", label: "Our Story" },
   { href: "/contact", label: "Contact Us" }];
 
@@ -488,6 +497,14 @@ const Navbar = () => {
                   Admin
                 </Link>
               }
+              {!authLoading && isAffiliate &&
+              <Link
+                to="/affiliates"
+                className="text-sm font-medium text-foreground hover:text-foreground/70 transition-colors flex items-center gap-1">
+                  <Users className="w-3.5 h-3.5" />
+                  Affiliate Dashboard
+                </Link>
+              }
             {!authLoading && isLoggedIn &&
               <Link
                 to="/account"
@@ -563,6 +580,15 @@ const Navbar = () => {
 
                   <Shield className="w-3.5 h-3.5" />
                   Admin
+                </Link>
+            }
+              {!authLoading && isAffiliate &&
+            <Link
+              to="/affiliates"
+              className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors px-2 py-2 flex items-center gap-1"
+              onClick={() => setIsMenuOpen(false)}>
+                  <Users className="w-3.5 h-3.5" />
+                  Affiliate Dashboard
                 </Link>
             }
               {!authLoading && isLoggedIn &&

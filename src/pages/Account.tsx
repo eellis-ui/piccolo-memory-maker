@@ -30,12 +30,18 @@ const Account = () => {
 
   useEffect(() => {
     if (!user) return;
+    let cancelled = false;
     setSummaryLoading(true);
-    supabase
-      .from("orders")
-      .select("id, status")
-      .then(({ data }) => {
-        if (data) {
+
+    const fetchSummary = async () => {
+      try {
+        const { data, error } = await supabase
+          .from("orders")
+          .select("id, status");
+        if (cancelled) return;
+        if (error) {
+          console.error("Orders fetch error:", error);
+        } else if (data) {
           setOrderSummary({
             total: data.length,
             active: data.filter((o) => ["paid", "converted", "sent_to_print"].includes(o.status)).length,
@@ -43,8 +49,15 @@ const Account = () => {
             drafts: data.filter((o) => o.status === "draft").length,
           });
         }
-        setSummaryLoading(false);
-      });
+      } catch (err) {
+        console.error("Orders fetch exception:", err);
+      } finally {
+        if (!cancelled) setSummaryLoading(false);
+      }
+    };
+
+    fetchSummary();
+    return () => { cancelled = true; };
   }, [user]);
 
   if (loading) {

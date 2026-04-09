@@ -25,6 +25,11 @@ const Footer = () => {
                 </Link>
               </li>
               <li>
+                <Link to="/pricing" className="text-sm text-muted-foreground hover:text-foreground transition-colors">
+                  Shop
+                </Link>
+              </li>
+              <li>
                 <Link to="/about" className="text-sm text-muted-foreground hover:text-foreground transition-colors">
                   Our Story
                 </Link>
@@ -59,8 +64,8 @@ const Footer = () => {
                 </Link>
               </li>
               <li>
-                <Link to="/become-an-affiliate" className="text-sm text-muted-foreground hover:text-foreground transition-colors">
-                  Become an Affiliate!
+                <Link to="/affiliates" className="text-sm text-muted-foreground hover:text-foreground transition-colors">
+                  Affiliates
                 </Link>
               </li>
             </ul>
