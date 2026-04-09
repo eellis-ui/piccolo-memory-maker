@@ -1,5 +1,5 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
-import { jsPDF } from "https://esm.sh/jspdf@2.5.1";
+import JSZip from "https://esm.sh/jszip@3.10.1";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -14,27 +14,30 @@ function adminClient() {
   );
 }
 
-/**
- * Download an image and resize it to fit within maxDim x maxDim using OffscreenCanvas.
- * Returns a JPEG base64 string at reduced quality to stay within memory limits.
- */
-async function downloadAndResizeAsBase64(
+/** Download a file from storage and return as ArrayBuffer */
+async function downloadFile(
   admin: ReturnType<typeof adminClient>,
   path: string,
-  maxDim = 1200,
-  quality = 0.7,
-): Promise<string | null> {
+): Promise<ArrayBuffer | null> {
   const { data, error } = await admin.storage.from("order-files").download(path);
   if (error || !data) return null;
+  return data.arrayBuffer();
+}
+
+/** Download and resize image, return as PNG ArrayBuffer */
+async function downloadAndResizeAsPng(
+  admin: ReturnType<typeof adminClient>,
+  path: string,
+  maxDim = 1600,
+): Promise<ArrayBuffer | null> {
+  const raw = await downloadFile(admin, path);
+  if (!raw) return null;
 
   try {
-    const arrayBuffer = await data.arrayBuffer();
-    const blob = new Blob([arrayBuffer], { type: "image/jpeg" });
-    const imageBitmap = await createImageBitmap(blob);
+    const blob = new Blob([raw], { type: "image/png" });
+    const bmp = await createImageBitmap(blob);
+    let { width, height } = bmp;
 
-    let { width, height } = imageBitmap;
-
-    // Scale down if larger than maxDim
     if (width > maxDim || height > maxDim) {
       const scale = maxDim / Math.max(width, height);
       width = Math.round(width * scale);
@@ -43,34 +46,135 @@ async function downloadAndResizeAsBase64(
 
     const canvas = new OffscreenCanvas(width, height);
     const ctx = canvas.getContext("2d")!;
-    ctx.drawImage(imageBitmap, 0, 0, width, height);
-    imageBitmap.close();
+    ctx.drawImage(bmp, 0, 0, width, height);
+    bmp.close();
 
-    const resizedBlob = await canvas.convertToBlob({ type: "image/jpeg", quality });
-    const resizedBuffer = await resizedBlob.arrayBuffer();
-    const bytes = new Uint8Array(resizedBuffer);
-    let b64 = "";
-    const chunkSize = 32768;
-    for (let i = 0; i < bytes.length; i += chunkSize) {
-      b64 += String.fromCharCode(...bytes.subarray(i, i + chunkSize));
-    }
-    return btoa(b64);
-  } catch (e) {
-    console.warn("Image resize failed, falling back to raw base64:", e);
-    // Fallback: return raw base64 without resize
-    const arrayBuffer = await data.arrayBuffer();
-    const bytes = new Uint8Array(arrayBuffer);
-    let b64 = "";
-    const chunkSize = 32768;
-    for (let i = 0; i < bytes.length; i += chunkSize) {
-      b64 += String.fromCharCode(...bytes.subarray(i, i + chunkSize));
-    }
-    return btoa(b64);
+    const pngBlob = await canvas.convertToBlob({ type: "image/png" });
+    return pngBlob.arrayBuffer();
+  } catch {
+    return raw; // fallback to raw bytes
   }
 }
 
-const A4_W = 210;
-const A4_H = 297;
+// A4 proportions at 150dpi
+const COVER_W = 1240;
+const COVER_H = 1754;
+
+/** Render front cover as PNG ArrayBuffer using OffscreenCanvas */
+async function renderFrontCover(
+  admin: ReturnType<typeof adminClient>,
+  gridPaths: (string | null)[],
+  subtitle: string,
+  title: string,
+): Promise<ArrayBuffer> {
+  const canvas = new OffscreenCanvas(COVER_W, COVER_H);
+  const ctx = canvas.getContext("2d")!;
+
+  // Cream background
+  ctx.fillStyle = "#fffaf3";
+  ctx.fillRect(0, 0, COVER_W, COVER_H);
+
+  // Logo text "piccoload"
+  const logoY = 160;
+  ctx.fillStyle = "#282828";
+  ctx.font = "bold 72px Helvetica, Arial, sans-serif";
+  ctx.textAlign = "center";
+  ctx.fillText("piccoload", COVER_W / 2, logoY);
+
+  // Thin line beneath logo
+  const lineY = logoY + 16;
+  ctx.strokeStyle = "#787878";
+  ctx.lineWidth = 1;
+  ctx.beginPath();
+  ctx.moveTo(COVER_W / 2 - 100, lineY);
+  ctx.lineTo(COVER_W / 2 + 100, lineY);
+  ctx.stroke();
+
+  // "FROM PIC TO PEN" tagline
+  ctx.fillStyle = "#787878";
+  ctx.font = "20px Helvetica, Arial, sans-serif";
+  ctx.fillText("FROM PIC TO PEN", COVER_W / 2, lineY + 28);
+
+  // 2x2 grid
+  const gridMargin = Math.round(COVER_W * 0.0875);
+  const gridW = COVER_W - gridMargin * 2;
+  const cellSize = Math.round(gridW / 2);
+  const gridTop = 240;
+
+  const gridPositions = [
+    [gridMargin, gridTop],
+    [gridMargin + cellSize, gridTop],
+    [gridMargin, gridTop + cellSize],
+    [gridMargin + cellSize, gridTop + cellSize],
+  ];
+
+  // Placeholder fills
+  ctx.fillStyle = "#ede8e0";
+  for (const [x, y] of gridPositions) {
+    ctx.fillRect(x, y, cellSize, cellSize);
+  }
+
+  // Draw grid images
+  for (let i = 0; i < 4; i++) {
+    const path = gridPaths[i];
+    if (!path || path === "deleted") continue;
+    try {
+      const buf = await downloadFile(admin, path);
+      if (!buf) continue;
+      const blob = new Blob([buf], { type: "image/jpeg" });
+      const bmp = await createImageBitmap(blob);
+      const [x, y] = gridPositions[i];
+      // Cover-fit into the cell
+      const srcAspect = bmp.width / bmp.height;
+      let sx = 0, sy = 0, sw = bmp.width, sh = bmp.height;
+      if (srcAspect > 1) { // wider than tall
+        sw = bmp.height;
+        sx = (bmp.width - sw) / 2;
+      } else {
+        sh = bmp.width;
+        sy = (bmp.height - sh) / 2;
+      }
+      ctx.drawImage(bmp, sx, sy, sw, sh, x, y, cellSize, cellSize);
+      bmp.close();
+    } catch (e) {
+      console.warn(`Cover grid image ${i} failed:`, e);
+    }
+  }
+
+  // Bottom text — right-aligned
+  const textRightX = COVER_W - gridMargin;
+  const textTopY = gridTop + cellSize * 2 + 50;
+
+  ctx.fillStyle = "#282828";
+  ctx.textAlign = "right";
+  ctx.font = "28px Helvetica, Arial, sans-serif";
+  ctx.fillText(subtitle.toUpperCase(), textRightX, textTopY);
+
+  ctx.font = "italic 36px Helvetica, Arial, sans-serif";
+  ctx.fillText(title, textRightX, textTopY + 44);
+
+  const pngBlob = await canvas.convertToBlob({ type: "image/png" });
+  return pngBlob.arrayBuffer();
+}
+
+/** Render back cover as PNG ArrayBuffer */
+async function renderBackCover(): Promise<ArrayBuffer> {
+  const canvas = new OffscreenCanvas(COVER_W, COVER_H);
+  const ctx = canvas.getContext("2d")!;
+
+  // White background
+  ctx.fillStyle = "#ffffff";
+  ctx.fillRect(0, 0, COVER_W, COVER_H);
+
+  // "piccolo'd" footer text
+  ctx.fillStyle = "#b4b4b4";
+  ctx.font = "20px Helvetica, Arial, sans-serif";
+  ctx.textAlign = "center";
+  ctx.fillText("piccolo'd", COVER_W / 2, COVER_H - 40);
+
+  const pngBlob = await canvas.convertToBlob({ type: "image/png" });
+  return pngBlob.arrayBuffer();
+}
 
 async function sendDownloadEmail(customerEmail: string, downloadUrl: string, orderId: string) {
   const resendApiKey = Deno.env.get("RESEND_API_KEY");
@@ -87,12 +191,12 @@ async function sendDownloadEmail(customerEmail: string, downloadUrl: string, ord
         <h1 style="font-size: 24px; color: #1a1a1a; margin: 0;">Your Digital Colouring Book is Ready!</h1>
       </div>
       <p style="font-size: 16px; color: #333; line-height: 1.6;">
-        Thank you for your purchase! Your personalised colouring book PDF is ready to download.
+        Thank you for your purchase! Your personalised colouring book is ready to download.
       </p>
       <div style="text-align: center; margin: 32px 0;">
         <a href="${downloadUrl}"
            style="display: inline-block; background-color: #1a1a1a; color: #ffffff; padding: 14px 32px; border-radius: 12px; text-decoration: none; font-weight: 600; font-size: 16px;">
-          Download Your PDF
+          Download Your Colouring Book
         </a>
       </div>
       <p style="font-size: 14px; color: #666; line-height: 1.6;">
@@ -172,7 +276,7 @@ Deno.serve(async (req) => {
       });
     }
 
-    // Idempotent — if PDF already exists, return it
+    // Idempotent — if already generated, return it
     if (order.digital_pdf_path) {
       return new Response(JSON.stringify({ pdfPath: order.digital_pdf_path, alreadyExists: true }), {
         headers: { ...corsHeaders, "Content-Type": "application/json" },
@@ -193,45 +297,10 @@ Deno.serve(async (req) => {
       });
     }
 
-    // Generate PDF — images are resized to reduce memory usage
-    const doc = new jsPDF({ unit: "mm", format: "a4", orientation: "portrait" });
-    let firstPage = true;
+    // --- Build ZIP with covers + line art pages ---
+    const zip = new JSZip();
 
-    function addImagePage(b64: string, mimeType = "JPEG") {
-      if (!firstPage) doc.addPage();
-      firstPage = false;
-      doc.addImage(`data:image/${mimeType.toLowerCase()};base64,${b64}`, mimeType, 0, 0, A4_W, A4_H);
-    }
-
-    function addTextPage(text: string, fontSize: number, fontStyle: string) {
-      if (!firstPage) doc.addPage();
-      firstPage = false;
-      doc.setFontSize(fontSize);
-      doc.setFont("helvetica", fontStyle);
-      const lines = doc.splitTextToSize(text, A4_W - 40);
-      doc.text(lines, A4_W / 2, A4_H / 2, { align: "center" });
-    }
-
-    // 1. Front cover
-    firstPage = false;
-    doc.setFillColor(255, 250, 243);
-    doc.rect(0, 0, A4_W, A4_H, "F");
-
-    const logoY = 55;
-    doc.setFontSize(36);
-    doc.setFont("helvetica", "bold");
-    doc.setTextColor(40, 40, 40);
-    doc.text("piccoload", A4_W / 2, logoY, { align: "center" });
-    doc.setFontSize(10);
-    doc.setFont("helvetica", "normal");
-    doc.setTextColor(120, 120, 120);
-    doc.text("FROM PIC TO PEN", A4_W / 2, logoY + 10, { align: "center" });
-
-    const gridMargin = A4_W * 0.0875;
-    const gridW = A4_W - gridMargin * 2;
-    const cellSize = gridW / 2;
-    const gridTop = 80;
-
+    // Resolve cover photo data
     const coverPhotoId1 = order.cover_image_id;
     const coverPhotoId2 = order.cover_image_id_2 || coverPhotoId1;
 
@@ -249,6 +318,7 @@ Deno.serve(async (req) => {
       coverPhoto2Data = coverPhoto1Data;
     }
 
+    // Grid: [original1, lineart1, lineart2, original2]
     const gridPaths = [
       coverPhoto1Data?.original_path ?? null,
       coverPhoto1Data?.converted_path ?? null,
@@ -256,113 +326,68 @@ Deno.serve(async (req) => {
       coverPhoto2Data?.original_path ?? null,
     ];
 
-    const gridPositions = [
-      [gridMargin, gridTop],
-      [gridMargin + cellSize, gridTop],
-      [gridMargin, gridTop + cellSize],
-      [gridMargin + cellSize, gridTop + cellSize],
-    ];
-
-    doc.setFillColor(237, 232, 224);
-    for (const [x, y] of gridPositions) {
-      doc.rect(x, y, cellSize, cellSize, "F");
-    }
-
-    // Cover grid — use smaller images (800px max) for the cover thumbnails
-    for (let i = 0; i < 4; i++) {
-      const path = gridPaths[i];
-      if (!path || path === "deleted") continue;
-      const b64 = await downloadAndResizeAsBase64(admin, path, 800, 0.65);
-      if (b64) {
-        try {
-          doc.addImage(`data:image/jpeg;base64,${b64}`, "JPEG", gridPositions[i][0], gridPositions[i][1], cellSize, cellSize);
-        } catch (e) {
-          console.warn(`Failed to add cover grid image ${i}:`, e);
-        }
-      }
-    }
-
-    const textRightX = A4_W - gridMargin;
-    const textTopY = gridTop + cellSize * 2 + 12;
-
     const subtitle = order.dedication_page_enabled && order.dedication_page_text?.trim()
-      ? order.dedication_page_text.trim().toUpperCase()
+      ? order.dedication_page_text.trim()
       : "FOR KIDS AND ADULTS ALIKE";
 
-    doc.setFontSize(14);
-    doc.setFont("helvetica", "normal");
-    doc.setTextColor(40, 40, 40);
-    doc.text(subtitle, textRightX, textTopY, { align: "right" });
-
-    const bottomTitle = order.dedication_page_enabled && order.dedication_page_text?.trim()
+    const title = order.dedication_page_enabled && order.dedication_page_text?.trim()
       ? order.dedication_page_text.trim()
-      : "color your memories";
+      : (order.title_page_enabled && order.title_page_text?.trim()) || "color your memories";
 
-    doc.setFontSize(18);
-    doc.setFont("helvetica", "italic");
-    doc.setTextColor(40, 40, 40);
-    doc.text(bottomTitle, textRightX, textTopY + 10, { align: "right" });
+    // 1. Front cover
+    console.log("Rendering front cover...");
+    const frontCoverBuf = await renderFrontCover(admin, gridPaths, subtitle, title);
+    zip.file("00-front-cover.png", frontCoverBuf);
 
     // 2. Back cover
-    doc.addPage();
-    doc.setFillColor(255, 255, 255);
-    doc.rect(0, 0, A4_W, A4_H, "F");
-    doc.setFontSize(10);
-    doc.setFont("helvetica", "normal");
-    doc.setTextColor(180, 180, 180);
-    doc.text("piccolo'd", A4_W / 2, A4_H - 10, { align: "center" });
+    console.log("Rendering back cover...");
+    const backCoverBuf = await renderBackCover();
+    zip.file("01-back-cover.png", backCoverBuf);
 
-    // 3. Title page
-    if (order.title_page_enabled && order.title_page_text) {
-      addTextPage(order.title_page_text, 28, "bold");
-    }
-
-    // 4. Dedication page
-    if (order.dedication_page_enabled && order.dedication_page_text) {
-      addTextPage(order.dedication_page_text, 16, "italic");
-    }
-
-    // 5. Line art pages — process one at a time to limit memory
-    const coverIds = new Set([coverPhotoId1, coverPhotoId2].filter(Boolean));
+    // 3. Line art pages
+    let pageNum = 1;
     for (const photo of photos) {
-      if (coverIds.has(photo.id)) continue;
       const path = photo.converted_path || photo.original_path;
       if (!path || path === "deleted") continue;
       try {
-        const b64 = await downloadAndResizeAsBase64(admin, path, 1200, 0.75);
-        if (!b64) continue;
-        addImagePage(b64);
+        console.log(`Adding page ${pageNum}: ${photo.id}`);
+        const buf = await downloadAndResizeAsPng(admin, path, 1600);
+        if (!buf) continue;
+        const padded = String(pageNum + 1).padStart(2, "0");
+        zip.file(`${padded}-page-${pageNum}.png`, buf);
+        pageNum++;
       } catch (e) {
         console.warn(`Skipping photo ${photo.id}:`, e);
       }
     }
 
-    const pdfBytes = doc.output("arraybuffer");
-    const pdfPath = `digital-downloads/${orderId}/coloring-book.pdf`;
+    console.log(`Generating ZIP with ${pageNum - 1} pages...`);
+    const zipBuffer = await zip.generateAsync({ type: "arraybuffer", compression: "DEFLATE", compressionOptions: { level: 3 } });
+    const zipPath = `digital-downloads/${orderId}/coloring-book.zip`;
 
     const { error: uploadError } = await admin.storage
       .from("order-files")
-      .upload(pdfPath, pdfBytes, {
-        contentType: "application/pdf",
+      .upload(zipPath, zipBuffer, {
+        contentType: "application/zip",
         upsert: true,
       });
 
     if (uploadError) {
-      console.error("PDF upload failed:", uploadError);
-      return new Response(JSON.stringify({ error: "PDF upload failed" }), {
+      console.error("ZIP upload failed:", uploadError);
+      return new Response(JSON.stringify({ error: "ZIP upload failed" }), {
         status: 500,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
 
-    // Update order with PDF path
-    await admin.from("orders").update({ digital_pdf_path: pdfPath }).eq("id", orderId);
+    // Update order with ZIP path
+    await admin.from("orders").update({ digital_pdf_path: zipPath }).eq("id", orderId);
 
-    // Send download email if customer email exists
+    // Send download email
     if (order.customer_email) {
       const { data: signedData } = await admin.storage
         .from("order-files")
-        .createSignedUrl(pdfPath, 60 * 60 * 24 * 7);
+        .createSignedUrl(zipPath, 60 * 60 * 24 * 7);
 
       if (signedData?.signedUrl) {
         await sendDownloadEmail(order.customer_email, signedData.signedUrl, orderId);
@@ -392,7 +417,7 @@ Deno.serve(async (req) => {
       console.error("Original photo cleanup failed:", cleanupErr);
     }
 
-    return new Response(JSON.stringify({ pdfPath }), {
+    return new Response(JSON.stringify({ pdfPath: zipPath }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
   } catch (err) {

@@ -35,11 +35,14 @@ import {
   
 } from "@/lib/guest-api";
 
-// Helper: consistent image style for A4 portrait display
-const imgStyle = (isLandscape: boolean): React.CSSProperties =>
-  isLandscape
-    ? { transform: "rotate(90deg)", width: "100%", height: "auto", display: "block" }
-    : { width: "100%", height: "100%", objectFit: "contain", display: "block" };
+// Helper: show the full image inside the card without cropping.
+// object-fit: contain keeps the entire image visible.
+const imgStyle = (_isLandscape: boolean): React.CSSProperties => ({
+  width: "100%",
+  height: "100%",
+  objectFit: "contain",
+  display: "block",
+});
 
 interface ApproveStepProps {
   orderId: string;
@@ -156,34 +159,26 @@ const SortablePhotoCard = ({
       </button>
 
       {/* Image preview area */}
-      <div className="relative bg-muted/20 aspect-[210/297] overflow-hidden">
+      <div className="relative bg-white aspect-[210/297] overflow-hidden">
         {hasConverted ? (
-          <div className="absolute inset-0 flex">
-            <div className="w-1/2 h-full border-r border-border/30 flex items-center justify-center overflow-hidden bg-muted/10 relative">
+          <div className="absolute inset-0 flex items-center justify-center bg-white">
+            <img
+              src={photo.convertedUrl!}
+              alt={`Line art ${index + 1}`}
+              style={getImgStyle(photo.isLandscape)}
+            />
+            <div className="absolute inset-0 flex items-center justify-center pointer-events-none z-10">
+              <span className="text-2xl font-display text-foreground/10 rotate-[-30deg] font-bold tracking-widest select-none">
+                PREVIEW
+              </span>
+            </div>
+            {/* Small original thumbnail in bottom-left corner */}
+            <div className="absolute bottom-1 left-1 w-12 h-12 rounded border border-border/50 overflow-hidden bg-muted/50 z-20">
               <img
                 src={photo.originalUrl}
                 alt={`Original ${index + 1}`}
-                className="opacity-50"
-                style={getImgStyle(photo.isLandscape)}
+                className="w-full h-full object-cover opacity-70"
               />
-              <span className="absolute bottom-1 left-1 text-[9px] uppercase tracking-wider text-muted-foreground bg-background/70 px-1.5 py-0.5 rounded z-10">
-                Before
-              </span>
-            </div>
-            <div className="w-1/2 h-full flex items-center justify-center overflow-hidden bg-white relative">
-              <img
-                src={photo.convertedUrl!}
-                alt={`Line art ${index + 1}`}
-                style={getImgStyle(photo.isLandscape)}
-              />
-              <div className="absolute inset-0 flex items-center justify-center pointer-events-none z-10">
-                <span className="text-2xl font-display text-foreground/15 rotate-[-30deg] font-bold tracking-widest select-none">
-                  PREVIEW
-                </span>
-              </div>
-              <span className="absolute bottom-1 right-1 text-[9px] uppercase tracking-wider text-muted-foreground bg-background/70 px-1.5 py-0.5 rounded z-20">
-                After
-              </span>
             </div>
           </div>
         ) : (
@@ -713,8 +708,8 @@ const SortablePhotoCard = ({
                       <img
                         src={dragPhoto.convertedUrl || dragPhoto.originalUrl}
                         alt={`Page ${dragIndex + 1}`}
-                        className="w-full h-full object-contain"
-                        style={dragPhoto.isLandscape ? { transform: "rotate(90deg)", width: "100%", height: "auto" } : undefined}
+                        className="w-full h-full object-cover"
+                        style={dragPhoto.isLandscape ? { transform: "rotate(90deg) scale(1.42)", transformOrigin: "center center", width: "100%", height: "100%", objectFit: "cover" as const } : undefined}
                       />
                     </div>
                     <div className="px-2.5 py-1.5 bg-background text-center">

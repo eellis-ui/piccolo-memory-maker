@@ -75,7 +75,8 @@ const MyOrders = () => {
       .then(({ data }) => {
         if (data) setOrders(data as OrderRow[]);
         setOrdersLoading(false);
-      });
+      })
+      .catch(() => setOrdersLoading(false));
   }, [user]);
 
   // Auto-trigger PDF generation for paid digital orders missing PDF
@@ -389,14 +390,19 @@ const MyOrders = () => {
                                 .from("order-files")
                                 .createSignedUrl(order.digital_pdf_path!, 60 * 60);
                               if (data?.signedUrl) {
-                                window.open(data.signedUrl, "_blank");
+                                const a = document.createElement("a");
+                                a.href = data.signedUrl;
+                                a.download = "";
+                                a.target = "_blank";
+                                a.rel = "noopener";
+                                a.click();
                               } else {
                                 toast.error("Could not generate download link");
                               }
                             }}
                           >
                             <Download className="w-4 h-4 mr-1" />
-                            Download PDF
+                            Download
                           </Button>
                         ) : !isDraft && order.digital_download && !order.digital_pdf_path ? (
                           <div className="ml-auto p-3 rounded-xl border border-dashed border-muted-foreground/30 bg-muted flex items-center gap-3">

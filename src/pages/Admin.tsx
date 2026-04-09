@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useIsAdmin } from "@/hooks/use-admin";
 import {
-  Loader2, Package, Trash2, Edit2, Truck, Download, ChevronDown, X, Save, FileText, Eye, Mail, ShoppingBag, ImagePlus, ArrowUp, ArrowDown, Instagram,
+  Loader2, Package, Trash2, Edit2, Truck, Download, ChevronDown, X, Save, FileText, Eye, Mail, ShoppingBag, ImagePlus, ArrowUp, ArrowDown, Instagram, Star, ExternalLink,
 } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -46,6 +46,7 @@ interface OrderRow {
   order_name: string | null;
   line_items: Json | null;
   digital_download: boolean;
+  digital_pdf_path: string | null;
   production_pdf_path: string | null;
   payment_status: string;
   cover_image_id: string | null;
@@ -133,6 +134,12 @@ const Admin = () => {
   const [instagramLoading, setInstagramLoading] = useState(false);
   const [instagramUploading, setInstagramUploading] = useState(false);
 
+  // Reward submissions
+  interface RewardRow { id: string; affiliate_id: string; task_key: string; proof_url: string; points: number; status: string; admin_notes: string | null; created_at: string; reviewed_at: string | null; affiliate_name?: string; affiliate_email?: string; }
+  const [showRewards, setShowRewards] = useState(false);
+  const [rewardSubmissions, setRewardSubmissions] = useState<RewardRow[]>([]);
+  const [rewardsLoading, setRewardsLoading] = useState(false);
+
   useEffect(() => {
     if (!roleLoading && !isAdmin) navigate("/auth");
   }, [roleLoading, isAdmin, navigate]);
@@ -198,6 +205,59 @@ const Admin = () => {
     }
     toast.success(`Payout marked as ${action}`);
     fetchPayouts();
+  };
+
+  // ── Reward submissions management ──
+  const fetchRewardSubmissions = async () => {
+    setRewardsLoading(true);
+    try {
+      const { data } = await supabase
+        .from("affiliate_reward_submissions")
+        .select("*")
+        .order("created_at", { ascending: false });
+      if (data && data.length > 0) {
+        const affiliateIds = [...new Set(data.map((r: any) => r.affiliate_id))];
+        const { data: affiliates } = await supabase
+          .from("affiliates")
+          .select("id, full_name, email")
+          .in("id", affiliateIds);
+        const affMap = new Map((affiliates || []).map((a: any) => [a.id, a]));
+        setRewardSubmissions(data.map((r: any) => {
+          const aff = affMap.get(r.affiliate_id);
+          return { ...r, affiliate_name: aff?.full_name || "Unknown", affiliate_email: aff?.email || "" };
+        }));
+      } else {
+        setRewardSubmissions([]);
+      }
+    } catch (err) {
+      console.error("Error fetching reward submissions:", err);
+    } finally {
+      setRewardsLoading(false);
+    }
+  };
+
+  const handleRewardAction = async (submissionId: string, action: "approved" | "rejected", affiliateId: string, points: number) => {
+    const updates: Record<string, any> = { status: action, reviewed_at: new Date().toISOString() };
+    const { error } = await supabase
+      .from("affiliate_reward_submissions")
+      .update(updates)
+      .eq("id", submissionId);
+    if (error) { toast.error("Failed to update submission"); return; }
+
+    // If approved, add points to affiliate and check tier upgrade
+    if (action === "approved") {
+      const { data: aff } = await supabase.from("affiliates").select("total_points, commission_tier").eq("id", affiliateId).single();
+      if (aff) {
+        const newPoints = (aff.total_points || 0) + points;
+        let newTier = aff.commission_tier || 1;
+        if (newPoints >= 500) newTier = 3;
+        else if (newPoints >= 200) newTier = 2;
+        await supabase.from("affiliates").update({ total_points: newPoints, commission_tier: newTier }).eq("id", affiliateId);
+      }
+    }
+
+    toast.success(`Submission ${action}`);
+    fetchRewardSubmissions();
   };
 
   // ── Instagram image management ──
@@ -755,6 +815,101 @@ const Admin = () => {
             )}
           </div>
 
+          {/* Reward Submissions Section */}
+          <div className="mt-12">
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="font-display text-2xl font-bold text-foreground flex items-center gap-2">
+                <Star className="w-6 h-6" /> Reward Submissions
+              </h2>
+              <Button
+                variant="outline"
+                className="rounded-xl"
+                onClick={() => {
+                  setShowRewards(!showRewards);
+                  if (!showRewards && rewardSubmissions.length === 0) fetchRewardSubmissions();
+                }}
+              >
+                {showRewards ? "Hide Rewards" : "View Rewards"}
+              </Button>
+            </div>
+            {showRewards && (
+              rewardsLoading ? (
+                <div className="flex justify-center py-8">
+                  <Loader2 className="w-6 h-6 animate-spin text-primary" />
+                </div>
+              ) : rewardSubmissions.length === 0 ? (
+                <Card className="rounded-2xl">
+                  <CardContent className="py-8 text-center text-muted-foreground">
+                    No reward submissions yet
+                  </CardContent>
+                </Card>
+              ) : (
+                <div className="overflow-x-auto rounded-2xl border">
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead>Affiliate</TableHead>
+                        <TableHead>Task</TableHead>
+                        <TableHead>Proof</TableHead>
+                        <TableHead className="text-right">Points</TableHead>
+                        <TableHead>Status</TableHead>
+                        <TableHead>Date</TableHead>
+                        <TableHead className="text-right">Actions</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {rewardSubmissions.map((r) => (
+                        <TableRow key={r.id}>
+                          <TableCell>
+                            <span className="font-medium">{r.affiliate_name}</span>
+                            <span className="block text-xs text-muted-foreground">{r.affiliate_email}</span>
+                          </TableCell>
+                          <TableCell className="text-sm">{r.task_key.replace(/_/g, " ")}</TableCell>
+                          <TableCell>
+                            <a href={r.proof_url} target="_blank" rel="noopener noreferrer" className="text-primary hover:underline flex items-center gap-1 text-sm">
+                              View <ExternalLink className="w-3 h-3" />
+                            </a>
+                          </TableCell>
+                          <TableCell className="text-right font-medium">+{r.points}</TableCell>
+                          <TableCell>
+                            <Badge variant={r.status === "approved" ? "default" : r.status === "rejected" ? "destructive" : "secondary"}>
+                              {r.status.charAt(0).toUpperCase() + r.status.slice(1)}
+                            </Badge>
+                          </TableCell>
+                          <TableCell className="text-sm text-muted-foreground">
+                            {new Date(r.created_at).toLocaleDateString()}
+                          </TableCell>
+                          <TableCell className="text-right space-x-1">
+                            {r.status === "pending" && (
+                              <>
+                                <Button
+                                  size="sm"
+                                  variant="outline"
+                                  className="rounded-lg text-xs"
+                                  onClick={() => handleRewardAction(r.id, "approved", r.affiliate_id, r.points)}
+                                >
+                                  Approve
+                                </Button>
+                                <Button
+                                  size="sm"
+                                  variant="ghost"
+                                  className="rounded-lg text-xs text-destructive"
+                                  onClick={() => handleRewardAction(r.id, "rejected", r.affiliate_id, r.points)}
+                                >
+                                  Reject
+                                </Button>
+                              </>
+                            )}
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                </div>
+              )
+            )}
+          </div>
+
           {/* Instagram Photos Section */}
           <div className="mt-12">
             <div className="flex items-center justify-between mb-4">
@@ -945,8 +1100,18 @@ const Admin = () => {
 
               {/* PDF Downloads */}
               <div>
-                <p className="text-muted-foreground text-xs uppercase font-medium mb-2">PDF Downloads</p>
+                <p className="text-muted-foreground text-xs uppercase font-medium mb-2">Downloads</p>
                 <div className="flex flex-wrap gap-2">
+                  {detailOrder.digital_pdf_path && (
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="rounded-xl"
+                      onClick={() => downloadFile(detailOrder.digital_pdf_path!, `digital-${detailOrder.order_name || detailOrder.id.slice(0, 8)}${detailOrder.digital_pdf_path!.endsWith('.zip') ? '.zip' : '.pdf'}`)}
+                    >
+                      <Download className="w-4 h-4 mr-1" /> Digital Download
+                    </Button>
+                  )}
                   {detailOrder.production_pdf_path && (
                     <Button
                       variant="outline"
