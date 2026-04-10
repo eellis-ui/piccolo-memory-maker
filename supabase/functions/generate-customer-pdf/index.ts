@@ -176,7 +176,7 @@ async function renderBackCover(): Promise<ArrayBuffer> {
   return pngBlob.arrayBuffer();
 }
 
-async function sendDownloadEmail(customerEmail: string, downloadUrl: string, orderId: string) {
+async function sendDownloadEmail(customerEmail: string, downloadUrl: string, orderRef: string) {
   const resendApiKey = Deno.env.get("RESEND_API_KEY");
   if (!resendApiKey) {
     console.error("RESEND_API_KEY not set — cannot send email");
@@ -204,7 +204,7 @@ async function sendDownloadEmail(customerEmail: string, downloadUrl: string, ord
         create an account on our website and find it in your <strong>My Orders</strong> page.
       </p>
       <p style="font-size: 14px; color: #666; line-height: 1.6;">
-        Order reference: <strong>${orderId.slice(0, 8).toUpperCase()}</strong>
+        Order reference: <strong>${orderRef}</strong>
       </p>
       <hr style="border: none; border-top: 1px solid #eee; margin: 32px 0;" />
       <p style="font-size: 12px; color: #999; text-align: center;">
@@ -258,7 +258,7 @@ Deno.serve(async (req) => {
     // Fetch order
     const { data: order, error: orderErr } = await admin
       .from("orders")
-      .select("id, digital_download, digital_pdf_path, production_pdf_path, customer_email, title_page_text, title_page_enabled, dedication_page_text, dedication_page_enabled, cover_image_id, cover_image_id_2")
+      .select("id, digital_download, digital_pdf_path, production_pdf_path, customer_email, shopify_order_number, title_page_text, title_page_enabled, dedication_page_text, dedication_page_enabled, cover_image_id, cover_image_id_2")
       .eq("id", orderId)
       .single();
 
@@ -403,7 +403,7 @@ Deno.serve(async (req) => {
         .createSignedUrl(zipPath, 60 * 60 * 24 * 7);
 
       if (signedData?.signedUrl) {
-        await sendDownloadEmail(order.customer_email, signedData.signedUrl, orderId);
+        await sendDownloadEmail(order.customer_email, signedData.signedUrl, order.shopify_order_number || orderId.slice(0, 8).toUpperCase());
       }
     }
 

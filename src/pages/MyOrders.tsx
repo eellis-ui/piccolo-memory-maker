@@ -28,6 +28,7 @@ interface OrderRow {
   digital_download: boolean;
   digital_pdf_path: string | null;
   production_pdf_path: string | null;
+  shopify_order_number: string | null;
 }
 
 const STEPS = [
@@ -72,7 +73,7 @@ const MyOrders = () => {
     setOrdersLoading(true);
     supabase
       .from("orders")
-      .select("id, status, title_page_text, created_at, tracking_number, shipped_at, extra_pages, builder_session_id, digital_download, digital_pdf_path, production_pdf_path")
+      .select("id, status, title_page_text, created_at, tracking_number, shipped_at, extra_pages, builder_session_id, digital_download, digital_pdf_path, production_pdf_path, shopify_order_number")
       .order("created_at", { ascending: false })
       .then(({ data }) => {
         if (data) setOrders(data as OrderRow[]);
@@ -311,6 +312,7 @@ const MyOrders = () => {
                             )}
                           </div>
                           <p className="text-xs text-muted-foreground">
+                            {order.shopify_order_number && <span className="font-medium text-foreground">{order.shopify_order_number} &middot; </span>}
                             {isDraft ? "Started" : "Ordered"} {new Date(order.created_at).toLocaleDateString()}
                           </p>
                         </div>
