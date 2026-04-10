@@ -54,14 +54,31 @@ const UploadStep = ({ orderId, sessionId, onImagesUploaded, maxImages = 20, init
     return result;
   };
 
-  // Normalize image orientation and compress to max 1024px for faster AI conversion
+  // Normalize image orientation, crop extreme aspect ratios to 4:3/3:4, and compress
   const normalizeImage = (blob: Blob): Promise<{ blob: Blob; isLandscape: boolean }> => {
     return new Promise((resolve, reject) => {
       const img = new window.Image();
       img.onload = () => {
         const MAX_DIM = 1024;
-        let w = img.naturalWidth;
-        let h = img.naturalHeight;
+        const MAX_RATIO = 4 / 3; // widest/tallest allowed aspect ratio
+        let srcX = 0, srcY = 0, srcW = img.naturalWidth, srcH = img.naturalHeight;
+
+        // Crop extreme aspect ratios (e.g. screenshots) to 4:3 or 3:4
+        const ratio = srcW / srcH;
+        if (ratio > MAX_RATIO) {
+          // Too wide — crop sides to 4:3
+          const targetW = Math.round(srcH * MAX_RATIO);
+          srcX = Math.round((srcW - targetW) / 2);
+          srcW = targetW;
+        } else if (ratio < 1 / MAX_RATIO) {
+          // Too tall — crop top/bottom to 3:4
+          const targetH = Math.round(srcW * MAX_RATIO);
+          srcY = Math.round((srcH - targetH) / 2);
+          srcH = targetH;
+        }
+
+        // Scale down to max dimension
+        let w = srcW, h = srcH;
         if (w > MAX_DIM || h > MAX_DIM) {
           const scale = MAX_DIM / Math.max(w, h);
           w = Math.round(w * scale);
@@ -72,7 +89,7 @@ const UploadStep = ({ orderId, sessionId, onImagesUploaded, maxImages = 20, init
         canvas.height = h;
         const ctx = canvas.getContext("2d");
         if (!ctx) return reject(new Error("No canvas context"));
-        ctx.drawImage(img, 0, 0, w, h);
+        ctx.drawImage(img, srcX, srcY, srcW, srcH, 0, 0, w, h);
         const isLandscape = w > h;
         canvas.toBlob(
           (result) => (result ? resolve({ blob: result, isLandscape }) : reject(new Error("Canvas toBlob failed"))),
