@@ -54,45 +54,72 @@ const UploadStep = ({ orderId, sessionId, onImagesUploaded, maxImages = 20, init
     return result;
   };
 
-  // Normalize image orientation, crop extreme aspect ratios to 4:3/3:4, and compress
+  // Normalize image: always output PORTRAIT A4 ratio.
+  // Landscape images are rotated 90° CW so they fill the portrait page.
+  // No stretching — only center-crop and rotation.
   const normalizeImage = (blob: Blob): Promise<{ blob: Blob; isLandscape: boolean }> => {
     return new Promise((resolve, reject) => {
       const img = new window.Image();
       img.onload = () => {
         const MAX_DIM = 1024;
-        const MAX_RATIO = 4 / 3; // widest/tallest allowed aspect ratio
-        let srcX = 0, srcY = 0, srcW = img.naturalWidth, srcH = img.naturalHeight;
+        const A4_PORTRAIT_RATIO = 1 / Math.SQRT2; // ≈ 0.7071 (portrait A4: 210×297mm)
 
-        // Crop extreme aspect ratios (e.g. screenshots) to 4:3 or 3:4
-        const ratio = srcW / srcH;
-        if (ratio > MAX_RATIO) {
-          // Too wide — crop sides to 4:3
-          const targetW = Math.round(srcH * MAX_RATIO);
-          srcX = Math.round((srcW - targetW) / 2);
-          srcW = targetW;
-        } else if (ratio < 1 / MAX_RATIO) {
-          // Too tall — crop top/bottom to 3:4
-          const targetH = Math.round(srcW * MAX_RATIO);
-          srcY = Math.round((srcH - targetH) / 2);
-          srcH = targetH;
+        const natW = img.naturalWidth;
+        const natH = img.naturalHeight;
+        const needsRotation = natW > natH; // Landscape → rotate 90° CW to portrait
+
+        // Step 1: If landscape, rotate onto a temp canvas so it becomes portrait
+        let source: HTMLCanvasElement | HTMLImageElement;
+        let effW: number, effH: number;
+
+        if (needsRotation) {
+          const tmp = document.createElement("canvas");
+          tmp.width = natH;
+          tmp.height = natW;
+          const tCtx = tmp.getContext("2d")!;
+          tCtx.translate(natH, 0);
+          tCtx.rotate(Math.PI / 2);
+          tCtx.drawImage(img, 0, 0);
+          source = tmp;
+          effW = natH;
+          effH = natW;
+        } else {
+          source = img;
+          effW = natW;
+          effH = natH;
         }
 
-        // Scale down to max dimension
-        let w = srcW, h = srcH;
+        // Step 2: Cover-crop to portrait A4 ratio (no stretching)
+        let cropX = 0, cropY = 0, cropW = effW, cropH = effH;
+        const currentRatio = effW / effH;
+
+        if (currentRatio > A4_PORTRAIT_RATIO) {
+          // Wider than A4 portrait → crop sides
+          cropW = Math.round(effH * A4_PORTRAIT_RATIO);
+          cropX = Math.round((effW - cropW) / 2);
+        } else if (currentRatio < A4_PORTRAIT_RATIO) {
+          // Taller than A4 portrait → crop top/bottom
+          cropH = Math.round(effW / A4_PORTRAIT_RATIO);
+          cropY = Math.round((effH - cropH) / 2);
+        }
+
+        // Step 3: Scale down to max dimension
+        let w = cropW, h = cropH;
         if (w > MAX_DIM || h > MAX_DIM) {
           const scale = MAX_DIM / Math.max(w, h);
           w = Math.round(w * scale);
           h = Math.round(h * scale);
         }
+
+        // Step 4: Draw final portrait image
         const canvas = document.createElement("canvas");
         canvas.width = w;
         canvas.height = h;
         const ctx = canvas.getContext("2d");
         if (!ctx) return reject(new Error("No canvas context"));
-        ctx.drawImage(img, srcX, srcY, srcW, srcH, 0, 0, w, h);
-        const isLandscape = w > h;
+        ctx.drawImage(source, cropX, cropY, cropW, cropH, 0, 0, w, h);
         canvas.toBlob(
-          (result) => (result ? resolve({ blob: result, isLandscape }) : reject(new Error("Canvas toBlob failed"))),
+          (result) => (result ? resolve({ blob: result, isLandscape: false }) : reject(new Error("Canvas toBlob failed"))),
           "image/jpeg",
           0.85
         );
