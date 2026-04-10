@@ -140,6 +140,21 @@ Deno.serve(async (req) => {
       }
     }
 
+    // Trigger PDF generation for each order (fire-and-forget — runs in separate edge function instances)
+    const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
+    const serviceRoleKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
+    for (const order of orders) {
+      console.log(`Triggering PDF generation for order ${order.id}`);
+      fetch(`${supabaseUrl}/functions/v1/generate-customer-pdf`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${serviceRoleKey}`,
+        },
+        body: JSON.stringify({ orderId: order.id }),
+      }).catch((err) => console.error(`PDF trigger failed for ${order.id}:`, err));
+    }
+
     return new Response(JSON.stringify({ ok: true, orders_updated: orders.length }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
     });

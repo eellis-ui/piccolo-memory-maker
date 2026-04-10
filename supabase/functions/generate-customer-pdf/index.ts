@@ -258,7 +258,7 @@ Deno.serve(async (req) => {
     // Fetch order
     const { data: order, error: orderErr } = await admin
       .from("orders")
-      .select("id, digital_download, digital_pdf_path, customer_email, title_page_text, title_page_enabled, dedication_page_text, dedication_page_enabled, cover_image_id, cover_image_id_2")
+      .select("id, digital_download, digital_pdf_path, production_pdf_path, customer_email, title_page_text, title_page_enabled, dedication_page_text, dedication_page_enabled, cover_image_id, cover_image_id_2")
       .eq("id", orderId)
       .single();
 
@@ -269,16 +269,9 @@ Deno.serve(async (req) => {
       });
     }
 
-    if (!order.digital_download) {
-      return new Response(JSON.stringify({ error: "Not a digital download order" }), {
-        status: 400,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-      });
-    }
-
     // Idempotent — if already generated, return it
-    if (order.digital_pdf_path) {
-      return new Response(JSON.stringify({ pdfPath: order.digital_pdf_path, alreadyExists: true }), {
+    if (order.production_pdf_path) {
+      return new Response(JSON.stringify({ pdfPath: order.production_pdf_path, alreadyExists: true }), {
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
@@ -334,36 +327,52 @@ Deno.serve(async (req) => {
       ? order.dedication_page_text.trim()
       : (order.title_page_enabled && order.title_page_text?.trim()) || "color your memories";
 
-    // 1. Front cover
-    console.log("Rendering front cover...");
-    const frontCoverBuf = await renderFrontCover(admin, gridPaths, subtitle, title);
-    zip.file("00-front-cover.png", frontCoverBuf);
+    // 1. Front cover (OffscreenCanvas may not be available in Deno Deploy)
+    try {
+      console.log("Rendering front cover...");
+      const frontCoverBuf = await renderFrontCover(admin, gridPaths, subtitle, title);
+      zip.file("00-front-cover.png", frontCoverBuf);
+    } catch (coverErr) {
+      console.warn("Front cover rendering failed (OffscreenCanvas likely unavailable):", coverErr);
+    }
 
     // 2. Back cover
-    console.log("Rendering back cover...");
-    const backCoverBuf = await renderBackCover();
-    zip.file("01-back-cover.png", backCoverBuf);
+    try {
+      console.log("Rendering back cover...");
+      const backCoverBuf = await renderBackCover();
+      zip.file("01-back-cover.png", backCoverBuf);
+    } catch (coverErr) {
+      console.warn("Back cover rendering failed:", coverErr);
+    }
 
-    // 3. Line art pages
+    // 3. Line art pages — download all in parallel for speed
+    const validPhotos = photos.filter((p) => {
+      const path = p.converted_path || p.original_path;
+      return path && path !== "deleted";
+    });
+
+    console.log(`Downloading ${validPhotos.length} photos in parallel...`);
+    const downloadResults = await Promise.allSettled(
+      validPhotos.map((photo) =>
+        downloadAndResizeAsPng(admin, photo.converted_path || photo.original_path, 1600)
+      )
+    );
+
     let pageNum = 1;
-    for (const photo of photos) {
-      const path = photo.converted_path || photo.original_path;
-      if (!path || path === "deleted") continue;
-      try {
-        console.log(`Adding page ${pageNum}: ${photo.id}`);
-        const buf = await downloadAndResizeAsPng(admin, path, 1600);
-        if (!buf) continue;
-        const padded = String(pageNum + 1).padStart(2, "0");
-        zip.file(`${padded}-page-${pageNum}.png`, buf);
-        pageNum++;
-      } catch (e) {
-        console.warn(`Skipping photo ${photo.id}:`, e);
+    for (let i = 0; i < validPhotos.length; i++) {
+      const result = downloadResults[i];
+      if (result.status !== "fulfilled" || !result.value) {
+        console.warn(`Skipping photo ${validPhotos[i].id}: download failed`);
+        continue;
       }
+      const padded = String(pageNum + 1).padStart(2, "0");
+      zip.file(`${padded}-page-${pageNum}.png`, result.value);
+      pageNum++;
     }
 
     console.log(`Generating ZIP with ${pageNum - 1} pages...`);
     const zipBuffer = await zip.generateAsync({ type: "arraybuffer", compression: "DEFLATE", compressionOptions: { level: 3 } });
-    const zipPath = `digital-downloads/${orderId}/coloring-book.zip`;
+    const zipPath = `production-pdfs/${orderId}/coloring-book.zip`;
 
     const { error: uploadError } = await admin.storage
       .from("order-files")
@@ -380,11 +389,15 @@ Deno.serve(async (req) => {
       });
     }
 
-    // Update order with ZIP path
-    await admin.from("orders").update({ digital_pdf_path: zipPath }).eq("id", orderId);
+    // Update order — always set production_pdf_path, also set digital_pdf_path if digital download
+    const updateFields: Record<string, string> = { production_pdf_path: zipPath };
+    if (order.digital_download) {
+      updateFields.digital_pdf_path = zipPath;
+    }
+    await admin.from("orders").update(updateFields).eq("id", orderId);
 
-    // Send download email
-    if (order.customer_email) {
+    // Send download email only for digital download orders
+    if (order.digital_download && order.customer_email) {
       const { data: signedData } = await admin.storage
         .from("order-files")
         .createSignedUrl(zipPath, 60 * 60 * 24 * 7);
@@ -392,29 +405,6 @@ Deno.serve(async (req) => {
       if (signedData?.signedUrl) {
         await sendDownloadEmail(order.customer_email, signedData.signedUrl, orderId);
       }
-    }
-
-    // Delete original photos (keep converted line art)
-    try {
-      const { data: origPhotos } = await admin
-        .from("order_photos")
-        .select("original_path")
-        .eq("order_id", orderId)
-        .neq("original_path", "deleted");
-
-      if (origPhotos && origPhotos.length > 0) {
-        const pathsToRemove = origPhotos.map((p) => p.original_path).filter(Boolean);
-        if (pathsToRemove.length > 0) {
-          await admin.storage.from("order-files").remove(pathsToRemove);
-        }
-        await admin
-          .from("order_photos")
-          .update({ original_path: "deleted" })
-          .eq("order_id", orderId);
-        console.log(`Deleted ${pathsToRemove.length} original photos for order ${orderId}`);
-      }
-    } catch (cleanupErr) {
-      console.error("Original photo cleanup failed:", cleanupErr);
     }
 
     return new Response(JSON.stringify({ pdfPath: zipPath }), {

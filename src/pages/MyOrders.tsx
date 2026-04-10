@@ -13,6 +13,7 @@ import Navbar from "@/components/layout/Navbar";
 import Footer from "@/components/layout/Footer";
 import { useAuth } from "@/contexts/AuthContext";
 import { createShopifyCheckout, SHOPIFY_VARIANTS } from "@/lib/shopify";
+import { DIGITAL_DOWNLOAD_PRICE } from "@/contexts/BasketContext";
 import { ShoppingCart } from "lucide-react";
 
 interface OrderRow {
@@ -26,6 +27,7 @@ interface OrderRow {
   builder_session_id: string | null;
   digital_download: boolean;
   digital_pdf_path: string | null;
+  production_pdf_path: string | null;
 }
 
 const STEPS = [
@@ -70,7 +72,7 @@ const MyOrders = () => {
     setOrdersLoading(true);
     supabase
       .from("orders")
-      .select("id, status, title_page_text, created_at, tracking_number, shipped_at, extra_pages, builder_session_id, digital_download, digital_pdf_path")
+      .select("id, status, title_page_text, created_at, tracking_number, shipped_at, extra_pages, builder_session_id, digital_download, digital_pdf_path, production_pdf_path")
       .order("created_at", { ascending: false })
       .then(({ data }) => {
         if (data) setOrders(data as OrderRow[]);
@@ -79,12 +81,12 @@ const MyOrders = () => {
       .catch(() => setOrdersLoading(false));
   }, [user]);
 
-  // Auto-trigger PDF generation for paid digital orders missing PDF
+  // Auto-trigger PDF generation for paid orders missing production PDF
   useEffect(() => {
     if (!user || orders.length === 0) return;
 
     const pendingOrders = orders.filter(
-      (o) => o.digital_download && !o.digital_pdf_path && o.status !== "draft" && !generatingPdf.has(o.id)
+      (o) => !o.production_pdf_path && o.status !== "draft" && !generatingPdf.has(o.id)
     );
 
     if (pendingOrders.length === 0) return;
@@ -101,7 +103,7 @@ const MyOrders = () => {
           }
           if (data?.pdfPath) {
             setOrders((prev) =>
-              prev.map((o) => (o.id === order.id ? { ...o, digital_pdf_path: data.pdfPath } : o))
+              prev.map((o) => (o.id === order.id ? { ...o, production_pdf_path: data.pdfPath, ...(o.digital_download ? { digital_pdf_path: data.pdfPath } : {}) } : o))
             );
           }
         })
@@ -115,38 +117,53 @@ const MyOrders = () => {
     }
   }, [orders, user]);
 
-  // Group draft orders by session so multi-book drafts appear as one entry
-  const groupedOrders = (() => {
-    const sessionSeen = new Set<string>();
-    return orders.filter((o) => {
-      if (o.status === "draft" && o.builder_session_id) {
-        if (sessionSeen.has(o.builder_session_id)) return false;
-        sessionSeen.add(o.builder_session_id);
+  // Group orders by session so multi-book orders appear as one entry
+  interface OrderGroup {
+    key: string;
+    primary: OrderRow;
+    books: OrderRow[];
+  }
+
+  const orderGroups: OrderGroup[] = (() => {
+    const sessionMap = new Map<string, OrderRow[]>();
+    const standalone: OrderRow[] = [];
+
+    for (const o of orders) {
+      if (o.builder_session_id) {
+        const list = sessionMap.get(o.builder_session_id) || [];
+        list.push(o);
+        sessionMap.set(o.builder_session_id, list);
+      } else {
+        standalone.push(o);
       }
-      return true;
-    });
+    }
+
+    const groups: OrderGroup[] = [];
+    for (const [sessionId, books] of sessionMap) {
+      groups.push({ key: sessionId, primary: books[0], books });
+    }
+    for (const o of standalone) {
+      groups.push({ key: o.id, primary: o, books: [o] });
+    }
+
+    // Sort by most recent first
+    groups.sort((a, b) => new Date(b.primary.created_at).getTime() - new Date(a.primary.created_at).getTime());
+    return groups;
   })();
 
-  const filteredOrders = groupedOrders.filter((o) => {
+  const filteredGroups = orderGroups.filter((g) => {
+    const status = g.primary.status;
     if (activeTab === "all") return true;
-    if (activeTab === "draft") return o.status === "draft";
-    if (activeTab === "active") return ["paid", "converted", "sent_to_print"].includes(o.status);
-    if (activeTab === "shipped") return o.status === "shipped";
+    if (activeTab === "draft") return status === "draft";
+    if (activeTab === "active") return ["paid", "converted", "sent_to_print"].includes(status);
+    if (activeTab === "shipped") return status === "shipped";
     return true;
   });
 
-  const sessionBookCount = (sessionId: string | null) => {
-    if (!sessionId) return 1;
-    return orders.filter((o) => o.builder_session_id === sessionId).length;
-  };
-
-  const handleDeleteOrder = async (orderId: string, sessionId?: string | null) => {
-    setDeleting(orderId);
+  const handleDeleteGroup = async (group: OrderGroup) => {
+    setDeleting(group.key);
     try {
-      const idsToDelete = sessionId
-        ? orders.filter((o) => o.builder_session_id === sessionId).map((o) => o.id)
-        : [orderId];
-
+      const idsToDelete = group.books.map((o) => o.id);
       for (const id of idsToDelete) {
         await supabase.from("order_photos").delete().eq("order_id", id);
         await supabase.from("orders").delete().eq("id", id);
@@ -163,7 +180,7 @@ const MyOrders = () => {
   const handleClearAll = async () => {
     setClearingAll(true);
     try {
-      const ids = filteredOrders.map((o) => o.id);
+      const ids = filteredGroups.flatMap((g) => g.books.map((o) => o.id));
       for (const id of ids) {
         await supabase.from("order_photos").delete().eq("order_id", id);
         await supabase.from("orders").delete().eq("id", id);
@@ -218,7 +235,7 @@ const MyOrders = () => {
         <div className="container mx-auto px-4 sm:px-6 lg:px-8 max-w-3xl">
           <div className="flex items-center justify-between mb-2">
             <h1 className="font-display text-3xl font-bold text-foreground">My Orders</h1>
-            {filteredOrders.length > 0 && (
+            {filteredGroups.length > 0 && (
               <AlertDialog>
                 <AlertDialogTrigger asChild>
                   <Button variant="outline" size="sm" className="rounded-xl text-destructive border-destructive/30 hover:bg-destructive/10">
@@ -230,7 +247,7 @@ const MyOrders = () => {
                   <AlertDialogHeader>
                     <AlertDialogTitle>Clear all {activeTab !== "all" ? STATUS_TABS.find(t => t.value === activeTab)?.label?.toLowerCase() : ""} orders?</AlertDialogTitle>
                     <AlertDialogDescription>
-                      This will permanently remove {filteredOrders.length} order(s). This action cannot be undone.
+                      This will permanently remove {filteredGroups.length} order(s). This action cannot be undone.
                     </AlertDialogDescription>
                   </AlertDialogHeader>
                   <AlertDialogFooter>
@@ -260,7 +277,7 @@ const MyOrders = () => {
             </TabsList>
           </Tabs>
 
-          {filteredOrders.length === 0 ? (
+          {filteredGroups.length === 0 ? (
             <Card className="rounded-3xl">
               <CardContent className="py-12 text-center">
                 <Package className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
@@ -271,15 +288,16 @@ const MyOrders = () => {
             </Card>
           ) : (
             <div className="space-y-5">
-              {filteredOrders.map((order) => {
+              {filteredGroups.map((group) => {
+                const order = group.primary;
                 const isDraft = order.status === "draft";
                 const isShipped = order.status === "shipped";
                 const current = stepIndex(order.status);
                 const progress = isDraft ? 0 : ((current + 1) / STEPS.length) * 100;
-                const booksInSession = isDraft ? sessionBookCount(order.builder_session_id) : 1;
+                const bookCount = group.books.length;
 
                 return (
-                  <Card key={order.id} className={`rounded-3xl overflow-hidden ${isDraft ? "border-dashed border-2" : ""}`}>
+                  <Card key={group.key} className={`rounded-3xl overflow-hidden ${isDraft ? "border-dashed border-2" : ""}`}>
                     <CardContent className="p-6">
                       <div className="flex items-start justify-between mb-3">
                         <div>
@@ -288,8 +306,8 @@ const MyOrders = () => {
                             <h3 className="font-display text-lg font-semibold">
                               {order.title_page_text || "Untitled Book"}
                             </h3>
-                            {isDraft && booksInSession > 1 && (
-                              <Badge variant="outline" className="text-[10px]">{booksInSession} books</Badge>
+                            {bookCount > 1 && (
+                              <Badge variant="outline" className="text-[10px]">{bookCount} books</Badge>
                             )}
                           </div>
                           <p className="text-xs text-muted-foreground">
@@ -316,11 +334,11 @@ const MyOrders = () => {
                               <AlertDialogFooter>
                                 <AlertDialogCancel>Cancel</AlertDialogCancel>
                                 <AlertDialogAction
-                                  onClick={() => handleDeleteOrder(order.id, isDraft ? order.builder_session_id : null)}
-                                  disabled={deleting === order.id}
+                                  onClick={() => handleDeleteGroup(group)}
+                                  disabled={deleting === group.key}
                                   className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
                                 >
-                                  {deleting === order.id ? <Loader2 className="w-4 h-4 animate-spin mr-1" /> : null}
+                                  {deleting === group.key ? <Loader2 className="w-4 h-4 animate-spin mr-1" /> : null}
                                   Delete
                                 </AlertDialogAction>
                               </AlertDialogFooter>
@@ -354,8 +372,9 @@ const MyOrders = () => {
                         </div>
                       )}
 
-                      <div className="flex items-center gap-2 flex-wrap">
-                        {isDraft && (
+                      {/* Draft actions */}
+                      {isDraft && (
+                        <div className="flex items-center gap-2 flex-wrap">
                           <Button
                             className="rounded-2xl"
                             onClick={() => {
@@ -368,76 +387,123 @@ const MyOrders = () => {
                           >
                             Continue Creating
                           </Button>
-                        )}
+                        </div>
+                      )}
 
-                        {(isShipped || (!isDraft && order.status !== "draft")) && (
-                          <Button
-                            variant="outline"
-                            className="rounded-2xl"
-                            onClick={() => handleRepeatOrder(order)}
-                          >
-                            <RefreshCw className="w-4 h-4 mr-1" />
-                            Repeat Order
-                          </Button>
-                        )}
-
-                        {!isDraft && order.digital_download && order.digital_pdf_path ? (
-                          <Button
-                            variant="outline"
-                            className="rounded-2xl ml-auto"
-                            onClick={async () => {
-                              const { data } = await supabase.storage
-                                .from("order-files")
-                                .createSignedUrl(order.digital_pdf_path!, 60 * 60);
-                              if (data?.signedUrl) {
-                                const a = document.createElement("a");
-                                a.href = data.signedUrl;
-                                a.download = "";
-                                a.target = "_blank";
-                                a.rel = "noopener";
-                                a.click();
-                              } else {
-                                toast.error("Could not generate download link");
-                              }
-                            }}
-                          >
-                            <Download className="w-4 h-4 mr-1" />
-                            Download
-                          </Button>
-                        ) : !isDraft && order.digital_download && !order.digital_pdf_path ? (
-                          <div className="ml-auto p-3 rounded-xl border border-dashed border-muted-foreground/30 bg-muted flex items-center gap-3">
-                            <Loader2 className="w-4 h-4 text-muted-foreground animate-spin shrink-0" />
-                            <div className="min-w-0">
-                              <p className="text-xs font-semibold text-foreground">PDF Generating…</p>
-                              <p className="text-[10px] text-muted-foreground">Your download will be available shortly</p>
-                            </div>
+                      {/* Paid order actions */}
+                      {!isDraft && (
+                        <div className="space-y-3">
+                          <div className="flex items-center gap-2 flex-wrap">
+                            <Button
+                              variant="outline"
+                              className="rounded-2xl"
+                              onClick={() => handleRepeatOrder(order)}
+                            >
+                              <RefreshCw className="w-4 h-4 mr-1" />
+                              Repeat Order
+                            </Button>
                           </div>
-                        ) : !isDraft && (
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            className="ml-auto rounded-xl text-xs gap-1.5"
-                            onClick={async () => {
-                              try {
-                                const checkoutUrl = await createShopifyCheckout(
-                                  [{
-                                    merchandiseId: SHOPIFY_VARIANTS.DIGITAL_DOWNLOAD,
-                                    quantity: 1,
-                                    attributes: [{ key: "Add-on for", value: "Personalized Coloring Book" }],
-                                  }],
-                                  order.builder_session_id || undefined,
-                                );
-                                if (checkoutUrl) window.open(checkoutUrl, "_blank");
-                              } catch {
-                                toast.error("Could not create checkout");
-                              }
-                            }}
-                          >
-                            <ShoppingCart className="w-3.5 h-3.5" />
-                            Buy Digital PDF — $9.99
-                          </Button>
-                        )}
-                      </div>
+
+                          {/* Per-book PDF section */}
+                          <div className="space-y-2 border-t border-border pt-3">
+                            {group.books.map((book, bookIdx) => {
+                              const pdfPath = book.digital_download ? (book.digital_pdf_path || book.production_pdf_path) : book.production_pdf_path;
+                              const hasPdf = !!pdfPath;
+                              const isPurchased = book.digital_download;
+                              const isGenerating = !hasPdf && generatingPdf.has(book.id);
+
+                              return (
+                                <div
+                                  key={book.id}
+                                  className={`flex items-center justify-between gap-3 py-3 px-4 rounded-xl ${
+                                    isPurchased && hasPdf
+                                      ? "bg-primary/5 border border-primary/20"
+                                      : "bg-muted/50"
+                                  }`}
+                                >
+                                  <div className="flex items-center gap-2.5">
+                                    <div className={`w-8 h-8 rounded-lg flex items-center justify-center shrink-0 ${
+                                      isPurchased && hasPdf
+                                        ? "bg-primary/15"
+                                        : "bg-muted"
+                                    }`}>
+                                      <FileText className={`w-4 h-4 ${
+                                        isPurchased && hasPdf ? "text-primary" : "text-muted-foreground"
+                                      }`} />
+                                    </div>
+                                    <div>
+                                      <span className="text-sm font-semibold text-foreground">
+                                        {bookCount > 1 ? `Book ${bookIdx + 1}` : "Digital PDF"}
+                                      </span>
+                                      <p className="text-[11px] text-muted-foreground">
+                                        {isPurchased && hasPdf
+                                          ? "Ready to download"
+                                          : isPurchased
+                                            ? "Generating your PDF…"
+                                            : "Printable colouring book PDF"}
+                                      </p>
+                                    </div>
+                                  </div>
+
+                                  {isPurchased && hasPdf ? (
+                                    <Button
+                                      size="sm"
+                                      className="rounded-xl text-xs"
+                                      onClick={async () => {
+                                        const { data } = await supabase.storage
+                                          .from("order-files")
+                                          .createSignedUrl(pdfPath!, 60 * 60);
+                                        if (data?.signedUrl) {
+                                          const a = document.createElement("a");
+                                          a.href = data.signedUrl;
+                                          a.download = "";
+                                          a.target = "_blank";
+                                          a.rel = "noopener";
+                                          a.click();
+                                        } else {
+                                          toast.error("Could not generate download link");
+                                        }
+                                      }}
+                                    >
+                                      <Download className="w-3.5 h-3.5 mr-1" />
+                                      Download
+                                    </Button>
+                                  ) : isGenerating || (isPurchased && !hasPdf) ? (
+                                    <div className="flex items-center gap-2">
+                                      <Loader2 className="w-3.5 h-3.5 text-primary animate-spin" />
+                                      <span className="text-[11px] text-muted-foreground font-medium">Generating…</span>
+                                    </div>
+                                  ) : (
+                                    <Button
+                                      variant="outline"
+                                      size="sm"
+                                      className="rounded-xl text-xs gap-1.5 border-primary/30 text-primary hover:bg-primary/5"
+                                      onClick={async () => {
+                                        try {
+                                          const checkoutUrl = await createShopifyCheckout(
+                                            [{
+                                              merchandiseId: SHOPIFY_VARIANTS.DIGITAL_DOWNLOAD,
+                                              quantity: 1,
+                                              attributes: [{ key: "order_id", value: book.id }],
+                                            }],
+                                            order.builder_session_id || undefined,
+                                          );
+                                          if (checkoutUrl) window.open(checkoutUrl, "_blank");
+                                        } catch {
+                                          toast.error("Could not create checkout");
+                                        }
+                                      }}
+                                    >
+                                      <Download className="w-3.5 h-3.5" />
+                                      ${DIGITAL_DOWNLOAD_PRICE.toFixed(2)}
+                                    </Button>
+                                  )}
+                                </div>
+                              );
+                            })}
+                          </div>
+                        </div>
+                      )}
                     </CardContent>
                   </Card>
                 );
