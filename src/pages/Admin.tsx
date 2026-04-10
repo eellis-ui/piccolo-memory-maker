@@ -51,6 +51,7 @@ interface OrderRow {
   payment_status: string;
   cover_image_id: string | null;
   cover_image_id_2: string | null;
+  builder_session_id: string | null;
 }
 
 interface PhotoRow {
@@ -139,6 +140,27 @@ const Admin = () => {
   const [showRewards, setShowRewards] = useState(false);
   const [rewardSubmissions, setRewardSubmissions] = useState<RewardRow[]>([]);
   const [rewardsLoading, setRewardsLoading] = useState(false);
+
+  // Compute book labels for multi-book orders (same session)
+  const bookLabels = (() => {
+    const sessionMap = new Map<string, OrderRow[]>();
+    for (const o of orders) {
+      if (!o.builder_session_id) continue;
+      const arr = sessionMap.get(o.builder_session_id) || [];
+      arr.push(o);
+      sessionMap.set(o.builder_session_id, arr);
+    }
+    const labels = new Map<string, { label: string; total: number; index: number; siblings: OrderRow[] }>();
+    for (const [, siblings] of sessionMap) {
+      if (siblings.length <= 1) continue;
+      // Sort by created_at to assign stable book numbers
+      const sorted = [...siblings].sort((a, b) => a.created_at.localeCompare(b.created_at));
+      sorted.forEach((o, i) => {
+        labels.set(o.id, { label: `Book ${i + 1}`, total: sorted.length, index: i + 1, siblings: sorted });
+      });
+    }
+    return labels;
+  })();
 
   useEffect(() => {
     if (!roleLoading && !isAdmin) navigate("/auth");
@@ -354,61 +376,51 @@ const Admin = () => {
     setDetailPhotosLoading(false);
   };
 
-  // Generate and download PDF for an order
-  const downloadPdf = async (orderId: string) => {
-    setPdfGenerating(orderId);
+  // Generate production PDF (calls generate-customer-pdf which saves to storage), then download
+  const generateAndDownloadPdf = async (order: OrderRow) => {
+    setPdfGenerating(order.id);
     try {
-      const { data: { session } } = await supabase.auth.getSession();
-      const res = await fetch(
-        `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/generate-pdf`,
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            "Authorization": `Bearer ${session?.access_token}`,
-            "apikey": import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY,
-          },
-          body: JSON.stringify({ orderId }),
-        }
-      );
-      if (!res.ok) {
-        const err = await res.json();
-        toast.error(err.error || "Failed to generate PDF");
+      // If production PDF already exists, just download it
+      if (order.production_pdf_path) {
+        await downloadFromStorage(order.production_pdf_path, `production-${order.shopify_order_number || order.order_name || order.id.slice(0, 8)}.zip`);
         return;
       }
-      const blob = await res.blob();
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement("a");
-      a.href = url;
-      a.download = `order-${orderId.slice(0, 8)}.pdf`;
-      a.click();
-      URL.revokeObjectURL(url);
-    } catch (e) {
+
+      // Trigger generation via generate-customer-pdf (saves to storage)
+      const { data, error } = await supabase.functions.invoke("generate-customer-pdf", {
+        body: { orderId: order.id },
+      });
+
+      if (error) {
+        toast.error(error.message || "Failed to generate PDF");
+        return;
+      }
+
+      const pdfPath = data?.pdfPath;
+      if (!pdfPath) {
+        toast.error("PDF generation returned no path");
+        return;
+      }
+
+      // Update local state so the button shows immediately
+      setOrders((prev) =>
+        prev.map((o) => (o.id === order.id ? { ...o, production_pdf_path: pdfPath } : o))
+      );
+      if (detailOrder?.id === order.id) {
+        setDetailOrder((prev) => prev ? { ...prev, production_pdf_path: pdfPath } : prev);
+      }
+
+      toast.success("Production PDF generated");
+      await downloadFromStorage(pdfPath, `production-${order.shopify_order_number || order.order_name || order.id.slice(0, 8)}.zip`);
+    } catch {
       toast.error("Failed to generate PDF");
     } finally {
       setPdfGenerating(null);
     }
   };
 
-  // Download production PDF from storage
-  const downloadProductionPdf = async (order: OrderRow) => {
-    if (!order.production_pdf_path) return;
-    const { data, error } = await supabase.storage
-      .from("order-files")
-      .createSignedUrl(order.production_pdf_path, 3600);
-    if (error || !data?.signedUrl) {
-      toast.error("Could not generate download link");
-      return;
-    }
-    const a = document.createElement("a");
-    a.href = data.signedUrl;
-    a.download = `production-${order.order_name || order.id.slice(0, 8)}.pdf`;
-    a.target = "_blank";
-    a.click();
-  };
-
-  // Download a file from storage
-  const downloadFile = async (path: string, filename: string) => {
+  // Download a file from storage by path
+  const downloadFromStorage = async (path: string, filename: string) => {
     const { data, error } = await supabase.storage
       .from("order-files")
       .createSignedUrl(path, 3600);
@@ -421,6 +433,11 @@ const Admin = () => {
     a.download = filename;
     a.target = "_blank";
     a.click();
+  };
+
+  // Download a file from storage (alias for detail view usage)
+  const downloadFile = async (path: string, filename: string) => {
+    await downloadFromStorage(path, filename);
   };
 
   // Update order
@@ -439,51 +456,6 @@ const Admin = () => {
       return;
     }
     toast.success("Order updated");
-
-    // If status changed, send customer email notification and sync to Shopify
-    const statusChanged = editForm.status && editForm.status !== editOrder.status;
-    const trackingChanged = editForm.tracking_number && editForm.tracking_number !== editOrder.tracking_number;
-
-    if (statusChanged || trackingChanged) {
-      // Send customer status email
-      supabase.functions
-        .invoke("notify-order-status", {
-          body: {
-            orderId: editOrder.id,
-            newStatus: editForm.status || editOrder.status,
-            trackingNumber: editForm.tracking_number || editOrder.tracking_number,
-          },
-        })
-        .then(({ error: emailErr }) => {
-          if (emailErr) {
-            console.error("Email notification failed:", emailErr);
-            toast.error("Order saved but email notification failed");
-          } else {
-            toast.success("Customer notified via email");
-          }
-        });
-
-      // Sync fulfillment/tracking to Shopify
-      if (editForm.status === "shipped" && (editForm.tracking_number || editOrder.tracking_number)) {
-        supabase.functions
-          .invoke("sync-shopify-fulfillment", {
-            body: {
-              orderId: editOrder.id,
-              newStatus: editForm.status,
-              trackingNumber: editForm.tracking_number || editOrder.tracking_number,
-            },
-          })
-          .then(({ error: shopifyErr }) => {
-            if (shopifyErr) {
-              console.error("Shopify sync failed:", shopifyErr);
-              toast.error("Shopify tracking sync failed");
-            } else {
-              toast.success("Shopify updated with tracking");
-            }
-          });
-      }
-    }
-
     setEditOrder(null);
     fetchOrders();
   };
@@ -613,7 +585,12 @@ const Admin = () => {
                       </TableCell>
                       <TableCell className="font-medium">
                         {order.order_name || order.title_page_text || "Untitled Book"}
-                        <span className="block text-xs text-muted-foreground">{order.id.slice(0, 8)}…</span>
+                        {bookLabels.has(order.id) && (
+                          <Badge variant="outline" className="ml-1.5 text-[10px] px-1.5 py-0">{bookLabels.get(order.id)!.label} of {bookLabels.get(order.id)!.total}</Badge>
+                        )}
+                        <span className="block text-xs text-muted-foreground">
+                          {order.shopify_order_number ? <>{order.shopify_order_number} &middot; </> : null}{order.id.slice(0, 8)}…
+                        </span>
                       </TableCell>
                       <TableCell className="text-sm">
                         {order.customer_email ? (
@@ -661,26 +638,18 @@ const Admin = () => {
                         >
                           <Eye className="w-4 h-4" />
                         </Button>
-                        {order.production_pdf_path && (
-                          <Button
-                            size="sm"
-                            variant="ghost"
-                            onClick={() => downloadProductionPdf(order)}
-                            title="Download production PDF"
-                          >
-                            <Download className="w-4 h-4" />
-                          </Button>
-                        )}
                         <Button
                           size="sm"
                           variant="ghost"
-                          onClick={() => downloadPdf(order.id)}
-                          title="Generate & download PDF"
+                          onClick={() => generateAndDownloadPdf(order)}
+                          title={order.production_pdf_path ? "Download production PDF" : "Generate & download production PDF"}
                           disabled={pdfGenerating === order.id}
                         >
                           {pdfGenerating === order.id
                             ? <Loader2 className="w-4 h-4 animate-spin" />
-                            : <FileText className="w-4 h-4" />}
+                            : order.production_pdf_path
+                              ? <Download className="w-4 h-4" />
+                              : <FileText className="w-4 h-4" />}
                         </Button>
                         <Button
                           size="sm"
@@ -1098,43 +1067,39 @@ const Admin = () => {
                 </div>
               )}
 
-              {/* PDF Downloads */}
+              {/* PDF Downloads — show all books in the session */}
               <div>
                 <p className="text-muted-foreground text-xs uppercase font-medium mb-2">Downloads</p>
-                <div className="flex flex-wrap gap-2">
-                  {detailOrder.digital_pdf_path && (
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      className="rounded-xl"
-                      onClick={() => downloadFile(detailOrder.digital_pdf_path!, `digital-${detailOrder.order_name || detailOrder.id.slice(0, 8)}${detailOrder.digital_pdf_path!.endsWith('.zip') ? '.zip' : '.pdf'}`)}
-                    >
-                      <Download className="w-4 h-4 mr-1" /> Digital Download
-                    </Button>
-                  )}
-                  {detailOrder.production_pdf_path && (
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      className="rounded-xl"
-                      onClick={() => downloadProductionPdf(detailOrder)}
-                    >
-                      <Download className="w-4 h-4 mr-1" /> Production PDF
-                    </Button>
-                  )}
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    className="rounded-xl"
-                    onClick={() => downloadPdf(detailOrder.id)}
-                    disabled={pdfGenerating === detailOrder.id}
-                  >
-                    {pdfGenerating === detailOrder.id
-                      ? <Loader2 className="w-4 h-4 mr-1 animate-spin" />
-                      : <FileText className="w-4 h-4 mr-1" />}
-                    Generate PDF
-                  </Button>
-                </div>
+                {(() => {
+                  const bl = bookLabels.get(detailOrder.id);
+                  const booksToShow = bl ? bl.siblings : [detailOrder];
+                  return (
+                    <div className="space-y-2">
+                      {booksToShow.map((book, idx) => {
+                        const label = bl ? `Book ${idx + 1}` : "Production PDF";
+                        return (
+                          <div key={book.id} className="flex items-center gap-2">
+                            <Button
+                              variant={book.production_pdf_path ? "default" : "outline"}
+                              size="sm"
+                              className="rounded-xl"
+                              onClick={() => generateAndDownloadPdf(book)}
+                              disabled={pdfGenerating === book.id}
+                            >
+                              {pdfGenerating === book.id
+                                ? <Loader2 className="w-4 h-4 mr-1 animate-spin" />
+                                : <Download className="w-4 h-4 mr-1" />}
+                              {book.production_pdf_path ? `Download ${label}` : `Generate ${label}`}
+                            </Button>
+                            {!book.production_pdf_path && (
+                              <span className="text-[11px] text-muted-foreground">Not yet generated</span>
+                            )}
+                          </div>
+                        );
+                      })}
+                    </div>
+                  );
+                })()}
               </div>
 
               {/* Photos */}

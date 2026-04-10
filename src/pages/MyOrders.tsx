@@ -468,7 +468,7 @@ const MyOrders = () => {
                                       }}
                                     >
                                       <Download className="w-3.5 h-3.5 mr-1" />
-                                      Download
+                                      {bookCount > 1 ? `Download Book ${bookIdx + 1}` : "Download"}
                                     </Button>
                                   ) : isGenerating || (isPurchased && !hasPdf) ? (
                                     <div className="flex items-center gap-2">
