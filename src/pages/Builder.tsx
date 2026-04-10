@@ -783,6 +783,7 @@ const Builder = () => {
                 extraPages={0}
                 convertedUrls={books[0].photos.map((p) => p.convertedUrl)}
                 sessionId={sessionId}
+                orderIds={books.map((b) => b.orderId).filter(Boolean) as string[]}
                 bookPreviews={
                   (uniquePhotos ? books : [books[0]]).map((b, i) => {
                     const cover = b.coverData;

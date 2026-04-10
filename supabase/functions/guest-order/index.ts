@@ -243,6 +243,30 @@ Deno.serve(async (req) => {
       return json({ urls });
     }
 
+    // ─── POST /upload-cover ───
+    if (req.method === "POST" && path === "upload-cover") {
+      const formData = await req.formData();
+      const sessionId = validateSession(formData.get("sessionId") as string);
+      const orderId = formData.get("orderId") as string;
+      const coverType = formData.get("coverType") as string; // "front" or "back"
+      const file = formData.get("file") as File;
+
+      if (!orderId || !file || !coverType) throw new Error("Missing orderId, coverType, or file");
+      await verifyOrderOwnership(supabase, orderId, sessionId);
+
+      const storagePath = coverType === "back"
+        ? `covers/shared/back-cover.png`
+        : `covers/${orderId}/front-cover.png`;
+
+      const arrayBuf = await file.arrayBuffer();
+      const { error: uploadError } = await supabase.storage
+        .from("order-files")
+        .upload(storagePath, arrayBuf, { contentType: "image/png", upsert: true });
+      if (uploadError) throw uploadError;
+
+      return json({ success: true, storagePath });
+    }
+
     return json({ error: "Not found" }, 404);
   } catch (err) {
     console.error(err);

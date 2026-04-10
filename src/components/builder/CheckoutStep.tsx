@@ -7,8 +7,10 @@ import { Separator } from "@/components/ui/separator";
 import { Switch } from "@/components/ui/switch";
 import { useBasket, DIGITAL_DOWNLOAD_PRICE } from "@/contexts/BasketContext";
 import { createShopifyCheckout, SHOPIFY_VARIANTS, type CartLineInput } from "@/lib/shopify";
-import { getSessionOrders } from "@/lib/guest-api";
+import { getSessionOrders, uploadCover } from "@/lib/guest-api";
+import { renderFrontCoverPng, renderBackCoverPng } from "@/lib/cover-renderer";
 import logoImg from "@/assets/piccoload-logo.png";
+import qrCodeImg from "@/assets/qr-code.jpg";
 
 interface BookDigitalDownload {
   bookIndex: number;
@@ -41,6 +43,7 @@ interface CheckoutStepProps {
   bookAddOnsList: BookAddOnsInfo[];
   bookPreviews?: BookPreviewData[];
   sessionId?: string | null;
+  orderIds?: string[];
 }
 
 const MiniFlipbook = ({ bookPreview, bookCount }: { bookPreview: BookPreviewData; bookCount: number }) => {
@@ -126,7 +129,7 @@ const MiniFlipbook = ({ bookPreview, bookCount }: { bookPreview: BookPreviewData
   );
 };
 
-const CheckoutStep = ({ pageCount, extraPages, convertedUrls, onBack, onCheckoutComplete, bookDigitalDownloads, onToggleBookDigitalDownload, bookAddOnsList, bookPreviews = [], sessionId }: CheckoutStepProps) => {
+const CheckoutStep = ({ pageCount, extraPages, convertedUrls, onBack, onCheckoutComplete, bookDigitalDownloads, onToggleBookDigitalDownload, bookAddOnsList, bookPreviews = [], sessionId, orderIds = [] }: CheckoutStepProps) => {
   const { item, setQuantity, pricingTiers, addOnPrice, uniquePhotos, uniquePhotosPrice } = useBasket();
   const personalizeCoverFromBasket = item?.personalizeCover ?? false;
   const [isCheckingOut, setIsCheckingOut] = useState(false);
@@ -203,6 +206,36 @@ const CheckoutStep = ({ pageCount, extraPages, convertedUrls, onBack, onCheckout
     // Open window immediately in trusted click context to avoid popup blocking
     const newWindow = window.open('about:blank', '_blank');
     try {
+      // Render and upload covers before checkout (fire-and-forget — don't block checkout)
+      if (sessionId && orderIds.length > 0) {
+        try {
+          const coverPromises: Promise<unknown>[] = [];
+
+          // Front covers — one per book
+          for (let i = 0; i < orderIds.length; i++) {
+            const preview = bookPreviews[i] ?? bookPreviews[0];
+            if (!preview) continue;
+            const frontBlob = renderFrontCoverPng(
+              logoImg,
+              preview.coverGridUrls,
+              preview.coverSubtitle || "FOR KIDS AND ADULTS ALIKE",
+              preview.coverBottomTitle || "color your memories",
+            ).then((blob) => uploadCover(sessionId!, orderIds[i], "front", blob));
+            coverPromises.push(frontBlob);
+          }
+
+          // Back cover — shared, only need to upload once using the first order
+          const backBlob = renderBackCoverPng(logoImg, qrCodeImg)
+            .then((blob) => uploadCover(sessionId!, orderIds[0], "back", blob));
+          coverPromises.push(backBlob);
+
+          await Promise.allSettled(coverPromises);
+          console.log("Covers uploaded successfully");
+        } catch (coverErr) {
+          console.warn("Cover upload failed (non-blocking):", coverErr);
+        }
+      }
+
       const lines: CartLineInput[] = [];
 
       // 1. Main product first

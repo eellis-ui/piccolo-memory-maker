@@ -293,56 +293,23 @@ Deno.serve(async (req) => {
     // --- Build ZIP with covers + line art pages ---
     const zip = new JSZip();
 
-    // Resolve cover photo data
-    const coverPhotoId1 = order.cover_image_id;
-    const coverPhotoId2 = order.cover_image_id_2 || coverPhotoId1;
-
-    let coverPhoto1Data: { original_path: string; converted_path: string | null } | null = null;
-    let coverPhoto2Data: { original_path: string; converted_path: string | null } | null = null;
-
-    if (coverPhotoId1) {
-      const { data } = await admin.from("order_photos").select("original_path, converted_path").eq("id", coverPhotoId1).single();
-      coverPhoto1Data = data;
-    }
-    if (coverPhotoId2 && coverPhotoId2 !== coverPhotoId1) {
-      const { data } = await admin.from("order_photos").select("original_path, converted_path").eq("id", coverPhotoId2).single();
-      coverPhoto2Data = data;
-    } else if (coverPhotoId2 === coverPhotoId1) {
-      coverPhoto2Data = coverPhoto1Data;
-    }
-
-    // Grid: [original1, lineart1, lineart2, original2]
-    const gridPaths = [
-      coverPhoto1Data?.original_path ?? null,
-      coverPhoto1Data?.converted_path ?? null,
-      coverPhoto2Data?.converted_path ?? null,
-      coverPhoto2Data?.original_path ?? null,
-    ];
-
-    const subtitle = order.dedication_page_enabled && order.dedication_page_text?.trim()
-      ? order.dedication_page_text.trim()
-      : "FOR KIDS AND ADULTS ALIKE";
-
-    const title = order.dedication_page_enabled && order.dedication_page_text?.trim()
-      ? order.dedication_page_text.trim()
-      : (order.title_page_enabled && order.title_page_text?.trim()) || "color your memories";
-
-    // 1. Front cover (OffscreenCanvas may not be available in Deno Deploy)
-    try {
-      console.log("Rendering front cover...");
-      const frontCoverBuf = await renderFrontCover(admin, gridPaths, subtitle, title);
+    // 1. Front cover — download pre-rendered PNG from storage (uploaded by client before checkout)
+    const frontCoverPath = `covers/${orderId}/front-cover.png`;
+    const frontCoverBuf = await downloadFile(admin, frontCoverPath);
+    if (frontCoverBuf) {
+      console.log("Front cover loaded from storage");
       zip.file("00-front-cover.png", frontCoverBuf);
-    } catch (coverErr) {
-      console.warn("Front cover rendering failed (OffscreenCanvas likely unavailable):", coverErr);
+    } else {
+      console.warn("No pre-rendered front cover found at", frontCoverPath);
     }
 
-    // 2. Back cover
-    try {
-      console.log("Rendering back cover...");
-      const backCoverBuf = await renderBackCover();
+    // 2. Back cover — shared across all orders
+    const backCoverBuf = await downloadFile(admin, "covers/shared/back-cover.png");
+    if (backCoverBuf) {
+      console.log("Back cover loaded from storage");
       zip.file("01-back-cover.png", backCoverBuf);
-    } catch (coverErr) {
-      console.warn("Back cover rendering failed:", coverErr);
+    } else {
+      console.warn("No shared back cover found");
     }
 
     // 3. Line art pages — download all in parallel for speed

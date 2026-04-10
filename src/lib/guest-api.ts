@@ -116,3 +116,24 @@ export async function getSignedUrls(
   if (!res.ok) throw new Error(await res.text());
   return (await res.json()).urls as { path: string; signedUrl: string }[];
 }
+
+export async function uploadCover(
+  sessionId: string,
+  orderId: string,
+  coverType: "front" | "back",
+  blob: Blob,
+) {
+  const formData = new FormData();
+  formData.append("sessionId", sessionId);
+  formData.append("orderId", orderId);
+  formData.append("coverType", coverType);
+  formData.append("file", blob, `${coverType}-cover.png`);
+
+  const res = await fetch(`${BASE}/upload-cover`, {
+    method: "POST",
+    headers: headers(),
+    body: formData,
+  });
+  if (!res.ok) throw new Error(await res.text());
+  return (await res.json()) as { success: boolean; storagePath: string };
+}
