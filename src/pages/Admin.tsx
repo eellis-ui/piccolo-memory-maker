@@ -2,8 +2,9 @@ import { useEffect, useState, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useIsAdmin } from "@/hooks/use-admin";
+import { useLiveDashboard } from "@/hooks/use-live-visitors";
 import {
-  Loader2, Package, Trash2, Edit2, Truck, Download, ChevronDown, ChevronRight, X, Save, FileText, Eye, Mail, ShoppingBag, ImagePlus, ArrowUp, ArrowDown, Instagram, Star, ExternalLink, Search,
+  Loader2, Package, Trash2, Edit2, Truck, Download, ChevronDown, ChevronRight, X, Save, FileText, Eye, Mail, ShoppingBag, ImagePlus, ArrowUp, ArrowDown, Instagram, Star, ExternalLink, Search, Users, ShoppingCart, CreditCard, CheckCircle,
 } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -137,6 +138,7 @@ interface SiteImage {
 const Admin = () => {
   const navigate = useNavigate();
   const { isAdmin, loading: roleLoading } = useIsAdmin();
+  const live = useLiveDashboard();
 
   /* ─── Orders state ─── */
   const [orders, setOrders] = useState<OrderRow[]>([]);
@@ -580,11 +582,58 @@ const Admin = () => {
       <main className="pt-20 pb-8">
         <div className="max-w-[1400px] mx-auto px-4 sm:px-6">
 
-          {/* ─── Header ─── */}
-          <div className="flex items-center justify-between mb-6">
+          {/* ─── Live Dashboard ─── */}
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3 mb-6">
+            <div className="rounded-xl border bg-background p-4">
+              <div className="flex items-center gap-2 text-muted-foreground text-xs font-medium mb-1">
+                <span className="relative flex h-2 w-2">
+                  <span className={`animate-ping absolute inline-flex h-full w-full rounded-full opacity-75 ${live.visitorsNow > 0 ? "bg-green-400" : "bg-gray-300"}`} />
+                  <span className={`relative inline-flex rounded-full h-2 w-2 ${live.visitorsNow > 0 ? "bg-green-500" : "bg-gray-400"}`} />
+                </span>
+                Live now
+              </div>
+              <p className="text-2xl font-bold">{live.loading ? "\u2014" : live.visitorsNow}</p>
+            </div>
+            <div className="rounded-xl border bg-background p-4">
+              <div className="flex items-center gap-2 text-muted-foreground text-xs font-medium mb-1">
+                <Users className="w-3.5 h-3.5" />
+                Sessions today
+              </div>
+              <p className="text-2xl font-bold">{live.loading ? "\u2014" : live.today.sessions}</p>
+            </div>
+            <div className="rounded-xl border bg-background p-4">
+              <div className="flex items-center gap-2 text-muted-foreground text-xs font-medium mb-1">
+                <ShoppingCart className="w-3.5 h-3.5" />
+                Add to cart
+              </div>
+              <p className="text-2xl font-bold">{live.loading ? "\u2014" : live.today.addToCarts}</p>
+            </div>
+            <div className="rounded-xl border bg-background p-4">
+              <div className="flex items-center gap-2 text-muted-foreground text-xs font-medium mb-1">
+                <CreditCard className="w-3.5 h-3.5" />
+                Checkouts
+              </div>
+              <p className="text-2xl font-bold">{live.loading ? "\u2014" : live.today.checkoutsInitiated}</p>
+            </div>
+            <div className="rounded-xl border bg-background p-4">
+              <div className="flex items-center gap-2 text-muted-foreground text-xs font-medium mb-1">
+                <CheckCircle className="w-3.5 h-3.5" />
+                Purchases
+              </div>
+              <p className="text-2xl font-bold">{live.loading ? "\u2014" : live.today.purchases}</p>
+              {live.today.sessions > 0 && live.today.purchases > 0 && (
+                <p className="text-xs text-green-600 font-medium mt-0.5">
+                  {((live.today.purchases / live.today.sessions) * 100).toFixed(1)}% conv.
+                </p>
+              )}
+            </div>
+          </div>
+
+          {/* ─── Orders header ─── */}
+          <div className="flex items-center justify-between mb-4">
             <div>
-              <h1 className="font-display text-2xl font-bold text-foreground">Orders</h1>
-              <p className="text-sm text-muted-foreground">{orders.length} total orders</p>
+              <h2 className="font-display text-lg font-bold text-foreground">Orders</h2>
+              <p className="text-xs text-muted-foreground">{orders.length} total</p>
             </div>
           </div>
 

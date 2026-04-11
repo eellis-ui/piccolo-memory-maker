@@ -8,6 +8,7 @@ import { Switch } from "@/components/ui/switch";
 import { useBasket, DIGITAL_DOWNLOAD_PRICE } from "@/contexts/BasketContext";
 import { createShopifyCheckout, SHOPIFY_VARIANTS, type CartLineInput } from "@/lib/shopify";
 import { trackAddToCart } from "@/lib/shopify-analytics";
+import { trackEvent } from "@/lib/analytics-tracker";
 import { getSessionOrders, uploadCover } from "@/lib/guest-api";
 import { renderFrontCoverPng } from "@/lib/cover-renderer";
 import logoImg from "@/assets/piccoload-logo.png";
@@ -142,6 +143,10 @@ const CheckoutStep = ({ pageCount, extraPages, convertedUrls, onBack, onCheckout
         const allPaid = orders.every((o: any) => o.payment_status === "paid");
         if (allPaid) {
           const shopifyNum = orders[0]?.shopify_order_number || null;
+          trackEvent("purchase", "/builder/checkout", {
+            shopifyOrderNumber: shopifyNum,
+            bookCount: orders.length,
+          });
           onCheckoutComplete?.(shopifyNum);
           return true;
         }
@@ -282,7 +287,9 @@ const CheckoutStep = ({ pageCount, extraPages, convertedUrls, onBack, onCheckout
         });
       }
 
-      // Track add-to-cart event for Shopify analytics
+      // Track events for our admin dashboard + Shopify analytics
+      trackEvent("add_to_cart", "/builder/checkout", { bookCount });
+      trackEvent("checkout_initiated", "/builder/checkout", { bookCount });
       trackAddToCart(
         lines.map((line) => ({
           productGid: "gid://shopify/Product/15269689852277",

@@ -3,6 +3,7 @@ import Navbar from "@/components/layout/Navbar";
 import Footer from "@/components/layout/Footer";
 import PricingSection from "@/components/landing/PricingSection";
 import { trackProductView } from "@/lib/shopify-analytics";
+import { trackEvent } from "@/lib/analytics-tracker";
 import { SHOPIFY_VARIANTS } from "@/lib/shopify";
 
 const Pricing = () => {
@@ -15,6 +16,7 @@ const Pricing = () => {
       variantId: SHOPIFY_VARIANTS.COLORING_BOOK,
       variantTitle: "20 Pages",
     });
+    trackEvent("product_view", "/pricing");
   }, []);
 
   return (

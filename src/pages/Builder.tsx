@@ -19,6 +19,7 @@ import {
   updateGuestOrder,
 } from "@/lib/guest-api";
 import { trackProductView } from "@/lib/shopify-analytics";
+import { trackEvent } from "@/lib/analytics-tracker";
 import { SHOPIFY_VARIANTS } from "@/lib/shopify";
 
 type BuilderStep = "upload" | "approve" | "cover" | "checkout";
@@ -91,6 +92,7 @@ const Builder = () => {
       variantId: SHOPIFY_VARIANTS.COLORING_BOOK,
       variantTitle: "20 Pages",
     });
+    trackEvent("product_view", "/builder");
   }, []);
 
   // Save step to DB whenever it changes

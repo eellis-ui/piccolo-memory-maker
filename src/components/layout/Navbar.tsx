@@ -3,6 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Menu, X, ShoppingCart, Minus, Plus, Trash2, Shield, ClipboardList, Sparkles, Tag, Check, Download, Loader2, Lock, Users } from "lucide-react";
 import { createShopifyCheckout, SHOPIFY_VARIANTS, type CartLineInput } from "@/lib/shopify";
 import { trackAddToCart } from "@/lib/shopify-analytics";
+import { trackEvent } from "@/lib/analytics-tracker";
 import { useState, useCallback, useEffect } from "react";
 import { useBasket, UNIQUE_PHOTOS_PRICE, DIGITAL_DOWNLOAD_PRICE, PERSONALIZE_COVER_PRICE } from "@/contexts/BasketContext";
 import { useIsAdmin } from "@/hooks/use-admin";
@@ -424,7 +425,9 @@ const Navbar = () => {
       if (digitalCopies > 0) {
         lines.push({ merchandiseId: SHOPIFY_VARIANTS.DIGITAL_DOWNLOAD, quantity: 1 });
       }
-      // Track add-to-cart for Shopify analytics
+      // Track events for our admin dashboard + Shopify
+      trackEvent("add_to_cart", "/cart", { totalBookCount });
+      trackEvent("checkout_initiated", "/cart", { totalBookCount });
       trackAddToCart(
         lines.map((line) => ({
           productGid: "gid://shopify/Product/15269689852277",
