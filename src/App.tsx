@@ -26,6 +26,7 @@ import BecomeAffiliate from "./pages/BecomeAffiliate";
 import Account from "./pages/Account";
 import ScrollToTop from "./components/ScrollToTop";
 import ChatWidget from "./components/ChatWidget";
+import ShopifyAnalytics from "./components/ShopifyAnalytics";
 import { useClaimOrders } from "./hooks/use-claim-orders";
 
 const queryClient = new QueryClient();
@@ -45,6 +46,7 @@ const App = () => (
           <BasketProvider>
             <AppInner />
             <ScrollToTop />
+            <ShopifyAnalytics />
             <ChatWidget />
             <Routes>
               <Route path="/" element={<Index />} />

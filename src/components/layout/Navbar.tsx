@@ -2,6 +2,7 @@ import { Link, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Menu, X, ShoppingCart, Minus, Plus, Trash2, Shield, ClipboardList, Sparkles, Tag, Check, Download, Loader2, Lock, Users } from "lucide-react";
 import { createShopifyCheckout, SHOPIFY_VARIANTS, type CartLineInput } from "@/lib/shopify";
+import { trackAddToCart } from "@/lib/shopify-analytics";
 import { useState, useCallback, useEffect } from "react";
 import { useBasket, UNIQUE_PHOTOS_PRICE, DIGITAL_DOWNLOAD_PRICE, PERSONALIZE_COVER_PRICE } from "@/contexts/BasketContext";
 import { useIsAdmin } from "@/hooks/use-admin";
@@ -423,6 +424,25 @@ const Navbar = () => {
       if (digitalCopies > 0) {
         lines.push({ merchandiseId: SHOPIFY_VARIANTS.DIGITAL_DOWNLOAD, quantity: 1 });
       }
+      // Track add-to-cart for Shopify analytics
+      trackAddToCart(
+        lines.map((line) => ({
+          productGid: "gid://shopify/Product/15269689852277",
+          variantGid: line.merchandiseId,
+          title:
+            line.merchandiseId === SHOPIFY_VARIANTS.COLORING_BOOK ? "Personalised Coloring Book" :
+            line.merchandiseId === SHOPIFY_VARIANTS.DIGITAL_DOWNLOAD ? "Instant Digital Download" :
+            line.merchandiseId === SHOPIFY_VARIANTS.UNIQUE_PHOTOS ? "Unique Photos" :
+            line.merchandiseId === SHOPIFY_VARIANTS.PERSONALIZE_COVER ? "Personalized Cover" : "Item",
+          price:
+            line.merchandiseId === SHOPIFY_VARIANTS.COLORING_BOOK ? "35.00" :
+            line.merchandiseId === SHOPIFY_VARIANTS.DIGITAL_DOWNLOAD ? "5.99" :
+            line.merchandiseId === SHOPIFY_VARIANTS.UNIQUE_PHOTOS ? "5.99" :
+            line.merchandiseId === SHOPIFY_VARIANTS.PERSONALIZE_COVER ? "1.99" : "0",
+          quantity: line.quantity,
+        }))
+      );
+
       const checkoutUrl = await createShopifyCheckout(lines);
       if (checkoutUrl) {
         setIsCartOpen(false);

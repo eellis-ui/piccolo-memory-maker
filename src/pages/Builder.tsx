@@ -18,6 +18,8 @@ import {
   getSessionOrders,
   updateGuestOrder,
 } from "@/lib/guest-api";
+import { trackProductView } from "@/lib/shopify-analytics";
+import { SHOPIFY_VARIANTS } from "@/lib/shopify";
 
 type BuilderStep = "upload" | "approve" | "cover" | "checkout";
 
@@ -78,6 +80,18 @@ const Builder = () => {
   const [sessionId, setSessionId] = useState<string | null>(null);
   const [initialized, setInitialized] = useState(false);
   const [initError, setInitError] = useState(false);
+
+  // Track product view for Shopify analytics on builder entry
+  useEffect(() => {
+    trackProductView({
+      id: "gid://shopify/Product/15269689852277",
+      title: "Personalised Coloring Book",
+      price: "35.00",
+      vendor: "Piccoload",
+      variantId: SHOPIFY_VARIANTS.COLORING_BOOK,
+      variantTitle: "20 Pages",
+    });
+  }, []);
 
   // Save step to DB whenever it changes
   const persistStep = useCallback(async (orderId: string, step: BuilderStep) => {

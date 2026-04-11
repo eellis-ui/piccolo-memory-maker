@@ -7,10 +7,10 @@ import { Separator } from "@/components/ui/separator";
 import { Switch } from "@/components/ui/switch";
 import { useBasket, DIGITAL_DOWNLOAD_PRICE } from "@/contexts/BasketContext";
 import { createShopifyCheckout, SHOPIFY_VARIANTS, type CartLineInput } from "@/lib/shopify";
+import { trackAddToCart } from "@/lib/shopify-analytics";
 import { getSessionOrders, uploadCover } from "@/lib/guest-api";
-import { renderFrontCoverPng, renderBackCoverPng } from "@/lib/cover-renderer";
+import { renderFrontCoverPng } from "@/lib/cover-renderer";
 import logoImg from "@/assets/piccoload-logo.png";
-import qrCodeImg from "@/assets/qr-code.jpg";
 
 interface BookDigitalDownload {
   bookIndex: number;
@@ -60,13 +60,13 @@ const MiniFlipbook = ({ bookPreview, bookCount }: { bookPreview: BookPreviewData
       )}
       <div className="relative w-full aspect-[3/4] bg-[#fffaf3] rounded-lg overflow-hidden border border-border" style={{ containerType: "inline-size" }}>
         {currentPage === 0 ? (
-          <div className="w-full h-full flex flex-col">
-            <div className="flex-1 flex items-center justify-center min-h-0">
+          <div className="w-full h-full">
+            <div className="flex items-center justify-center" style={{ height: "14%", overflow: "hidden" }}>
               <img src={logoImg} alt="Piccoload" style={{ width: "50%" }} />
             </div>
-            <div className="shrink-0 grid grid-cols-2" style={{ margin: "0 8.75%", gap: 0 }}>
+            <div className="grid grid-cols-2 grid-rows-2" style={{ height: "65%", margin: "0 8%", gap: "0.7%" }}>
               {bookPreview.coverGridUrls.map((url, idx) => (
-                <div key={idx} className="aspect-square overflow-hidden bg-[#ede8e0]">
+                <div key={idx} className="overflow-hidden bg-[#ede8e0]">
                   {url ? (
                     <img src={url} alt={`Cover ${idx + 1}`} className="w-full h-full object-cover object-center" />
                   ) : (
@@ -75,15 +75,13 @@ const MiniFlipbook = ({ bookPreview, bookCount }: { bookPreview: BookPreviewData
                 </div>
               ))}
             </div>
-            <div className="flex-1 flex flex-col justify-start min-h-0" style={{ paddingRight: "8.75%" }}>
-              <div className="flex flex-col items-end" style={{ paddingTop: "2.5%" }}>
-                <p className="uppercase text-foreground leading-none" style={{ fontFamily: "'Yuji Syuku', serif", fontSize: "3.9cqi", letterSpacing: 0 }}>
-                  {bookPreview.coverSubtitle || "FOR KIDS AND ADULTS ALIKE"}
-                </p>
-                <p className="leading-none" style={{ fontFamily: "Bristol, serif", fontSize: "4.7cqi", marginTop: "2.5%", color: "hsl(var(--foreground))" }}>
-                  {bookPreview.coverBottomTitle || "color your memories"}
-                </p>
-              </div>
+            <div className="flex flex-col justify-center items-end" style={{ height: "21%", paddingRight: "8%" }}>
+              <p className="uppercase text-foreground leading-none" style={{ fontFamily: "'Yuji Syuku', serif", fontSize: "3.2cqi", letterSpacing: 0 }}>
+                {bookPreview.coverSubtitle || "FOR KIDS AND ADULTS ALIKE"}
+              </p>
+              <p className="leading-none" style={{ fontFamily: "Bristol, serif", fontSize: "4cqi", marginTop: "2.5%", color: "hsl(var(--foreground))" }}>
+                {bookPreview.coverBottomTitle || "color your memories"}
+              </p>
             </div>
           </div>
         ) : (
@@ -224,10 +222,8 @@ const CheckoutStep = ({ pageCount, extraPages, convertedUrls, onBack, onCheckout
             coverPromises.push(frontBlob);
           }
 
-          // Back cover — shared, only need to upload once using the first order
-          const backBlob = renderBackCoverPng(logoImg, qrCodeImg)
-            .then((blob) => uploadCover(sessionId!, orderIds[0], "back", blob));
-          coverPromises.push(backBlob);
+          // Back cover is a static asset in storage (covers/shared/back-cover.png)
+          // — no need to render or upload it here
 
           await Promise.allSettled(coverPromises);
           console.log("Covers uploaded successfully");
@@ -285,6 +281,25 @@ const CheckoutStep = ({ pageCount, extraPages, convertedUrls, onBack, onCheckout
           ],
         });
       }
+
+      // Track add-to-cart event for Shopify analytics
+      trackAddToCart(
+        lines.map((line) => ({
+          productGid: "gid://shopify/Product/15269689852277",
+          variantGid: line.merchandiseId,
+          title:
+            line.merchandiseId === SHOPIFY_VARIANTS.COLORING_BOOK ? "Personalised Coloring Book" :
+            line.merchandiseId === SHOPIFY_VARIANTS.DIGITAL_DOWNLOAD ? "Instant Digital Download" :
+            line.merchandiseId === SHOPIFY_VARIANTS.UNIQUE_PHOTOS ? "Unique Photos" :
+            line.merchandiseId === SHOPIFY_VARIANTS.PERSONALIZE_COVER ? "Personalized Cover" : "Item",
+          price:
+            line.merchandiseId === SHOPIFY_VARIANTS.COLORING_BOOK ? "35.00" :
+            line.merchandiseId === SHOPIFY_VARIANTS.DIGITAL_DOWNLOAD ? "5.99" :
+            line.merchandiseId === SHOPIFY_VARIANTS.UNIQUE_PHOTOS ? "5.99" :
+            line.merchandiseId === SHOPIFY_VARIANTS.PERSONALIZE_COVER ? "1.99" : "0",
+          quantity: line.quantity,
+        }))
+      );
 
       const checkoutUrl = await createShopifyCheckout(lines, sessionId || undefined);
       if (checkoutUrl) {
