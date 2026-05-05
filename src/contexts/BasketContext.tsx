@@ -20,8 +20,8 @@ export interface BookAddOns {
 }
 
 const ADD_ON_PRICE = 1.99;
-export const DIGITAL_DOWNLOAD_PRICE = 6.99;
-export const UNIQUE_PHOTOS_PRICE = 4.99;
+export const DIGITAL_DOWNLOAD_PRICE = 5.99;
+export const UNIQUE_PHOTOS_PRICE = 5.99;
 
 const PRICING_TIERS = [
   { quantity: 1, pricePerBook: 31.99, bundleTotal: 31.99, originalPricePerBook: 45 },
