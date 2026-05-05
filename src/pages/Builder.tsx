@@ -87,7 +87,7 @@ const Builder = () => {
     trackProductView({
       id: "gid://shopify/Product/15269689852277",
       title: "Personalised Coloring Book",
-      price: "35.00",
+      price: "31.99",
       vendor: "Piccoload",
       variantId: SHOPIFY_VARIANTS.COLORING_BOOK,
       variantTitle: "20 Pages",

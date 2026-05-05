@@ -24,9 +24,9 @@ export const DIGITAL_DOWNLOAD_PRICE = 6.99;
 export const UNIQUE_PHOTOS_PRICE = 4.99;
 
 const PRICING_TIERS = [
-  { quantity: 1, pricePerBook: 35, originalPricePerBook: 45 },
-  { quantity: 2, pricePerBook: 29.75, originalPricePerBook: 45 },
-  { quantity: 3, pricePerBook: 23.10, originalPricePerBook: 45 },
+  { quantity: 1, pricePerBook: 31.99, bundleTotal: 31.99, originalPricePerBook: 45 },
+  { quantity: 2, pricePerBook: 25.00, bundleTotal: 49.99, originalPricePerBook: 45 },
+  { quantity: 3, pricePerBook: 20.00, bundleTotal: 59.99, originalPricePerBook: 45 },
 ];
 
 let nextItemId = 1;
@@ -77,7 +77,7 @@ function createBasketItem(quantity: number, options?: { uniquePhotos?: boolean; 
     quantity: tier.quantity,
     pricePerBook: tier.pricePerBook,
     originalPricePerBook: tier.originalPricePerBook,
-    totalPrice: +(tier.pricePerBook * tier.quantity).toFixed(2),
+    totalPrice: tier.bundleTotal,
     originalTotalPrice: +(tier.originalPricePerBook * tier.quantity).toFixed(2),
     uniquePhotos: options?.uniquePhotos ?? false,
     personalizeCover: options?.personalizeCover ?? false,
@@ -159,7 +159,7 @@ export const BasketProvider = ({ children }: { children: ReactNode }) => {
           quantity: tier.quantity,
           pricePerBook: tier.pricePerBook,
           originalPricePerBook: tier.originalPricePerBook,
-          totalPrice: +(tier.pricePerBook * tier.quantity).toFixed(2),
+          totalPrice: tier.bundleTotal,
           originalTotalPrice: +(tier.originalPricePerBook * tier.quantity).toFixed(2),
         };
       })

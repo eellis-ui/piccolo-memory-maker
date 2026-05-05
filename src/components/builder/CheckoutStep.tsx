@@ -184,8 +184,8 @@ const CheckoutStep = ({ pageCount, extraPages, convertedUrls, onBack, onCheckout
   }, [awaitingPayment, pollForPayment]);
 
   const bookCount = item?.quantity ?? 1;
-  const basePrice = item?.pricePerBook ?? 35;
-  const originalBasePrice = item?.originalPricePerBook ?? 42;
+  const basePrice = item?.pricePerBook ?? 31.99;
+  const originalBasePrice = item?.originalPricePerBook ?? 45;
   const extraPagesPrice = extraPages === 10 ? 6 : extraPages === 20 ? 10 : extraPages === 40 ? 18 : 0;
   const digitalCount = bookDigitalDownloads.filter(b => b.enabled).length;
   const digitalPrice = digitalCount * DIGITAL_DOWNLOAD_PRICE;
@@ -300,7 +300,7 @@ const CheckoutStep = ({ pageCount, extraPages, convertedUrls, onBack, onCheckout
             line.merchandiseId === SHOPIFY_VARIANTS.UNIQUE_PHOTOS ? "Unique Photos" :
             line.merchandiseId === SHOPIFY_VARIANTS.PERSONALIZE_COVER ? "Personalized Cover" : "Item",
           price:
-            line.merchandiseId === SHOPIFY_VARIANTS.COLORING_BOOK ? "35.00" :
+            line.merchandiseId === SHOPIFY_VARIANTS.COLORING_BOOK ? "31.99" :
             line.merchandiseId === SHOPIFY_VARIANTS.DIGITAL_DOWNLOAD ? "5.99" :
             line.merchandiseId === SHOPIFY_VARIANTS.UNIQUE_PHOTOS ? "5.99" :
             line.merchandiseId === SHOPIFY_VARIANTS.PERSONALIZE_COVER ? "1.99" : "0",

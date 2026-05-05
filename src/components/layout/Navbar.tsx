@@ -438,7 +438,7 @@ const Navbar = () => {
             line.merchandiseId === SHOPIFY_VARIANTS.UNIQUE_PHOTOS ? "Unique Photos" :
             line.merchandiseId === SHOPIFY_VARIANTS.PERSONALIZE_COVER ? "Personalized Cover" : "Item",
           price:
-            line.merchandiseId === SHOPIFY_VARIANTS.COLORING_BOOK ? "35.00" :
+            line.merchandiseId === SHOPIFY_VARIANTS.COLORING_BOOK ? "31.99" :
             line.merchandiseId === SHOPIFY_VARIANTS.DIGITAL_DOWNLOAD ? "5.99" :
             line.merchandiseId === SHOPIFY_VARIANTS.UNIQUE_PHOTOS ? "5.99" :
             line.merchandiseId === SHOPIFY_VARIANTS.PERSONALIZE_COVER ? "1.99" : "0",
