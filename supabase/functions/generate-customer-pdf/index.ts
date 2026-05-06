@@ -1,5 +1,5 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
-import JSZip from "https://esm.sh/jszip@3.10.1";
+import { jsPDF } from "https://esm.sh/jspdf@2.5.1";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -14,172 +14,29 @@ function adminClient() {
   );
 }
 
-/** Download a file from storage and return as ArrayBuffer */
-async function downloadFile(
+async function downloadBytes(
   admin: ReturnType<typeof adminClient>,
   path: string,
-): Promise<ArrayBuffer | null> {
+): Promise<Uint8Array | null> {
   const { data, error } = await admin.storage.from("order-files").download(path);
   if (error || !data) return null;
-  return data.arrayBuffer();
+  return new Uint8Array(await data.arrayBuffer());
 }
 
-/** Download and resize image, return as PNG ArrayBuffer */
-async function downloadAndResizeAsPng(
-  admin: ReturnType<typeof adminClient>,
-  path: string,
-  maxDim = 1600,
-): Promise<ArrayBuffer | null> {
-  const raw = await downloadFile(admin, path);
-  if (!raw) return null;
-
-  try {
-    const blob = new Blob([raw], { type: "image/png" });
-    const bmp = await createImageBitmap(blob);
-    let { width, height } = bmp;
-
-    if (width > maxDim || height > maxDim) {
-      const scale = maxDim / Math.max(width, height);
-      width = Math.round(width * scale);
-      height = Math.round(height * scale);
-    }
-
-    const canvas = new OffscreenCanvas(width, height);
-    const ctx = canvas.getContext("2d")!;
-    ctx.drawImage(bmp, 0, 0, width, height);
-    bmp.close();
-
-    const pngBlob = await canvas.convertToBlob({ type: "image/png" });
-    return pngBlob.arrayBuffer();
-  } catch {
-    return raw; // fallback to raw bytes
+function bytesToBase64(bytes: Uint8Array): string {
+  // Chunked btoa avoids "Maximum call stack size exceeded" on big buffers.
+  let s = "";
+  const CHUNK = 32768;
+  for (let i = 0; i < bytes.length; i += CHUNK) {
+    s += String.fromCharCode(...bytes.subarray(i, i + CHUNK));
   }
-}
-
-// A4 proportions at 150dpi
-const COVER_W = 1240;
-const COVER_H = 1754;
-
-/** Render front cover as PNG ArrayBuffer using OffscreenCanvas */
-async function renderFrontCover(
-  admin: ReturnType<typeof adminClient>,
-  gridPaths: (string | null)[],
-  subtitle: string,
-  title: string,
-): Promise<ArrayBuffer> {
-  const canvas = new OffscreenCanvas(COVER_W, COVER_H);
-  const ctx = canvas.getContext("2d")!;
-
-  // Cream background
-  ctx.fillStyle = "#fffaf3";
-  ctx.fillRect(0, 0, COVER_W, COVER_H);
-
-  // Logo text "piccoload"
-  const logoY = 160;
-  ctx.fillStyle = "#282828";
-  ctx.font = "bold 72px Helvetica, Arial, sans-serif";
-  ctx.textAlign = "center";
-  ctx.fillText("piccoload", COVER_W / 2, logoY);
-
-  // Thin line beneath logo
-  const lineY = logoY + 16;
-  ctx.strokeStyle = "#787878";
-  ctx.lineWidth = 1;
-  ctx.beginPath();
-  ctx.moveTo(COVER_W / 2 - 100, lineY);
-  ctx.lineTo(COVER_W / 2 + 100, lineY);
-  ctx.stroke();
-
-  // "FROM PIC TO PEN" tagline
-  ctx.fillStyle = "#787878";
-  ctx.font = "20px Helvetica, Arial, sans-serif";
-  ctx.fillText("FROM PIC TO PEN", COVER_W / 2, lineY + 28);
-
-  // 2x2 grid
-  const gridMargin = Math.round(COVER_W * 0.0875);
-  const gridW = COVER_W - gridMargin * 2;
-  const cellSize = Math.round(gridW / 2);
-  const gridTop = 240;
-
-  const gridPositions = [
-    [gridMargin, gridTop],
-    [gridMargin + cellSize, gridTop],
-    [gridMargin, gridTop + cellSize],
-    [gridMargin + cellSize, gridTop + cellSize],
-  ];
-
-  // Placeholder fills
-  ctx.fillStyle = "#ede8e0";
-  for (const [x, y] of gridPositions) {
-    ctx.fillRect(x, y, cellSize, cellSize);
-  }
-
-  // Draw grid images
-  for (let i = 0; i < 4; i++) {
-    const path = gridPaths[i];
-    if (!path || path === "deleted") continue;
-    try {
-      const buf = await downloadFile(admin, path);
-      if (!buf) continue;
-      const blob = new Blob([buf], { type: "image/jpeg" });
-      const bmp = await createImageBitmap(blob);
-      const [x, y] = gridPositions[i];
-      // Cover-fit into the cell
-      const srcAspect = bmp.width / bmp.height;
-      let sx = 0, sy = 0, sw = bmp.width, sh = bmp.height;
-      if (srcAspect > 1) { // wider than tall
-        sw = bmp.height;
-        sx = (bmp.width - sw) / 2;
-      } else {
-        sh = bmp.width;
-        sy = (bmp.height - sh) / 2;
-      }
-      ctx.drawImage(bmp, sx, sy, sw, sh, x, y, cellSize, cellSize);
-      bmp.close();
-    } catch (e) {
-      console.warn(`Cover grid image ${i} failed:`, e);
-    }
-  }
-
-  // Bottom text — right-aligned
-  const textRightX = COVER_W - gridMargin;
-  const textTopY = gridTop + cellSize * 2 + 50;
-
-  ctx.fillStyle = "#282828";
-  ctx.textAlign = "right";
-  ctx.font = "28px Helvetica, Arial, sans-serif";
-  ctx.fillText(subtitle.toUpperCase(), textRightX, textTopY);
-
-  ctx.font = "italic 36px Helvetica, Arial, sans-serif";
-  ctx.fillText(title, textRightX, textTopY + 44);
-
-  const pngBlob = await canvas.convertToBlob({ type: "image/png" });
-  return pngBlob.arrayBuffer();
-}
-
-/** Render back cover as PNG ArrayBuffer */
-async function renderBackCover(): Promise<ArrayBuffer> {
-  const canvas = new OffscreenCanvas(COVER_W, COVER_H);
-  const ctx = canvas.getContext("2d")!;
-
-  // White background
-  ctx.fillStyle = "#ffffff";
-  ctx.fillRect(0, 0, COVER_W, COVER_H);
-
-  // "piccolo'd" footer text
-  ctx.fillStyle = "#b4b4b4";
-  ctx.font = "20px Helvetica, Arial, sans-serif";
-  ctx.textAlign = "center";
-  ctx.fillText("piccolo'd", COVER_W / 2, COVER_H - 40);
-
-  const pngBlob = await canvas.convertToBlob({ type: "image/png" });
-  return pngBlob.arrayBuffer();
+  return btoa(s);
 }
 
 async function sendDownloadEmail(customerEmail: string, downloadUrl: string, orderRef: string) {
   const resendApiKey = Deno.env.get("RESEND_API_KEY");
   if (!resendApiKey) {
-    console.error("RESEND_API_KEY not set — cannot send email");
+    console.error("RESEND_API_KEY not set");
     return;
   }
 
@@ -239,6 +96,10 @@ async function sendDownloadEmail(customerEmail: string, downloadUrl: string, ord
   }
 }
 
+// A4 in mm
+const A4_W = 210;
+const A4_H = 297;
+
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
@@ -255,7 +116,6 @@ Deno.serve(async (req) => {
 
     const admin = adminClient();
 
-    // Fetch order
     const { data: order, error: orderErr } = await admin
       .from("orders")
       .select("id, digital_download, digital_pdf_path, production_pdf_path, customer_email, shopify_order_number, title_page_text, title_page_enabled, dedication_page_text, dedication_page_enabled, cover_image_id, cover_image_id_2")
@@ -269,16 +129,13 @@ Deno.serve(async (req) => {
       });
     }
 
-    // Idempotent — if already generated, return it
     if (order.production_pdf_path) {
       return new Response(JSON.stringify({ pdfPath: order.production_pdf_path, alreadyExists: true }), {
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
 
-    // Fetch photos. Older rows may contain duplicate (order_id, page_position)
-    // entries from re-uploads — collapse to one live row per page so the PDF
-    // doesn't repeat pages. Prefer approved+completed > completed > most recent.
+    // Photos with dedupe (legacy data may have duplicate rows per page_position).
     const { data: rawPhotos } = await admin
       .from("order_photos")
       .select("*")
@@ -309,91 +166,82 @@ Deno.serve(async (req) => {
       });
     }
 
-    // --- Build ZIP with covers + line art pages ---
-    const zip = new JSZip();
+    // Build the PDF. compress=true wraps the page streams in FlateDecode; the
+    // line art PNGs themselves are embedded as PNG (lossless) at their native
+    // resolution — no resize before embedding.
+    const doc = new jsPDF({ unit: "mm", format: "a4", orientation: "portrait", compress: true });
+    let firstPage = true;
 
-    // 1. Front cover — download pre-rendered PNG from storage (uploaded by client before checkout)
-    const frontCoverPath = `covers/${orderId}/front-cover.png`;
-    const frontCoverBuf = await downloadFile(admin, frontCoverPath);
-    if (frontCoverBuf) {
-      console.log("Front cover loaded from storage");
-      zip.file("00-front-cover.png", frontCoverBuf);
-    } else {
-      console.warn("No pre-rendered front cover found at", frontCoverPath);
-    }
-
-    // 2. Back cover — shared across all orders
-    const backCoverBuf = await downloadFile(admin, "covers/shared/back-cover.png");
-    if (backCoverBuf) {
-      console.log("Back cover loaded from storage");
-      zip.file("01-back-cover.png", backCoverBuf);
-    } else {
-      console.warn("No shared back cover found");
-    }
-
-    // 3. Line art pages — download all in parallel for speed
-    const validPhotos = photos.filter((p) => {
-      const path = p.converted_path || p.original_path;
-      return path && path !== "deleted";
-    });
-
-    console.log(`Downloading ${validPhotos.length} photos in parallel...`);
-    const downloadResults = await Promise.allSettled(
-      validPhotos.map((photo) =>
-        downloadAndResizeAsPng(admin, photo.converted_path || photo.original_path, 1600)
-      )
-    );
-
-    let pageNum = 1;
-    for (let i = 0; i < validPhotos.length; i++) {
-      const result = downloadResults[i];
-      if (result.status !== "fulfilled" || !result.value) {
-        console.warn(`Skipping photo ${validPhotos[i].id}: download failed`);
-        continue;
+    async function addImagePage(path: string | null, mimeType: "PNG" | "JPEG" = "PNG") {
+      if (!path || path === "deleted") return false;
+      const bytes = await downloadBytes(admin, path);
+      if (!bytes) {
+        console.warn(`Skipping ${path}: download failed`);
+        return false;
       }
-      const padded = String(pageNum + 1).padStart(2, "0");
-      zip.file(`${padded}-page-${pageNum}.png`, result.value);
-      pageNum++;
+      if (!firstPage) doc.addPage();
+      firstPage = false;
+      const dataUri = `data:image/${mimeType.toLowerCase()};base64,${bytesToBase64(bytes)}`;
+      // compression "SLOW" = best Flate level on the embedded image stream.
+      // For coloring-book pages (mostly white) this shrinks the PDF significantly
+      // with zero loss of quality (PNG is lossless regardless).
+      doc.addImage(dataUri, mimeType, 0, 0, A4_W, A4_H, undefined, "SLOW");
+      return true;
     }
 
-    console.log(`Generating ZIP with ${pageNum - 1} pages...`);
-    const zipBuffer = await zip.generateAsync({ type: "arraybuffer", compression: "DEFLATE", compressionOptions: { level: 3 } });
-    const zipPath = `production-pdfs/${orderId}/coloring-book.zip`;
+    // 1. Front cover (pre-rendered PNG)
+    await addImagePage(`covers/${orderId}/front-cover.png`);
+
+    // 2. Back cover (shared)
+    await addImagePage(`covers/shared/back-cover.png`);
+
+    // 3. Line-art pages — one per photo, in order, embedded at native resolution.
+    // Process sequentially so memory doesn't balloon (a 22-page PDF can hold
+    // ~40MB of decoded image data if processed in parallel).
+    const coverIds = new Set([order.cover_image_id, order.cover_image_id_2].filter(Boolean));
+    for (const photo of photos) {
+      if (coverIds.has(photo.id)) continue;
+      const path = photo.converted_path || photo.original_path;
+      await addImagePage(path);
+    }
+
+    const pdfBytes = new Uint8Array(doc.output("arraybuffer"));
+    const pdfPath = `production-pdfs/${orderId}/coloring-book.pdf`;
 
     const { error: uploadError } = await admin.storage
       .from("order-files")
-      .upload(zipPath, zipBuffer, {
-        contentType: "application/zip",
+      .upload(pdfPath, pdfBytes, {
+        contentType: "application/pdf",
         upsert: true,
       });
 
     if (uploadError) {
-      console.error("ZIP upload failed:", uploadError);
-      return new Response(JSON.stringify({ error: "ZIP upload failed" }), {
+      console.error("PDF upload failed:", uploadError);
+      return new Response(JSON.stringify({ error: "PDF upload failed" }), {
         status: 500,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
 
-    // Update order — always set production_pdf_path, also set digital_pdf_path if digital download
-    const updateFields: Record<string, string> = { production_pdf_path: zipPath };
-    if (order.digital_download) {
-      updateFields.digital_pdf_path = zipPath;
-    }
+    const updateFields: Record<string, string> = { production_pdf_path: pdfPath };
+    if (order.digital_download) updateFields.digital_pdf_path = pdfPath;
     await admin.from("orders").update(updateFields).eq("id", orderId);
 
-    // Send download email only for digital download orders
     if (order.digital_download && order.customer_email) {
       const { data: signedData } = await admin.storage
         .from("order-files")
-        .createSignedUrl(zipPath, 60 * 60 * 24 * 7);
+        .createSignedUrl(pdfPath, 60 * 60 * 24 * 7);
 
       if (signedData?.signedUrl) {
-        await sendDownloadEmail(order.customer_email, signedData.signedUrl, order.shopify_order_number || orderId.slice(0, 8).toUpperCase());
+        await sendDownloadEmail(
+          order.customer_email,
+          signedData.signedUrl,
+          order.shopify_order_number || orderId.slice(0, 8).toUpperCase(),
+        );
       }
     }
 
-    return new Response(JSON.stringify({ pdfPath: zipPath }), {
+    return new Response(JSON.stringify({ pdfPath }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
   } catch (err) {

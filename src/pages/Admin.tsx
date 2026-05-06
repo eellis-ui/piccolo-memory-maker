@@ -331,7 +331,7 @@ const Admin = () => {
       const bl = bookLabels.get(order.id);
       const bookSuffix = bl ? `-book${bl.index}` : "";
       const orderRef = order.shopify_order_number || order.order_name || order.id.slice(0, 8);
-      const filename = `production-${orderRef}${bookSuffix}.zip`;
+      const filename = `production-${orderRef}${bookSuffix}.pdf`;
 
       if (order.production_pdf_path) {
         await downloadFromStorage(order.production_pdf_path, filename);
