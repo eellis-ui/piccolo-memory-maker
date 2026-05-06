@@ -1,5 +1,5 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
-import { jsPDF } from "https://esm.sh/jspdf@2.5.1";
+import JSZip from "https://esm.sh/jszip@3.10.1";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -14,23 +14,13 @@ function adminClient() {
   );
 }
 
-async function downloadBytes(
+async function downloadFile(
   admin: ReturnType<typeof adminClient>,
   path: string,
-): Promise<Uint8Array | null> {
+): Promise<ArrayBuffer | null> {
   const { data, error } = await admin.storage.from("order-files").download(path);
   if (error || !data) return null;
-  return new Uint8Array(await data.arrayBuffer());
-}
-
-function bytesToBase64(bytes: Uint8Array): string {
-  // Chunked btoa avoids "Maximum call stack size exceeded" on big buffers.
-  let s = "";
-  const CHUNK = 32768;
-  for (let i = 0; i < bytes.length; i += CHUNK) {
-    s += String.fromCharCode(...bytes.subarray(i, i + CHUNK));
-  }
-  return btoa(s);
+  return data.arrayBuffer();
 }
 
 async function sendDownloadEmail(customerEmail: string, downloadUrl: string, orderRef: string) {
@@ -96,10 +86,9 @@ async function sendDownloadEmail(customerEmail: string, downloadUrl: string, ord
   }
 }
 
-// A4 in mm
-const A4_W = 210;
-const A4_H = 297;
-
+// This function bundles per-page PNGs into a ZIP. Kept lightweight so it fits
+// inside the Supabase edge worker memory cap. Real PDF generation happens
+// client-side in Admin.tsx where there is much more memory available.
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
@@ -135,7 +124,6 @@ Deno.serve(async (req) => {
       });
     }
 
-    // Photos with dedupe (legacy data may have duplicate rows per page_position).
     const { data: rawPhotos } = await admin
       .from("order_photos")
       .select("*")
@@ -166,82 +154,64 @@ Deno.serve(async (req) => {
       });
     }
 
-    // Build the PDF. compress=true wraps the page streams in FlateDecode; the
-    // line art PNGs themselves are embedded as PNG (lossless) at their native
-    // resolution — no resize before embedding.
-    const doc = new jsPDF({ unit: "mm", format: "a4", orientation: "portrait", compress: true });
-    let firstPage = true;
+    const zip = new JSZip();
 
-    async function addImagePage(path: string | null, mimeType: "PNG" | "JPEG" = "PNG") {
-      if (!path || path === "deleted") return false;
-      const bytes = await downloadBytes(admin, path);
-      if (!bytes) {
-        console.warn(`Skipping ${path}: download failed`);
-        return false;
-      }
-      if (!firstPage) doc.addPage();
-      firstPage = false;
-      const dataUri = `data:image/${mimeType.toLowerCase()};base64,${bytesToBase64(bytes)}`;
-      // compression "SLOW" = best Flate level on the embedded image stream.
-      // For coloring-book pages (mostly white) this shrinks the PDF significantly
-      // with zero loss of quality (PNG is lossless regardless).
-      doc.addImage(dataUri, mimeType, 0, 0, A4_W, A4_H, undefined, "SLOW");
-      return true;
+    const frontCoverPath = `covers/${orderId}/front-cover.png`;
+    const frontCoverBuf = await downloadFile(admin, frontCoverPath);
+    if (frontCoverBuf) zip.file("00-front-cover.png", frontCoverBuf);
+
+    const backCoverBuf = await downloadFile(admin, "covers/shared/back-cover.png");
+    if (backCoverBuf) zip.file("01-back-cover.png", backCoverBuf);
+
+    const validPhotos = photos.filter((p) => {
+      const path = p.converted_path || p.original_path;
+      return path && path !== "deleted";
+    });
+
+    const downloadResults = await Promise.allSettled(
+      validPhotos.map((photo) => downloadFile(admin, photo.converted_path || photo.original_path))
+    );
+
+    let pageNum = 1;
+    for (let i = 0; i < validPhotos.length; i++) {
+      const result = downloadResults[i];
+      if (result.status !== "fulfilled" || !result.value) continue;
+      const padded = String(pageNum + 1).padStart(2, "0");
+      zip.file(`${padded}-page-${pageNum}.png`, result.value);
+      pageNum++;
     }
 
-    // 1. Front cover (pre-rendered PNG)
-    await addImagePage(`covers/${orderId}/front-cover.png`);
-
-    // 2. Back cover (shared)
-    await addImagePage(`covers/shared/back-cover.png`);
-
-    // 3. Line-art pages — one per photo, in order, embedded at native resolution.
-    // Process sequentially so memory doesn't balloon (a 22-page PDF can hold
-    // ~40MB of decoded image data if processed in parallel).
-    const coverIds = new Set([order.cover_image_id, order.cover_image_id_2].filter(Boolean));
-    for (const photo of photos) {
-      if (coverIds.has(photo.id)) continue;
-      const path = photo.converted_path || photo.original_path;
-      await addImagePage(path);
-    }
-
-    const pdfBytes = new Uint8Array(doc.output("arraybuffer"));
-    const pdfPath = `production-pdfs/${orderId}/coloring-book.pdf`;
+    const zipBuffer = await zip.generateAsync({ type: "arraybuffer", compression: "DEFLATE", compressionOptions: { level: 3 } });
+    const zipPath = `production-pdfs/${orderId}/coloring-book.zip`;
 
     const { error: uploadError } = await admin.storage
       .from("order-files")
-      .upload(pdfPath, pdfBytes, {
-        contentType: "application/pdf",
+      .upload(zipPath, zipBuffer, {
+        contentType: "application/zip",
         upsert: true,
       });
 
     if (uploadError) {
-      console.error("PDF upload failed:", uploadError);
-      return new Response(JSON.stringify({ error: "PDF upload failed" }), {
+      return new Response(JSON.stringify({ error: "ZIP upload failed" }), {
         status: 500,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
 
-    const updateFields: Record<string, string> = { production_pdf_path: pdfPath };
-    if (order.digital_download) updateFields.digital_pdf_path = pdfPath;
+    const updateFields: Record<string, string> = { production_pdf_path: zipPath };
+    if (order.digital_download) updateFields.digital_pdf_path = zipPath;
     await admin.from("orders").update(updateFields).eq("id", orderId);
 
     if (order.digital_download && order.customer_email) {
       const { data: signedData } = await admin.storage
         .from("order-files")
-        .createSignedUrl(pdfPath, 60 * 60 * 24 * 7);
-
+        .createSignedUrl(zipPath, 60 * 60 * 24 * 7);
       if (signedData?.signedUrl) {
-        await sendDownloadEmail(
-          order.customer_email,
-          signedData.signedUrl,
-          order.shopify_order_number || orderId.slice(0, 8).toUpperCase(),
-        );
+        await sendDownloadEmail(order.customer_email, signedData.signedUrl, order.shopify_order_number || orderId.slice(0, 8).toUpperCase());
       }
     }
 
-    return new Response(JSON.stringify({ pdfPath }), {
+    return new Response(JSON.stringify({ pdfPath: zipPath }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
   } catch (err) {
