@@ -325,107 +325,45 @@ const Admin = () => {
     setDetailPhotosLoading(false);
   };
 
-  // Build the production PDF in the browser (Supabase edge workers can't fit
-  // 22 native-resolution A4 PNGs through any PDF lib without OOM-ing).
-  // Browser memory is plentiful, so we embed PNGs at native resolution losslessly.
   const generateAndDownloadPdf = async (order: OrderRow) => {
     setPdfGenerating(order.id);
     try {
       const bl = bookLabels.get(order.id);
       const bookSuffix = bl ? `-book${bl.index}` : "";
       const orderRef = order.shopify_order_number || order.order_name || order.id.slice(0, 8);
-      const filename = `production-${orderRef}${bookSuffix}.pdf`;
+      const filename = `production-${orderRef}${bookSuffix}.zip`;
 
-      // If a real PDF is already stored, just download it.
-      if (order.production_pdf_path?.endsWith(".pdf")) {
+      if (order.production_pdf_path) {
         await downloadFromStorage(order.production_pdf_path, filename);
         return;
       }
 
-      toast.info("Generating PDF — keep this tab open…");
+      const { data, error } = await supabase.functions.invoke("generate-customer-pdf", {
+        body: { orderId: order.id },
+      });
 
-      const { data: rawPhotos } = await supabase
-        .from("order_photos")
-        .select("*")
-        .eq("order_id", order.id)
-        .order("page_position");
-      const photos = dedupePhotosByPage((rawPhotos as PhotoRow[]) || []);
-      if (photos.length === 0) {
-        toast.error("No photos found for this order");
+      if (error) {
+        toast.error(error.message || "Failed to generate ZIP");
         return;
       }
 
-      const { PDFDocument } = await import("https://esm.sh/pdf-lib@1.17.1");
-
-      const doc = await PDFDocument.create();
-      const A4_W_PT = 595.276;
-      const A4_H_PT = 841.89;
-
-      const fetchAsBytes = async (path: string): Promise<Uint8Array | null> => {
-        const { data } = await supabase.storage.from("order-files").createSignedUrl(path, 600);
-        if (!data?.signedUrl) return null;
-        const response = await fetch(data.signedUrl);
-        if (!response.ok) return null;
-        return new Uint8Array(await response.arrayBuffer());
-      };
-
-      const addPagePng = async (path: string | null) => {
-        if (!path) return;
-        const bytes = await fetchAsBytes(path);
-        if (!bytes) return;
-        const img = await doc.embedPng(bytes);
-        const page = doc.addPage([A4_W_PT, A4_H_PT]);
-        page.drawImage(img, { x: 0, y: 0, width: A4_W_PT, height: A4_H_PT });
-      };
-
-      await addPagePng(`covers/${order.id}/front-cover.png`);
-      await addPagePng(`covers/shared/back-cover.png`);
-
-      const coverIds = new Set(
-        [order.cover_image_id, order.cover_image_id_2].filter(Boolean) as string[],
-      );
-      for (const photo of photos) {
-        if (coverIds.has(photo.id)) continue;
-        const path = photo.converted_path || photo.original_path;
-        await addPagePng(path);
-      }
-
-      const pdfBytes = await doc.save({ useObjectStreams: true });
-
-      const pdfPath = `production-pdfs/${order.id}/coloring-book.pdf`;
-      const { error: uploadError } = await supabase.storage
-        .from("order-files")
-        .upload(pdfPath, pdfBytes, { contentType: "application/pdf", upsert: true });
-      if (uploadError) {
-        toast.error(`Upload failed: ${uploadError.message}`);
+      const pdfPath = data?.pdfPath;
+      if (!pdfPath) {
+        toast.error("ZIP generation returned no path");
         return;
       }
-
-      const updates: { production_pdf_path: string; digital_pdf_path?: string } = {
-        production_pdf_path: pdfPath,
-      };
-      // Mirror to digital_pdf_path so customers also see the PDF if they had a digital download.
-      // (Field exists on the DB row even if not on this typed view.)
-      const { data: orderRow } = await supabase
-        .from("orders")
-        .select("digital_download")
-        .eq("id", order.id)
-        .single();
-      if (orderRow?.digital_download) updates.digital_pdf_path = pdfPath;
-      await supabase.from("orders").update(updates).eq("id", order.id);
 
       setOrders((prev) =>
-        prev.map((o) => (o.id === order.id ? { ...o, production_pdf_path: pdfPath } : o)),
+        prev.map((o) => (o.id === order.id ? { ...o, production_pdf_path: pdfPath } : o))
       );
       if (detailOrder?.id === order.id) {
-        setDetailOrder((prev) => (prev ? { ...prev, production_pdf_path: pdfPath } : prev));
+        setDetailOrder((prev) => prev ? { ...prev, production_pdf_path: pdfPath } : prev);
       }
 
-      toast.success(`Production PDF generated${bl ? ` (Book ${bl.index})` : ""}`);
+      toast.success(`Production ZIP generated${bl ? ` (Book ${bl.index})` : ""}`);
       await downloadFromStorage(pdfPath, filename);
-    } catch (err) {
-      console.error(err);
-      toast.error(`Failed to generate PDF: ${err instanceof Error ? err.message : "unknown"}`);
+    } catch {
+      toast.error("Failed to generate ZIP");
     } finally {
       setPdfGenerating(null);
     }
