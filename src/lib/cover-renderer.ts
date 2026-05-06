@@ -40,25 +40,29 @@ export async function renderFrontCoverPng(
   ctx.fillStyle = "#fffaf3";
   ctx.fillRect(0, 0, W, H);
 
-  // Logo — centered, width = 50% of canvas
+  // Layout matches the BookPreview CoverPage flex layout:
+  //   [flex-1: logo] [grid (square cells)] [flex-1: bottom text]
+  // The two flex regions get equal share of the leftover vertical space, so
+  // the grid sits centered between logo and text.
+  const gridMargin = Math.round(W * 0.0875);
+  const gridW = W - gridMargin * 2;
+  const cellSize = Math.round(gridW / 2);
+  const gridArea = cellSize * 2;
+  const flexArea = Math.round((H - gridArea) / 2);
+  const gridTop = flexArea;
+
+  // Logo — width = 50% of canvas, centered horizontally and vertically inside
+  // the top flex region.
   try {
     const logo = await loadImage(logoSrc);
     const logoW = Math.round(W * 0.5);
     const logoH = Math.round(logoW * (logo.naturalHeight / logo.naturalWidth));
     const logoX = Math.round((W - logoW) / 2);
-    // Place logo so bottom sits just above the grid (grid starts at gridTop)
-    const gridTop = Math.round(H * 0.16);
-    const logoY = Math.round(gridTop / 2 - logoH / 2);
+    const logoY = Math.round((flexArea - logoH) / 2);
     ctx.drawImage(logo, logoX, logoY, logoW, logoH);
   } catch {
     // Skip logo if it fails to load
   }
-
-  // 2×2 grid
-  const gridMargin = Math.round(W * 0.0875);
-  const gridW = W - gridMargin * 2;
-  const cellSize = Math.round(gridW / 2);
-  const gridTop = Math.round(H * 0.16);
 
   const positions: [number, number][] = [
     [gridMargin, gridTop],
@@ -96,19 +100,24 @@ export async function renderFrontCoverPng(
     }
   }
 
-  // Bottom text — right-aligned, below grid
+  // Bottom text — right-aligned, sitting just below the grid in the bottom
+  // flex region. Match the React preview's font sizes (3.9cqi / 4.7cqi where
+  // cqi = container inline width = W) and the 2.5% paddingTop / marginTop.
   const textRightX = W - gridMargin;
-  const textTopY = gridTop + cellSize * 2 + Math.round(H * 0.03);
+  const subtitleFont = Math.round(W * 0.039);
+  const bottomTitleFont = Math.round(W * 0.047);
+  const textTopY = gridTop + gridArea + Math.round(W * 0.025);
+  const marginBetween = Math.round(W * 0.025);
 
-  // Subtitle (Yuji Syuku fallback to sans-serif)
   ctx.fillStyle = "#282828";
   ctx.textAlign = "right";
-  ctx.font = `${Math.round(W * 0.031)}px "Yuji Syuku", serif`;
+  ctx.textBaseline = "top";
+
+  ctx.font = `${subtitleFont}px "Yuji Syuku", serif`;
   ctx.fillText(subtitle.toUpperCase(), textRightX, textTopY);
 
-  // Bottom title (Bristol fallback to serif)
-  ctx.font = `${Math.round(W * 0.038)}px "Bristol", serif`;
-  ctx.fillText(bottomTitle, textRightX, textTopY + Math.round(H * 0.03));
+  ctx.font = `${bottomTitleFont}px "Bristol", serif`;
+  ctx.fillText(bottomTitle, textRightX, textTopY + subtitleFont + marginBetween);
 
   return new Promise((resolve, reject) => {
     canvas.toBlob(
