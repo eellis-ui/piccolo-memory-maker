@@ -83,7 +83,7 @@ Deno.serve(async (req) => {
 
     const { data: photo, error: photoError } = await supabase
       .from("order_photos")
-      .select("*, orders!inner(id, user_id, builder_session_id)")
+      .select("*, orders!inner(id, user_id, builder_session_id, unique_photos)")
       .eq("id", photoId)
       .single() as { data: any; error: any };
 
@@ -91,6 +91,55 @@ Deno.serve(async (req) => {
       return new Response(JSON.stringify({ error: "Photo not found" }), {
         status: 404, headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
+    }
+
+    // Already converted — short-circuit (idempotent re-trigger).
+    if (photo.conversion_status === "completed" && photo.converted_path) {
+      const { data: signed } = await supabase.storage
+        .from("order-files")
+        .createSignedUrl(photo.converted_path, 3600);
+      return new Response(
+        JSON.stringify({ success: true, convertedUrl: signed?.signedUrl || "", convertedPath: photo.converted_path, alreadyDone: true }),
+        { headers: { ...corsHeaders, "Content-Type": "application/json" } },
+      );
+    }
+
+    // Shared-photos bundle: if a sibling row at the same page_position already
+    // converted this image, just copy its converted_path instead of paying for
+    // another AI call.
+    if (!photo.orders.unique_photos && photo.orders.builder_session_id) {
+      const { data: siblingOrders } = await supabase
+        .from("orders")
+        .select("id")
+        .eq("builder_session_id", photo.orders.builder_session_id)
+        .eq("unique_photos", false);
+      const sibOrderIds = (siblingOrders || [])
+        .map((o: { id: string }) => o.id)
+        .filter((id: string) => id !== photo.order_id);
+      if (sibOrderIds.length > 0) {
+        const { data: doneSibling } = await supabase
+          .from("order_photos")
+          .select("converted_path")
+          .in("order_id", sibOrderIds)
+          .eq("page_position", photo.page_position)
+          .eq("conversion_status", "completed")
+          .not("converted_path", "is", null)
+          .limit(1)
+          .maybeSingle();
+        if (doneSibling?.converted_path) {
+          await supabase.from("order_photos").update({
+            converted_path: doneSibling.converted_path,
+            conversion_status: "completed",
+          }).eq("id", photoId);
+          const { data: signed } = await supabase.storage
+            .from("order-files")
+            .createSignedUrl(doneSibling.converted_path, 3600);
+          return new Response(
+            JSON.stringify({ success: true, convertedUrl: signed?.signedUrl || "", convertedPath: doneSibling.converted_path, copiedFromSibling: true }),
+            { headers: { ...corsHeaders, "Content-Type": "application/json" } },
+          );
+        }
+      }
     }
 
     // --- Auth: user tokens or guest sessions ---
@@ -501,6 +550,26 @@ Return the converted image.`;
       converted_path: convertedPath,
       conversion_status: "completed",
     }).eq("id", photoId);
+
+    // Propagate the converted file to sibling rows in shared-photos mode so the
+    // admin sees the same line art under every book in the bundle.
+    if (!photo.orders.unique_photos && photo.orders.builder_session_id) {
+      const { data: sibOrders } = await supabase
+        .from("orders")
+        .select("id")
+        .eq("builder_session_id", photo.orders.builder_session_id)
+        .eq("unique_photos", false);
+      const sibIds = (sibOrders || [])
+        .map((o: { id: string }) => o.id)
+        .filter((id: string) => id !== photo.order_id);
+      if (sibIds.length > 0) {
+        await supabase
+          .from("order_photos")
+          .update({ converted_path: convertedPath, conversion_status: "completed" })
+          .in("order_id", sibIds)
+          .eq("page_position", photo.page_position);
+      }
+    }
 
     const { data: signedUrlData } = await supabase.storage
       .from("order-files")

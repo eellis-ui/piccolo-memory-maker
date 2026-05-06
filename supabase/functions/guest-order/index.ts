@@ -22,7 +22,8 @@ function adminClient() {
   );
 }
 
-/** Verify sessionId is a valid UUID */
+type Supa = ReturnType<typeof adminClient>;
+
 function validateSession(sessionId: string | null): string {
   if (!sessionId || !UUID_RE.test(sessionId)) {
     throw new Error("Invalid session ID");
@@ -30,12 +31,7 @@ function validateSession(sessionId: string | null): string {
   return sessionId;
 }
 
-/** Ensure the order belongs to this session and is a draft */
-async function verifyOrderOwnership(
-  supabase: ReturnType<typeof adminClient>,
-  orderId: string,
-  sessionId: string,
-) {
+async function verifyOrderOwnership(supabase: Supa, orderId: string, sessionId: string) {
   const { data, error } = await supabase
     .from("orders")
     .select("id")
@@ -45,6 +41,30 @@ async function verifyOrderOwnership(
     .single();
   if (error || !data) throw new Error("Order not found or not owned by session");
   return data;
+}
+
+/**
+ * Returns the set of order_ids that should mirror photo state with this one.
+ * - If `unique_photos: true` (each book has its own photos): just [orderId]
+ * - If `unique_photos: false` (shared-photos bundle): all draft orders in the same session
+ *   with `unique_photos: false`. This includes the input orderId.
+ */
+async function getMirrorOrderIds(supabase: Supa, orderId: string): Promise<string[]> {
+  const { data: src } = await supabase
+    .from("orders")
+    .select("builder_session_id, unique_photos, status")
+    .eq("id", orderId)
+    .single();
+  if (!src) return [orderId];
+  if (src.unique_photos) return [orderId];
+  const { data: siblings } = await supabase
+    .from("orders")
+    .select("id")
+    .eq("builder_session_id", src.builder_session_id)
+    .eq("unique_photos", false)
+    .eq("status", src.status);
+  const ids = (siblings || []).map((s: { id: string }) => s.id);
+  return ids.length ? ids : [orderId];
 }
 
 Deno.serve(async (req) => {
@@ -92,6 +112,12 @@ Deno.serve(async (req) => {
       if (!orderId || !file) throw new Error("Missing orderId or file");
       await verifyOrderOwnership(supabase, orderId, sessionId);
 
+      // Determine which orders should receive a row for this photo. In shared-photos
+      // mode this includes every sibling book in the bundle, so the admin sees the
+      // photo under each book's order_id.
+      const targetOrderIds = await getMirrorOrderIds(supabase, orderId);
+
+      // Upload the original file ONCE; all target rows reference the same path.
       const fileName = `${crypto.randomUUID()}.jpg`;
       const storagePath = `originals/${orderId}/${fileName}`;
 
@@ -101,18 +127,50 @@ Deno.serve(async (req) => {
         .upload(storagePath, arrayBuf, { contentType: "image/jpeg" });
       if (uploadError) throw uploadError;
 
-      const { data: photoRecord, error: dbError } = await supabase
+      // Drop any existing rows at this (order_id, page_position) for every target
+      // order — prevents stale "pending" rows piling up when a customer re-uploads.
+      // Also collect their original_path values so we can purge orphan storage files.
+      const { data: stale } = await supabase
         .from("order_photos")
-        .insert({
-          order_id: orderId,
-          original_path: storagePath,
-          page_position: position,
-          conversion_status: "pending",
-          is_landscape: isLandscape,
-        })
-        .select("id")
-        .single();
+        .select("id, original_path")
+        .in("order_id", targetOrderIds)
+        .eq("page_position", position);
+
+      if (stale && stale.length > 0) {
+        const stalePaths = Array.from(
+          new Set(
+            (stale as { original_path: string | null }[])
+              .map((r) => r.original_path)
+              .filter((p): p is string => !!p && p !== storagePath),
+          ),
+        );
+        if (stalePaths.length > 0) {
+          await supabase.storage.from("order-files").remove(stalePaths);
+        }
+        await supabase
+          .from("order_photos")
+          .delete()
+          .in("id", (stale as { id: string }[]).map((r) => r.id));
+      }
+
+      // Insert one row per target order, all pointing at the same storage path.
+      const insertRows = targetOrderIds.map((oid) => ({
+        order_id: oid,
+        original_path: storagePath,
+        page_position: position,
+        conversion_status: "pending",
+        is_landscape: isLandscape,
+      }));
+
+      const { data: photoRecords, error: dbError } = await supabase
+        .from("order_photos")
+        .insert(insertRows)
+        .select("id, order_id");
       if (dbError) throw dbError;
+
+      const sourceRow =
+        (photoRecords || []).find((r: { order_id: string }) => r.order_id === orderId) ??
+        (photoRecords || [])[0];
 
       // Generate signed URL
       const { data: signedData } = await supabase.storage
@@ -120,7 +178,7 @@ Deno.serve(async (req) => {
         .createSignedUrl(storagePath, 3600);
 
       return json({
-        id: photoRecord.id,
+        id: sourceRow.id,
         storagePath,
         signedUrl: signedData?.signedUrl || "",
       });
@@ -132,10 +190,26 @@ Deno.serve(async (req) => {
       const sid = validateSession(sessionId);
       await verifyOrderOwnership(supabase, orderId, sid);
 
-      if (storagePath) {
-        await supabase.storage.from("order-files").remove([storagePath]);
+      // Look up the row so we know its page_position (needed to delete mirrors).
+      const { data: photoRow } = await supabase
+        .from("order_photos")
+        .select("page_position, original_path")
+        .eq("id", photoId)
+        .single();
+
+      const pathToRemove = storagePath || photoRow?.original_path;
+      if (pathToRemove) {
+        await supabase.storage.from("order-files").remove([pathToRemove]);
       }
-      if (photoId) {
+
+      if (photoRow) {
+        const targetOrderIds = await getMirrorOrderIds(supabase, orderId);
+        await supabase
+          .from("order_photos")
+          .delete()
+          .in("order_id", targetOrderIds)
+          .eq("page_position", photoRow.page_position);
+      } else if (photoId) {
         await supabase.from("order_photos").delete().eq("id", photoId);
       }
       return json({ success: true });
@@ -151,11 +225,28 @@ Deno.serve(async (req) => {
       if (updates.is_approved !== undefined) allowed.is_approved = updates.is_approved;
       if (updates.page_position !== undefined) allowed.page_position = updates.page_position;
 
-      const { error } = await supabase
+      // Find the row first so we can mirror by (order_id-set, page_position).
+      const { data: photoRow } = await supabase
         .from("order_photos")
-        .update(allowed)
-        .eq("id", photoId);
-      if (error) throw error;
+        .select("page_position")
+        .eq("id", photoId)
+        .single();
+
+      if (photoRow) {
+        const targetOrderIds = await getMirrorOrderIds(supabase, orderId);
+        const { error } = await supabase
+          .from("order_photos")
+          .update(allowed)
+          .in("order_id", targetOrderIds)
+          .eq("page_position", photoRow.page_position);
+        if (error) throw error;
+      } else {
+        const { error } = await supabase
+          .from("order_photos")
+          .update(allowed)
+          .eq("id", photoId);
+        if (error) throw error;
+      }
       return json({ success: true });
     }
 

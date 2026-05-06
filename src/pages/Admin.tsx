@@ -30,6 +30,29 @@ import type { Json } from "@/integrations/supabase/types";
 const ORDER_STATUSES = ["draft", "paid", "converted", "sent_to_print", "shipped"] as const;
 type FilterTab = "all" | "unfulfilled" | "shipped";
 
+// Older orders may have multiple rows per (order_id, page_position) due to
+// re-uploads that didn't clear stale rows. Collapse to one live row per page,
+// preferring approved+completed > completed > most recent.
+function dedupePhotosByPage<T extends { page_position: number; is_approved?: boolean | null; conversion_status?: string | null; created_at?: string | null }>(rows: T[]): T[] {
+  const score = (r: T) =>
+    (r.is_approved && r.conversion_status === "completed" ? 3 : 0) +
+    (r.conversion_status === "completed" ? 1 : 0);
+  const byPage = new Map<number, T>();
+  for (const r of rows) {
+    const existing = byPage.get(r.page_position);
+    if (!existing) { byPage.set(r.page_position, r); continue; }
+    const sNew = score(r);
+    const sOld = score(existing);
+    if (sNew > sOld) { byPage.set(r.page_position, r); continue; }
+    if (sNew === sOld) {
+      const tNew = r.created_at ? Date.parse(r.created_at) : 0;
+      const tOld = existing.created_at ? Date.parse(existing.created_at) : 0;
+      if (tNew > tOld) byPage.set(r.page_position, r);
+    }
+  }
+  return Array.from(byPage.values()).sort((a, b) => a.page_position - b.page_position);
+}
+
 interface OrderRow {
   id: string;
   status: string;
@@ -253,11 +276,19 @@ const Admin = () => {
   const fetchPhotoCounts = async () => {
     const { data, error } = await supabase
       .from("order_photos")
-      .select("order_id");
+      .select("order_id, page_position, is_approved, conversion_status, created_at");
     if (!error && data) {
-      const counts: Record<string, number> = {};
+      // Group by order, then dedupe each order's rows so the count reflects unique
+      // pages rather than stale upload duplicates.
+      const byOrder = new Map<string, typeof data>();
       for (const row of data) {
-        counts[row.order_id] = (counts[row.order_id] || 0) + 1;
+        const list = byOrder.get(row.order_id) ?? [];
+        list.push(row);
+        byOrder.set(row.order_id, list);
+      }
+      const counts: Record<string, number> = {};
+      for (const [orderId, rows] of byOrder) {
+        counts[orderId] = dedupePhotosByPage(rows).length;
       }
       setPhotoCounts(counts);
     }
@@ -278,7 +309,7 @@ const Admin = () => {
       .select("*")
       .eq("order_id", orderId)
       .order("page_position");
-    setPhotos((data as PhotoRow[]) || []);
+    setPhotos(dedupePhotosByPage((data as PhotoRow[]) || []));
     setPhotosLoading(false);
   };
 
@@ -290,7 +321,7 @@ const Admin = () => {
       .select("*")
       .eq("order_id", order.id)
       .order("page_position");
-    setDetailPhotos((data as PhotoRow[]) || []);
+    setDetailPhotos(dedupePhotosByPage((data as PhotoRow[]) || []));
     setDetailPhotosLoading(false);
   };
 
