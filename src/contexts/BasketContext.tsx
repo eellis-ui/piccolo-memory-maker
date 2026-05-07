@@ -1,5 +1,7 @@
 import { createContext, useContext, useState, ReactNode } from "react";
 
+export type BasketItemKind = "physical" | "digital_print";
+
 export interface BasketItem {
   id: string;
   quantity: number;
@@ -9,7 +11,13 @@ export interface BasketItem {
   originalTotalPrice: number;
   uniquePhotos: boolean;
   personalizeCover: boolean;
+  /** "physical" = printed coloring book bundles. "digital_print" = $9.99
+   * digital-only print-out (no physical shipment). */
+  kind: BasketItemKind;
 }
+
+export const DIGITAL_PRINT_OUT_PRICE = 9.99;
+export const DIGITAL_PRINT_OUT_ORIGINAL = 19.99;
 
 export interface BookAddOns {
   titlePageEnabled: boolean;
@@ -40,6 +48,8 @@ interface BasketContextType {
   totalBookCount: number;
   /** Add a bundle to the cart (stacks as new line item) */
   addToCart: (quantity: number, options?: { uniquePhotos?: boolean; personalizeCover?: boolean }) => void;
+  /** Add a "Digital Print Out Only" line item (alternative to physical book — replaces any other items in the cart). */
+  addDigitalPrintToCart: () => void;
   /** Remove a specific line item by id */
   removeItem: (id: string) => void;
   /** Update the quantity of a specific bundle (1-3) */
@@ -81,6 +91,21 @@ function createBasketItem(quantity: number, options?: { uniquePhotos?: boolean; 
     originalTotalPrice: +(tier.originalPricePerBook * tier.quantity).toFixed(2),
     uniquePhotos: options?.uniquePhotos ?? false,
     personalizeCover: options?.personalizeCover ?? false,
+    kind: "physical",
+  };
+}
+
+function createDigitalPrintItem(): BasketItem {
+  return {
+    id: `item-${nextItemId++}`,
+    quantity: 1,
+    pricePerBook: DIGITAL_PRINT_OUT_PRICE,
+    originalPricePerBook: DIGITAL_PRINT_OUT_ORIGINAL,
+    totalPrice: DIGITAL_PRINT_OUT_PRICE,
+    originalTotalPrice: DIGITAL_PRINT_OUT_ORIGINAL,
+    uniquePhotos: false,
+    personalizeCover: false,
+    kind: "digital_print",
   };
 }
 
@@ -141,6 +166,13 @@ export const BasketProvider = ({ children }: { children: ReactNode }) => {
     setItems((prev) => [...prev, createBasketItem(quantity, options)]);
   };
 
+  // Digital print-out is an *alternative* to the physical book, not an add-on,
+  // so adding it replaces the cart entirely.
+  const addDigitalPrintToCart = () => {
+    setItems([createDigitalPrintItem()]);
+    setDigitalCopies(0);
+  };
+
   const removeItem = (id: string) => {
     setItems((prev) => prev.filter((i) => i.id !== id));
   };
@@ -192,7 +224,7 @@ export const BasketProvider = ({ children }: { children: ReactNode }) => {
     <BasketContext.Provider
       value={{
         item, items, totalBookCount,
-        addToCart, removeItem, updateItemQuantity, setQuantity, clear,
+        addToCart, addDigitalPrintToCart, removeItem, updateItemQuantity, setQuantity, clear,
         pricingTiers: PRICING_TIERS,
         digitalCopies, setDigitalCopies, digitalPrice,
         addOns, setAddOns,

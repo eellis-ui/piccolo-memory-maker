@@ -11,6 +11,9 @@ export const SHOPIFY_VARIANTS = {
   DIGITAL_DOWNLOAD: 'gid://shopify/ProductVariant/56284852781429',
   UNIQUE_PHOTOS: 'gid://shopify/ProductVariant/56357325111669',
   PERSONALIZE_COVER: 'gid://shopify/ProductVariant/56849946214773',
+  // Standalone alternative to the physical book — same builder flow, but the
+  // customer just gets a digital print-out, no physical shipment.
+  DIGITAL_PRINT_OUT: 'gid://shopify/ProductVariant/57128866120053',
 } as const;
 
 export async function storefrontApiRequest(query: string, variables: Record<string, unknown> = {}) {

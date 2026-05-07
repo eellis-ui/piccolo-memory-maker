@@ -8,7 +8,7 @@ const UniquePhotosUpsellBanner = () => {
   const { items, setUniquePhotos } = useBasket();
 
   // Only show for multi-book bundles
-  const qualifyingItems = items;
+  const qualifyingItems = items.filter((i) => i.quantity > 1);
   if (qualifyingItems.length === 0) return null;
 
   const allEnabled = qualifyingItems.every((i) => i.uniquePhotos);

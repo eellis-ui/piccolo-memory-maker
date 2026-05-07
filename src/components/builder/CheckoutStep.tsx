@@ -129,7 +129,7 @@ const MiniFlipbook = ({ bookPreview, bookCount }: { bookPreview: BookPreviewData
 };
 
 const CheckoutStep = ({ pageCount, extraPages, convertedUrls, onBack, onCheckoutComplete, bookDigitalDownloads, onToggleBookDigitalDownload, bookAddOnsList, bookPreviews = [], sessionId, orderIds = [] }: CheckoutStepProps) => {
-  const { item, setQuantity, pricingTiers, addOnPrice, uniquePhotos, uniquePhotosPrice } = useBasket();
+  const { item, items, setQuantity, pricingTiers, addOnPrice, uniquePhotos, uniquePhotosPrice } = useBasket();
   const personalizeCoverFromBasket = item?.personalizeCover ?? false;
   const [isCheckingOut, setIsCheckingOut] = useState(false);
   const [awaitingPayment, setAwaitingPayment] = useState(false);
@@ -239,6 +239,16 @@ const CheckoutStep = ({ pageCount, extraPages, convertedUrls, onBack, onCheckout
 
       const lines: CartLineInput[] = [];
 
+      // Digital print-out is an alternative to the physical book — when present
+      // it replaces the coloring book line and skips the physical-only add-ons.
+      const isDigitalPrint = items.some((i) => i.kind === "digital_print");
+      if (isDigitalPrint) {
+        lines.push({
+          merchandiseId: SHOPIFY_VARIANTS.DIGITAL_PRINT_OUT,
+          quantity: 1,
+          attributes: [{ key: "_position", value: "1" }],
+        });
+      } else {
       // 1. Main product first
       lines.push({
         merchandiseId: SHOPIFY_VARIANTS.COLORING_BOOK,
@@ -286,6 +296,7 @@ const CheckoutStep = ({ pageCount, extraPages, convertedUrls, onBack, onCheckout
           ],
         });
       }
+      } // end physical-product branch
 
       // Track events for our admin dashboard + Shopify analytics
       trackEvent("add_to_cart", "/builder/checkout", { bookCount });

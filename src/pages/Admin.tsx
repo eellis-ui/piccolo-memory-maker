@@ -224,7 +224,7 @@ const Admin = () => {
     return labels;
   }, [orders]);
 
-  /* ─── Computed: filtered + searched orders ─── */
+  /* ─── Computed: filtered + searched orders, grouped by bundle ─── */
   const filteredOrders = useMemo(() => {
     let result = orders;
 
@@ -247,8 +247,33 @@ const Admin = () => {
       );
     }
 
-    return result;
-  }, [orders, filterTab, searchQuery]);
+    // Bundle-aware sort: keep bundle siblings adjacent (Book 1 → Book N) and
+    // order each group by its most-recent member so latest activity floats up.
+    const sessionGroups = new Map<string, OrderRow[]>();
+    const standalones: OrderRow[] = [];
+    for (const o of result) {
+      if (o.builder_session_id && bookLabels.has(o.id)) {
+        const arr = sessionGroups.get(o.builder_session_id) || [];
+        arr.push(o);
+        sessionGroups.set(o.builder_session_id, arr);
+      } else {
+        standalones.push(o);
+      }
+    }
+    for (const arr of sessionGroups.values()) {
+      arr.sort((a, b) => a.created_at.localeCompare(b.created_at));
+    }
+    const grouped: { sortKey: string; rows: OrderRow[] }[] = [];
+    for (const arr of sessionGroups.values()) {
+      const latest = arr.reduce((m, o) => (o.created_at > m ? o.created_at : m), arr[0].created_at);
+      grouped.push({ sortKey: latest, rows: arr });
+    }
+    for (const o of standalones) {
+      grouped.push({ sortKey: o.created_at, rows: [o] });
+    }
+    grouped.sort((a, b) => b.sortKey.localeCompare(a.sortKey));
+    return grouped.flatMap((g) => g.rows);
+  }, [orders, filterTab, searchQuery, bookLabels]);
 
   /* ─── Computed: tab counts ─── */
   const tabCounts = useMemo(() => ({
@@ -743,11 +768,17 @@ const Admin = () => {
                     const isUnfulfilled = order.status !== "shipped";
                     const isPaid = order.payment_status === "paid";
                     const photoCount = photoCounts[order.id] || 0;
+                    const bundle = bookLabels.get(order.id);
+                    // Visual grouping: bundle siblings get a coloured left
+                    // border, with the first book also getting a top divider.
+                    const bundleClass = bundle
+                      ? `border-l-4 border-l-primary/40${bundle.index === 1 ? " border-t-2 border-t-primary/30" : ""}`
+                      : "";
 
                     return (
                       <TableRow
                         key={order.id}
-                        className="group hover:bg-muted/30 transition-colors"
+                        className={`group hover:bg-muted/30 transition-colors ${bundleClass}`}
                       >
                         {/* Order */}
                         <TableCell>

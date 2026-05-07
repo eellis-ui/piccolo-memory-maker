@@ -1,6 +1,6 @@
 import { Link, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { Menu, X, ShoppingCart, Minus, Plus, Trash2, Shield, ClipboardList, Sparkles, Tag, Check, Download, Loader2, Lock, Users } from "lucide-react";
+import { Menu, X, ShoppingCart, Minus, Plus, Trash2, Shield, ClipboardList, Sparkles, Tag, Check, Download, Loader2, Lock, Users, UserCircle2, LogOut } from "lucide-react";
 import { createShopifyCheckout, SHOPIFY_VARIANTS, type CartLineInput } from "@/lib/shopify";
 import { trackAddToCart } from "@/lib/shopify-analytics";
 import { trackEvent } from "@/lib/analytics-tracker";
@@ -20,6 +20,14 @@ import {
   SheetTrigger } from
 "@/components/ui/sheet";
 import { Separator } from "@/components/ui/separator";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 
 // ── Basket content (extracted outside Navbar to prevent remount on re-render) ──
 interface BasketContentProps {
@@ -150,6 +158,7 @@ const BasketContent = ({
               </Badge>
             </div>
             {/* Per-bundle unique photos toggle (only for 2+ book bundles) */}
+            {lineItem.quantity > 1 && (
             <button
             onClick={() => toggleItemUniquePhotos(lineItem.id)}
             className={`flex items-center justify-between w-full p-2.5 rounded-lg border text-left text-xs transition-all ${
@@ -157,7 +166,7 @@ const BasketContent = ({
             'border-green-500 bg-green-50 dark:bg-green-950/30' :
             'border-dashed border-muted-foreground/30 bg-transparent hover:border-muted-foreground/50'}`
             }>
-            
+
               <span className="flex items-center gap-1.5">
                 {lineItem.uniquePhotos ?
               <>
@@ -176,6 +185,7 @@ const BasketContent = ({
                 ${UNIQUE_PHOTOS_PRICE.toFixed(2)}
               </span>
             </button>
+            )}
             {/* Personalize cover toggle */}
             <button
               onClick={() => toggleItemPersonalizeCover(lineItem.id)}
@@ -406,20 +416,27 @@ const Navbar = () => {
     setIsCheckingOut(true);
     try {
       const lines: CartLineInput[] = [];
-      // 1. Main product first
-      lines.push({ merchandiseId: SHOPIFY_VARIANTS.COLORING_BOOK, quantity: totalBookCount });
-      // 2. Unique photos (relates to book)
-      const uniquePhotosItems = items.filter((i) => i.uniquePhotos);
-      if (uniquePhotosItems.length > 0) {
-        lines.push({ merchandiseId: SHOPIFY_VARIANTS.UNIQUE_PHOTOS, quantity: uniquePhotosItems.length });
-      }
-      // 3. Personalize cover (relates to book)
-      const personalizeCount = items.reduce((s, i) => {
-        if (!i.personalizeCover) return s;
-        return s + (i.uniquePhotos ? i.quantity : 1);
-      }, 0);
-      if (personalizeCount > 0) {
-        lines.push({ merchandiseId: SHOPIFY_VARIANTS.PERSONALIZE_COVER, quantity: personalizeCount });
+      // Digital print-out is an alternative to the physical book. If any digital_print
+      // item is in the cart, send the digital variant instead of the coloring book.
+      const digitalPrintCount = items.filter((i) => i.kind === "digital_print").length;
+      if (digitalPrintCount > 0) {
+        lines.push({ merchandiseId: SHOPIFY_VARIANTS.DIGITAL_PRINT_OUT, quantity: digitalPrintCount });
+      } else {
+        // 1. Main product first
+        lines.push({ merchandiseId: SHOPIFY_VARIANTS.COLORING_BOOK, quantity: totalBookCount });
+        // 2. Unique photos (relates to book)
+        const uniquePhotosItems = items.filter((i) => i.uniquePhotos);
+        if (uniquePhotosItems.length > 0) {
+          lines.push({ merchandiseId: SHOPIFY_VARIANTS.UNIQUE_PHOTOS, quantity: uniquePhotosItems.length });
+        }
+        // 3. Personalize cover (relates to book)
+        const personalizeCount = items.reduce((s, i) => {
+          if (!i.personalizeCover) return s;
+          return s + (i.uniquePhotos ? i.quantity : 1);
+        }, 0);
+        if (personalizeCount > 0) {
+          lines.push({ merchandiseId: SHOPIFY_VARIANTS.PERSONALIZE_COVER, quantity: personalizeCount });
+        }
       }
       // 4. Digital download last (standalone add-on)
       if (digitalCopies > 0) {
@@ -500,7 +517,9 @@ const Navbar = () => {
               </button>
             </div>
 
-            {/* Desktop Navigation */}
+            {/* Desktop Navigation — base links only; user-specific actions
+                live in the right-side user dropdown so they don't collide
+                with the absolutely-centered logo on smaller desktops. */}
             <div className="hidden md:flex items-center space-x-6">
               {navLinks.map((link) =>
               <Link
@@ -511,45 +530,6 @@ const Navbar = () => {
                   {link.label}
                 </Link>
               )}
-              {isAdmin &&
-              <Link
-                to="/admin"
-                className="text-sm font-medium text-foreground hover:text-foreground/70 transition-colors flex items-center gap-1">
-
-                  <Shield className="w-3.5 h-3.5" />
-                  Admin
-                </Link>
-              }
-              {!authLoading && isAffiliate &&
-              <Link
-                to="/affiliates"
-                className="text-sm font-medium text-foreground hover:text-foreground/70 transition-colors flex items-center gap-1">
-                  <Users className="w-3.5 h-3.5" />
-                  Affiliate Dashboard
-                </Link>
-              }
-            {!authLoading && isLoggedIn &&
-              <Link
-                to="/account"
-                className="text-sm font-medium text-foreground hover:text-foreground/70 transition-colors flex items-center gap-1">
-                  <ClipboardList className="w-3.5 h-3.5" />
-                  My Account
-                </Link>
-              }
-              {!authLoading && isLoggedIn && (
-                <button
-                  onClick={() => {
-                    supabase.auth.signOut({ scope: 'local' }).then(() => {
-                      window.location.href = "/";
-                    }).catch(() => {
-                      window.location.href = "/";
-                    });
-                  }}
-                  className="text-sm font-medium text-foreground hover:text-foreground/70 transition-colors"
-                >
-                  Sign Out
-                </button>
-              )}
             </div>
           </div>
 
@@ -558,7 +538,7 @@ const Navbar = () => {
             <img alt="Piccoload – From pic to pen" className="h-14 w-auto" src="/lovable-uploads/piccoload-logo-large.png" />
           </Link>
 
-          {/* Right: Cart + CTA */}
+          {/* Right: Cart + user menu + CTA */}
           <div className="ml-auto flex items-center gap-3">
             <CartButton
               isCartOpen={isCartOpen}
@@ -566,6 +546,59 @@ const Navbar = () => {
               hasItems={hasItems}
               itemCount={itemCount}
               basketContentProps={basketContentProps} />
+            {!authLoading && isLoggedIn && (
+              <DropdownMenu>
+                <DropdownMenuTrigger
+                  className="hidden md:inline-flex items-center justify-center w-9 h-9 rounded-full hover:bg-muted transition-colors"
+                  aria-label="Account menu"
+                >
+                  <UserCircle2 className="w-6 h-6 text-foreground" />
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end" className="w-56">
+                  {user?.email && (
+                    <>
+                      <DropdownMenuLabel className="text-xs font-normal text-muted-foreground truncate">
+                        {user.email}
+                      </DropdownMenuLabel>
+                      <DropdownMenuSeparator />
+                    </>
+                  )}
+                  <DropdownMenuItem asChild>
+                    <Link to="/account" className="flex items-center gap-2 cursor-pointer">
+                      <ClipboardList className="w-4 h-4" />
+                      My Account
+                    </Link>
+                  </DropdownMenuItem>
+                  {isAffiliate && (
+                    <DropdownMenuItem asChild>
+                      <Link to="/affiliates" className="flex items-center gap-2 cursor-pointer">
+                        <Users className="w-4 h-4" />
+                        Affiliate Dashboard
+                      </Link>
+                    </DropdownMenuItem>
+                  )}
+                  {isAdmin && (
+                    <DropdownMenuItem asChild>
+                      <Link to="/admin" className="flex items-center gap-2 cursor-pointer">
+                        <Shield className="w-4 h-4" />
+                        Admin
+                      </Link>
+                    </DropdownMenuItem>
+                  )}
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem
+                    onSelect={() => {
+                      supabase.auth.signOut({ scope: 'local' })
+                        .finally(() => { window.location.href = "/"; });
+                    }}
+                    className="flex items-center gap-2 cursor-pointer"
+                  >
+                    <LogOut className="w-4 h-4" />
+                    Sign Out
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            )}
             {!authLoading && !isLoggedIn && (
               <Link
                 to="/auth"
