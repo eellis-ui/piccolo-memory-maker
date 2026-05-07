@@ -424,8 +424,14 @@ Return the converted image.`;
       // For each black pixel, check a 9x9 neighborhood. If >60% is black, it's part
       // of a filled area (not a line) — convert to white. Lines are thin so most
       // neighbors will be white.
-      const R = 4; // radius: check 9x9 area (2*4+1)
-      const FILL_THRESHOLD = 0.60; // if >60% black in neighborhood, it's a fill
+      // Use a larger window with a stricter threshold so we only flag truly
+      // solid black regions, not thick (or freshly dilated) lines. The previous
+      // R=4 / 0.60 combo was too aggressive: a 5–7px line through the centre of
+      // a 9x9 window already covered ~50–60% of pixels, so the fill-removal
+      // pass would chip into legitimate strokes — which read as inconsistent
+      // line thickness and uneven dark patches in the finished page.
+      const R = 5; // 11x11 neighbourhood
+      const FILL_THRESHOLD = 0.72; // require >72% black before treating as fill
       // Build a fresh copy of black/white state after dilation
       const isBlack = new Uint8Array(srcW * srcH);
       for (let y = 0; y < srcH; y++) {
