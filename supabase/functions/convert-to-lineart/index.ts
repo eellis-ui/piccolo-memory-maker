@@ -220,7 +220,7 @@ OUTPUT: ${actualIsLandscape ? "LANDSCAPE orientation (wider than tall)" : "PORTR
       fd.append("prompt", openaiPrompt);
       fd.append("model", "gpt-image-1");
       fd.append("size", actualIsLandscape ? "1536x1024" : "1024x1536");
-      fd.append("quality", "high");
+      fd.append("quality", "medium");
       const openaiResp = await fetch("https://api.openai.com/v1/images/edits", {
         method: "POST",
         headers: { Authorization: `Bearer ${openaiKey}` },
