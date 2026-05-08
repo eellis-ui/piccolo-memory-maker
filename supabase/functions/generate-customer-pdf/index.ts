@@ -160,7 +160,12 @@ Deno.serve(async (req) => {
     const frontCoverBuf = await downloadFile(admin, frontCoverPath);
     if (frontCoverBuf) zip.file("00-front-cover.png", frontCoverBuf);
 
-    const backCoverBuf = await downloadFile(admin, "covers/shared/back-cover.png");
+    // Per-order back cover (rendered fresh from the React BackCoverPage at
+    // checkout). Fall back to the legacy shared PNG only for orders placed
+    // before per-order back covers existed.
+    const backCoverBuf =
+      (await downloadFile(admin, `covers/${orderId}/back-cover.png`)) ??
+      (await downloadFile(admin, "covers/shared/back-cover.png"));
     if (backCoverBuf) zip.file("01-back-cover.png", backCoverBuf);
 
     const validPhotos = photos.filter((p) => {

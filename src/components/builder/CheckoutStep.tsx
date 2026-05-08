@@ -10,7 +10,7 @@ import { createShopifyCheckout, SHOPIFY_VARIANTS, type CartLineInput } from "@/l
 import { trackAddToCart } from "@/lib/shopify-analytics";
 import { trackEvent } from "@/lib/analytics-tracker";
 import { getSessionOrders, uploadCover } from "@/lib/guest-api";
-import { renderFrontCoverPng } from "@/lib/cover-renderer";
+import { renderFrontCoverPng, renderBackCoverPng } from "@/lib/cover-renderer";
 import logoImg from "@/assets/piccoload-logo.png";
 
 interface BookDigitalDownload {
@@ -214,6 +214,10 @@ const CheckoutStep = ({ pageCount, extraPages, convertedUrls, onBack, onCheckout
         try {
           const coverPromises: Promise<unknown>[] = [];
 
+          // Render the back cover ONCE (it's identical for every book) and
+          // reuse the blob across all orderIds.
+          const backBlobPromise = renderBackCoverPng();
+
           // Front covers — one per book
           for (let i = 0; i < orderIds.length; i++) {
             const preview = bookPreviews[i] ?? bookPreviews[0];
@@ -227,8 +231,13 @@ const CheckoutStep = ({ pageCount, extraPages, convertedUrls, onBack, onCheckout
             coverPromises.push(frontBlob);
           }
 
-          // Back cover is a static asset in storage (covers/shared/back-cover.png)
-          // — no need to render or upload it here
+          // Back covers — one per order (uploaded per-order so the PDF
+          // generator can pick it up without falling back to a stale shared PNG)
+          for (let i = 0; i < orderIds.length; i++) {
+            coverPromises.push(
+              backBlobPromise.then((blob) => uploadCover(sessionId!, orderIds[i], "back", blob)),
+            );
+          }
 
           await Promise.allSettled(coverPromises);
           console.log("Covers uploaded successfully");

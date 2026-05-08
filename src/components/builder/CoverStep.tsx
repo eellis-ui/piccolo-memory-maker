@@ -5,7 +5,7 @@ import { Badge } from "@/components/ui/badge";
 import { Heart, Link2 } from "lucide-react";
 import type { BookAddOnsLocal } from "@/pages/Builder";
 import { useBasket } from "@/contexts/BasketContext";
-import logoImg from "@/assets/piccoload-logo.png";
+import FrontCoverPreview from "@/components/builder/FrontCoverPreview";
 
 const PROFANITY_LIST = [
   // Core profanity
@@ -116,76 +116,16 @@ const CoverStep = ({ availableImages, bookAddOns, onBookAddOnsChange, onCoverCom
       )}
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-        {/* Cover Preview */}
+        {/* Cover Preview — uses the same FrontCoverPreview component the PDF
+            renderer captures, so what you see here is exactly what prints. */}
         <div className="order-1 lg:order-1">
           <div className="bg-[#fffaf3] rounded-lg p-4 shadow-soft">
-            <div
-              className="relative bg-[#fffaf3] overflow-hidden flex flex-col"
-              style={{ aspectRatio: "3 / 4", containerType: "inline-size" }}
-            >
-              {/* ── Top space: logo centered ── */}
-              <div className="flex-1 flex items-center justify-center min-h-0">
-                <img
-                  src={logoImg}
-                  alt="Piccoload – From Pic to Pen"
-                  style={{ width: "50%" }}
-                />
-              </div>
-
-              {/* ── 2×2 photo grid ── */}
-              <div
-                className="shrink-0 grid grid-cols-2"
-                style={{ margin: "0 8.75%", gap: 0 }}
-              >
-                {gridCells.map((url, idx) => (
-                  <div key={idx} className="aspect-square overflow-hidden bg-[#ede8e0]">
-                    {url ? (
-                      <img
-                        src={url}
-                        alt={`Cover cell ${idx + 1}`}
-                        className="w-full h-full object-cover object-center"
-                      />
-                    ) : (
-                      <div className="w-full h-full flex items-center justify-center text-[1.2vw] text-muted-foreground">
-                        {idx + 1}
-                      </div>
-                    )}
-                  </div>
-                ))}
-              </div>
-
-              {/* ── Bottom text: right-aligned flush to right grid edge ── */}
-              <div
-                className="flex-1 flex flex-col justify-start min-h-0"
-                style={{ paddingRight: "8.75%" }}
-              >
-                <div className="flex flex-col items-end" style={{ paddingTop: "2.5%" }}>
-                  {/* "FOR KIDS AND ADULTS ALIKE" */}
-                  <p
-                    className="uppercase text-foreground leading-none"
-                    style={{
-                      fontFamily: "'Yuji Syuku', serif",
-                      fontSize: "3.9cqi",
-                      letterSpacing: 0,
-                    }}
-                  >
-                    {subtitle}
-                  </p>
-
-                  {/* "color your memories" */}
-                  <p
-                    className="leading-none"
-                    style={{
-                      fontFamily: "Bristol, serif",
-                      fontSize: "4.7cqi",
-                      marginTop: "2.5%",
-                      color: "hsl(var(--foreground))",
-                    }}
-                  >
-                    {bookAddOns.bottomTitle || "color your memories"}
-                  </p>
-                </div>
-              </div>
+            <div style={{ aspectRatio: "210 / 297" }}>
+              <FrontCoverPreview
+                gridCells={gridCells}
+                subtitle={subtitle}
+                bottomTitle={bookAddOns.bottomTitle || "color your memories"}
+              />
             </div>
           </div>
         </div>
