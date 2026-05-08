@@ -278,13 +278,19 @@ const Builder = () => {
         newParams.set("sessionId", newSessionId);
         window.history.replaceState(null, "", `${window.location.pathname}?${newParams.toString()}`);
 
-        // Expand basket items (bundles) into individual books
+        // Expand basket items (bundles) into individual books.
+        // A 1-book line item is always its own thing (each gets unique photos),
+        // even if the customer adds the same single-book line twice — those
+        // are two separate "books" with their own photos. Only multi-book
+        // bundles share photos by default (and only within their own bundle,
+        // unless the customer paid the unique-photos upsell).
         const perBookFlags: { uniquePhotos: boolean; personalizeCover: boolean }[] = [];
         if (items.length > 0) {
           items.forEach((basketItem) => {
+            const isSolo = basketItem.quantity === 1;
             for (let q = 0; q < basketItem.quantity; q++) {
               perBookFlags.push({
-                uniquePhotos: basketItem.uniquePhotos,
+                uniquePhotos: isSolo ? true : basketItem.uniquePhotos,
                 personalizeCover: basketItem.personalizeCover,
               });
             }
