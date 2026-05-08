@@ -385,7 +385,10 @@ Return the converted image.`;
       const srcH = srcImg.height;
       console.log(`AI output: ${srcW}x${srcH}`);
 
-      // STEP 4a: B&W threshold
+      // STEP 4a: B&W threshold. We use 128 (50% grey) so only the strong line
+      // cores survive — Gemini's anti-aliased edge halos go to white. A higher
+      // threshold (we used 180 previously) captured the AA halos as black,
+      // which made the lines look fuzzy/wavy after dilation.
       for (let x = 1; x <= srcW; x++) {
         for (let y = 1; y <= srcH; y++) {
           const rgba = srcImg.getPixelAt(x, y);
@@ -393,10 +396,48 @@ Return the converted image.`;
           const g = (rgba >> 16) & 0xFF;
           const b = (rgba >> 8) & 0xFF;
           const grey = r * 0.299 + g * 0.587 + b * 0.114;
-          const val = grey >= 180 ? 255 : 0;
+          const val = grey >= 128 ? 255 : 0;
           srcImg.setPixelAt(x, y, Image.rgbaToColor(val, val, val, 255));
         }
       }
+
+      // STEP 4a0: 3x3 median smoothing — kill 1-pixel salt/pepper noise that
+      // the threshold can leave along line edges. Each pixel becomes the
+      // majority of its 3x3 neighbourhood, which removes isolated specks
+      // without noticeably softening real strokes.
+      const beforeSmooth = new Uint8Array(srcW * srcH);
+      for (let y = 0; y < srcH; y++) {
+        for (let x = 0; x < srcW; x++) {
+          const px = srcImg.getPixelAt(x + 1, y + 1);
+          beforeSmooth[y * srcW + x] = ((px >> 24) & 0xFF) === 0 ? 1 : 0;
+        }
+      }
+      let smoothed = 0;
+      for (let y = 0; y < srcH; y++) {
+        for (let x = 0; x < srcW; x++) {
+          let blackCount = 0;
+          let total = 0;
+          for (let dy = -1; dy <= 1; dy++) {
+            const ny = y + dy;
+            if (ny < 0 || ny >= srcH) continue;
+            for (let dx = -1; dx <= 1; dx++) {
+              const nx = x + dx;
+              if (nx < 0 || nx >= srcW) continue;
+              total++;
+              if (beforeSmooth[ny * srcW + nx]) blackCount++;
+            }
+          }
+          // Majority vote — pixel becomes black if 5+ of 9 neighbours are black.
+          const wasBlack = beforeSmooth[y * srcW + x] === 1;
+          const shouldBeBlack = blackCount * 2 >= total;
+          if (wasBlack !== shouldBeBlack) {
+            const val = shouldBeBlack ? 0 : 255;
+            srcImg.setPixelAt(x + 1, y + 1, Image.rgbaToColor(val, val, val, 255));
+            smoothed++;
+          }
+        }
+      }
+      console.log(`Median smoothing: ${smoothed} pixels flipped`);
 
       // STEP 4a1: Line dilation — thicken all lines by 1px for bolder coloring book look
       // Build snapshot of current black/white state
