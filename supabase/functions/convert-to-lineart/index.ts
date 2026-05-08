@@ -245,24 +245,34 @@ Deno.serve(async (req) => {
     }
     const imageBase64Input = btoa(chunks.join(""));
 
-    const prompt = `Generate an image: Convert this photo into a PROFESSIONAL COLORING BOOK PAGE in the style of a published coloring book.
+    const prompt = `Generate an image: Convert this photo into a PROFESSIONAL COLORING BOOK PAGE in the style of a published children's coloring book.
 
 STYLE — this is critical:
-- Draw in a BOLD ILLUSTRATED CARTOON STYLE, NOT a photorealistic trace. Think professional coloring book illustration.
-- Lines must be THICK, BOLD, and CONFIDENT — like drawn with a thick marker or pen. NOT thin scratchy pencil lines.
-- Simplify details into clean, bold shapes with clear outlines. Do not try to capture every photorealistic detail.
-- Hair should be drawn as flowing bold strokes. Clothing patterns as clear repeating shapes. Faces as clean cartoon-style features.
-- Every enclosed area must be large enough to colour in with a crayon.
-- ABSOLUTELY NO cross-hatching, stippling, parallel lines for shading, or any texture fills. Every area is either a bold outline or empty white space.
+- Draw in a BOLD ILLUSTRATED CARTOON STYLE, NOT a photorealistic trace.
+- Every line MUST be the SAME thickness — uniform stroke width throughout the ENTIRE image. A face crease, a wisp of hair, the outline of a body, the edge of a building — all drawn with the exact same bold pen.
+- Lines must be SOLID PURE BLACK (#000000) on PURE WHITE (#FFFFFF). NOT grey, NOT brown, NOT pencil-style.
+- Simplify into clean enclosed shapes large enough to colour in with a crayon.
+
+FACE DETAIL — REQUIRED FOR ALL PEOPLE:
+- Draw distinct outlined lines for: each eye (outline + iris + pupil + a few eyelashes), each eyebrow as a clear shape, the nose (bridge line + nostril shapes), the mouth (upper lip + lower lip outline + parting line; if smiling, each visible tooth as a small shape), each ear (outer outline + inner curl), hair (flowing strokes showing the part, the direction, and the hairline).
+- Faces must look COMPLETE and RECOGNISABLE — not blank ovals. Do NOT skip features.
+
+TEXT — REQUIRED:
+- If the photo contains any text, letters, numbers or signs, REPRODUCE THEM EXACTLY as bold black outlined letters in the same place. They must be legible and recognisable as the same words.
+
+ABSOLUTELY FORBIDDEN — these will ruin the page:
+- NO shading, NO grey tones, NO gradients.
+- NO cross-hatching, NO parallel lines for shading, NO stippling, NO dotted texture, NO scribble fills.
+- NO solid black filled areas. Dark hair, dark clothes, dark pets — draw OUTLINES ONLY with white inside, never solid black.
+- NO decorative additions. Do NOT invent or add backgrounds. If the photo's background is plain, blurred, or noisy, leave it as plain white.
 
 RULES:
-1. ONLY bold black lines on pure white background. NO grey, NO shading, NO gradients, NO filled areas, NO cross-hatching.
+1. Pure black lines on pure white background only.
 2. Every region inside outlines MUST be pure white — ready to be coloured in.
-3. Dark areas (hair, dark clothing, shadows) = draw OUTLINES ONLY with white inside. NEVER fill with solid black.
-4. Preserve the likeness, pose, and composition of the original photo.
-5. The drawing MUST fill the ENTIRE image edge-to-edge with NO margins or white borders.
-6. DO NOT crop or reframe. Keep the same framing as the input.
-7. ${actualIsLandscape ? "Output MUST be LANDSCAPE (wider than tall)." : "Output MUST be PORTRAIT (taller than wide)."}
+3. Preserve the likeness, pose, and composition of the original photo exactly.
+4. The drawing MUST fill the ENTIRE image edge-to-edge with NO margins or white borders.
+5. DO NOT crop or reframe. Keep the same framing as the input.
+6. ${actualIsLandscape ? "Output MUST be LANDSCAPE (wider than tall)." : "Output MUST be PORTRAIT (taller than wide)."}
 
 Return the converted image.`;
 
@@ -439,31 +449,116 @@ Return the converted image.`;
       }
       console.log(`Median smoothing: ${smoothed} pixels flipped`);
 
-      // STEP 4a1: Line dilation — thicken all lines by 1px for bolder coloring book look
-      // Build snapshot of current black/white state
-      const dilateMap = new Uint8Array(srcW * srcH);
-      for (let y = 0; y < srcH; y++) {
-        for (let x = 0; x < srcW; x++) {
-          const px = srcImg.getPixelAt(x + 1, y + 1);
-          dilateMap[y * srcW + x] = ((px >> 24) & 0xFF) === 0 ? 1 : 0;
+      // STEP 4a1: Morphological closing (dilate then erode) to bridge tiny gaps
+      // in lines, then connected-component despeckle to remove background noise
+      // (texture-bleed dots), then a final dilation pass for boldness. This
+      // preserves Gemini's interior detail (no thinning) while normalising
+      // appearance — the closing fills 1-2px gaps so broken strokes look
+      // continuous, despeckle removes the dotted noise that texture leaked in,
+      // and the final dilation makes everything bold.
+      const idx2 = (x: number, y: number) => y * srcW + x;
+      const readMap = (): Uint8Array => {
+        const m = new Uint8Array(srcW * srcH);
+        for (let y = 0; y < srcH; y++) {
+          for (let x = 0; x < srcW; x++) {
+            const px = srcImg.getPixelAt(x + 1, y + 1);
+            m[idx2(x, y)] = ((px >> 24) & 0xFF) === 0 ? 1 : 0;
+          }
         }
-      }
-      let dilated = 0;
+        return m;
+      };
+      const writeMap = (m: Uint8Array) => {
+        for (let y = 0; y < srcH; y++) {
+          for (let x = 0; x < srcW; x++) {
+            const v = m[idx2(x, y)] ? 0 : 255;
+            srcImg.setPixelAt(x + 1, y + 1, Image.rgbaToColor(v, v, v, 255));
+          }
+        }
+      };
+      const dilateOnce = (m: Uint8Array): Uint8Array => {
+        const next = new Uint8Array(srcW * srcH);
+        for (let y = 0; y < srcH; y++) {
+          for (let x = 0; x < srcW; x++) {
+            if (m[idx2(x, y)]) { next[idx2(x, y)] = 1; continue; }
+            const up = y > 0 && m[idx2(x, y - 1)];
+            const dn = y < srcH - 1 && m[idx2(x, y + 1)];
+            const lt = x > 0 && m[idx2(x - 1, y)];
+            const rt = x < srcW - 1 && m[idx2(x + 1, y)];
+            next[idx2(x, y)] = (up || dn || lt || rt) ? 1 : 0;
+          }
+        }
+        return next;
+      };
+      const erodeOnce = (m: Uint8Array): Uint8Array => {
+        const next = new Uint8Array(srcW * srcH);
+        for (let y = 0; y < srcH; y++) {
+          for (let x = 0; x < srcW; x++) {
+            if (!m[idx2(x, y)]) { next[idx2(x, y)] = 0; continue; }
+            const up = y > 0 ? m[idx2(x, y - 1)] : 0;
+            const dn = y < srcH - 1 ? m[idx2(x, y + 1)] : 0;
+            const lt = x > 0 ? m[idx2(x - 1, y)] : 0;
+            const rt = x < srcW - 1 ? m[idx2(x + 1, y)] : 0;
+            next[idx2(x, y)] = (up && dn && lt && rt) ? 1 : 0;
+          }
+        }
+        return next;
+      };
+
+      // 4a1.A — Closing (dilate -> erode): bridges small gaps so broken lines reconnect
+      let m = readMap();
+      m = dilateOnce(m);
+      m = erodeOnce(m);
+
+      // 4a1.B — Connected-component despeckle: any black blob with fewer than
+      // MIN_BLOB pixels is background noise (texture bleed) — flood-fill it white.
+      const MIN_BLOB = 80;
+      const visited = new Uint8Array(srcW * srcH);
+      let speckRemoved = 0;
+      const stack: number[] = [];
       for (let y = 0; y < srcH; y++) {
         for (let x = 0; x < srcW; x++) {
-          if (dilateMap[y * srcW + x]) continue; // already black
-          // If any 4-connected neighbor is black, make this pixel black
-          const up = y > 0 && dilateMap[(y - 1) * srcW + x];
-          const dn = y < srcH - 1 && dilateMap[(y + 1) * srcW + x];
-          const lt = x > 0 && dilateMap[y * srcW + (x - 1)];
-          const rt = x < srcW - 1 && dilateMap[y * srcW + (x + 1)];
-          if (up || dn || lt || rt) {
-            srcImg.setPixelAt(x + 1, y + 1, Image.rgbaToColor(0, 0, 0, 255));
-            dilated++;
+          const start = idx2(x, y);
+          if (!m[start] || visited[start]) continue;
+          // BFS the connected component (4-connectivity)
+          const blob: number[] = [];
+          stack.length = 0;
+          stack.push(start);
+          visited[start] = 1;
+          while (stack.length > 0) {
+            const k = stack.pop()!;
+            blob.push(k);
+            const py = (k / srcW) | 0;
+            const px = k - py * srcW;
+            if (py > 0) {
+              const n = k - srcW;
+              if (m[n] && !visited[n]) { visited[n] = 1; stack.push(n); }
+            }
+            if (py < srcH - 1) {
+              const n = k + srcW;
+              if (m[n] && !visited[n]) { visited[n] = 1; stack.push(n); }
+            }
+            if (px > 0) {
+              const n = k - 1;
+              if (m[n] && !visited[n]) { visited[n] = 1; stack.push(n); }
+            }
+            if (px < srcW - 1) {
+              const n = k + 1;
+              if (m[n] && !visited[n]) { visited[n] = 1; stack.push(n); }
+            }
+          }
+          if (blob.length < MIN_BLOB) {
+            for (const k of blob) m[k] = 0;
+            speckRemoved += blob.length;
           }
         }
       }
-      console.log(`Line dilation: ${dilated} pixels added`);
+      console.log(`Despeckle: ${speckRemoved} pixels in small blobs removed`);
+
+      // 4a1.C — Final dilation to bold lines uniformly
+      const DILATE_PASSES = 1;
+      for (let p = 0; p < DILATE_PASSES; p++) m = dilateOnce(m);
+      writeMap(m);
+      console.log(`Closing + despeckle + ${DILATE_PASSES}px dilate complete`);
 
       // STEP 4a2: Remove black fills — keep only lines
       // For each black pixel, check a 9x9 neighborhood. If >60% is black, it's part
