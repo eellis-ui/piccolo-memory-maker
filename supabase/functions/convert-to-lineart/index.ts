@@ -506,12 +506,20 @@ Return the converted image.`;
 
       // 4a1.A — Closing (dilate -> erode): bridges small gaps so broken lines reconnect
       let m = readMap();
+      // Stronger closing — 2 dilation passes then 2 erosion passes. Bridges
+      // 2-3px gaps which is what we need for fragmented strokes in busy scenes
+      // (cityscapes, crowds) where Gemini draws hundreds of broken short lines.
       m = dilateOnce(m);
+      m = dilateOnce(m);
+      m = erodeOnce(m);
       m = erodeOnce(m);
 
       // 4a1.B — Connected-component despeckle: any black blob with fewer than
       // MIN_BLOB pixels is background noise (texture bleed) — flood-fill it white.
-      const MIN_BLOB = 80;
+      // 200px is roughly a 14x14 region — small enough to keep facial features
+      // (eye, lip, individual tooth at typical resolution) but large enough to
+      // remove most stippled background texture leak.
+      const MIN_BLOB = 200;
       const visited = new Uint8Array(srcW * srcH);
       let speckRemoved = 0;
       const stack: number[] = [];
