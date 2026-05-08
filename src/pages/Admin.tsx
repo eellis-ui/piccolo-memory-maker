@@ -78,6 +78,7 @@ interface OrderRow {
   cover_image_id: string | null;
   cover_image_id_2: string | null;
   builder_session_id: string | null;
+  bundle_id: string | null;
 }
 
 interface PhotoRow {
@@ -205,22 +206,65 @@ const Admin = () => {
   const [instagramUploading, setInstagramUploading] = useState(false);
 
   /* ─── Computed: book labels for multi-book sessions ─── */
+  // Group orders by session, then by bundle_id within session, so the badge
+  // can show the bundle structure ("Bundle 1 · Book 1 of 2") whenever a
+  // customer paid for multiple bundles in the same checkout. Single-bundle
+  // sessions keep the original short label ("Book 1 of 2").
   const bookLabels = useMemo(() => {
-    const sessionMap = new Map<string, OrderRow[]>();
+    type Bundle = { bundleId: string; firstCreatedAt: string; books: OrderRow[] };
+    const sessions = new Map<string, Map<string, Bundle>>();
+
     for (const o of orders) {
       if (!o.builder_session_id) continue;
-      const arr = sessionMap.get(o.builder_session_id) || [];
-      arr.push(o);
-      sessionMap.set(o.builder_session_id, arr);
+      const sessionBundles = sessions.get(o.builder_session_id) || new Map<string, Bundle>();
+      const bundleKey = o.bundle_id || `legacy-${o.builder_session_id}`;
+      let bundle = sessionBundles.get(bundleKey);
+      if (!bundle) {
+        bundle = { bundleId: bundleKey, firstCreatedAt: o.created_at, books: [] };
+        sessionBundles.set(bundleKey, bundle);
+      }
+      bundle.books.push(o);
+      if (o.created_at < bundle.firstCreatedAt) bundle.firstCreatedAt = o.created_at;
+      sessions.set(o.builder_session_id, sessionBundles);
     }
-    const labels = new Map<string, { label: string; total: number; index: number; siblings: OrderRow[] }>();
-    for (const [, siblings] of sessionMap) {
-      if (siblings.length <= 1) continue;
-      const sorted = [...siblings].sort((a, b) => a.created_at.localeCompare(b.created_at));
-      sorted.forEach((o, i) => {
-        labels.set(o.id, { label: `Book ${i + 1}`, total: sorted.length, index: i + 1, siblings: sorted });
+
+    const labels = new Map<string, {
+      label: string;
+      total: number;       // books in THIS bundle (drives "of N" suffix on the badge)
+      index: number;       // book number within its bundle (1..total)
+      globalIndex: number; // book number within the whole session — unique per row
+      sessionTotal: number;
+      siblings: OrderRow[];
+    }>();
+
+    for (const [, sessionBundles] of sessions) {
+      const sessionTotal = Array.from(sessionBundles.values()).reduce((s, b) => s + b.books.length, 0);
+      if (sessionTotal <= 1) continue;
+      const isMultiBundle = sessionBundles.size > 1;
+      // Sort bundles by their first book's created_at so "Bundle 1" is whichever
+      // bundle the customer started uploading photos to first.
+      const sortedBundles = Array.from(sessionBundles.values()).sort((a, b) =>
+        a.firstCreatedAt.localeCompare(b.firstCreatedAt)
+      );
+      let globalCounter = 0;
+      sortedBundles.forEach((bundle, bundleIdx) => {
+        const sortedBooks = [...bundle.books].sort((a, b) => a.created_at.localeCompare(b.created_at));
+        const bundleNum = bundleIdx + 1;
+        sortedBooks.forEach((book, bookIdx) => {
+          const bookNum = bookIdx + 1;
+          globalCounter++;
+          labels.set(book.id, {
+            label: isMultiBundle ? `Bundle ${bundleNum} · Book ${bookNum}` : `Book ${bookNum}`,
+            total: sortedBooks.length,
+            index: bookNum,
+            globalIndex: globalCounter,
+            sessionTotal,
+            siblings: sortedBooks,
+          });
+        });
       });
     }
+
     return labels;
   }, [orders]);
 
@@ -354,7 +398,10 @@ const Admin = () => {
     setPdfGenerating(order.id);
     try {
       const bl = bookLabels.get(order.id);
-      const bookSuffix = bl ? `-book${bl.index}` : "";
+      // Use globalIndex so multi-bundle sessions (rare) don't collide on
+      // -book1 / -book1 / -book1. For single-bundle sessions globalIndex
+      // equals index, so existing filenames are unchanged.
+      const bookSuffix = bl ? `-book${bl.globalIndex}` : "";
       const orderRef = order.shopify_order_number || order.order_name || order.id.slice(0, 8);
       const filename = `production-${orderRef}${bookSuffix}.zip`;
 
@@ -385,7 +432,7 @@ const Admin = () => {
         setDetailOrder((prev) => prev ? { ...prev, production_pdf_path: pdfPath } : prev);
       }
 
-      toast.success(`Production ZIP generated${bl ? ` (Book ${bl.index})` : ""}`);
+      toast.success(`Production ZIP generated${bl ? ` (${bl.label})` : ""}`);
       await downloadFromStorage(pdfPath, filename);
     } catch {
       toast.error("Failed to generate ZIP");
