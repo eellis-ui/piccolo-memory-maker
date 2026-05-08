@@ -7,7 +7,12 @@ const SHOPIFY_STOREFRONT_TOKEN = '058e9ec2c0cbbfe183a10b575f6631ee';
 
 // Shopify product variant IDs (GraphQL format)
 export const SHOPIFY_VARIANTS = {
-  COLORING_BOOK: 'gid://shopify/ProductVariant/55768994742645',
+  // Coloring book variants — one per pack size. Shopify charges variant_price
+  // × quantity, so two 2-Book Bundle line items = exactly $99.98 with no
+  // discount-engine math involved.
+  COLORING_BOOK: 'gid://shopify/ProductVariant/57146362364277',           // 1 Book — $31.99
+  COLORING_BOOK_2_BUNDLE: 'gid://shopify/ProductVariant/57146362397045',  // 2-Book Bundle — $49.99
+  COLORING_BOOK_3_BUNDLE: 'gid://shopify/ProductVariant/57146362429813',  // 3-Book Bundle — $59.99
   DIGITAL_DOWNLOAD: 'gid://shopify/ProductVariant/56284852781429',
   UNIQUE_PHOTOS: 'gid://shopify/ProductVariant/56357325111669',
   PERSONALIZE_COVER: 'gid://shopify/ProductVariant/56849946214773',
@@ -15,6 +20,14 @@ export const SHOPIFY_VARIANTS = {
   // customer just gets a digital print-out, no physical shipment.
   DIGITAL_PRINT_OUT: 'gid://shopify/ProductVariant/57128866120053',
 } as const;
+
+// Helper: map a basket item's bundle quantity (1, 2, or 3) to the
+// corresponding Shopify variant ID.
+export function variantForBundleSize(quantity: number): string {
+  if (quantity === 2) return SHOPIFY_VARIANTS.COLORING_BOOK_2_BUNDLE;
+  if (quantity >= 3) return SHOPIFY_VARIANTS.COLORING_BOOK_3_BUNDLE;
+  return SHOPIFY_VARIANTS.COLORING_BOOK;
+}
 
 export async function storefrontApiRequest(query: string, variables: Record<string, unknown> = {}) {
   const response = await fetch(SHOPIFY_STOREFRONT_URL, {
