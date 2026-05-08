@@ -46,23 +46,28 @@ async function verifyOrderOwnership(supabase: Supa, orderId: string, sessionId: 
 /**
  * Returns the set of order_ids that should mirror photo state with this one.
  * - If `unique_photos: true` (each book has its own photos): just [orderId]
- * - If `unique_photos: false` (shared-photos bundle): all draft orders in the same session
- *   with `unique_photos: false`. This includes the input orderId.
+ * - If `unique_photos: false` (shared-photos bundle): all orders in the same
+ *   bundle (same `bundle_id`) with `unique_photos: false`. This isolates each
+ *   bundle from other bundles in the same builder session.
+ * Falls back to session-wide grouping if `bundle_id` is missing (legacy data).
  */
 async function getMirrorOrderIds(supabase: Supa, orderId: string): Promise<string[]> {
   const { data: src } = await supabase
     .from("orders")
-    .select("builder_session_id, unique_photos, status")
+    .select("builder_session_id, bundle_id, unique_photos, status")
     .eq("id", orderId)
     .single();
   if (!src) return [orderId];
   if (src.unique_photos) return [orderId];
-  const { data: siblings } = await supabase
+  const q = supabase
     .from("orders")
     .select("id")
-    .eq("builder_session_id", src.builder_session_id)
     .eq("unique_photos", false)
     .eq("status", src.status);
+  const scopedQuery = src.bundle_id
+    ? q.eq("bundle_id", src.bundle_id)
+    : q.eq("builder_session_id", src.builder_session_id);
+  const { data: siblings } = await scopedQuery;
   const ids = (siblings || []).map((s: { id: string }) => s.id);
   return ids.length ? ids : [orderId];
 }
@@ -78,24 +83,40 @@ Deno.serve(async (req) => {
     const supabase = adminClient();
 
     // ─── POST /create ───
+    // Accepts EITHER:
+    //   { sessionId, count }              — legacy: one bundle, N books
+    //   { sessionId, bundles: [{ count, uniquePhotos }] } — N bundles, each
+    //     gets its own bundle_id (and own unique_photos value).
     if (req.method === "POST" && path === "create") {
-      const { sessionId, count } = await req.json();
-      const sid = validateSession(sessionId);
-      const bookCount = Math.min(Math.max(count || 1, 1), 10);
+      const body = await req.json();
+      const sid = validateSession(body.sessionId);
 
-      const orders = [];
-      for (let i = 0; i < bookCount; i++) {
-        const { data, error } = await supabase
-          .from("orders")
-          .insert({
-            status: "draft",
-            builder_session_id: sid,
-            builder_step: "upload",
-          })
-          .select("id")
-          .single();
-        if (error) throw error;
-        orders.push(data);
+      type BundleSpec = { count: number; uniquePhotos?: boolean };
+      const bundles: BundleSpec[] = Array.isArray(body.bundles) && body.bundles.length > 0
+        ? body.bundles.map((b: BundleSpec) => ({
+            count: Math.min(Math.max(b.count || 1, 1), 10),
+            uniquePhotos: !!b.uniquePhotos,
+          }))
+        : [{ count: Math.min(Math.max(body.count || 1, 1), 10), uniquePhotos: false }];
+
+      const orders: { id: string; bundle_id: string }[] = [];
+      for (const bundle of bundles) {
+        const bundleId = crypto.randomUUID();
+        for (let i = 0; i < bundle.count; i++) {
+          const { data, error } = await supabase
+            .from("orders")
+            .insert({
+              status: "draft",
+              builder_session_id: sid,
+              builder_step: "upload",
+              bundle_id: bundleId,
+              unique_photos: bundle.uniquePhotos,
+            })
+            .select("id, bundle_id")
+            .single();
+          if (error) throw error;
+          orders.push(data);
+        }
       }
       return json({ orders });
     }

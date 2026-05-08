@@ -14,7 +14,7 @@ import ThankYouStep from "@/components/builder/ThankYouStep";
 import UniquePhotosUpsellBanner from "@/components/builder/UniquePhotosUpsellBanner";
 import {
   getOrCreateSessionId,
-  createGuestOrders,
+  createGuestOrderBundles,
   getSessionOrders,
   updateGuestOrder,
 } from "@/lib/guest-api";
@@ -278,12 +278,17 @@ const Builder = () => {
         newParams.set("sessionId", newSessionId);
         window.history.replaceState(null, "", `${window.location.pathname}?${newParams.toString()}`);
 
-        // Expand basket items (bundles) into individual books.
-        // A 1-book line item is always its own thing (each gets unique photos),
-        // even if the customer adds the same single-book line twice — those
-        // are two separate "books" with their own photos. Only multi-book
-        // bundles share photos by default (and only within their own bundle,
-        // unless the customer paid the unique-photos upsell).
+        // One basket item -> one bundle of orders. Each bundle gets its own
+        // bundle_id server-side so books from different bundles never share
+        // photos with each other, even within the same builder session. A
+        // single-book item is its own bundle and is always unique_photos=true
+        // so it can never accidentally mirror to anything.
+        const bundleSpecs: { count: number; uniquePhotos: boolean }[] = items.length > 0
+          ? items.map((b) => ({
+              count: b.quantity,
+              uniquePhotos: b.quantity === 1 ? true : b.uniquePhotos,
+            }))
+          : [{ count: 1, uniquePhotos: true }];
         const perBookFlags: { uniquePhotos: boolean; personalizeCover: boolean }[] = [];
         if (items.length > 0) {
           items.forEach((basketItem) => {
@@ -296,17 +301,8 @@ const Builder = () => {
             }
           });
         }
-        const totalBooks = perBookFlags.length > 0 ? perBookFlags.length : 1;
 
-        const orders = await createGuestOrders(newSessionId, totalBooks);
-
-        // Set unique_photos on each order based on basket item flags
-        for (let i = 0; i < orders.length; i++) {
-          const flags = perBookFlags[i];
-          if (flags?.uniquePhotos) {
-            await updateGuestOrder(newSessionId, orders[i].id, { unique_photos: true });
-          }
-        }
+        const orders = await createGuestOrderBundles(newSessionId, bundleSpecs);
 
         const newBooks: BookState[] = orders.map((o) => ({
           orderId: o.id,

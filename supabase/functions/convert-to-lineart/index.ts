@@ -83,7 +83,7 @@ Deno.serve(async (req) => {
 
     const { data: photo, error: photoError } = await supabase
       .from("order_photos")
-      .select("*, orders!inner(id, user_id, builder_session_id, unique_photos)")
+      .select("*, orders!inner(id, user_id, builder_session_id, bundle_id, unique_photos)")
       .eq("id", photoId)
       .single() as { data: any; error: any };
 
@@ -106,13 +106,17 @@ Deno.serve(async (req) => {
 
     // Shared-photos bundle: if a sibling row at the same page_position already
     // converted this image, just copy its converted_path instead of paying for
-    // another AI call.
-    if (!photo.orders.unique_photos && photo.orders.builder_session_id) {
-      const { data: siblingOrders } = await supabase
+    // another AI call. Mirror only within this order's bundle (or session, for
+    // legacy orders without a bundle_id).
+    if (!photo.orders.unique_photos && (photo.orders.bundle_id || photo.orders.builder_session_id)) {
+      const sibQuery = supabase
         .from("orders")
         .select("id")
-        .eq("builder_session_id", photo.orders.builder_session_id)
         .eq("unique_photos", false);
+      const scopedSibQuery = photo.orders.bundle_id
+        ? sibQuery.eq("bundle_id", photo.orders.bundle_id)
+        : sibQuery.eq("builder_session_id", photo.orders.builder_session_id);
+      const { data: siblingOrders } = await scopedSibQuery;
       const sibOrderIds = (siblingOrders || [])
         .map((o: { id: string }) => o.id)
         .filter((id: string) => id !== photo.order_id);
@@ -558,13 +562,18 @@ Return the converted image.`;
     }).eq("id", photoId);
 
     // Propagate the converted file to sibling rows in shared-photos mode so the
-    // admin sees the same line art under every book in the bundle.
-    if (!photo.orders.unique_photos && photo.orders.builder_session_id) {
-      const { data: sibOrders } = await supabase
+    // admin sees the same line art under every book in the bundle. Scope the
+    // mirror to this order's bundle_id so separate bundles in the same session
+    // stay isolated.
+    if (!photo.orders.unique_photos && (photo.orders.bundle_id || photo.orders.builder_session_id)) {
+      const propQuery = supabase
         .from("orders")
         .select("id")
-        .eq("builder_session_id", photo.orders.builder_session_id)
         .eq("unique_photos", false);
+      const scopedPropQuery = photo.orders.bundle_id
+        ? propQuery.eq("bundle_id", photo.orders.bundle_id)
+        : propQuery.eq("builder_session_id", photo.orders.builder_session_id);
+      const { data: sibOrders } = await scopedPropQuery;
       const sibIds = (sibOrders || [])
         .map((o: { id: string }) => o.id)
         .filter((id: string) => id !== photo.order_id);

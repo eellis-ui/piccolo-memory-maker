@@ -27,7 +27,25 @@ export async function createGuestOrders(sessionId: string, count: number) {
     body: JSON.stringify({ sessionId, count }),
   });
   if (!res.ok) throw new Error(await res.text());
-  return (await res.json()).orders as { id: string }[];
+  return (await res.json()).orders as { id: string; bundle_id?: string }[];
+}
+
+/**
+ * Create one batch of orders per bundle. Each bundle gets its own bundle_id
+ * (assigned server-side) so books from different bundles don't share photos
+ * with each other, even when they're in the same builder session.
+ */
+export async function createGuestOrderBundles(
+  sessionId: string,
+  bundles: { count: number; uniquePhotos?: boolean }[],
+) {
+  const res = await fetch(`${BASE}/create`, {
+    method: "POST",
+    headers: headers({ "Content-Type": "application/json" }),
+    body: JSON.stringify({ sessionId, bundles }),
+  });
+  if (!res.ok) throw new Error(await res.text());
+  return (await res.json()).orders as { id: string; bundle_id?: string }[];
 }
 
 export async function getSessionOrders(sessionId: string) {
