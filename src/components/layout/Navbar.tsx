@@ -406,8 +406,21 @@ const Navbar = () => {
     setIsCheckingOut(true);
     try {
       const lines: CartLineInput[] = [];
-      // 1. Main product first
-      lines.push({ merchandiseId: SHOPIFY_VARIANTS.COLORING_BOOK, quantity: totalBookCount });
+      // 1. Main product — group basket items by bundle size (1 / 2 / 3 books)
+      //    and send each group as N units of the matching variant. Variant
+      //    prices on Shopify ($31.99 / $49.99 / $59.99) make checkout math exact.
+      const oneBookCount = items.filter((i) => i.quantity === 1).length;
+      const twoBookCount = items.filter((i) => i.quantity === 2).length;
+      const threeBookCount = items.filter((i) => i.quantity >= 3).length;
+      if (oneBookCount > 0) {
+        lines.push({ merchandiseId: SHOPIFY_VARIANTS.COLORING_BOOK, quantity: oneBookCount });
+      }
+      if (twoBookCount > 0) {
+        lines.push({ merchandiseId: SHOPIFY_VARIANTS.COLORING_BOOK_2_BUNDLE, quantity: twoBookCount });
+      }
+      if (threeBookCount > 0) {
+        lines.push({ merchandiseId: SHOPIFY_VARIANTS.COLORING_BOOK_3_BUNDLE, quantity: threeBookCount });
+      }
       // 2. Unique photos (relates to book)
       const uniquePhotosItems = items.filter((i) => i.uniquePhotos);
       if (uniquePhotosItems.length > 0) {
@@ -433,12 +446,16 @@ const Navbar = () => {
           productGid: "gid://shopify/Product/15269689852277",
           variantGid: line.merchandiseId,
           title:
-            line.merchandiseId === SHOPIFY_VARIANTS.COLORING_BOOK ? "Personalised Coloring Book" :
+            line.merchandiseId === SHOPIFY_VARIANTS.COLORING_BOOK ? "Personalised Coloring Book — 1 Book" :
+            line.merchandiseId === SHOPIFY_VARIANTS.COLORING_BOOK_2_BUNDLE ? "Personalised Coloring Book — 2-Book Bundle" :
+            line.merchandiseId === SHOPIFY_VARIANTS.COLORING_BOOK_3_BUNDLE ? "Personalised Coloring Book — 3-Book Bundle" :
             line.merchandiseId === SHOPIFY_VARIANTS.DIGITAL_DOWNLOAD ? "Instant Digital Download" :
             line.merchandiseId === SHOPIFY_VARIANTS.UNIQUE_PHOTOS ? "Unique Photos" :
             line.merchandiseId === SHOPIFY_VARIANTS.PERSONALIZE_COVER ? "Personalized Cover" : "Item",
           price:
-            line.merchandiseId === SHOPIFY_VARIANTS.COLORING_BOOK ? "35.00" :
+            line.merchandiseId === SHOPIFY_VARIANTS.COLORING_BOOK ? "31.99" :
+            line.merchandiseId === SHOPIFY_VARIANTS.COLORING_BOOK_2_BUNDLE ? "49.99" :
+            line.merchandiseId === SHOPIFY_VARIANTS.COLORING_BOOK_3_BUNDLE ? "59.99" :
             line.merchandiseId === SHOPIFY_VARIANTS.DIGITAL_DOWNLOAD ? "5.99" :
             line.merchandiseId === SHOPIFY_VARIANTS.UNIQUE_PHOTOS ? "5.99" :
             line.merchandiseId === SHOPIFY_VARIANTS.PERSONALIZE_COVER ? "1.99" : "0",

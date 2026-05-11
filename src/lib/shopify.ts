@@ -6,8 +6,14 @@ const SHOPIFY_STOREFRONT_URL = `https://${SHOPIFY_STORE_PERMANENT_DOMAIN}/api/${
 const SHOPIFY_STOREFRONT_TOKEN = '058e9ec2c0cbbfe183a10b575f6631ee';
 
 // Shopify product variant IDs (GraphQL format)
+// The Coloring Book product has three variants priced at $31.99 / $49.99 /
+// $59.99 so Shopify charges variant_price × quantity with no discount engine
+// involved. Cart code in CheckoutStep / Navbar maps basket items to the
+// matching bundle variant based on quantity.
 export const SHOPIFY_VARIANTS = {
-  COLORING_BOOK: 'gid://shopify/ProductVariant/55768994742645',
+  COLORING_BOOK: 'gid://shopify/ProductVariant/57146362364277',           // 1 Book — $31.99
+  COLORING_BOOK_2_BUNDLE: 'gid://shopify/ProductVariant/57146362397045',  // 2-Book Bundle — $49.99
+  COLORING_BOOK_3_BUNDLE: 'gid://shopify/ProductVariant/57146362429813',  // 3-Book Bundle — $59.99
   DIGITAL_DOWNLOAD: 'gid://shopify/ProductVariant/56284852781429',
   UNIQUE_PHOTOS: 'gid://shopify/ProductVariant/56357325111669',
   PERSONALIZE_COVER: 'gid://shopify/ProductVariant/56849946214773',
