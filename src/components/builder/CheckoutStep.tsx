@@ -10,7 +10,7 @@ import { createShopifyCheckout, SHOPIFY_VARIANTS, type CartLineInput } from "@/l
 import { trackAddToCart } from "@/lib/shopify-analytics";
 import { trackEvent } from "@/lib/analytics-tracker";
 import { getSessionOrders, uploadCover } from "@/lib/guest-api";
-import { renderFrontCoverPng } from "@/lib/cover-renderer";
+import { renderFrontCoverPng, renderBackCoverPng } from "@/lib/cover-renderer";
 import logoImg from "@/assets/piccoload-logo.png";
 
 interface BookDigitalDownload {
@@ -129,7 +129,7 @@ const MiniFlipbook = ({ bookPreview, bookCount }: { bookPreview: BookPreviewData
 };
 
 const CheckoutStep = ({ pageCount, extraPages, convertedUrls, onBack, onCheckoutComplete, bookDigitalDownloads, onToggleBookDigitalDownload, bookAddOnsList, bookPreviews = [], sessionId, orderIds = [] }: CheckoutStepProps) => {
-  const { item, setQuantity, pricingTiers, addOnPrice, uniquePhotos, uniquePhotosPrice } = useBasket();
+  const { item, items, setQuantity, pricingTiers, addOnPrice, uniquePhotos, uniquePhotosPrice } = useBasket();
   const personalizeCoverFromBasket = item?.personalizeCover ?? false;
   const [isCheckingOut, setIsCheckingOut] = useState(false);
   const [awaitingPayment, setAwaitingPayment] = useState(false);
@@ -184,8 +184,8 @@ const CheckoutStep = ({ pageCount, extraPages, convertedUrls, onBack, onCheckout
   }, [awaitingPayment, pollForPayment]);
 
   const bookCount = item?.quantity ?? 1;
-  const basePrice = item?.pricePerBook ?? 35;
-  const originalBasePrice = item?.originalPricePerBook ?? 42;
+  const basePrice = item?.pricePerBook ?? 31.99;
+  const originalBasePrice = item?.originalPricePerBook ?? 45;
   const extraPagesPrice = extraPages === 10 ? 6 : extraPages === 20 ? 10 : extraPages === 40 ? 18 : 0;
   const digitalCount = bookDigitalDownloads.filter(b => b.enabled).length;
   const digitalPrice = digitalCount * DIGITAL_DOWNLOAD_PRICE;
@@ -214,6 +214,10 @@ const CheckoutStep = ({ pageCount, extraPages, convertedUrls, onBack, onCheckout
         try {
           const coverPromises: Promise<unknown>[] = [];
 
+          // Render the back cover ONCE (it's identical for every book) and
+          // reuse the blob across all orderIds.
+          const backBlobPromise = renderBackCoverPng();
+
           // Front covers — one per book
           for (let i = 0; i < orderIds.length; i++) {
             const preview = bookPreviews[i] ?? bookPreviews[0];
@@ -227,8 +231,13 @@ const CheckoutStep = ({ pageCount, extraPages, convertedUrls, onBack, onCheckout
             coverPromises.push(frontBlob);
           }
 
-          // Back cover is a static asset in storage (covers/shared/back-cover.png)
-          // — no need to render or upload it here
+          // Back covers — one per order (uploaded per-order so the PDF
+          // generator can pick it up without falling back to a stale shared PNG)
+          for (let i = 0; i < orderIds.length; i++) {
+            coverPromises.push(
+              backBlobPromise.then((blob) => uploadCover(sessionId!, orderIds[i], "back", blob)),
+            );
+          }
 
           await Promise.allSettled(coverPromises);
           console.log("Covers uploaded successfully");
@@ -239,12 +248,43 @@ const CheckoutStep = ({ pageCount, extraPages, convertedUrls, onBack, onCheckout
 
       const lines: CartLineInput[] = [];
 
-      // 1. Main product first
-      lines.push({
-        merchandiseId: SHOPIFY_VARIANTS.COLORING_BOOK,
-        quantity: bookCount,
-        attributes: [{ key: "_position", value: "1" }],
-      });
+      // Digital print-out is an alternative to the physical book — when present
+      // it replaces the coloring book line and skips the physical-only add-ons.
+      const isDigitalPrint = items.some((i) => i.kind === "digital_print");
+      if (isDigitalPrint) {
+        lines.push({
+          merchandiseId: SHOPIFY_VARIANTS.DIGITAL_PRINT_OUT,
+          quantity: 1,
+          attributes: [{ key: "_position", value: "1" }],
+        });
+      } else {
+      // 1. Main product — group basket items by bundle size (1 / 2 / 3 books)
+      //    and send each as N units of the matching variant. Variant prices are
+      //    set on Shopify ($31.99 / $49.99 / $59.99) so checkout math is exact.
+      const oneBookCount = items.filter((i) => i.kind === "physical" && i.quantity === 1).length;
+      const twoBookCount = items.filter((i) => i.kind === "physical" && i.quantity === 2).length;
+      const threeBookCount = items.filter((i) => i.kind === "physical" && i.quantity >= 3).length;
+      if (oneBookCount > 0) {
+        lines.push({
+          merchandiseId: SHOPIFY_VARIANTS.COLORING_BOOK,
+          quantity: oneBookCount,
+          attributes: [{ key: "_position", value: "1" }],
+        });
+      }
+      if (twoBookCount > 0) {
+        lines.push({
+          merchandiseId: SHOPIFY_VARIANTS.COLORING_BOOK_2_BUNDLE,
+          quantity: twoBookCount,
+          attributes: [{ key: "_position", value: "1" }],
+        });
+      }
+      if (threeBookCount > 0) {
+        lines.push({
+          merchandiseId: SHOPIFY_VARIANTS.COLORING_BOOK_3_BUNDLE,
+          quantity: threeBookCount,
+          attributes: [{ key: "_position", value: "1" }],
+        });
+      }
 
       // 2. Unique photos (book-related upsell)
       if (uniquePhotos && bookCount > 1) {
@@ -286,6 +326,7 @@ const CheckoutStep = ({ pageCount, extraPages, convertedUrls, onBack, onCheckout
           ],
         });
       }
+      } // end physical-product branch
 
       // Track events for our admin dashboard + Shopify analytics
       trackEvent("add_to_cart", "/builder/checkout", { bookCount });
@@ -295,12 +336,18 @@ const CheckoutStep = ({ pageCount, extraPages, convertedUrls, onBack, onCheckout
           productGid: "gid://shopify/Product/15269689852277",
           variantGid: line.merchandiseId,
           title:
-            line.merchandiseId === SHOPIFY_VARIANTS.COLORING_BOOK ? "Personalised Coloring Book" :
+            line.merchandiseId === SHOPIFY_VARIANTS.COLORING_BOOK ? "Personalised Coloring Book — 1 Book" :
+            line.merchandiseId === SHOPIFY_VARIANTS.COLORING_BOOK_2_BUNDLE ? "Personalised Coloring Book — 2-Book Bundle" :
+            line.merchandiseId === SHOPIFY_VARIANTS.COLORING_BOOK_3_BUNDLE ? "Personalised Coloring Book — 3-Book Bundle" :
+            line.merchandiseId === SHOPIFY_VARIANTS.DIGITAL_PRINT_OUT ? "Digital Print Out" :
             line.merchandiseId === SHOPIFY_VARIANTS.DIGITAL_DOWNLOAD ? "Instant Digital Download" :
             line.merchandiseId === SHOPIFY_VARIANTS.UNIQUE_PHOTOS ? "Unique Photos" :
             line.merchandiseId === SHOPIFY_VARIANTS.PERSONALIZE_COVER ? "Personalized Cover" : "Item",
           price:
-            line.merchandiseId === SHOPIFY_VARIANTS.COLORING_BOOK ? "35.00" :
+            line.merchandiseId === SHOPIFY_VARIANTS.COLORING_BOOK ? "31.99" :
+            line.merchandiseId === SHOPIFY_VARIANTS.COLORING_BOOK_2_BUNDLE ? "49.99" :
+            line.merchandiseId === SHOPIFY_VARIANTS.COLORING_BOOK_3_BUNDLE ? "59.99" :
+            line.merchandiseId === SHOPIFY_VARIANTS.DIGITAL_PRINT_OUT ? "9.99" :
             line.merchandiseId === SHOPIFY_VARIANTS.DIGITAL_DOWNLOAD ? "5.99" :
             line.merchandiseId === SHOPIFY_VARIANTS.UNIQUE_PHOTOS ? "5.99" :
             line.merchandiseId === SHOPIFY_VARIANTS.PERSONALIZE_COVER ? "1.99" : "0",

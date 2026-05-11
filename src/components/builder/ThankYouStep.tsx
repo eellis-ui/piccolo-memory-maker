@@ -1,10 +1,11 @@
 import { useState, useEffect, useRef } from "react";
-import { CheckCircle, UserPlus, Mail, Lock, ArrowRight, PartyPopper, LogIn } from "lucide-react";
+import { CheckCircle, UserPlus, Mail, Lock, ArrowRight, PartyPopper, LogIn, ClipboardList } from "lucide-react";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent } from "@/components/ui/card";
 import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
 
 interface ThankYouStepProps {
@@ -21,6 +22,8 @@ const ThankYouStep = ({ sessionId, orderIds = [], shopifyOrderNumber: initialSho
   const [accountCreated, setAccountCreated] = useState(false);
   const [shopifyOrderNumber, setShopifyOrderNumber] = useState<string | null>(initialShopifyOrderNumber || null);
   const pollRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const { user, loading: authLoading } = useAuth();
+  const isLoggedIn = !!user;
 
   // Poll for the Shopify order number if not yet available
   useEffect(() => {
@@ -140,8 +143,35 @@ const ThankYouStep = ({ sessionId, orderIds = [], shopifyOrderNumber: initialSho
         <span>You'll receive a confirmation email shortly with your order details.</span>
       </div>
 
-      {/* Create account card */}
-      {!accountCreated ? (
+      {/* Logged-in customers don't need a create-account form — show a link
+          to their orders / account dashboard instead. */}
+      {!authLoading && isLoggedIn ? (
+        <Card className="rounded-3xl text-left">
+          <CardContent className="p-6 space-y-4">
+            <div className="flex items-start gap-3">
+              <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center shrink-0">
+                <ClipboardList className="w-5 h-5 text-primary" />
+              </div>
+              <div className="flex-1">
+                <h2 className="font-display text-lg font-semibold text-foreground">
+                  You're signed in as {user?.email}
+                </h2>
+                <p className="text-sm text-muted-foreground mt-1">
+                  {hasDigitalDownload
+                    ? "Your digital downloads will be available anytime from your My Orders page."
+                    : "You can track this order and download anything included with it from your My Orders page."}
+                </p>
+              </div>
+            </div>
+            <Button asChild className="w-full rounded-xl">
+              <Link to="/my-orders">
+                Go to My Orders
+                <ArrowRight className="w-4 h-4 ml-2" />
+              </Link>
+            </Button>
+          </CardContent>
+        </Card>
+      ) : !accountCreated ? (
         <Card className="rounded-3xl text-left border-2 border-primary/30">
           <CardContent className="p-6 space-y-5">
             <div className="flex items-start gap-3">

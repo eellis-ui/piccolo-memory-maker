@@ -193,6 +193,7 @@ export type Database = {
         Row: {
           builder_session_id: string | null
           builder_step: string
+          bundle_id: string | null
           cover_image_id: string | null
           cover_image_id_2: string | null
           cover_position_x: number
@@ -223,6 +224,7 @@ export type Database = {
         Insert: {
           builder_session_id?: string | null
           builder_step?: string
+          bundle_id?: string | null
           cover_image_id?: string | null
           cover_image_id_2?: string | null
           cover_position_x?: number
@@ -253,6 +255,7 @@ export type Database = {
         Update: {
           builder_session_id?: string | null
           builder_step?: string
+          bundle_id?: string | null
           cover_image_id?: string | null
           cover_image_id_2?: string | null
           cover_position_x?: number

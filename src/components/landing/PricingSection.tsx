@@ -2,10 +2,10 @@ import { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { ShoppingCart, Star } from "lucide-react";
+import { ShoppingCart, Star, Download } from "lucide-react";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
-import { useBasket, UNIQUE_PHOTOS_PRICE, PERSONALIZE_COVER_PRICE } from "@/contexts/BasketContext";
+import { useBasket, UNIQUE_PHOTOS_PRICE, PERSONALIZE_COVER_PRICE, DIGITAL_PRINT_OUT_PRICE, DIGITAL_PRINT_OUT_ORIGINAL } from "@/contexts/BasketContext";
 import { toast } from "sonner";
 import ProductImageGallery, { type ProductImage } from "./ProductImageGallery";
 import CountdownTimer from "./CountdownTimer";
@@ -23,26 +23,26 @@ import FinalCTABlock from "./FinalCTABlock";
 const physicalPricing = [
   {
     quantity: 1,
-    price: 35,
+    price: 31.99,
     originalPrice: 45,
-    savingsPercent: "22%",
+    savingsPercent: "29%",
     label: null as string | null,
     savingsBadge: null as string | null,
   },
   {
     quantity: 2,
-    price: 59.5,
+    price: 49.99,
     originalPrice: 90,
-    savingsPercent: "34%",
-    savingsBadge: "SAVE $30.50",
+    savingsPercent: "44%",
+    savingsBadge: "SAVE $40",
     label: "MOST POPULAR",
   },
   {
     quantity: 3,
-    price: 69.3,
+    price: 59.99,
     originalPrice: 135,
-    savingsPercent: "49%",
-    savingsBadge: "SAVE $65.70",
+    savingsPercent: "56%",
+    savingsBadge: "SAVE $75",
     label: "BEST VALUE",
   },
 ];
@@ -82,7 +82,7 @@ const PricingSection = () => {
   const [selectedQuantity, setSelectedQuantity] = useState(2);
   const [pendingUniquePhotos, setPendingUniquePhotos] = useState(false);
   const [pendingPersonalizeCover, setPendingPersonalizeCover] = useState(false);
-  const { addToCart, setIsCartOpen, clear } = useBasket();
+  const { addToCart, addDigitalPrintToCart, setIsCartOpen, clear } = useBasket();
   const navigate = useNavigate();
   const [productImages, setProductImages] = useState<ProductImage[]>([
     { url: "/images/product-hero.png", altText: "Personalized Coloring Book" },
@@ -292,6 +292,42 @@ const PricingSection = () => {
                 <ShoppingCart className="w-5 h-5 mr-2" />
                 Add to Cart — ${totalPrice.toFixed(2)}
               </Button>
+
+              {/* Alternative purchase: Digital Print Out Only — replaces the
+                  physical book entirely (not an upsell). Lives below the main
+                  CTA with a clear "OR" divider so customers see it as a
+                  separate path. */}
+              <div className="relative mt-6 mb-4">
+                <div className="absolute inset-0 flex items-center">
+                  <div className="w-full border-t border-border" />
+                </div>
+                <div className="relative flex justify-center">
+                  <span className="bg-background px-3 text-xs font-bold uppercase tracking-widest text-muted-foreground">
+                    Or — just want the digital file?
+                  </span>
+                </div>
+              </div>
+              <button
+                onClick={() => {
+                  addDigitalPrintToCart();
+                  setIsCartOpen(true);
+                }}
+                className="w-full rounded-lg p-4 border-2 border-dashed border-foreground/20 hover:border-foreground/40 hover:bg-muted/40 transition-all text-left flex items-center gap-4"
+              >
+                <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center shrink-0">
+                  <Download className="w-5 h-5 text-primary" />
+                </div>
+                <div className="flex-1 min-w-0">
+                  <p className="font-extrabold text-foreground text-sm">Digital Print Out Only</p>
+                  <p className="text-xs text-muted-foreground mt-0.5">
+                    No physical book — instant digital download of your personalised line-art pages.
+                  </p>
+                </div>
+                <div className="text-right shrink-0">
+                  <p className="font-bold text-base text-foreground">${DIGITAL_PRINT_OUT_PRICE.toFixed(2)}</p>
+                  <p className="text-xs text-muted-foreground line-through">${DIGITAL_PRINT_OUT_ORIGINAL.toFixed(2)}</p>
+                </div>
+              </button>
 
               {/* Trust badges */}
               <div className="mt-4 mb-4">

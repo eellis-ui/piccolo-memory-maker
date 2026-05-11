@@ -33,7 +33,7 @@ function getEmailConfig(
         heading: "Your Order Has Been Confirmed!",
         body: `Thank you for your order <strong>${orderNumber}</strong>! We've received your payment and our team is now getting started on your personalised coloring book. We'll keep you updated at every step.`,
         ctaText: "View Your Order",
-        ctaUrl: "https://piccolo-memory-maker.lovable.app/my-orders",
+        ctaUrl: "https://piccoload.com/my-orders",
       };
     case "converted":
       return {
@@ -41,7 +41,7 @@ function getEmailConfig(
         heading: "Your Coloring Book Is Being Made!",
         body: `Great news! Your photos for order <strong>${orderNumber}</strong> have been converted into beautiful line art and your coloring book is now being put together. We'll let you know once it's been sent for printing.`,
         ctaText: "View Your Order",
-        ctaUrl: "https://piccolo-memory-maker.lovable.app/my-orders",
+        ctaUrl: "https://piccoload.com/my-orders",
       };
     case "sent_to_print":
       return {
@@ -49,7 +49,7 @@ function getEmailConfig(
         heading: "Your Book Is Being Printed!",
         body: `Your coloring book for order <strong>${orderNumber}</strong> has been sent to our printers! Once printed and packaged, we'll ship it out and send you a tracking number.`,
         ctaText: "View Your Order",
-        ctaUrl: "https://piccolo-memory-maker.lovable.app/my-orders",
+        ctaUrl: "https://piccoload.com/my-orders",
       };
     case "shipped":
       return {
@@ -63,7 +63,7 @@ function getEmailConfig(
         ctaText: trackingNumber ? "Track Your Order" : "View Your Order",
         ctaUrl: trackingNumber
           ? `https://www.royalmail.com/track-your-item#/tracking-results/${trackingNumber}`
-          : "https://piccolo-memory-maker.lovable.app/my-orders",
+          : "https://piccoload.com/my-orders",
       };
     default:
       return null;
@@ -146,30 +146,29 @@ Deno.serve(async (req) => {
       });
     }
 
-    const apiKey = Deno.env.get("LOVABLE_API_KEY");
-    if (!apiKey) {
-      console.error("LOVABLE_API_KEY not set");
+    const resendApiKey = Deno.env.get("RESEND_API_KEY");
+    if (!resendApiKey) {
+      console.error("RESEND_API_KEY not set");
       return new Response(JSON.stringify({ error: "Email service not configured" }), {
         status: 500,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
 
-    const projectId = Deno.env.get("SUPABASE_URL")?.match(/\/\/([^.]+)/)?.[1];
+    const fromEmail = Deno.env.get("FROM_EMAIL") || "Piccoload <hello@piccoload.com>";
     const html = buildEmailHtml(config);
 
-    const emailRes = await fetch("https://api.lovable.dev/v1/email/send", {
+    const emailRes = await fetch("https://api.resend.com/emails", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        Authorization: `Bearer ${apiKey}`,
+        Authorization: `Bearer ${resendApiKey}`,
       },
       body: JSON.stringify({
-        project_id: projectId,
-        to: order.customer_email,
+        from: fromEmail,
+        to: [order.customer_email],
         subject: config.subject,
         html,
-        purpose: "transactional",
       }),
     });
 

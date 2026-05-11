@@ -89,11 +89,29 @@ Deno.serve(async (req) => {
       .eq("id", orderId)
       .single();
 
-    const { data: photos } = await admin
+    const { data: rawPhotos } = await admin
       .from("order_photos")
       .select("*")
       .eq("order_id", orderId)
       .order("page_position");
+
+    // Collapse duplicate rows per page (legacy data can have stale re-upload rows).
+    const score = (r: { is_approved?: boolean | null; conversion_status?: string | null }) =>
+      (r.is_approved && r.conversion_status === "completed" ? 3 : 0) +
+      (r.conversion_status === "completed" ? 1 : 0);
+    const byPage = new Map<number, any>();
+    for (const r of rawPhotos ?? []) {
+      const existing = byPage.get(r.page_position);
+      if (!existing) { byPage.set(r.page_position, r); continue; }
+      const sNew = score(r); const sOld = score(existing);
+      if (sNew > sOld) { byPage.set(r.page_position, r); continue; }
+      if (sNew === sOld) {
+        const tNew = r.created_at ? Date.parse(r.created_at) : 0;
+        const tOld = existing.created_at ? Date.parse(existing.created_at) : 0;
+        if (tNew > tOld) byPage.set(r.page_position, r);
+      }
+    }
+    const photos = Array.from(byPage.values()).sort((a, b) => a.page_position - b.page_position);
 
     if (!photos || photos.length === 0) {
       return new Response(JSON.stringify({ error: "No photos found for this order" }), {

@@ -123,7 +123,7 @@ const OrderReview = () => {
                   <CardContent className="p-5 space-y-4">
                     <div className="flex gap-4">
                       <img
-                        src="/lovable-uploads/d741aeb9-21af-45e1-9863-e350da643d42.png"
+                        src="/uploads/d741aeb9-21af-45e1-9863-e350da643d42.png"
                         alt="Personalized Coloring Book"
                         className="w-20 h-20 rounded-xl object-cover flex-shrink-0"
                       />

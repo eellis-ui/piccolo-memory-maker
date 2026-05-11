@@ -30,6 +30,29 @@ import type { Json } from "@/integrations/supabase/types";
 const ORDER_STATUSES = ["draft", "paid", "converted", "sent_to_print", "shipped"] as const;
 type FilterTab = "all" | "unfulfilled" | "shipped";
 
+// Older orders may have multiple rows per (order_id, page_position) due to
+// re-uploads that didn't clear stale rows. Collapse to one live row per page,
+// preferring approved+completed > completed > most recent.
+function dedupePhotosByPage<T extends { page_position: number; is_approved?: boolean | null; conversion_status?: string | null; created_at?: string | null }>(rows: T[]): T[] {
+  const score = (r: T) =>
+    (r.is_approved && r.conversion_status === "completed" ? 3 : 0) +
+    (r.conversion_status === "completed" ? 1 : 0);
+  const byPage = new Map<number, T>();
+  for (const r of rows) {
+    const existing = byPage.get(r.page_position);
+    if (!existing) { byPage.set(r.page_position, r); continue; }
+    const sNew = score(r);
+    const sOld = score(existing);
+    if (sNew > sOld) { byPage.set(r.page_position, r); continue; }
+    if (sNew === sOld) {
+      const tNew = r.created_at ? Date.parse(r.created_at) : 0;
+      const tOld = existing.created_at ? Date.parse(existing.created_at) : 0;
+      if (tNew > tOld) byPage.set(r.page_position, r);
+    }
+  }
+  return Array.from(byPage.values()).sort((a, b) => a.page_position - b.page_position);
+}
+
 interface OrderRow {
   id: string;
   status: string;
@@ -55,6 +78,7 @@ interface OrderRow {
   cover_image_id: string | null;
   cover_image_id_2: string | null;
   builder_session_id: string | null;
+  bundle_id: string | null;
 }
 
 interface PhotoRow {
@@ -182,26 +206,69 @@ const Admin = () => {
   const [instagramUploading, setInstagramUploading] = useState(false);
 
   /* ─── Computed: book labels for multi-book sessions ─── */
+  // Group orders by session, then by bundle_id within session, so the badge
+  // can show the bundle structure ("Bundle 1 · Book 1 of 2") whenever a
+  // customer paid for multiple bundles in the same checkout. Single-bundle
+  // sessions keep the original short label ("Book 1 of 2").
   const bookLabels = useMemo(() => {
-    const sessionMap = new Map<string, OrderRow[]>();
+    type Bundle = { bundleId: string; firstCreatedAt: string; books: OrderRow[] };
+    const sessions = new Map<string, Map<string, Bundle>>();
+
     for (const o of orders) {
       if (!o.builder_session_id) continue;
-      const arr = sessionMap.get(o.builder_session_id) || [];
-      arr.push(o);
-      sessionMap.set(o.builder_session_id, arr);
+      const sessionBundles = sessions.get(o.builder_session_id) || new Map<string, Bundle>();
+      const bundleKey = o.bundle_id || `legacy-${o.builder_session_id}`;
+      let bundle = sessionBundles.get(bundleKey);
+      if (!bundle) {
+        bundle = { bundleId: bundleKey, firstCreatedAt: o.created_at, books: [] };
+        sessionBundles.set(bundleKey, bundle);
+      }
+      bundle.books.push(o);
+      if (o.created_at < bundle.firstCreatedAt) bundle.firstCreatedAt = o.created_at;
+      sessions.set(o.builder_session_id, sessionBundles);
     }
-    const labels = new Map<string, { label: string; total: number; index: number; siblings: OrderRow[] }>();
-    for (const [, siblings] of sessionMap) {
-      if (siblings.length <= 1) continue;
-      const sorted = [...siblings].sort((a, b) => a.created_at.localeCompare(b.created_at));
-      sorted.forEach((o, i) => {
-        labels.set(o.id, { label: `Book ${i + 1}`, total: sorted.length, index: i + 1, siblings: sorted });
+
+    const labels = new Map<string, {
+      label: string;
+      total: number;       // books in THIS bundle (drives "of N" suffix on the badge)
+      index: number;       // book number within its bundle (1..total)
+      globalIndex: number; // book number within the whole session — unique per row
+      sessionTotal: number;
+      siblings: OrderRow[];
+    }>();
+
+    for (const [, sessionBundles] of sessions) {
+      const sessionTotal = Array.from(sessionBundles.values()).reduce((s, b) => s + b.books.length, 0);
+      if (sessionTotal <= 1) continue;
+      const isMultiBundle = sessionBundles.size > 1;
+      // Sort bundles by their first book's created_at so "Bundle 1" is whichever
+      // bundle the customer started uploading photos to first.
+      const sortedBundles = Array.from(sessionBundles.values()).sort((a, b) =>
+        a.firstCreatedAt.localeCompare(b.firstCreatedAt)
+      );
+      let globalCounter = 0;
+      sortedBundles.forEach((bundle, bundleIdx) => {
+        const sortedBooks = [...bundle.books].sort((a, b) => a.created_at.localeCompare(b.created_at));
+        const bundleNum = bundleIdx + 1;
+        sortedBooks.forEach((book, bookIdx) => {
+          const bookNum = bookIdx + 1;
+          globalCounter++;
+          labels.set(book.id, {
+            label: isMultiBundle ? `Bundle ${bundleNum} · Book ${bookNum}` : `Book ${bookNum}`,
+            total: sortedBooks.length,
+            index: bookNum,
+            globalIndex: globalCounter,
+            sessionTotal,
+            siblings: sortedBooks,
+          });
+        });
       });
     }
+
     return labels;
   }, [orders]);
 
-  /* ─── Computed: filtered + searched orders ─── */
+  /* ─── Computed: filtered + searched orders, grouped by bundle ─── */
   const filteredOrders = useMemo(() => {
     let result = orders;
 
@@ -224,8 +291,33 @@ const Admin = () => {
       );
     }
 
-    return result;
-  }, [orders, filterTab, searchQuery]);
+    // Bundle-aware sort: keep bundle siblings adjacent (Book 1 → Book N) and
+    // order each group by its most-recent member so latest activity floats up.
+    const sessionGroups = new Map<string, OrderRow[]>();
+    const standalones: OrderRow[] = [];
+    for (const o of result) {
+      if (o.builder_session_id && bookLabels.has(o.id)) {
+        const arr = sessionGroups.get(o.builder_session_id) || [];
+        arr.push(o);
+        sessionGroups.set(o.builder_session_id, arr);
+      } else {
+        standalones.push(o);
+      }
+    }
+    for (const arr of sessionGroups.values()) {
+      arr.sort((a, b) => a.created_at.localeCompare(b.created_at));
+    }
+    const grouped: { sortKey: string; rows: OrderRow[] }[] = [];
+    for (const arr of sessionGroups.values()) {
+      const latest = arr.reduce((m, o) => (o.created_at > m ? o.created_at : m), arr[0].created_at);
+      grouped.push({ sortKey: latest, rows: arr });
+    }
+    for (const o of standalones) {
+      grouped.push({ sortKey: o.created_at, rows: [o] });
+    }
+    grouped.sort((a, b) => b.sortKey.localeCompare(a.sortKey));
+    return grouped.flatMap((g) => g.rows);
+  }, [orders, filterTab, searchQuery, bookLabels]);
 
   /* ─── Computed: tab counts ─── */
   const tabCounts = useMemo(() => ({
@@ -253,11 +345,19 @@ const Admin = () => {
   const fetchPhotoCounts = async () => {
     const { data, error } = await supabase
       .from("order_photos")
-      .select("order_id");
+      .select("order_id, page_position, is_approved, conversion_status, created_at");
     if (!error && data) {
-      const counts: Record<string, number> = {};
+      // Group by order, then dedupe each order's rows so the count reflects unique
+      // pages rather than stale upload duplicates.
+      const byOrder = new Map<string, typeof data>();
       for (const row of data) {
-        counts[row.order_id] = (counts[row.order_id] || 0) + 1;
+        const list = byOrder.get(row.order_id) ?? [];
+        list.push(row);
+        byOrder.set(row.order_id, list);
+      }
+      const counts: Record<string, number> = {};
+      for (const [orderId, rows] of byOrder) {
+        counts[orderId] = dedupePhotosByPage(rows).length;
       }
       setPhotoCounts(counts);
     }
@@ -278,7 +378,7 @@ const Admin = () => {
       .select("*")
       .eq("order_id", orderId)
       .order("page_position");
-    setPhotos((data as PhotoRow[]) || []);
+    setPhotos(dedupePhotosByPage((data as PhotoRow[]) || []));
     setPhotosLoading(false);
   };
 
@@ -290,7 +390,7 @@ const Admin = () => {
       .select("*")
       .eq("order_id", order.id)
       .order("page_position");
-    setDetailPhotos((data as PhotoRow[]) || []);
+    setDetailPhotos(dedupePhotosByPage((data as PhotoRow[]) || []));
     setDetailPhotosLoading(false);
   };
 
@@ -298,7 +398,10 @@ const Admin = () => {
     setPdfGenerating(order.id);
     try {
       const bl = bookLabels.get(order.id);
-      const bookSuffix = bl ? `-book${bl.index}` : "";
+      // Use globalIndex so multi-bundle sessions (rare) don't collide on
+      // -book1 / -book1 / -book1. For single-bundle sessions globalIndex
+      // equals index, so existing filenames are unchanged.
+      const bookSuffix = bl ? `-book${bl.globalIndex}` : "";
       const orderRef = order.shopify_order_number || order.order_name || order.id.slice(0, 8);
       const filename = `production-${orderRef}${bookSuffix}.zip`;
 
@@ -312,13 +415,13 @@ const Admin = () => {
       });
 
       if (error) {
-        toast.error(error.message || "Failed to generate PDF");
+        toast.error(error.message || "Failed to generate ZIP");
         return;
       }
 
       const pdfPath = data?.pdfPath;
       if (!pdfPath) {
-        toast.error("PDF generation returned no path");
+        toast.error("ZIP generation returned no path");
         return;
       }
 
@@ -329,10 +432,10 @@ const Admin = () => {
         setDetailOrder((prev) => prev ? { ...prev, production_pdf_path: pdfPath } : prev);
       }
 
-      toast.success(`Production PDF generated${bl ? ` (Book ${bl.index})` : ""}`);
+      toast.success(`Production ZIP generated${bl ? ` (${bl.label})` : ""}`);
       await downloadFromStorage(pdfPath, filename);
     } catch {
-      toast.error("Failed to generate PDF");
+      toast.error("Failed to generate ZIP");
     } finally {
       setPdfGenerating(null);
     }
@@ -712,11 +815,17 @@ const Admin = () => {
                     const isUnfulfilled = order.status !== "shipped";
                     const isPaid = order.payment_status === "paid";
                     const photoCount = photoCounts[order.id] || 0;
+                    const bundle = bookLabels.get(order.id);
+                    // Visual grouping: bundle siblings get a coloured left
+                    // border, with the first book also getting a top divider.
+                    const bundleClass = bundle
+                      ? `border-l-4 border-l-primary/40${bundle.index === 1 ? " border-t-2 border-t-primary/30" : ""}`
+                      : "";
 
                     return (
                       <TableRow
                         key={order.id}
-                        className="group hover:bg-muted/30 transition-colors"
+                        className={`group hover:bg-muted/30 transition-colors ${bundleClass}`}
                       >
                         {/* Order */}
                         <TableCell>
