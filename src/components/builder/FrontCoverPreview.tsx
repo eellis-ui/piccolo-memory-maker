@@ -51,7 +51,9 @@ const FrontCoverPreview = ({ gridCells, subtitle, bottomTitle }: FrontCoverPrevi
             fontFamily: "'Yuji Syuku', serif",
             fontSize: "3.9cqi",
             letterSpacing: 0,
+            textAlign: "right",
             margin: 0,
+            alignSelf: "stretch",
           }}
         >
           {subtitle}
@@ -61,9 +63,10 @@ const FrontCoverPreview = ({ gridCells, subtitle, bottomTitle }: FrontCoverPrevi
           style={{
             fontFamily: "Bristol, serif",
             fontSize: "4.7cqi",
-            marginTop: "2.5%",
             color: "hsl(var(--foreground))",
-            margin: 0,
+            textAlign: "right",
+            margin: "2.5% 0 0 0",
+            alignSelf: "stretch",
           }}
         >
           {bottomTitle}

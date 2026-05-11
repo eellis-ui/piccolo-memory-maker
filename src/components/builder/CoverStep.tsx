@@ -61,10 +61,10 @@ const CoverStep = ({ availableImages, bookAddOns, onBookAddOnsChange, onCoverCom
   const photo1 = selectedIds[0] ? availableImages.find((img) => img.id === selectedIds[0]) ?? null : null;
   const photo2 = selectedIds[1] ? availableImages.find((img) => img.id === selectedIds[1]) ?? null : null;
 
-  // Grid cells:
+  // Grid cells (zigzag pairing — drawings in the SW/NE diagonal):
   // [0] top-left:     photo1 original
-  // [1] top-right:    photo1 converted
-  // [2] bottom-left:  photo2 converted
+  // [1] top-right:    photo1 drawing
+  // [2] bottom-left:  photo2 drawing
   // [3] bottom-right: photo2 original
   const gridCells = [
     photo1 ? photo1.originalUrl : null,
