@@ -1,9 +1,9 @@
 import { ArrowRight } from "lucide-react";
 
 const comparisons = [
-  { label: "Family Portrait", before: "/images/before-family.jpg", after: "/images/after-family.jpg" },
-  { label: "Pet Photo", before: "/images/before-pet.png", after: "/images/after-pet.png" },
-  { label: "Vacation Memory", before: "/images/before-vacation.jpg", after: "/images/after-vacation.png" },
+  { label: "Family Portrait", before: "/images/before-family.webp", after: "/images/after-family.webp" },
+  { label: "Pet Photo", before: "/images/before-pet.webp", after: "/images/after-pet.webp" },
+  { label: "Vacation Memory", before: "/images/before-vacation.webp", after: "/images/after-vacation.webp" },
 ];
 
 const BeforeAfterStrip = () => {

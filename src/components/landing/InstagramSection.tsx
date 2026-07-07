@@ -6,9 +6,9 @@ const INSTAGRAM_URL = "https://www.instagram.com/officialpiccoload/";
 
 /** Fallback images used when no admin-uploaded photos exist yet */
 const FALLBACK_POSTS = [
-  { src: "/images/instagram/instagram-1.jpg", alt: "Piccoload coloring book" },
+  { src: "/images/instagram/instagram-1.webp", alt: "Piccoload coloring book" },
   { src: "/images/instagram/instagram-2.jpg", alt: "Piccoload coloring book" },
-  { src: "/images/instagram/instagram-3.jpg", alt: "Piccoload coloring book" },
+  { src: "/images/instagram/instagram-3.webp", alt: "Piccoload coloring book" },
   { src: "/images/instagram/instagram-4.jpg", alt: "Piccoload coloring book" },
   { src: "/images/instagram/instagram-5.jpg", alt: "Piccoload coloring book" },
   { src: "/images/instagram/instagram-6.jpg", alt: "Piccoload coloring book" },

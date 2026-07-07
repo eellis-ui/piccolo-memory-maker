@@ -6,7 +6,7 @@ const CatBanner = () => {
       <ReviewsBanner />
       <div className="relative w-full h-[40vh] md:h-[55vh] overflow-hidden">
         <img
-          src="/images/banner-cat.png"
+          src="/images/banner-cat.webp"
           alt="Woman photographing a cat, with the photo converted to a coloring page line art"
           className="w-full h-full object-cover object-bottom md:object-center"
           loading="lazy"

@@ -190,15 +190,22 @@ export function useLiveDashboard(): LiveDashboardData {
     // Re-fetch every 30 seconds for near-real-time funnel updates
     const interval = setInterval(fetchTodayStats, 30_000);
 
-    // Also listen for real-time inserts on analytics_events
+    // Also listen for real-time inserts on analytics_events. Every pageview
+    // site-wide inserts a row, so coalesce bursts into at most one refetch
+    // every few seconds instead of a full day-rescan per insert.
+    let refetchQueued = false;
     const channel = supabase
       .channel("analytics-live")
       .on(
         "postgres_changes",
         { event: "INSERT", schema: "public", table: "analytics_events" },
         () => {
-          // Refresh stats when a new event comes in
-          fetchTodayStats();
+          if (refetchQueued) return;
+          refetchQueued = true;
+          setTimeout(() => {
+            refetchQueued = false;
+            fetchTodayStats();
+          }, 5_000);
         }
       )
       .subscribe();

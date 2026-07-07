@@ -6,7 +6,7 @@ const LifestyleBanner = () => {
     <section className="relative w-full">
       <div className="relative w-full min-h-[50vh] md:min-h-[60vh] overflow-hidden">
         <img
-          src="/images/spring-sale-bg.jpg"
+          src="/images/spring-sale-bg.webp"
           alt="Person cozy with a coloring book and tea"
           className="absolute inset-0 w-full h-full object-cover"
           loading="lazy"
