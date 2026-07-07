@@ -23,6 +23,48 @@ async function downloadFile(
   return data.arrayBuffer();
 }
 
+// A4 at 150 DPI — must match convert-to-lineart's output dimensions
+const A4_PW = 1240;
+const A4_PH = 1754;
+
+/** Read PNG width/height straight from the IHDR header (no decode). */
+function pngDims(buf: ArrayBuffer): { w: number; h: number } | null {
+  const b = new Uint8Array(buf);
+  if (b.length < 24 || b[0] !== 0x89 || b[1] !== 0x50) return null;
+  const dv = new DataView(buf);
+  return { w: dv.getUint32(16), h: dv.getUint32(20) };
+}
+
+/**
+ * Print-consistency guard: every page in the production ZIP must be a PNG
+ * at exactly A4 proportions. Pages straight from the converter already are
+ * and pass through untouched (no quality loss). Anything else — a failed
+ * conversion falling back to the original JPEG photo, or a legacy page from
+ * an older converter — is fitted onto a white A4 canvas and re-encoded.
+ */
+async function normalizeToA4Png(raw: ArrayBuffer, label: string): Promise<ArrayBuffer> {
+  const dims = pngDims(raw);
+  if (dims && ((dims.w === A4_PW && dims.h === A4_PH) || (dims.w === A4_PH && dims.h === A4_PW))) {
+    return raw;
+  }
+  console.warn(`Normalizing non-A4 page to A4 PNG: ${label}`);
+  const bmp = await createImageBitmap(new Blob([raw]));
+  const landscape = bmp.width > bmp.height;
+  const W = landscape ? A4_PH : A4_PW;
+  const H = landscape ? A4_PW : A4_PH;
+  const canvas = new OffscreenCanvas(W, H);
+  const ctx = canvas.getContext("2d")!;
+  ctx.fillStyle = "#ffffff";
+  ctx.fillRect(0, 0, W, H);
+  const scale = Math.min(W / bmp.width, H / bmp.height);
+  const w = Math.round(bmp.width * scale);
+  const h = Math.round(bmp.height * scale);
+  ctx.drawImage(bmp, Math.round((W - w) / 2), Math.round((H - h) / 2), w, h);
+  bmp.close();
+  const blob = await canvas.convertToBlob({ type: "image/png" });
+  return blob.arrayBuffer();
+}
+
 async function sendDownloadEmail(customerEmail: string, downloadUrl: string, orderRef: string) {
   const resendApiKey = Deno.env.get("RESEND_API_KEY");
   if (!resendApiKey) {
@@ -171,7 +213,11 @@ Deno.serve(async (req) => {
     });
 
     const downloadResults = await Promise.allSettled(
-      validPhotos.map((photo) => downloadFile(admin, photo.converted_path || photo.original_path))
+      validPhotos.map(async (photo) => {
+        const path = photo.converted_path || photo.original_path;
+        const raw = await downloadFile(admin, path);
+        return raw ? normalizeToA4Png(raw, path) : null;
+      })
     );
 
     let pageNum = 1;
