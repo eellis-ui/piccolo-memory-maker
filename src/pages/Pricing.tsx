@@ -1,6 +1,7 @@
 import { useEffect } from "react";
 import Navbar from "@/components/layout/Navbar";
 import Footer from "@/components/layout/Footer";
+import ReviewsBanner from "@/components/landing/ReviewsBanner";
 import PricingSection from "@/components/landing/PricingSection";
 import { trackProductView } from "@/lib/shopify-analytics";
 import { trackEvent } from "@/lib/analytics-tracker";
@@ -23,6 +24,7 @@ const Pricing = () => {
 
   return (
     <div className="min-h-screen bg-background">
+      <ReviewsBanner />
       <Navbar />
       <main className="bg-white">
         <PricingSection />
