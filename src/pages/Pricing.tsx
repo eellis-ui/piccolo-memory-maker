@@ -4,6 +4,7 @@ import Footer from "@/components/layout/Footer";
 import PricingSection from "@/components/landing/PricingSection";
 import { trackProductView } from "@/lib/shopify-analytics";
 import { trackEvent } from "@/lib/analytics-tracker";
+import { metaViewContent } from "@/lib/meta-pixel";
 import { SHOPIFY_VARIANTS } from "@/lib/shopify";
 
 const Pricing = () => {
@@ -17,6 +18,7 @@ const Pricing = () => {
       variantTitle: "20 Pages",
     });
     trackEvent("product_view", "/pricing");
+    metaViewContent();
   }, []);
 
   return (

@@ -20,6 +20,7 @@ import {
 } from "@/lib/guest-api";
 import { trackProductView } from "@/lib/shopify-analytics";
 import { trackEvent } from "@/lib/analytics-tracker";
+import { metaViewContent } from "@/lib/meta-pixel";
 import { SHOPIFY_VARIANTS } from "@/lib/shopify";
 
 type BuilderStep = "upload" | "approve" | "cover" | "checkout";
@@ -93,6 +94,7 @@ const Builder = () => {
       variantTitle: "20 Pages",
     });
     trackEvent("product_view", "/builder");
+    metaViewContent("Book Builder");
   }, []);
 
   // Save step to DB whenever it changes

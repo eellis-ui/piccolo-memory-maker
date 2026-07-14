@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { Check, ShoppingCart, Lock, Minus, Plus, Download, Loader2, Clock, ChevronLeft, ChevronRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -9,6 +9,7 @@ import { useBasket, DIGITAL_DOWNLOAD_PRICE } from "@/contexts/BasketContext";
 import { createShopifyCheckout, SHOPIFY_VARIANTS, type CartLineInput } from "@/lib/shopify";
 import { trackAddToCart } from "@/lib/shopify-analytics";
 import { trackEvent } from "@/lib/analytics-tracker";
+import { metaAddToCart, metaInitiateCheckout, metaPurchase } from "@/lib/meta-pixel";
 import { getSessionOrders, uploadCover } from "@/lib/guest-api";
 import { renderFrontCoverPng } from "@/lib/cover-renderer";
 import logoImg from "@/assets/piccoload-logo.png";
@@ -134,6 +135,10 @@ const CheckoutStep = ({ pageCount, extraPages, convertedUrls, onBack, onCheckout
   const [isCheckingOut, setIsCheckingOut] = useState(false);
   const [awaitingPayment, setAwaitingPayment] = useState(false);
 
+  // Latest order totals for the payment poller — the memoized callback below
+  // would otherwise capture stale values from the render it was created in
+  const purchaseTotalsRef = useRef({ value: 0, bookCount: 1 });
+
   // Poll for payment confirmation from webhook
   const pollForPayment = useCallback(async () => {
     if (!sessionId) return false;
@@ -147,6 +152,7 @@ const CheckoutStep = ({ pageCount, extraPages, convertedUrls, onBack, onCheckout
             shopifyOrderNumber: shopifyNum,
             bookCount: orders.length,
           });
+          metaPurchase(purchaseTotalsRef.current.value, purchaseTotalsRef.current.bookCount, shopifyNum);
           onCheckoutComplete?.(shopifyNum);
           return true;
         }
@@ -198,6 +204,7 @@ const CheckoutStep = ({ pageCount, extraPages, convertedUrls, onBack, onCheckout
   const personalizeCoverBooksCount = personalizeCoverFromBasket ? (uniquePhotos ? bookCount : 1) : 0;
   const basketPersonalizeCoverCost = personalizeCoverBooksCount * 1.99;
   const totalPrice = (basePrice + extraPagesPrice) * bookCount + (uniquePhotos ? uniquePhotosPrice : 0) + digitalPrice + perBookAddOnsTotal + basketPersonalizeCoverCost;
+  purchaseTotalsRef.current = { value: totalPrice, bookCount };
   const originalTotalPrice = (originalBasePrice + extraPagesPrice) * bookCount + (uniquePhotos ? uniquePhotosPrice : 0) + digitalPrice + perBookAddOnsTotal;
 
   const maxQuantity = Math.max(...pricingTiers.map((t) => t.quantity));
@@ -295,6 +302,8 @@ const CheckoutStep = ({ pageCount, extraPages, convertedUrls, onBack, onCheckout
       // Track events for our admin dashboard + Shopify analytics
       trackEvent("add_to_cart", "/builder/checkout", { bookCount });
       trackEvent("checkout_initiated", "/builder/checkout", { bookCount });
+      metaAddToCart(totalPrice, bookCount);
+      metaInitiateCheckout(totalPrice, bookCount);
       trackAddToCart(
         lines.map((line) => ({
           productGid: "gid://shopify/Product/15269689852277",

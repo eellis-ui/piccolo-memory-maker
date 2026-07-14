@@ -4,6 +4,7 @@ import { Menu, X, ShoppingCart, Minus, Plus, Trash2, Shield, ClipboardList, Spar
 import { createShopifyCheckout, SHOPIFY_VARIANTS, type CartLineInput } from "@/lib/shopify";
 import { trackAddToCart } from "@/lib/shopify-analytics";
 import { trackEvent } from "@/lib/analytics-tracker";
+import { metaAddToCart, metaInitiateCheckout } from "@/lib/meta-pixel";
 import { useState, useCallback, useEffect } from "react";
 import { useBasket, UNIQUE_PHOTOS_PRICE, DIGITAL_DOWNLOAD_PRICE, PERSONALIZE_COVER_PRICE } from "@/contexts/BasketContext";
 import { useIsAdmin } from "@/hooks/use-admin";
@@ -441,6 +442,8 @@ const Navbar = () => {
       // Track events for our admin dashboard + Shopify
       trackEvent("add_to_cart", "/cart", { totalBookCount });
       trackEvent("checkout_initiated", "/cart", { totalBookCount });
+      metaAddToCart(grandTotal, totalBookCount);
+      metaInitiateCheckout(grandTotal, totalBookCount);
       trackAddToCart(
         lines.map((line) => ({
           productGid: "gid://shopify/Product/15269689852277",
