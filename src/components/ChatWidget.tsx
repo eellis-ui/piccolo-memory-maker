@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from "react";
-import { MessageCircle, X, Send, Loader2 } from "lucide-react";
+import { MessageCircle, X, Send } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
@@ -25,6 +25,10 @@ const STARTER_PROMPTS = [
   "How long does delivery take?",
   "What photo formats can I use?",
 ];
+
+const GREETING = "Hey! I'm Pico ✏️ Ask me anything about your colouring book — prices, delivery, photos, the lot.";
+
+const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
 
 async function streamChat({
   messages,
@@ -121,19 +125,74 @@ function SimpleMarkdown({ text }: { text: string }) {
   );
 }
 
+/** Messenger-style three-dot typing indicator */
+function TypingIndicator() {
+  return (
+    <div className="flex justify-start animate-in fade-in slide-in-from-bottom-1 duration-200">
+      <div className="bg-muted rounded-2xl rounded-bl-sm px-3.5 py-3 flex items-center gap-1">
+        {[0, 150, 300].map((delay) => (
+          <span
+            key={delay}
+            className="h-1.5 w-1.5 rounded-full bg-muted-foreground/60 animate-bounce"
+            style={{ animationDelay: `${delay}ms`, animationDuration: "0.9s" }}
+          />
+        ))}
+      </div>
+    </div>
+  );
+}
+
+/**
+ * Split a reply into at most 3 chat bubbles on paragraph breaks so long
+ * answers arrive like real messages instead of one wall of text.
+ */
+function splitIntoBubbles(text: string): string[] {
+  const paras = text.split(/\n\s*\n/).map((p) => p.trim()).filter(Boolean);
+  if (paras.length === 0) return [];
+  if (paras.length <= 3) return paras;
+  return [paras[0], paras.slice(1, paras.length - 1).join("\n\n"), paras[paras.length - 1]];
+}
+
 export default function ChatWidget() {
   const [open, setOpen] = useState(false);
   const [messages, setMessages] = useState<Msg[]>([]);
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
+  const [typing, setTyping] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const bottomRef = useRef<HTMLDivElement>(null);
   const abortRef = useRef<AbortController | null>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
+  const greetedRef = useRef(false);
 
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });
-  }, [messages]);
+  }, [messages, typing]);
+
+  // Greet with a typing pause the first time the panel opens
+  useEffect(() => {
+    if (!open || greetedRef.current) return;
+    greetedRef.current = true;
+    (async () => {
+      setTyping(true);
+      await sleep(900);
+      setTyping(false);
+      setMessages([{ role: "assistant", content: GREETING }]);
+    })();
+  }, [open]);
+
+  /** Deliver a full reply as sequential bubbles with typing pauses */
+  const deliverReply = async (fullText: string) => {
+    const bubbles = splitIntoBubbles(fullText);
+    for (const bubble of bubbles) {
+      setTyping(true);
+      // Pause roughly like someone typing — longer messages take longer
+      await sleep(Math.min(500 + bubble.length * 10, 2000));
+      setTyping(false);
+      setMessages((prev) => [...prev, { role: "assistant", content: bubble }]);
+      await sleep(300);
+    }
+  };
 
   const send = async (text: string) => {
     if (!text.trim() || loading) return;
@@ -143,29 +202,23 @@ export default function ChatWidget() {
     setMessages(next);
     setInput("");
     setLoading(true);
+    setTyping(true);
 
     abortRef.current = new AbortController();
     let assistantSoFar = "";
 
     try {
+      // Buffer the whole reply, then deliver it as messages with typing pauses
       await streamChat({
         messages: next,
-        onDelta: (chunk) => {
-          assistantSoFar += chunk;
-          setMessages((prev) => {
-            const last = prev[prev.length - 1];
-            if (last?.role === "assistant") {
-              return prev.map((m, i) =>
-                i === prev.length - 1 ? { ...m, content: assistantSoFar } : m
-              );
-            }
-            return [...prev, { role: "assistant", content: assistantSoFar }];
-          });
-        },
-        onDone: () => setLoading(false),
+        onDelta: (chunk) => { assistantSoFar += chunk; },
+        onDone: () => {},
         signal: abortRef.current.signal,
       });
+      await deliverReply(assistantSoFar);
+      setLoading(false);
     } catch (e: unknown) {
+      setTyping(false);
       if ((e as Error).name !== "AbortError") {
         setError((e as Error).message || "Something went wrong. Please try again.");
       }
@@ -179,6 +232,8 @@ export default function ChatWidget() {
       send(input);
     }
   };
+
+  const showStarters = !messages.some((m) => m.role === "user");
 
   return (
     <>
@@ -199,18 +254,19 @@ export default function ChatWidget() {
         <div
           className={cn(
             "fixed bottom-24 right-6 z-50 flex w-80 flex-col rounded-2xl border border-border bg-card shadow-soft-lg",
-            "overflow-hidden"
+            "overflow-hidden animate-in fade-in slide-in-from-bottom-2 duration-200"
           )}
           style={{ maxHeight: "min(520px, calc(100vh - 8rem))" }}
         >
           {/* Header */}
           <div className="flex items-center gap-3 bg-primary px-4 py-3">
-            <div className="flex h-8 w-8 items-center justify-center rounded-full bg-primary-foreground/20">
-              <MessageCircle className="h-4 w-4 text-primary-foreground" />
+            <div className="relative flex h-9 w-9 items-center justify-center rounded-full bg-primary-foreground/20 text-base">
+              <span aria-hidden>✏️</span>
+              <span className="absolute -bottom-0.5 -right-0.5 h-2.5 w-2.5 rounded-full bg-green-500 ring-2 ring-primary" />
             </div>
             <div>
-              <p className="text-sm font-semibold text-primary-foreground font-sans">Piccoload Help</p>
-              <p className="text-xs text-primary-foreground/70 font-sans">Ask me anything</p>
+              <p className="text-sm font-semibold text-primary-foreground font-sans">Pico</p>
+              <p className="text-xs text-primary-foreground/70 font-sans">Piccoload · replies in seconds</p>
             </div>
           </div>
 
@@ -219,31 +275,12 @@ export default function ChatWidget() {
             className="flex-1 overflow-y-auto overscroll-contain px-3 py-3"
             style={{ minHeight: 0 }}
           >
-            {messages.length === 0 && (
-              <div className="space-y-3">
-                <p className="text-center text-xs text-muted-foreground font-sans pt-2">
-                  Hi! I'm here to help with your Piccoload book. 👋
-                </p>
-                <div className="flex flex-wrap gap-2 justify-center">
-                  {STARTER_PROMPTS.map((p) => (
-                    <button
-                      key={p}
-                      onClick={() => send(p)}
-                      className="rounded-full border border-border bg-muted px-3 py-1.5 text-xs text-foreground hover:bg-primary hover:text-primary-foreground transition-colors font-sans"
-                    >
-                      {p}
-                    </button>
-                  ))}
-                </div>
-              </div>
-            )}
-
             <div className="space-y-3 mt-2">
               {messages.map((msg, i) => (
                 <div
                   key={i}
                   className={cn(
-                    "flex",
+                    "flex animate-in fade-in slide-in-from-bottom-1 duration-200",
                     msg.role === "user" ? "justify-end" : "justify-start"
                   )}
                 >
@@ -264,16 +301,24 @@ export default function ChatWidget() {
                 </div>
               ))}
 
-              {loading && (
-                <div className="flex justify-start">
-                  <div className="bg-muted rounded-2xl rounded-bl-sm px-3 py-2">
-                    <Loader2 className="h-3 w-3 animate-spin text-muted-foreground" />
-                  </div>
-                </div>
-              )}
+              {typing && <TypingIndicator />}
 
               {error && (
                 <p className="text-center text-xs text-destructive font-sans px-2">{error}</p>
+              )}
+
+              {showStarters && messages.length > 0 && !typing && (
+                <div className="flex flex-wrap gap-2 justify-center pt-1 animate-in fade-in duration-300">
+                  {STARTER_PROMPTS.map((p) => (
+                    <button
+                      key={p}
+                      onClick={() => send(p)}
+                      className="rounded-full border border-border bg-muted px-3 py-1.5 text-xs text-foreground hover:bg-primary hover:text-primary-foreground transition-colors font-sans"
+                    >
+                      {p}
+                    </button>
+                  ))}
+                </div>
               )}
             </div>
             <div ref={bottomRef} />
@@ -286,7 +331,7 @@ export default function ChatWidget() {
               value={input}
               onChange={(e) => setInput(e.target.value)}
               onKeyDown={handleKey}
-              placeholder="Type a message…"
+              placeholder="Message Pico…"
               rows={1}
               className={cn(
                 "flex-1 resize-none rounded-xl border border-input bg-background px-3 py-2 text-xs font-sans",

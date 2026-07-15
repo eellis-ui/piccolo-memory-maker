@@ -251,13 +251,12 @@ const Admin = () => {
   };
 
   const fetchPhotoCounts = async () => {
-    const { data, error } = await supabase
-      .from("order_photos")
-      .select("order_id");
+    // Grouped count in the database — avoids pulling every order_photos row
+    const { data, error } = await supabase.rpc("order_photo_counts");
     if (!error && data) {
       const counts: Record<string, number> = {};
-      for (const row of data) {
-        counts[row.order_id] = (counts[row.order_id] || 0) + 1;
+      for (const row of data as { order_id: string; photo_count: number }[]) {
+        counts[row.order_id] = Number(row.photo_count);
       }
       setPhotoCounts(counts);
     }

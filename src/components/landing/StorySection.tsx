@@ -7,7 +7,7 @@ const StorySection = () => {
       {/* Banner Image */}
       <div className="relative w-full h-[30vh] md:h-[45vh] overflow-hidden">
         <img
-          src="/images/about-banner.png"
+          src="/images/about-banner.webp"
           alt="Mother and daughter hiking together through green mountains"
           className="w-full h-full object-cover"
         />

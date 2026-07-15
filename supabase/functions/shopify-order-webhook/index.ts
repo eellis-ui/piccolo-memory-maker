@@ -51,7 +51,14 @@ Deno.serve(async (req) => {
 
     const payload = JSON.parse(body);
     const customerEmail = payload.email || payload.customer?.email;
-    const shopifyOrderNumber = payload.name || payload.order_number ? `#${payload.order_number}` : null;
+    // Shopify "name" is the full order reference incl. prefix (e.g. PIC16781962)
+    const orderName = payload.name || null;
+    const shopifyOrderNumber = payload.order_number ? `#${payload.order_number}` : orderName;
+    const customerName =
+      [payload.customer?.first_name, payload.customer?.last_name].filter(Boolean).join(" ") ||
+      payload.shipping_address?.name ||
+      payload.billing_address?.name ||
+      null;
     const orderTotal = parseFloat(payload.total_price || "0");
     
     // Extract discount codes used in this order
@@ -101,6 +108,8 @@ Deno.serve(async (req) => {
         status: "paid",
         customer_email: customerEmail || null,
         shopify_order_number: shopifyOrderNumber || null,
+        order_name: orderName,
+        customer_name: customerName,
       };
 
       if (hasDigitalDownload) {

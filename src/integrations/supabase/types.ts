@@ -10,10 +10,43 @@ export type Database = {
   // Allows to automatically instantiate createClient with right options
   // instead of createClient<Database, { PostgrestVersion: 'XX' }>(URL, KEY)
   __InternalSupabase: {
-    PostgrestVersion: "14.1"
+    PostgrestVersion: "14.4"
   }
   public: {
     Tables: {
+      affiliate_challenges: {
+        Row: {
+          created_at: string | null
+          description: string | null
+          icon: string | null
+          id: string
+          is_active: boolean | null
+          points: number
+          sort_order: number | null
+          title: string
+        }
+        Insert: {
+          created_at?: string | null
+          description?: string | null
+          icon?: string | null
+          id?: string
+          is_active?: boolean | null
+          points?: number
+          sort_order?: number | null
+          title: string
+        }
+        Update: {
+          created_at?: string | null
+          description?: string | null
+          icon?: string | null
+          id?: string
+          is_active?: boolean | null
+          points?: number
+          sort_order?: number | null
+          title?: string
+        }
+        Relationships: []
+      }
       affiliate_orders: {
         Row: {
           affiliate_id: string
@@ -100,48 +133,242 @@ export type Database = {
           },
         ]
       }
+      affiliate_reward_submissions: {
+        Row: {
+          admin_notes: string | null
+          affiliate_id: string
+          created_at: string
+          id: string
+          points: number
+          proof_url: string
+          reviewed_at: string | null
+          status: string
+          task_key: string
+        }
+        Insert: {
+          admin_notes?: string | null
+          affiliate_id: string
+          created_at?: string
+          id?: string
+          points?: number
+          proof_url: string
+          reviewed_at?: string | null
+          status?: string
+          task_key: string
+        }
+        Update: {
+          admin_notes?: string | null
+          affiliate_id?: string
+          created_at?: string
+          id?: string
+          points?: number
+          proof_url?: string
+          reviewed_at?: string | null
+          status?: string
+          task_key?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "affiliate_reward_submissions_affiliate_id_fkey"
+            columns: ["affiliate_id"]
+            isOneToOne: false
+            referencedRelation: "affiliates"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      affiliate_submissions: {
+        Row: {
+          admin_notes: string | null
+          affiliate_id: string
+          challenge_id: string
+          created_at: string | null
+          id: string
+          points_awarded: number | null
+          proof_notes: string | null
+          proof_url: string
+          reviewed_at: string | null
+          status: string
+        }
+        Insert: {
+          admin_notes?: string | null
+          affiliate_id: string
+          challenge_id: string
+          created_at?: string | null
+          id?: string
+          points_awarded?: number | null
+          proof_notes?: string | null
+          proof_url: string
+          reviewed_at?: string | null
+          status?: string
+        }
+        Update: {
+          admin_notes?: string | null
+          affiliate_id?: string
+          challenge_id?: string
+          created_at?: string | null
+          id?: string
+          points_awarded?: number | null
+          proof_notes?: string | null
+          proof_url?: string
+          reviewed_at?: string | null
+          status?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "affiliate_submissions_affiliate_id_fkey"
+            columns: ["affiliate_id"]
+            isOneToOne: false
+            referencedRelation: "affiliates"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "affiliate_submissions_challenge_id_fkey"
+            columns: ["challenge_id"]
+            isOneToOne: false
+            referencedRelation: "affiliate_challenges"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       affiliates: {
         Row: {
+          commission_rate: number | null
+          commission_tier: number
           created_at: string
           discount_code: string
           email: string
           full_name: string
           id: string
           instagram_handle: string | null
+          payment_details: Json | null
           shopify_price_rule_id: string | null
+          tier: number | null
           tiktok_handle: string | null
           total_commission: number
           total_orders: number
+          total_points: number | null
           total_revenue: number
           user_id: string
         }
         Insert: {
+          commission_rate?: number | null
+          commission_tier?: number
           created_at?: string
           discount_code: string
           email: string
           full_name: string
           id?: string
           instagram_handle?: string | null
+          payment_details?: Json | null
           shopify_price_rule_id?: string | null
+          tier?: number | null
           tiktok_handle?: string | null
           total_commission?: number
           total_orders?: number
+          total_points?: number | null
           total_revenue?: number
           user_id: string
         }
         Update: {
+          commission_rate?: number | null
+          commission_tier?: number
           created_at?: string
           discount_code?: string
           email?: string
           full_name?: string
           id?: string
           instagram_handle?: string | null
+          payment_details?: Json | null
           shopify_price_rule_id?: string | null
+          tier?: number | null
           tiktok_handle?: string | null
           total_commission?: number
           total_orders?: number
+          total_points?: number | null
           total_revenue?: number
           user_id?: string
+        }
+        Relationships: []
+      }
+      analytics_events: {
+        Row: {
+          created_at: string
+          event_type: string
+          id: string
+          metadata: Json | null
+          path: string | null
+          session_id: string | null
+        }
+        Insert: {
+          created_at?: string
+          event_type: string
+          id?: string
+          metadata?: Json | null
+          path?: string | null
+          session_id?: string | null
+        }
+        Update: {
+          created_at?: string
+          event_type?: string
+          id?: string
+          metadata?: Json | null
+          path?: string | null
+          session_id?: string | null
+        }
+        Relationships: []
+      }
+      customers: {
+        Row: {
+          created_at: string | null
+          email: string
+          first_name: string | null
+          first_order_at: string | null
+          id: string
+          last_name: string | null
+          last_order_at: string | null
+          notes: string | null
+          phone: string | null
+          shipping_address: string | null
+          shipping_city: string | null
+          shipping_country: string | null
+          shopify_customer_id: string | null
+          total_orders: number | null
+          total_spent: number | null
+        }
+        Insert: {
+          created_at?: string | null
+          email: string
+          first_name?: string | null
+          first_order_at?: string | null
+          id?: string
+          last_name?: string | null
+          last_order_at?: string | null
+          notes?: string | null
+          phone?: string | null
+          shipping_address?: string | null
+          shipping_city?: string | null
+          shipping_country?: string | null
+          shopify_customer_id?: string | null
+          total_orders?: number | null
+          total_spent?: number | null
+        }
+        Update: {
+          created_at?: string | null
+          email?: string
+          first_name?: string | null
+          first_order_at?: string | null
+          id?: string
+          last_name?: string | null
+          last_order_at?: string | null
+          notes?: string | null
+          phone?: string | null
+          shipping_address?: string | null
+          shipping_city?: string | null
+          shipping_country?: string | null
+          shopify_customer_id?: string | null
+          total_orders?: number | null
+          total_spent?: number | null
         }
         Relationships: []
       }
@@ -193,6 +420,7 @@ export type Database = {
         Row: {
           builder_session_id: string | null
           builder_step: string
+          bundle_id: string | null
           cover_image_id: string | null
           cover_image_id_2: string | null
           cover_position_x: number
@@ -200,6 +428,9 @@ export type Database = {
           cover_zoom: number
           created_at: string
           customer_email: string | null
+          customer_id: string | null
+          customer_name: string | null
+          customer_phone: string | null
           dedication_page_enabled: boolean
           dedication_page_text: string | null
           digital_download: boolean
@@ -207,8 +438,9 @@ export type Database = {
           extra_pages: number
           id: string
           line_items: Json | null
+          line_items_json: Json | null
           order_name: string | null
-          payment_status: string
+          payment_status: string | null
           production_pdf_path: string | null
           review_request_sent: boolean
           shipped_at: string | null
@@ -218,11 +450,13 @@ export type Database = {
           title_page_text: string
           tracking_number: string | null
           unique_photos: boolean
+          updated_at: string | null
           user_id: string | null
         }
         Insert: {
           builder_session_id?: string | null
           builder_step?: string
+          bundle_id?: string | null
           cover_image_id?: string | null
           cover_image_id_2?: string | null
           cover_position_x?: number
@@ -230,6 +464,9 @@ export type Database = {
           cover_zoom?: number
           created_at?: string
           customer_email?: string | null
+          customer_id?: string | null
+          customer_name?: string | null
+          customer_phone?: string | null
           dedication_page_enabled?: boolean
           dedication_page_text?: string | null
           digital_download?: boolean
@@ -237,8 +474,9 @@ export type Database = {
           extra_pages?: number
           id?: string
           line_items?: Json | null
+          line_items_json?: Json | null
           order_name?: string | null
-          payment_status?: string
+          payment_status?: string | null
           production_pdf_path?: string | null
           review_request_sent?: boolean
           shipped_at?: string | null
@@ -248,11 +486,13 @@ export type Database = {
           title_page_text?: string
           tracking_number?: string | null
           unique_photos?: boolean
+          updated_at?: string | null
           user_id?: string | null
         }
         Update: {
           builder_session_id?: string | null
           builder_step?: string
+          bundle_id?: string | null
           cover_image_id?: string | null
           cover_image_id_2?: string | null
           cover_position_x?: number
@@ -260,6 +500,9 @@ export type Database = {
           cover_zoom?: number
           created_at?: string
           customer_email?: string | null
+          customer_id?: string | null
+          customer_name?: string | null
+          customer_phone?: string | null
           dedication_page_enabled?: boolean
           dedication_page_text?: string | null
           digital_download?: boolean
@@ -267,8 +510,9 @@ export type Database = {
           extra_pages?: number
           id?: string
           line_items?: Json | null
+          line_items_json?: Json | null
           order_name?: string | null
-          payment_status?: string
+          payment_status?: string | null
           production_pdf_path?: string | null
           review_request_sent?: boolean
           shipped_at?: string | null
@@ -278,40 +522,43 @@ export type Database = {
           title_page_text?: string
           tracking_number?: string | null
           unique_photos?: boolean
+          updated_at?: string | null
           user_id?: string | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "orders_customer_id_fkey"
+            columns: ["customer_id"]
+            isOneToOne: false
+            referencedRelation: "customers"
+            referencedColumns: ["id"]
+          },
+        ]
       }
-      reviews: {
+      site_images: {
         Row: {
-          created_at: string
-          email: string | null
+          alt_text: string | null
+          created_at: string | null
           id: string
-          is_approved: boolean
-          is_verified: boolean
-          rating: number
-          review_text: string
-          reviewer_name: string
+          image_path: string
+          section: string
+          sort_order: number | null
         }
         Insert: {
-          created_at?: string
-          email?: string | null
+          alt_text?: string | null
+          created_at?: string | null
           id?: string
-          is_approved?: boolean
-          is_verified?: boolean
-          rating: number
-          review_text: string
-          reviewer_name: string
+          image_path: string
+          section: string
+          sort_order?: number | null
         }
         Update: {
-          created_at?: string
-          email?: string | null
+          alt_text?: string | null
+          created_at?: string | null
           id?: string
-          is_approved?: boolean
-          is_verified?: boolean
-          rating?: number
-          review_text?: string
-          reviewer_name?: string
+          image_path?: string
+          section?: string
+          sort_order?: number | null
         }
         Relationships: []
       }
@@ -351,6 +598,13 @@ export type Database = {
           _user_id: string
         }
         Returns: boolean
+      }
+      order_photo_counts: {
+        Args: never
+        Returns: {
+          order_id: string
+          photo_count: number
+        }[]
       }
       update_affiliate_totals: {
         Args: { _affiliate_id: string }

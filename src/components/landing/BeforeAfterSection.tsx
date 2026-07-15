@@ -13,20 +13,20 @@ const comparisons: ComparisonItem[] = [
   {
     id: "1",
     label: "Family Portrait",
-    beforeSrc: "/images/before-family.jpg",
-    afterSrc: "/images/after-family.jpg",
+    beforeSrc: "/images/before-family.webp",
+    afterSrc: "/images/after-family.webp",
   },
   {
     id: "2",
     label: "Pet Photo",
-    beforeSrc: "/images/before-pet.png",
-    afterSrc: "/images/after-pet.png",
+    beforeSrc: "/images/before-pet.webp",
+    afterSrc: "/images/after-pet.webp",
   },
   {
     id: "3",
     label: "Vacation Memory",
-    beforeSrc: "/images/before-vacation.jpg",
-    afterSrc: "/images/after-vacation.png",
+    beforeSrc: "/images/before-vacation.webp",
+    afterSrc: "/images/after-vacation.webp",
   },
 ];
 

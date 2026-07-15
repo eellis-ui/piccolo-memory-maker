@@ -3,15 +3,15 @@ import { Button } from "@/components/ui/button";
 import { Medal } from "lucide-react";
 
 const gridImages = [
-  { src: "/images/hero-grid-1.png", alt: "Coloring book open on cozy bed with tea" },
-  { src: "/images/hero-grid-2.png", alt: "Pencils in a mesh holder on desk" },
-  { src: "/images/hero-grid-3.png", alt: "Piccoload coloring book with pens on glass table" },
-  { src: "/images/hero-grid-4.png", alt: "Colored pencil drawing of a ginger cat" },
-  { src: "/images/hero-grid-5.png", alt: "Piccoload book cover held in hand" },
-  { src: "/images/hero-grid-6.png", alt: "Before and after photo to line art comparison" },
-  { src: "/images/hero-grid-7.png", alt: "Open coloring book on wooden table with pens and phone" },
-  { src: "/images/hero-grid-8.png", alt: "Woman unwrapping coloring book gift at Christmas" },
-  { src: "/images/hero-grid-9.png", alt: "Coloring book page with felt tip pens" },
+  { src: "/images/hero-grid-1.webp", alt: "Coloring book open on cozy bed with tea" },
+  { src: "/images/hero-grid-2.webp", alt: "Pencils in a mesh holder on desk" },
+  { src: "/images/hero-grid-3.webp", alt: "Piccoload coloring book with pens on glass table" },
+  { src: "/images/hero-grid-4.webp", alt: "Colored pencil drawing of a ginger cat" },
+  { src: "/images/hero-grid-5.webp", alt: "Piccoload book cover held in hand" },
+  { src: "/images/hero-grid-6.webp", alt: "Before and after photo to line art comparison" },
+  { src: "/images/hero-grid-7.webp", alt: "Open coloring book on wooden table with pens and phone" },
+  { src: "/images/hero-grid-8.webp", alt: "Woman unwrapping coloring book gift at Christmas" },
+  { src: "/images/hero-grid-9.webp", alt: "Coloring book page with felt tip pens" },
 ];
 
 const HeroSection = () => {

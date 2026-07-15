@@ -61,7 +61,9 @@ const UploadStep = ({ orderId, sessionId, onImagesUploaded, maxImages = 20, init
     return new Promise((resolve, reject) => {
       const img = new window.Image();
       img.onload = () => {
-        const MAX_DIM = 1024;
+        // 1536 matches the AI converter's input cap (convert-to-lineart MAX_DIM)
+        // — anything lower starves the line-art model of detail.
+        const MAX_DIM = 1536;
         const A4_PORTRAIT_RATIO = 1 / Math.SQRT2; // ≈ 0.7071 (portrait A4: 210×297mm)
 
         const natW = img.naturalWidth;
