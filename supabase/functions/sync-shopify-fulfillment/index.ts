@@ -21,8 +21,9 @@ const SHOPIFY_API_VERSION = "2025-07";
  * Requires SHOPIFY_ADMIN_TOKEN env var (Admin API access token).
  */
 async function shopifyAdmin(endpoint: string, method = "GET", body?: unknown) {
-  const token = Deno.env.get("SHOPIFY_ADMIN_TOKEN");
-  if (!token) throw new Error("SHOPIFY_ADMIN_TOKEN not configured");
+  // Matches the secret name already used by affiliate-signup
+  const token = Deno.env.get("SHOPIFY_ACCESS_TOKEN") ?? Deno.env.get("SHOPIFY_ADMIN_TOKEN");
+  if (!token) throw new Error("SHOPIFY_ACCESS_TOKEN not configured");
 
   const url = `https://${SHOPIFY_STORE}/admin/api/${SHOPIFY_API_VERSION}/${endpoint}`;
   const res = await fetch(url, {
@@ -65,6 +66,43 @@ Deno.serve(async (req) => {
   }
 
   try {
+    // ── Admin-only gate (mirrors generate-pdf) ──
+    const authHeader = req.headers.get("Authorization");
+    if (!authHeader) {
+      return new Response(JSON.stringify({ error: "Unauthorized" }), {
+        status: 401,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
+    const caller = createClient(
+      Deno.env.get("SUPABASE_URL")!,
+      Deno.env.get("SUPABASE_ANON_KEY")!,
+      { global: { headers: { Authorization: authHeader } } },
+    );
+
+    const { data: { user }, error: authErr } = await caller.auth.getUser();
+    if (authErr || !user) {
+      return new Response(JSON.stringify({ error: "Unauthorized" }), {
+        status: 401,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
+    const { data: roleData } = await adminClient()
+      .from("user_roles")
+      .select("role")
+      .eq("user_id", user.id)
+      .eq("role", "admin")
+      .maybeSingle();
+
+    if (!roleData) {
+      return new Response(JSON.stringify({ error: "Forbidden" }), {
+        status: 403,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
     const { orderId, newStatus, trackingNumber, trackingCompany } = await req.json();
     if (!orderId) {
       return new Response(JSON.stringify({ error: "orderId required" }), {

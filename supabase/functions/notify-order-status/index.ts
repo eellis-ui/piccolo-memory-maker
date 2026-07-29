@@ -33,7 +33,7 @@ function getEmailConfig(
         heading: "Your Order Has Been Confirmed!",
         body: `Thank you for your order <strong>${orderNumber}</strong>! We've received your payment and our team is now getting started on your personalised coloring book. We'll keep you updated at every step.`,
         ctaText: "View Your Order",
-        ctaUrl: "https://piccolo-memory-maker.lovable.app/my-orders",
+        ctaUrl: "https://piccoload.com/my-orders",
       };
     case "converted":
       return {
@@ -41,7 +41,7 @@ function getEmailConfig(
         heading: "Your Coloring Book Is Being Made!",
         body: `Great news! Your photos for order <strong>${orderNumber}</strong> have been converted into beautiful line art and your coloring book is now being put together. We'll let you know once it's been sent for printing.`,
         ctaText: "View Your Order",
-        ctaUrl: "https://piccolo-memory-maker.lovable.app/my-orders",
+        ctaUrl: "https://piccoload.com/my-orders",
       };
     case "sent_to_print":
       return {
@@ -49,7 +49,7 @@ function getEmailConfig(
         heading: "Your Book Is Being Printed!",
         body: `Your coloring book for order <strong>${orderNumber}</strong> has been sent to our printers! Once printed and packaged, we'll ship it out and send you a tracking number.`,
         ctaText: "View Your Order",
-        ctaUrl: "https://piccolo-memory-maker.lovable.app/my-orders",
+        ctaUrl: "https://piccoload.com/my-orders",
       };
     case "shipped":
       return {
@@ -63,7 +63,7 @@ function getEmailConfig(
         ctaText: trackingNumber ? "Track Your Order" : "View Your Order",
         ctaUrl: trackingNumber
           ? `https://www.royalmail.com/track-your-item#/tracking-results/${trackingNumber}`
-          : "https://piccolo-memory-maker.lovable.app/my-orders",
+          : "https://piccoload.com/my-orders",
       };
     default:
       return null;
@@ -106,6 +106,43 @@ Deno.serve(async (req) => {
   }
 
   try {
+    // ── Admin-only gate (mirrors generate-pdf) ──
+    const authHeader = req.headers.get("Authorization");
+    if (!authHeader) {
+      return new Response(JSON.stringify({ error: "Unauthorized" }), {
+        status: 401,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
+    const caller = createClient(
+      Deno.env.get("SUPABASE_URL")!,
+      Deno.env.get("SUPABASE_ANON_KEY")!,
+      { global: { headers: { Authorization: authHeader } } },
+    );
+
+    const { data: { user }, error: authErr } = await caller.auth.getUser();
+    if (authErr || !user) {
+      return new Response(JSON.stringify({ error: "Unauthorized" }), {
+        status: 401,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
+    const { data: roleData } = await adminClient()
+      .from("user_roles")
+      .select("role")
+      .eq("user_id", user.id)
+      .eq("role", "admin")
+      .maybeSingle();
+
+    if (!roleData) {
+      return new Response(JSON.stringify({ error: "Forbidden" }), {
+        status: 403,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
     const { orderId, newStatus, trackingNumber } = await req.json();
     if (!orderId || !newStatus) {
       return new Response(JSON.stringify({ error: "orderId and newStatus required" }), {
