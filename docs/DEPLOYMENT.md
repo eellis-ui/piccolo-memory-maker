@@ -64,11 +64,25 @@ machine, so the site drifted whenever nobody ran one. Order flow, checkout,
 and Shopify variant IDs were verified working throughout — the stale build
 never broke commerce.
 
-### Still to do
+### Automatic deploys
 
-Add a deploy job to `.github/workflows/ci.yml` so pushes to `main` deploy
-automatically. Until that exists, the drift can recur; `verify:deploy` runs
-daily and is the tripwire.
+The `deploy` job in `.github/workflows/ci.yml` ships the frontend on every
+push to `main`: it builds, runs `wrangler deploy`, then re-runs
+`verify:deploy` (retrying briefly, since the edge takes a few seconds to
+serve a new version) so a silent no-op deploy cannot pass unnoticed.
+
+It requires two repository secrets:
+
+| Secret | Value |
+|---|---|
+| `CLOUDFLARE_API_TOKEN` | Token with **Account → Workers Scripts → Edit** |
+| `CLOUDFLARE_ACCOUNT_ID` | The account owning the `piccoload` Worker |
+
+**Without them the job warns and skips rather than failing**, so CI stays
+green — but nothing deploys, and the site will drift again. If you see that
+warning on a push to `main`, the secrets are missing.
+
+Deploying by hand still works and is unchanged: `npx wrangler deploy`.
 
 ## Resolved: `www.piccoload.com`
 

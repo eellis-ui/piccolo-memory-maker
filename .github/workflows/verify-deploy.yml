@@ -1,11 +1,13 @@
 name: Verify production is live
 
-# The frontend host is NOT wired to GitHub — merging to main does not deploy.
-# This job is the safety net: it checks what is actually serving at
-# piccoload.com and fails loudly when production drifts behind main.
+# Pushes to main now deploy via the `deploy` job in ci.yml. This job stays as
+# the safety net: it checks what is actually serving at piccoload.com and
+# fails loudly when production drifts behind main — whether because a deploy
+# silently failed, the Cloudflare credentials lapsed, or someone shipped by
+# hand and it did not take.
 #
 # A failure here does not mean the code is broken. It means the code is
-# correct but has not been deployed.
+# correct but is not what production is serving.
 
 on:
   schedule:

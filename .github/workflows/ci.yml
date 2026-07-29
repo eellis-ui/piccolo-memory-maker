@@ -6,6 +6,12 @@ on:
   pull_request:
     branches: [main]
 
+# Never let two deploys race. A queued run supersedes a pending one, but an
+# in-flight deploy is allowed to finish rather than leaving assets half-uploaded.
+concurrency:
+  group: deploy-${{ github.ref }}
+  cancel-in-progress: false
+
 jobs:
   build:
     name: Typecheck, test, build
@@ -28,3 +34,60 @@ jobs:
 
       - name: Build
         run: npm run build
+
+  deploy:
+    name: Deploy to Cloudflare
+    needs: build
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      # Deploying without this secret would fail every push to main. Warn and
+      # skip instead, so the job stays green until the secret is configured.
+      - name: Check for deploy credentials
+        id: creds
+        env:
+          CF_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CF_ACCOUNT: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+        run: |
+          if [ -z "$CF_TOKEN" ] || [ -z "$CF_ACCOUNT" ]; then
+            echo "::warning::CLOUDFLARE_API_TOKEN / CLOUDFLARE_ACCOUNT_ID not set — skipping deploy. Production will drift behind main until these are configured."
+            echo "ready=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "ready=true" >> "$GITHUB_OUTPUT"
+          fi
+
+      - run: npm ci --no-audit --no-fund
+        if: steps.creds.outputs.ready == 'true'
+
+      - name: Build
+        if: steps.creds.outputs.ready == 'true'
+        run: npm run build
+
+      - name: Deploy Worker
+        if: steps.creds.outputs.ready == 'true'
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+        run: npx wrangler deploy
+
+      # The edge takes a few seconds to serve the new version. Retry rather
+      # than fail the deploy on a race we already expect.
+      - name: Verify the deploy landed
+        if: steps.creds.outputs.ready == 'true'
+        run: |
+          for attempt in 1 2 3 4 5; do
+            if node scripts/verify-deploy.mjs; then
+              exit 0
+            fi
+            echo "Attempt $attempt: production not updated yet, retrying in 15s..."
+            sleep 15
+          done
+          echo "::error::Deploy reported success but production still does not match main."
+          exit 1
