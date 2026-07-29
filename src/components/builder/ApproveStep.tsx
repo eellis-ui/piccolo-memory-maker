@@ -34,6 +34,7 @@ import {
   uploadGuestPhoto,
   
 } from "@/lib/guest-api";
+import { trackEvent } from "@/lib/analytics-tracker";
 
 // Helper: show the full image inside the card without cropping.
 // object-fit: contain keeps the entire image visible.
@@ -277,15 +278,22 @@ const SortablePhotoCard = ({
     try {
       console.log(`[convert] Starting conversion for photo ${photoId}, session ${sessionId}`);
 
-      // Add a 90-second timeout so we don't hang forever
+      // 90-second cap. The signal has to be handed to invoke() — previously the
+      // controller was created and immediately dropped, so nothing was ever
+      // aborted and a stalled conversion hung until the user gave up.
       const controller = new AbortController();
       const timeout = setTimeout(() => controller.abort(), 90000);
 
-      const { data, error } = await supabase.functions.invoke("convert-to-lineart", {
-        body: { photoId, sessionId },
-      });
-
-      clearTimeout(timeout);
+      let data: { success?: boolean; convertedUrl?: string; convertedPath?: string; error?: string } | null;
+      let error: { message?: string } | null;
+      try {
+        ({ data, error } = await supabase.functions.invoke("convert-to-lineart", {
+          body: { photoId, sessionId },
+          signal: controller.signal,
+        }));
+      } finally {
+        clearTimeout(timeout);
+      }
       console.log(`[convert] Response for ${photoId}:`, { data, error });
 
       if (error) {
@@ -347,8 +355,9 @@ const SortablePhotoCard = ({
 
     // Mark ALL photos as converting upfront so UI shows all spinners immediately
     const allIds = new Set(unconverted.map((p) => p.id));
+    const startedAt = Date.now();
     setConvertingIds(allIds);
-    setConversionStartTime(Date.now());
+    setConversionStartTime(startedAt);
     setCompletedInSession(0);
     setHasStartedConversion(true);
     console.log(`[convertAll] Starting conversion of ${unconverted.length} photos (batches of 10)`);
@@ -380,6 +389,15 @@ const SortablePhotoCard = ({
     setConvertingIds(new Set());
     setConversionStartTime(null);
     console.log(`[convertAll] All conversions complete`);
+
+    // Record the batch outcome, not just that conversion was attempted. A run
+    // where most photos fail looks identical to a clean one without this.
+    const failed = photos.filter((p) => p.conversionStatus === "failed").length;
+    trackEvent("builder_convert", "/builder", {
+      requested: unconverted.length,
+      failed,
+      elapsedMs: startedAt ? Date.now() - startedAt : undefined,
+    });
   };
 
   // Single photo convert (for individual Convert/Retry buttons)

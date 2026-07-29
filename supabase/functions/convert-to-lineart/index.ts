@@ -27,7 +27,10 @@ function getExifOrientation(buf: Uint8Array): number {
 }
 function exifSwapsDimensions(o: number): boolean { return o >= 5 && o <= 8; }
 const corsHeaders = { "Access-Control-Allow-Origin": "*", "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version" };
-const A4_PW = 1240, A4_PH = 1754, A4_LW = 1754, A4_LH = 1240;
+// A4 at 300 DPI, the standard for print. This was previously 1240x1754 — A4 at
+// 150 DPI — so every page shipped at half the resolution the printer expects.
+// generate-customer-pdf hardcodes the same numbers and must be kept in step.
+const A4_PW = 2480, A4_PH = 3508, A4_LW = 3508, A4_LH = 2480;
 
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
@@ -121,7 +124,9 @@ OUTPUT: ${actualIsLandscape ? "LANDSCAPE orientation (wider than tall)" : "PORTR
       fd.append("prompt", openaiPrompt);
       fd.append("model", "gpt-image-1");
       fd.append("size", actualIsLandscape ? "1536x1024" : "1024x1536");
-      fd.append("quality", "medium");
+      // "high" rather than "medium": this art is printed, not just previewed,
+      // and medium visibly loses fine line detail once it reaches paper.
+      fd.append("quality", "high");
       const openaiResp = await fetch("https://api.openai.com/v1/images/edits", { method: "POST", headers: { Authorization: `Bearer ${openaiKey}` }, body: fd });
       if (openaiResp.ok) { const r = await openaiResp.json(); if (r.data?.[0]?.b64_json) imageBase64 = r.data[0].b64_json; }
       else { const errText = await openaiResp.text(); console.error("OpenAI failed:", openaiResp.status, errText); lastError = `OpenAI error ${openaiResp.status}`; }
@@ -137,17 +142,28 @@ OUTPUT: ${actualIsLandscape ? "LANDSCAPE orientation (wider than tall)" : "PORTR
       for (let i = 0; i < rawBinary.length; i++) rawBytes[i] = rawBinary.charCodeAt(i);
       imageBase64 = null;
       const srcImg = await Image.decode(rawBytes);
-      const srcW = srcImg.width;
-      const srcH = srcImg.height;
-      for (let x = 1; x <= srcW; x++) for (let y = 1; y <= srcH; y++) {
-        const rgba = srcImg.getPixelAt(x, y);
-        const grey = ((rgba >> 24) & 0xFF) * 0.299 + ((rgba >> 16) & 0xFF) * 0.587 + ((rgba >> 8) & 0xFF) * 0.114;
-        const v = grey >= 200 ? 255 : 0;
-        srcImg.setPixelAt(x, y, Image.rgbaToColor(v, v, v, 255));
-      }
       const a4W = actualIsLandscape ? A4_LW : A4_PW;
       const a4H = actualIsLandscape ? A4_LH : A4_PH;
-      finalImageBuffer = await srcImg.resize(a4W, a4H).encode();
+
+      // Resize BEFORE thresholding. Doing it the other way round — the previous
+      // behaviour — threshold to 1-bit at 1024px and then scale up, so the
+      // upscale interpolates between hard black and hard white and hands the
+      // printer soft, stair-stepped edges. Scaling first lets the threshold run
+      // against smooth source data and produce a clean edge at full size.
+      const scaled = srcImg.resize(a4W, a4H);
+
+      // Operate on the raw RGBA buffer. getPixelAt/setPixelAt per pixel is
+      // tolerable at 1.5M pixels but not at the 8.7M an A4 300 DPI page has.
+      const bmp = scaled.bitmap;
+      for (let i = 0; i < bmp.length; i += 4) {
+        const grey = bmp[i] * 0.299 + bmp[i + 1] * 0.587 + bmp[i + 2] * 0.114;
+        const v = grey >= 200 ? 255 : 0;
+        bmp[i] = v;
+        bmp[i + 1] = v;
+        bmp[i + 2] = v;
+        bmp[i + 3] = 255;
+      }
+      finalImageBuffer = await scaled.encode();
     } catch (ppErr) {
       await supabase.from("order_photos").update({ conversion_status: "failed" }).eq("id", photoId);
       return new Response(JSON.stringify({ error: `Post-processing failed: ${ppErr}` }), { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } });

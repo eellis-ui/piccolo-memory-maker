@@ -23,9 +23,9 @@ async function downloadFile(
   return data.arrayBuffer();
 }
 
-// A4 at 150 DPI — must match convert-to-lineart's output dimensions
-const A4_PW = 1240;
-const A4_PH = 1754;
+// A4 at 300 DPI — must match convert-to-lineart's output dimensions
+const A4_PW = 2480;
+const A4_PH = 3508;
 
 /** Read PNG width/height straight from the IHDR header (no decode). */
 function pngDims(buf: ArrayBuffer): { w: number; h: number } | null {

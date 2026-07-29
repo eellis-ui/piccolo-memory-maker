@@ -1,11 +1,31 @@
 /**
  * Renders front and back covers to PNG blobs using browser canvas.
  * Output matches the BookPreview CoverPage / BackCoverPage components exactly.
- * A4 at 150dpi = 1240×1754.
+ * A4 at 300dpi = 2480×3508, matching convert-to-lineart's interior pages — a
+ * 150dpi cover on 300dpi pages prints as a visibly softer front.
+ *
+ * 8.7M pixels is within the canvas ceiling on every browser we support
+ * (iOS Safari caps around 16.7M), but a single canvas is now roughly 35MB of
+ * RGBA. CheckoutStep starts every cover for every book at once, so a 3-book
+ * order would otherwise hold six of them live — enough to be killed on a
+ * mid-range phone. renderQueued() below serialises them instead.
  */
 
-const W = 1240;
-const H = 1754;
+const W = 2480;
+const H = 3508;
+
+/**
+ * Serialises canvas work so only one full-size cover exists at a time.
+ * Callers can still fire renders concurrently; they simply queue here.
+ */
+let renderChain: Promise<unknown> = Promise.resolve();
+
+function renderQueued<T>(work: () => Promise<T>): Promise<T> {
+  const next = renderChain.then(work, work);
+  // Keep the chain alive regardless of individual failures.
+  renderChain = next.catch(() => undefined);
+  return next;
+}
 
 function loadImage(src: string): Promise<HTMLImageElement> {
   return new Promise((resolve, reject) => {
@@ -25,7 +45,7 @@ function loadImage(src: string): Promise<HTMLImageElement> {
  * @param subtitle       Upper text line (e.g. "FOR KIDS AND ADULTS ALIKE")
  * @param bottomTitle    Lower text line (e.g. "color your memories")
  */
-export async function renderFrontCoverPng(
+async function renderFrontCoverPngUnqueued(
   logoSrc: string,
   gridImageUrls: (string | null)[],
   subtitle: string,
@@ -112,7 +132,13 @@ export async function renderFrontCoverPng(
 
   return new Promise((resolve, reject) => {
     canvas.toBlob(
-      (blob) => (blob ? resolve(blob) : reject(new Error("toBlob failed"))),
+      (blob) => {
+        // Drop the backing store now rather than waiting for GC; at 2480×3508
+        // each canvas holds ~35MB and the next cover is queued right behind.
+        canvas.width = 0;
+        canvas.height = 0;
+        blob ? resolve(blob) : reject(new Error("toBlob failed"));
+      },
       "image/png",
     );
   });
@@ -124,7 +150,7 @@ export async function renderFrontCoverPng(
  * @param logoSrc    URL of the Piccoload logo
  * @param qrCodeSrc  URL of the QR code image
  */
-export async function renderBackCoverPng(
+async function renderBackCoverPngUnqueued(
   logoSrc: string,
   qrCodeSrc: string,
 ): Promise<Blob> {
@@ -186,8 +212,35 @@ export async function renderBackCoverPng(
 
   return new Promise((resolve, reject) => {
     canvas.toBlob(
-      (blob) => (blob ? resolve(blob) : reject(new Error("toBlob failed"))),
+      (blob) => {
+        // Drop the backing store now rather than waiting for GC; at 2480×3508
+        // each canvas holds ~35MB and the next cover is queued right behind.
+        canvas.width = 0;
+        canvas.height = 0;
+        blob ? resolve(blob) : reject(new Error("toBlob failed"));
+      },
       "image/png",
     );
   });
+}
+
+/**
+ * Render the front cover to a PNG blob. Queued — see renderQueued above.
+ */
+export function renderFrontCoverPng(
+  logoSrc: string,
+  gridImageUrls: (string | null)[],
+  subtitle: string,
+  bottomTitle: string,
+): Promise<Blob> {
+  return renderQueued(() =>
+    renderFrontCoverPngUnqueued(logoSrc, gridImageUrls, subtitle, bottomTitle),
+  );
+}
+
+/**
+ * Render the back cover to a PNG blob. Queued — see renderQueued above.
+ */
+export function renderBackCoverPng(logoSrc: string, qrCodeSrc: string): Promise<Blob> {
+  return renderQueued(() => renderBackCoverPngUnqueued(logoSrc, qrCodeSrc));
 }

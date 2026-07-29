@@ -12,7 +12,15 @@ export type AnalyticsEvent =
   | "product_view"
   | "add_to_cart"
   | "checkout_initiated"
-  | "purchase";
+  | "purchase"
+  // Builder funnel. These stopped being fired in the 12 May 2026 build and the
+  // gap made the highest-intent part of the funnel invisible: the only way to
+  // see where people dropped out was to read orders.builder_step directly.
+  | "builder_upload"
+  | "builder_convert"
+  | "builder_approve"
+  | "builder_cover"
+  | "builder_checkout";
 
 function getSessionId(): string {
   let id = sessionStorage.getItem("_analytics_session");
