@@ -1,0 +1,33 @@
+name: Verify production is live
+
+# The frontend host is NOT wired to GitHub — merging to main does not deploy.
+# This job is the safety net: it checks what is actually serving at
+# piccoload.com and fails loudly when production drifts behind main.
+#
+# A failure here does not mean the code is broken. It means the code is
+# correct but has not been deployed.
+
+on:
+  schedule:
+    - cron: "0 9 * * *" # daily 09:00 UTC
+  workflow_dispatch: # run on demand from the Actions tab
+
+jobs:
+  verify:
+    name: Compare piccoload.com against main
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Check what is actually deployed
+        run: node scripts/verify-deploy.mjs
+
+      - name: Explain a failure
+        if: failure()
+        run: |
+          echo "::warning::Production is behind main. The code is fine — it has not been deployed."
+          echo "Trigger a build on the frontend host, then re-run this workflow."

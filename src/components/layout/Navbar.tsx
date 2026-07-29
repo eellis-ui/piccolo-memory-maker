@@ -575,7 +575,7 @@ const Navbar = () => {
 
           {/* Center: Logo (absolutely centered) */}
           <Link to="/" className="absolute left-1/2 -translate-x-1/2 flex items-center">
-            <img alt="Piccoload – From pic to pen" className="h-14 w-auto" src="/lovable-uploads/piccoload-logo-large.png" />
+            <img alt="Piccoload – From pic to pen" className="h-14 w-auto" src="/images/piccoload-logo-large.png" />
           </Link>
 
           {/* Right: Cart + CTA */}
