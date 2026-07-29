@@ -148,10 +148,14 @@ const CheckoutStep = ({ pageCount, extraPages, convertedUrls, onBack, onCheckout
         const allPaid = orders.every((o: any) => o.payment_status === "paid");
         if (allPaid) {
           const shopifyNum = orders[0]?.shopify_order_number || null;
-          trackEvent("purchase", "/builder/checkout", {
-            shopifyOrderNumber: shopifyNum,
-            bookCount: orders.length,
-          });
+          // The analytics purchase event is recorded by shopify-order-webhook,
+          // not here — this poll only runs while the tab is open, so counting
+          // it client-side lost roughly half of all purchases.
+          //
+          // The Meta pixel still fires from the browser because it needs the
+          // client context. It has the same blind spot; closing the tab after
+          // paying means Meta never sees the conversion. Fixing that properly
+          // needs the Conversions API server-side.
           metaPurchase(purchaseTotalsRef.current.value, purchaseTotalsRef.current.bookCount, shopifyNum);
           onCheckoutComplete?.(shopifyNum);
           return true;

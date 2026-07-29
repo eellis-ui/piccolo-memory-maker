@@ -119,6 +119,36 @@ Deno.serve(async (req) => {
       await admin.from("orders").update(updates).eq("id", order.id);
     }
 
+    // Record the purchase here rather than in the browser. CheckoutStep only
+    // fired this once its poll saw every order flip to paid, so anyone who
+    // closed the tab after paying was never counted — 14 events had been
+    // recorded against 31 genuinely paid orders. Payment is settled here, so
+    // this is the one place that always runs.
+    //
+    // Shopify retries webhooks, so guard on the order number to keep a retry
+    // from inflating the count. One purchase is one event, not one per book.
+    if (shopifyOrderNumber) {
+      const { data: already } = await admin
+        .from("analytics_events")
+        .select("id")
+        .eq("event_type", "purchase")
+        .eq("metadata->>shopifyOrderNumber", String(shopifyOrderNumber))
+        .maybeSingle();
+
+      if (!already) {
+        await admin.from("analytics_events").insert({
+          event_type: "purchase",
+          session_id: orders[0]?.builder_session_id ?? null,
+          path: "/builder/checkout",
+          metadata: {
+            shopifyOrderNumber: String(shopifyOrderNumber),
+            bookCount: orders.length,
+            source: "shopify_webhook",
+          },
+        });
+      }
+    }
+
     // Track affiliate discount codes
     if (discountCodes.length > 0) {
       for (const dc of discountCodes) {

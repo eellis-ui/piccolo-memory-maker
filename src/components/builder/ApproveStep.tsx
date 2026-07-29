@@ -278,11 +278,17 @@ const SortablePhotoCard = ({
     try {
       console.log(`[convert] Starting conversion for photo ${photoId}, session ${sessionId}`);
 
-      // 90-second cap. The signal has to be handed to invoke() — previously the
-      // controller was created and immediately dropped, so nothing was ever
-      // aborted and a stalled conversion hung until the user gave up.
+      // The signal has to be handed to invoke() — previously the controller was
+      // created and immediately dropped, so nothing was ever aborted and a
+      // stalled conversion hung until the user gave up.
+      //
+      // 180s, not the 90s that was written here while the abort was inert.
+      // gpt-image-1 at quality "high" is materially slower than "medium", and
+      // the page is now A4 at 300 DPI, so a healthy conversion can legitimately
+      // pass 90s. Aborting at 90 would mark good conversions failed and charge
+      // us for work we then throw away.
       const controller = new AbortController();
-      const timeout = setTimeout(() => controller.abort(), 90000);
+      const timeout = setTimeout(() => controller.abort(), 180000);
 
       let data: { success?: boolean; convertedUrl?: string; convertedPath?: string; error?: string } | null;
       let error: { message?: string } | null;
