@@ -9,6 +9,7 @@ import {
   deleteGuestPhoto,
   getSignedUrls,
 } from "@/lib/guest-api";
+import { enqueueConversion } from "@/lib/conversion-queue";
 
 interface UploadStepProps {
   orderId: string;
@@ -152,6 +153,11 @@ const UploadStep = ({ orderId, sessionId, onImagesUploaded, maxImages = 20, init
 
     try {
       const result = await uploadGuestPhoto(sessionId, orderId, normalizedBlob, position, isLandscape);
+
+      // Start converting straight away rather than waiting for the customer to
+      // reach Approve and press "Convert All". Deliberately not awaited — the
+      // upload UI must stay responsive while this runs in the background.
+      enqueueConversion(result.id, sessionId);
 
       return {
         id: localId,

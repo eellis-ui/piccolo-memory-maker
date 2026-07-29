@@ -1,4 +1,4 @@
-import { useState, useCallback } from "react";
+import { useState, useCallback, useEffect } from "react";
 import { Check, RefreshCw, Loader2, Trash2, ChevronDown, GripVertical, Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
@@ -35,6 +35,7 @@ import {
   
 } from "@/lib/guest-api";
 import { trackEvent } from "@/lib/analytics-tracker";
+import { onConversion, isQueued, allowRetry } from "@/lib/conversion-queue";
 
 // Helper: show the full image inside the card without cropping.
 // object-fit: contain keeps the entire image visible.
@@ -83,6 +84,29 @@ const ApproveStep = ({
       return next;
     });
   }, [onPhotosChange]);
+
+  // Photos are queued for conversion as they upload, so by the time this step
+  // mounts some are already done and others are still in flight. Track the
+  // background queue so those land here instead of being re-requested — a
+  // second request for a converted photo is a wasted round trip, and for one
+  // still converting it is a second paid conversion.
+  useEffect(() => {
+    const unsubscribe = onConversion((outcome) => {
+      updatePhotos((prev) =>
+        prev.map((p) =>
+          p.id === outcome.photoId
+            ? {
+                ...p,
+                conversionStatus: outcome.ok ? "completed" : "failed",
+                convertedUrl: outcome.convertedUrl ?? p.convertedUrl,
+                convertedPath: outcome.convertedPath ?? p.convertedPath,
+              }
+            : p,
+        ),
+      );
+    });
+    return unsubscribe;
+  }, [updatePhotos]);
 
   const approvedCount = photos.filter((p) => p.isApproved).length;
   const allApproved = approvedCount === photos.length && photos.length > 0;
@@ -273,6 +297,9 @@ const SortablePhotoCard = ({
 
   const convertPhoto = useCallback(async (photoId: string) => {
     setRetryCounts((prev) => ({ ...prev, [photoId]: (prev[photoId] ?? 0) + 1 }));
+    // Clear the background queue's record of this photo so an explicit retry
+    // is never silently swallowed as a duplicate.
+    allowRetry(photoId);
     // Don't add to convertingIds here — convertAll handles that for batch UX
 
     try {
@@ -355,7 +382,12 @@ const SortablePhotoCard = ({
 
   const convertAll = async () => {
     const unconverted = photos.filter(
-      (p) => p.conversionStatus === "pending" || p.conversionStatus === "failed"
+      (p) =>
+        (p.conversionStatus === "pending" || p.conversionStatus === "failed") &&
+        // Skip anything the background queue is already working on. Its status
+        // is still "pending" while in flight, so without this a customer who
+        // reaches Approve mid-queue pays to convert the same photo twice.
+        !isQueued(p.id),
     );
     if (unconverted.length === 0) return;
 
