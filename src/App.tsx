@@ -4,6 +4,7 @@ import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
+import { isAdminHost } from "@/lib/admin-host";
 import { BasketProvider } from "@/contexts/BasketContext";
 import { AuthProvider } from "@/contexts/AuthContext";
 import Index from "./pages/Index";
@@ -50,9 +51,26 @@ const App = () => (
           <BasketProvider>
             <AppInner />
             <ScrollToTop />
-            <ShopifyAnalytics />
-            <ChatWidget />
+            {/* Shop-only widgets. The dashboard is an internal tool: it has no
+                basket, and staff should not be firing customer analytics or
+                seeing the customer support chat while working orders. */}
+            {!isAdminHost() && (
+              <>
+                <ShopifyAnalytics />
+                <ChatWidget />
+              </>
+            )}
             <Suspense fallback={null}>
+              {isAdminHost() ? (
+                /* admin.piccoload.com serves the dashboard and nothing else.
+                   Customer routes are not reachable here, so a mistyped path
+                   cannot drop a staff member into the shop mid-task. */
+                <Routes>
+                  <Route path="/auth" element={<Auth />} />
+                  <Route path="/" element={<Admin />} />
+                  <Route path="*" element={<Navigate to="/" replace />} />
+                </Routes>
+              ) : (
               <Routes>
                 <Route path="/" element={<Index />} />
                 <Route path="/auth" element={<Auth />} />
@@ -79,6 +97,7 @@ const App = () => (
                 {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
                 <Route path="*" element={<NotFound />} />
               </Routes>
+              )}
             </Suspense>
           </BasketProvider>
         </AuthProvider>
