@@ -133,3 +133,45 @@ describe("conversion queue", () => {
     expect(invoke).not.toHaveBeenCalled();
   });
 });
+
+describe("eager conversion cap", () => {
+  it("converts only the first four photos of an order on upload", async () => {
+    const { enqueueEagerConversion, eagerUsed } = await import("@/lib/conversion-queue");
+    const queued = Array.from({ length: 9 }, (_, i) =>
+      enqueueEagerConversion(`eager-${i}`, "sess", "order-1"),
+    );
+    await drained();
+    expect(queued.filter(Boolean)).toHaveLength(4);
+    expect(invoke).toHaveBeenCalledTimes(4);
+    expect(eagerUsed("order-1")).toBe(4);
+  });
+
+  it("counts the cap per order, not globally", async () => {
+    const { enqueueEagerConversion } = await import("@/lib/conversion-queue");
+    for (let i = 0; i < 6; i++) enqueueEagerConversion(`a-${i}`, "sess", "order-a");
+    for (let i = 0; i < 6; i++) enqueueEagerConversion(`b-${i}`, "sess", "order-b");
+    await drained();
+    // Four each, not four between them.
+    expect(invoke).toHaveBeenCalledTimes(8);
+  });
+
+  it("still lets Approve convert the photos the cap skipped", async () => {
+    const { enqueueEagerConversion, enqueueConversion } = await import("@/lib/conversion-queue");
+    for (let i = 0; i < 6; i++) enqueueEagerConversion(`c-${i}`, "sess", "order-c");
+    await drained();
+    expect(invoke).toHaveBeenCalledTimes(4);
+
+    // Approve enqueues unconditionally; the two skipped photos must go through.
+    enqueueConversion("c-4", "sess");
+    enqueueConversion("c-5", "sess");
+    await drained();
+    expect(invoke).toHaveBeenCalledTimes(6);
+  });
+
+  it("ignores a missing order id rather than converting uncapped", async () => {
+    const { enqueueEagerConversion } = await import("@/lib/conversion-queue");
+    expect(enqueueEagerConversion("no-order", "sess", "")).toBe(false);
+    await drained();
+    expect(invoke).not.toHaveBeenCalled();
+  });
+});
