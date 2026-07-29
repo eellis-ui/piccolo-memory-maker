@@ -18,6 +18,7 @@ import { useClaimOrders } from "./hooks/use-claim-orders";
 const Builder = lazy(() => import("./pages/Builder"));
 const Auth = lazy(() => import("./pages/Auth"));
 const Admin = lazy(() => import("./pages/Admin"));
+const AdminDashboard = lazy(() => import("./pages/AdminDashboard"));
 const MyOrders = lazy(() => import("./pages/MyOrders"));
 const HowItWorks = lazy(() => import("./pages/HowItWorks"));
 const Pricing = lazy(() => import("./pages/Pricing"));
@@ -67,7 +68,7 @@ const App = () => (
                    cannot drop a staff member into the shop mid-task. */
                 <Routes>
                   <Route path="/auth" element={<Auth />} />
-                  <Route path="/" element={<Admin />} />
+                  <Route path="/" element={<AdminDashboard />} />
                   <Route path="*" element={<Navigate to="/" replace />} />
                 </Routes>
               ) : (
