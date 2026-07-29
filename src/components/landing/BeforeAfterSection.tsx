@@ -1,5 +1,6 @@
 import { ArrowRight } from "lucide-react";
 import { BlueSplash, PinkSplash } from "./ColorSplash";
+import { comparisonSrcSet, COMPARISON_SIZES } from "@/lib/images";
 
 interface ComparisonItem {
   id: string;
@@ -62,6 +63,8 @@ const BeforeAfterSection = () => {
                   <div className="aspect-[3/4] rounded-lg overflow-hidden bg-foreground/5 border border-border">
                     <img
                       src={item.beforeSrc}
+                      srcSet={comparisonSrcSet(item.beforeSrc)}
+                      sizes={COMPARISON_SIZES}
                       alt={`${item.label} — original photo`}
                       className="w-full h-full object-cover"
                     />
@@ -78,6 +81,8 @@ const BeforeAfterSection = () => {
                   <div className="aspect-[3/4] rounded-lg overflow-hidden bg-foreground/5 border border-border">
                     <img
                       src={item.afterSrc}
+                      srcSet={comparisonSrcSet(item.afterSrc)}
+                      sizes={COMPARISON_SIZES}
                       alt={`${item.label} — line-art conversion`}
                       className="w-full h-full object-cover"
                     />
