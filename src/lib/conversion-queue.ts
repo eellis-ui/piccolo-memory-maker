@@ -41,21 +41,9 @@ interface QueueItem {
   sessionId: string;
 }
 
-/**
- * How many photos per order are converted eagerly, as they upload.
- *
- * Conversion is billed per image and most builds are abandoned, so converting
- * everything on upload means paying in full for orders that never sell. A few
- * pages is enough for the customer to see the thing working — which is the
- * point, since watching nothing happen is why they leave — and the rest are
- * converted at the Approve step, by which time they have shown intent.
- */
-const EAGER_LIMIT_PER_ORDER = 4;
-
 const waiting: QueueItem[] = [];
 const seen = new Set<string>();
 const active = new Set<string>();
-const eagerPerOrder = new Map<string, number>();
 const listeners = new Set<(outcome: ConversionOutcome) => void>();
 
 /** Subscribe to conversion results. Returns an unsubscribe function. */
@@ -96,34 +84,9 @@ export function enqueueConversion(photoId: string, sessionId: string): void {
   void pump();
 }
 
-/**
- * Queue a photo that has just been uploaded, up to EAGER_LIMIT_PER_ORDER per
- * order. Returns whether it was queued; anything over the cap waits for the
- * Approve step rather than being converted speculatively.
- */
-export function enqueueEagerConversion(
-  photoId: string,
-  sessionId: string,
-  orderId: string,
-): boolean {
-  if (!orderId) return false;
-  const used = eagerPerOrder.get(orderId) ?? 0;
-  if (used >= EAGER_LIMIT_PER_ORDER) return false;
-  // Count the slot before enqueueing so two uploads finishing together cannot
-  // both read the same count and overshoot the cap.
-  eagerPerOrder.set(orderId, used + 1);
-  enqueueConversion(photoId, sessionId);
-  return true;
-}
-
 /** Forget a photo so it can be retried after a failure. */
 export function allowRetry(photoId: string): void {
   seen.delete(photoId);
-}
-
-/** Eager conversions already spent on an order. Exposed for tests. */
-export function eagerUsed(orderId: string): number {
-  return eagerPerOrder.get(orderId) ?? 0;
 }
 
 async function pump(): Promise<void> {

@@ -9,7 +9,7 @@ import {
   deleteGuestPhoto,
   getSignedUrls,
 } from "@/lib/guest-api";
-import { enqueueEagerConversion } from "@/lib/conversion-queue";
+import { enqueueConversion } from "@/lib/conversion-queue";
 
 interface UploadStepProps {
   orderId: string;
@@ -154,12 +154,12 @@ const UploadStep = ({ orderId, sessionId, onImagesUploaded, maxImages = 20, init
     try {
       const result = await uploadGuestPhoto(sessionId, orderId, normalizedBlob, position, isLandscape);
 
-      // Convert the first few straight away rather than waiting for the
-      // customer to reach Approve and press "Convert All" — seeing nothing
-      // happen is why they abandon. Capped per order, because conversion is
-      // billed per image and most builds never sell; the rest are converted at
-      // Approve, once intent is clear. Not awaited: upload must stay responsive.
-      enqueueEagerConversion(result.id, sessionId, orderId);
+      // Convert every photo as it uploads, not just the first few. The
+      // customer is buying a book and has to be able to preview the whole
+      // thing before approving it — a partial preview is not a preview, and
+      // waiting until Approve to start is what made them abandon. Deliberately
+      // not awaited: the upload UI must stay responsive while this runs.
+      enqueueConversion(result.id, sessionId);
 
       return {
         id: localId,
