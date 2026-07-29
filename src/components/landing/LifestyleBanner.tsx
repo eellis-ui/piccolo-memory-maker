@@ -1,5 +1,6 @@
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
+import { getSaleName } from "@/lib/sale";
 
 const LifestyleBanner = () => {
   return (
@@ -20,13 +21,13 @@ const LifestyleBanner = () => {
               Limited Time Only
             </p>
             <h2 className="font-display text-4xl sm:text-5xl md:text-6xl lg:text-7xl uppercase leading-tight text-background">
-              Spring Sale
+              {getSaleName()}
             </h2>
             <p className="text-lg sm:text-xl md:text-2xl font-display uppercase tracking-wide text-background">
               Up to <span className="text-[#A8C686] drop-shadow-[0_0_12px_rgba(168,198,134,0.6)]">40% Off</span> All Books
             </p>
             <p className="text-sm sm:text-base text-background/80 font-medium max-w-md mx-auto">
-              Turn your favorite spring memories into a personalized coloring book — at our best price of the year.
+              Turn your favorite memories into a personalized coloring book — at our best price of the year.
             </p>
             <Button
               asChild

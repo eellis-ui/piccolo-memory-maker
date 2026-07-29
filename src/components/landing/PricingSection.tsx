@@ -19,6 +19,7 @@ import GuaranteeBadges from "./GuaranteeBadges";
 import BeforeAfterStrip from "./BeforeAfterStrip";
 import StickyMobileCTA from "./StickyMobileCTA";
 import FinalCTABlock from "./FinalCTABlock";
+import { getSaleName } from "@/lib/sale";
 
 const physicalPricing = [
   {
@@ -128,7 +129,6 @@ const PricingSection = () => {
     setIsCartOpen(true);
   };
 
-  const currentMonth = new Date().toLocaleString("default", { month: "long" }).toUpperCase();
 
   return (
     <>
@@ -183,7 +183,7 @@ const PricingSection = () => {
                 </div>
                 <div className="relative flex justify-center">
                   <span className="bg-background px-4 text-xs font-bold uppercase tracking-widest text-foreground">
-                    {currentMonth} Sale — Final Day!
+                    {getSaleName()} — Final Day!
                   </span>
                 </div>
               </div>

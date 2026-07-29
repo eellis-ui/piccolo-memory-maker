@@ -10,6 +10,7 @@ import { useBasket, DIGITAL_DOWNLOAD_PRICE, UNIQUE_PHOTOS_PRICE } from "@/contex
 import { createShopifyCheckout, SHOPIFY_VARIANTS, type CartLineInput } from "@/lib/shopify";
 import Navbar from "@/components/layout/Navbar";
 import Footer from "@/components/layout/Footer";
+import { getSaleName } from "@/lib/sale";
 
 const OrderReview = () => {
   const {
@@ -171,7 +172,7 @@ const OrderReview = () => {
 
                         <Badge variant="secondary" className="text-[10px] font-bold uppercase tracking-wider bg-primary/10 text-primary border-0 px-2 py-0.5">
                           <Sparkles className="w-3 h-3 mr-1" />
-                          February Sale
+                          {getSaleName()}
                         </Badge>
                       </div>
                     </div>

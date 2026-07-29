@@ -21,6 +21,7 @@ import {
   SheetTrigger } from
 "@/components/ui/sheet";
 import { Separator } from "@/components/ui/separator";
+import { getSaleName } from "@/lib/sale";
 
 // ── Basket content (extracted outside Navbar to prevent remount on re-render) ──
 interface BasketContentProps {
@@ -147,7 +148,7 @@ const BasketContent = ({
             <div className="flex items-center gap-1.5">
               <Badge variant="secondary" className="text-[10px] font-bold uppercase tracking-wider bg-primary/10 text-primary border-0 px-2 py-0.5">
                 <Sparkles className="w-3 h-3 mr-1" />
-                February Sale
+                {getSaleName()}
               </Badge>
             </div>
             {/* Per-bundle unique photos toggle (only for 2+ book bundles) */}
@@ -258,7 +259,7 @@ const BasketContent = ({
               <span className="text-foreground font-medium text-sm">Discounts</span>
               <Badge variant="secondary" className="text-[9px] font-bold uppercase tracking-wider bg-muted text-foreground border-0 px-2 py-0.5 flex items-center gap-0.5">
                 <Tag className="w-2.5 h-2.5" />
-                February Sale
+                {getSaleName()}
               </Badge>
             </div>
             <span className="text-foreground font-medium text-sm">– ${totalDiscount.toFixed(2)}</span>
