@@ -49,12 +49,22 @@ export async function storefrontApiRequest(query: string, variables: Record<stri
 
 // ── Cart mutations ──
 
+/**
+ * The storefront is US-only and displays USD, but the Shopify store also has a
+ * GB market and falls back to it when a cart is created without a buyer
+ * country — checking US shoppers out in GBP at GB-market prices. Pinning the
+ * country puts every cart in the US market.
+ */
+const STOREFRONT_COUNTRY = 'US';
+const STOREFRONT_CURRENCY = 'USD';
+
 const CART_CREATE_MUTATION = `
   mutation cartCreate($input: CartInput!) {
     cartCreate(input: $input) {
       cart {
         id
         checkoutUrl
+        cost { subtotalAmount { amount currencyCode } }
         lines(first: 100) { edges { node { id attributes { key value } merchandise { ... on ProductVariant { id } } } } }
       }
       userErrors { field message }
@@ -87,7 +97,11 @@ export interface CartLineInput {
 }
 
 export async function createShopifyCheckout(lines: CartLineInput[], note?: string): Promise<string | null> {
-  const input: Record<string, unknown> = { lines };
+  const input: Record<string, unknown> = {
+    lines,
+    // Without this the cart resolves to the store's GB market and prices in GBP.
+    buyerIdentity: { countryCode: STOREFRONT_COUNTRY },
+  };
   if (note) {
     input.note = note;
     input.attributes = [{ key: "builder_session_id", value: note }];
@@ -101,6 +115,16 @@ export async function createShopifyCheckout(lines: CartLineInput[], note?: strin
     console.error('Cart creation failed:', errors);
     toast.error("Checkout failed", { description: errors[0].message });
     return null;
+  }
+
+  // A cart in the wrong market still checks out, just in the wrong currency —
+  // loud in the console rather than silently charging a US shopper in GBP.
+  const cartCurrency = data.data?.cartCreate?.cart?.cost?.subtotalAmount?.currencyCode;
+  if (cartCurrency && cartCurrency !== STOREFRONT_CURRENCY) {
+    console.error(
+      `[Shopify] Cart created in ${cartCurrency}, expected ${STOREFRONT_CURRENCY}. ` +
+      `The store's market configuration has changed — checkout totals will not match displayed prices.`,
+    );
   }
 
   const checkoutUrl = data.data?.cartCreate?.cart?.checkoutUrl;
