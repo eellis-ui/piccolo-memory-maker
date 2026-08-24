@@ -5,7 +5,7 @@ import { Badge } from "@/components/ui/badge";
 import { ShoppingCart, Star } from "lucide-react";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
-import { useBasket, UNIQUE_PHOTOS_PRICE, PERSONALIZE_COVER_PRICE } from "@/contexts/BasketContext";
+import { useBasket, UNIQUE_PHOTOS_PRICE, PERSONALIZE_COVER_PRICE, PRICING_TIERS } from "@/contexts/BasketContext";
 import { toast } from "sonner";
 import ProductImageGallery, { type ProductImage } from "./ProductImageGallery";
 import CountdownTimer from "./CountdownTimer";
@@ -21,32 +21,30 @@ import BeforeAfterStrip from "./BeforeAfterStrip";
 import StickyMobileCTA from "./StickyMobileCTA";
 import FinalCTABlock from "./FinalCTABlock";
 
-const physicalPricing = [
-  {
-    quantity: 1,
-    price: 35,
-    originalPrice: 45,
-    savingsPercent: "22%",
-    label: null as string | null,
-    savingsBadge: null as string | null,
-  },
-  {
-    quantity: 2,
-    price: 59.5,
-    originalPrice: 90,
-    savingsPercent: "34%",
-    savingsBadge: "SAVE $30.50",
-    label: "MOST POPULAR",
-  },
-  {
-    quantity: 3,
-    price: 69.3,
-    originalPrice: 135,
-    savingsPercent: "49%",
-    savingsBadge: "SAVE $65.70",
-    label: "BEST VALUE",
-  },
-];
+/**
+ * Display metadata only. Prices and savings are derived from PRICING_TIERS so
+ * this page cannot drift from what the basket charges — the two used to hold
+ * separate hardcoded copies of the same numbers.
+ */
+const TIER_LABELS: Record<number, { label: string | null; showSavingsBadge: boolean }> = {
+  1: { label: null, showSavingsBadge: false },
+  2: { label: "MOST POPULAR", showSavingsBadge: true },
+  3: { label: "BEST VALUE", showSavingsBadge: true },
+};
+
+const physicalPricing = PRICING_TIERS.map((tier) => {
+  const originalPrice = +(tier.originalPricePerBook * tier.quantity).toFixed(2);
+  const saving = +(originalPrice - tier.bundlePrice).toFixed(2);
+  const meta = TIER_LABELS[tier.quantity] ?? { label: null, showSavingsBadge: false };
+  return {
+    quantity: tier.quantity,
+    price: tier.bundlePrice,
+    originalPrice,
+    savingsPercent: `${Math.round((saving / originalPrice) * 100)}%`,
+    savingsBadge: meta.showSavingsBadge ? `SAVE $${saving.toFixed(2)}` : null,
+    label: meta.label,
+  };
+});
 
 const featureBullets = [
   { emoji: "📸", text: "Each book contains 20 Custom Photo Pages" },

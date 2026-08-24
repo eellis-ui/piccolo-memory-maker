@@ -21,12 +21,20 @@ export interface BookAddOns {
 
 const ADD_ON_PRICE = 1.99;
 export const DIGITAL_DOWNLOAD_PRICE = 6.99;
-export const UNIQUE_PHOTOS_PRICE = 4.99;
+export const UNIQUE_PHOTOS_PRICE = 5.99;
 
-const PRICING_TIERS = [
-  { quantity: 1, pricePerBook: 35, originalPricePerBook: 45 },
-  { quantity: 2, pricePerBook: 29.75, originalPricePerBook: 45 },
-  { quantity: 3, pricePerBook: 23.10, originalPricePerBook: 45 },
+/**
+ * The bundle price is authoritative — it is exactly what Shopify charges for
+ * the matching bundle variant. Per-book is derived for display only: $69.50
+ * across 3 books does not divide evenly, so deriving the total from a rounded
+ * per-book figure would be a penny out at checkout.
+ *
+ * Keep these in step with the Shopify variant prices (see docs/PRICING.md).
+ */
+export const PRICING_TIERS = [
+  { quantity: 1, bundlePrice: 35.00, originalPricePerBook: 45 },
+  { quantity: 2, bundlePrice: 59.50, originalPricePerBook: 45 },
+  { quantity: 3, bundlePrice: 69.30, originalPricePerBook: 45 },
 ];
 
 let nextItemId = 1;
@@ -77,9 +85,9 @@ function createBasketItem(quantity: number, options?: { uniquePhotos?: boolean; 
   return {
     id: `item-${nextItemId++}`,
     quantity: tier.quantity,
-    pricePerBook: tier.pricePerBook,
+    pricePerBook: +(tier.bundlePrice / tier.quantity).toFixed(2),
     originalPricePerBook: tier.originalPricePerBook,
-    totalPrice: +(tier.pricePerBook * tier.quantity).toFixed(2),
+    totalPrice: tier.bundlePrice,
     originalTotalPrice: +(tier.originalPricePerBook * tier.quantity).toFixed(2),
     uniquePhotos: options?.uniquePhotos ?? false,
     personalizeCover: options?.personalizeCover ?? false,
@@ -171,9 +179,9 @@ export const BasketProvider = ({ children }: { children: ReactNode }) => {
         return {
           ...item,
           quantity: tier.quantity,
-          pricePerBook: tier.pricePerBook,
+          pricePerBook: +(tier.bundlePrice / tier.quantity).toFixed(2),
           originalPricePerBook: tier.originalPricePerBook,
-          totalPrice: +(tier.pricePerBook * tier.quantity).toFixed(2),
+          totalPrice: tier.bundlePrice,
           originalTotalPrice: +(tier.originalPricePerBook * tier.quantity).toFixed(2),
         };
       })

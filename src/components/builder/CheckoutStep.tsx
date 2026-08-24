@@ -190,8 +190,10 @@ const CheckoutStep = ({ pageCount, extraPages, convertedUrls, onBack, onCheckout
   }, [awaitingPayment, pollForPayment]);
 
   const bookCount = item?.quantity ?? 1;
-  const basePrice = item?.pricePerBook ?? 35;
-  const originalBasePrice = item?.originalPricePerBook ?? 42;
+  // Bundle totals, not per-book × count: a bundle price need not divide evenly
+  // by its book count, and the rounded per-book figure would be a penny out.
+  const bundleTotal = item?.totalPrice ?? 35;
+  const originalBundleTotal = item?.originalTotalPrice ?? 42;
   const extraPagesPrice = extraPages === 10 ? 6 : extraPages === 20 ? 10 : extraPages === 40 ? 18 : 0;
   const digitalCount = bookDigitalDownloads.filter(b => b.enabled).length;
   const digitalPrice = digitalCount * DIGITAL_DOWNLOAD_PRICE;
@@ -203,9 +205,9 @@ const CheckoutStep = ({ pageCount, extraPages, convertedUrls, onBack, onCheckout
   const perBookAddOnsTotal = (titlePageCount + coverPersonalizeCount) * addOnPrice;
   const personalizeCoverBooksCount = personalizeCoverFromBasket ? (uniquePhotos ? bookCount : 1) : 0;
   const basketPersonalizeCoverCost = personalizeCoverBooksCount * 1.99;
-  const totalPrice = (basePrice + extraPagesPrice) * bookCount + (uniquePhotos ? uniquePhotosPrice : 0) + digitalPrice + perBookAddOnsTotal + basketPersonalizeCoverCost;
+  const totalPrice = bundleTotal + extraPagesPrice * bookCount + (uniquePhotos ? uniquePhotosPrice : 0) + digitalPrice + perBookAddOnsTotal + basketPersonalizeCoverCost;
   purchaseTotalsRef.current = { value: totalPrice, bookCount };
-  const originalTotalPrice = (originalBasePrice + extraPagesPrice) * bookCount + (uniquePhotos ? uniquePhotosPrice : 0) + digitalPrice + perBookAddOnsTotal;
+  const originalTotalPrice = originalBundleTotal + extraPagesPrice * bookCount + (uniquePhotos ? uniquePhotosPrice : 0) + digitalPrice + perBookAddOnsTotal;
 
   const maxQuantity = Math.max(...pricingTiers.map((t) => t.quantity));
   const handleDecrement = () => { if (bookCount > 1) setQuantity(bookCount - 1); };
@@ -554,8 +556,8 @@ const CheckoutStep = ({ pageCount, extraPages, convertedUrls, onBack, onCheckout
               <div className="flex justify-between items-center">
                 <span className="text-muted-foreground">Coloring Book (20 pages){bookCount > 1 ? ` × ${bookCount}` : ""}</span>
                 <div className="flex items-center gap-2">
-                  <span className="line-through text-muted-foreground text-sm">${(originalBasePrice * bookCount).toFixed(2)}</span>
-                  <span>${(basePrice * bookCount).toFixed(2)}</span>
+                  <span className="line-through text-muted-foreground text-sm">${originalBundleTotal.toFixed(2)}</span>
+                  <span>${bundleTotal.toFixed(2)}</span>
                 </div>
               </div>
 

@@ -469,7 +469,7 @@ const Navbar = () => {
     } finally {
       setIsCheckingOut(false);
     }
-  }, [items, totalBookCount, digitalCopies, setIsCartOpen]);
+  }, [items, totalBookCount, grandTotal, digitalCopies, setIsCartOpen]);
 
   const basketContentProps: BasketContentProps = {
     hasItems,
