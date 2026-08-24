@@ -31,14 +31,22 @@ mean the code is broken.
 
 ## The unresolved problem
 
-As of July 2026, production was serving a build from mid-May — roughly 17
+**Update, 24 Aug 2026:** the mid-May backlog has since been deployed —
+`npm run verify:deploy` now passes every marker from that era, so production
+did catch up. Order flow, checkout and Shopify variant IDs were verified
+working throughout.
+
+What has *not* changed is the deploy path: there is still no deploy job in
+`.github/workflows/`, so **merging to `main` still does not deploy the
+site**. Production caught up because someone triggered a build on the host,
+not because anything automated it. Every future change needs that same
+manual step until a deploy job exists.
+
+Historical detail: production was serving a build from mid-May — roughly 17
 commits behind `main`. Missing: branded OG/social preview image, corrupt
 product thumbnail fix, Meta Pixel funnel events (`AddToCart`,
 `InitiateCheckout`), legacy Shopify URL redirects, redesigned admin panel,
 live analytics dashboard.
-
-Order flow, checkout, and Shopify variant IDs were verified working
-throughout — the stale build does not break commerce.
 
 ### What is known about the host
 

@@ -75,6 +75,21 @@ const BUNDLE_CHECKS = [
     (b) => b.includes("msvcchcmxyghvpfscsmy.supabase.co"),
     "frontend talks to the piccoload backend",
   ],
+  [
+    "pixel reports USD, not GBP",
+    (b) => b.includes("USD") && !b.includes("GBP"),
+    "ad values match the prices customers see",
+  ],
+  [
+    "checkout pinned to the US market",
+    (b) => b.includes("buyerIdentity") && b.includes("countryCode"),
+    "carts price in USD instead of falling back to the GB market",
+  ],
+  [
+    "Conversions API relay wired",
+    (b) => b.includes("meta-capi"),
+    "conversions still land when the browser pixel is blocked",
+  ],
 ];
 
 const ok = (s) => `\x1b[32m✓\x1b[0m ${s}`;
