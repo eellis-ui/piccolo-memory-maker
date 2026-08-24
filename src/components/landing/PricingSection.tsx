@@ -10,6 +10,7 @@ import { toast } from "sonner";
 import ProductImageGallery, { type ProductImage } from "./ProductImageGallery";
 import CountdownTimer from "./CountdownTimer";
 import { storefrontApiRequest } from "@/lib/shopify";
+import { metaViewContent, metaAddToCart } from "@/lib/meta-pixel";
 import TrustBadges from "./TrustBadges";
 import CustomerReviewsSection from "./CustomerReviewsSection";
 import HowItWorksSection from "./HowItWorksSection";
@@ -122,7 +123,23 @@ const PricingSection = () => {
   const personalizeCoverCount = pendingPersonalizeCover ? (pendingUniquePhotos ? selectedQuantity : 1) : 0;
   const totalPrice = selectedTier.price + (pendingUniquePhotos ? UNIQUE_PHOTOS_PRICE : 0) + personalizeCoverCount * PERSONALIZE_COVER_PRICE;
 
+  // Meta ViewContent — reports the bundle price the user is actually looking
+  // at (35.00 / 59.50 / 69.30), and re-reports when they switch bundle. The
+  // delay collapses rapid tier-clicking into a single event rather than one
+  // per click. Add-on toggles deliberately do not re-fire: they change the
+  // cart value, not which product is being viewed.
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      metaViewContent(undefined, selectedTier.price);
+    }, 500);
+    return () => clearTimeout(timer);
+  }, [selectedTier.price]);
+
   const handleAddToBasket = () => {
+    // Value is the full amount going into the cart, add-ons included — that is
+    // what the button says and what the user is committing to. With no add-ons
+    // selected it equals the bundle price exactly.
+    metaAddToCart(totalPrice, selectedQuantity);
     clear();
     addToCart(selectedQuantity, { uniquePhotos: pendingUniquePhotos, personalizeCover: pendingPersonalizeCover });
     setIsCartOpen(true);
@@ -351,11 +368,7 @@ const PricingSection = () => {
       <InstagramSection />
 
       {/* 9. Final CTA Block */}
-      <FinalCTABlock onCtaClick={() => {
-        clear();
-        addToCart(selectedQuantity, { uniquePhotos: pendingUniquePhotos, personalizeCover: pendingPersonalizeCover });
-        setIsCartOpen(true);
-      }} />
+      <FinalCTABlock onCtaClick={handleAddToBasket} />
 
     </>
   );

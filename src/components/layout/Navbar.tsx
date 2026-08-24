@@ -4,9 +4,9 @@ import { Menu, X, ShoppingCart, Minus, Plus, Trash2, Shield, ClipboardList, Spar
 import { createShopifyCheckout, SHOPIFY_VARIANTS, type CartLineInput } from "@/lib/shopify";
 import { trackAddToCart } from "@/lib/shopify-analytics";
 import { trackEvent } from "@/lib/analytics-tracker";
-import { metaAddToCart, metaInitiateCheckout } from "@/lib/meta-pixel";
+import { metaInitiateCheckout } from "@/lib/meta-pixel";
 import { useState, useCallback, useEffect } from "react";
-import { useBasket, UNIQUE_PHOTOS_PRICE, DIGITAL_DOWNLOAD_PRICE, PERSONALIZE_COVER_PRICE } from "@/contexts/BasketContext";
+import { useBasket, UNIQUE_PHOTOS_PRICE, DIGITAL_DOWNLOAD_PRICE } from "@/contexts/BasketContext";
 import { useIsAdmin } from "@/hooks/use-admin";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
@@ -366,7 +366,7 @@ const CartButton = ({ isCartOpen, setIsCartOpen, hasItems, itemCount, basketCont
 const Navbar = () => {
   const navigate = useNavigate();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const { items, totalBookCount, removeItem, updateItemQuantity, toggleItemUniquePhotos, toggleItemPersonalizeCover, digitalCopies, setDigitalCopies, digitalPrice, addOns, addOnsTotal: basketAddOnsTotal, addOnPrice, uniquePhotos, uniquePhotosPrice, activeSessionId, isCartOpen, setIsCartOpen } = useBasket();
+  const { items, totalBookCount, grandTotal, removeItem, updateItemQuantity, toggleItemUniquePhotos, toggleItemPersonalizeCover, digitalCopies, setDigitalCopies, digitalPrice, addOns, addOnsTotal: basketAddOnsTotal, addOnPrice, uniquePhotos, uniquePhotosPrice, activeSessionId, isCartOpen, setIsCartOpen } = useBasket();
   const { isAdmin } = useIsAdmin();
   const { user, loading: authLoading } = useAuth();
   const isLoggedIn = !!user;
@@ -390,13 +390,7 @@ const Navbar = () => {
   const itemCount = totalBookCount + (digitalCopies > 0 ? 1 : 0) + (uniquePhotos ? 1 : 0);
 
   const bookTotal = items.reduce((s, i) => s + i.totalPrice, 0);
-  const uniquePhotosTotal = items.filter((i) => i.uniquePhotos).reduce((s) => s + UNIQUE_PHOTOS_PRICE, 0);
-  const personalizeCoverTotal = items.reduce((s, i) => {
-    if (!i.personalizeCover) return s;
-    return s + (i.uniquePhotos ? i.quantity * PERSONALIZE_COVER_PRICE : PERSONALIZE_COVER_PRICE);
-  }, 0);
-  const digitalTotal = digitalCopies > 0 ? DIGITAL_DOWNLOAD_PRICE : 0;
-  const grandTotal = bookTotal + uniquePhotosTotal + personalizeCoverTotal + digitalTotal;
+  // grandTotal comes from BasketContext — same number the builder reports to Meta.
 
   const totalOriginal = items.reduce((s, i) => s + i.originalTotalPrice, 0);
   const totalDiscount = totalOriginal - bookTotal;
@@ -442,7 +436,6 @@ const Navbar = () => {
       // Track events for our admin dashboard + Shopify
       trackEvent("add_to_cart", "/cart", { totalBookCount });
       trackEvent("checkout_initiated", "/cart", { totalBookCount });
-      metaAddToCart(grandTotal, totalBookCount);
       metaInitiateCheckout(grandTotal, totalBookCount);
       trackAddToCart(
         lines.map((line) => ({

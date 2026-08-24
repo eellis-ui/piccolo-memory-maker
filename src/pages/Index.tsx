@@ -6,7 +6,6 @@ import HeroSection from "@/components/landing/HeroSection";
 import HappyCustomersSection from "@/components/landing/HappyCustomersSection";
 import { trackProductView } from "@/lib/shopify-analytics";
 import { trackEvent } from "@/lib/analytics-tracker";
-import { metaViewContent } from "@/lib/meta-pixel";
 import { SHOPIFY_VARIANTS } from "@/lib/shopify";
 import HeroVideoSection from "@/components/landing/HeroVideoSection";
 import LifestyleBanner from "@/components/landing/LifestyleBanner";
@@ -27,8 +26,10 @@ const Index = () => {
       variantId: SHOPIFY_VARIANTS.COLORING_BOOK,
       variantTitle: "20 Pages",
     });
+    // No Meta ViewContent here — the landing page is a PageView only (fired by
+    // the base pixel in index.html). ViewContent starts at /pricing, where a
+    // specific bundle and price are actually on screen.
     trackEvent("product_view", "/");
-    metaViewContent("Landing Page");
   }, []);
 
   return (

@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useState, useEffect, useCallback, useRef } from "react";
 import { Check, BookOpen, Copy, Link2, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useNavigate, useSearchParams } from "react-router-dom";
@@ -20,7 +20,7 @@ import {
 } from "@/lib/guest-api";
 import { trackProductView } from "@/lib/shopify-analytics";
 import { trackEvent } from "@/lib/analytics-tracker";
-import { metaViewContent } from "@/lib/meta-pixel";
+import { metaViewContent, metaInitiateCheckout } from "@/lib/meta-pixel";
 import { SHOPIFY_VARIANTS } from "@/lib/shopify";
 
 type BuilderStep = "upload" | "approve" | "cover" | "checkout";
@@ -70,7 +70,7 @@ const Builder = () => {
   const [searchParams] = useSearchParams();
   const resumeSessionId = searchParams.get("sessionId");
 
-  const { item, items, addOns, uniquePhotos, totalBookCount, addToCart, clear, setActiveSessionId } = useBasket();
+  const { item, items, addOns, uniquePhotos, totalBookCount, grandTotal, addToCart, clear, setActiveSessionId } = useBasket();
   const bookCount = item?.quantity ?? 1;
 
   const [books, setBooks] = useState<BookState[]>([]);
@@ -94,8 +94,26 @@ const Builder = () => {
       variantTitle: "20 Pages",
     });
     trackEvent("product_view", "/builder");
-    metaViewContent("Book Builder");
   }, []);
+
+  // Meta ViewContent + InitiateCheckout for builder entry.
+  //
+  // Gated on a priced cart rather than fired on mount: when the user resumes a
+  // session from a URL the basket is rebuilt asynchronously, and firing on
+  // mount would report a value of 0. The ref keeps it to one pair of events
+  // per builder entry however many times the cart total then changes.
+  const funnelEntryFired = useRef(false);
+  useEffect(() => {
+    if (funnelEntryFired.current) return;
+    // Coming back from a completed Shopify checkout (?paid=true) is not a
+    // funnel entry — firing here would report an InitiateCheckout moments
+    // before the Purchase for the same order.
+    if (postCheckout) return;
+    if (grandTotal <= 0 || totalBookCount <= 0) return;
+    funnelEntryFired.current = true;
+    metaViewContent("Book Builder", grandTotal);
+    metaInitiateCheckout(grandTotal, totalBookCount);
+  }, [grandTotal, totalBookCount, postCheckout]);
 
   // Save step to DB whenever it changes
   const persistStep = useCallback(async (orderId: string, step: BuilderStep) => {

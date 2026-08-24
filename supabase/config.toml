@@ -20,3 +20,6 @@ verify_jwt = false
 
 [functions.generate-customer-pdf]
 verify_jwt = false
+
+[functions.meta-capi]
+verify_jwt = false

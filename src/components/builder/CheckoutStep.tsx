@@ -9,7 +9,7 @@ import { useBasket, DIGITAL_DOWNLOAD_PRICE } from "@/contexts/BasketContext";
 import { createShopifyCheckout, SHOPIFY_VARIANTS, type CartLineInput } from "@/lib/shopify";
 import { trackAddToCart } from "@/lib/shopify-analytics";
 import { trackEvent } from "@/lib/analytics-tracker";
-import { metaAddToCart, metaInitiateCheckout, metaPurchase } from "@/lib/meta-pixel";
+import { metaPurchase } from "@/lib/meta-pixel";
 import { getSessionOrders, uploadCover } from "@/lib/guest-api";
 import { renderFrontCoverPng } from "@/lib/cover-renderer";
 import logoImg from "@/assets/piccoload-logo.png";
@@ -302,8 +302,10 @@ const CheckoutStep = ({ pageCount, extraPages, convertedUrls, onBack, onCheckout
       // Track events for our admin dashboard + Shopify analytics
       trackEvent("add_to_cart", "/builder/checkout", { bookCount });
       trackEvent("checkout_initiated", "/builder/checkout", { bookCount });
-      metaAddToCart(totalPrice, bookCount);
-      metaInitiateCheckout(totalPrice, bookCount);
+      // No Meta AddToCart / InitiateCheckout here. AddToCart now fires at the
+      // real Add to Cart button on /pricing, and InitiateCheckout fires on
+      // builder entry — firing them again at the Shopify redirect would
+      // double-count both events for every order.
       trackAddToCart(
         lines.map((line) => ({
           productGid: "gid://shopify/Product/15269689852277",

@@ -38,6 +38,8 @@ interface BasketContextType {
   items: BasketItem[];
   /** Total book count across all line items */
   totalBookCount: number;
+  /** Cart total incl. every add-on — the single source of truth for cart value. */
+  grandTotal: number;
   /** Add a bundle to the cart (stacks as new line item) */
   addToCart: (quantity: number, options?: { uniquePhotos?: boolean; personalizeCover?: boolean }) => void;
   /** Remove a specific line item by id */
@@ -122,6 +124,18 @@ export const BasketProvider = ({ children }: { children: ReactNode }) => {
 
   const totalBookCount = items.reduce((sum, i) => sum + i.quantity, 0);
 
+  // Cart total including every add-on. Previously computed inline in the cart
+  // drawer; it lives here so the drawer, the builder and the Meta pixel all
+  // report the same number.
+  const bookTotal = items.reduce((s, i) => s + i.totalPrice, 0);
+  const uniquePhotosCost = items.filter((i) => i.uniquePhotos).length * UNIQUE_PHOTOS_PRICE;
+  const personalizeCoverCost = items.reduce((s, i) => {
+    if (!i.personalizeCover) return s;
+    return s + (i.uniquePhotos ? i.quantity * PERSONALIZE_COVER_PRICE : PERSONALIZE_COVER_PRICE);
+  }, 0);
+  const digitalTotal = digitalCopies > 0 ? DIGITAL_DOWNLOAD_PRICE : 0;
+  const grandTotal = +(bookTotal + uniquePhotosCost + personalizeCoverCost + digitalTotal).toFixed(2);
+
   // Backward compat: first item or a synthesized aggregate
   const item: BasketItem | null = items.length > 0
     ? {
@@ -191,7 +205,7 @@ export const BasketProvider = ({ children }: { children: ReactNode }) => {
   return (
     <BasketContext.Provider
       value={{
-        item, items, totalBookCount,
+        item, items, totalBookCount, grandTotal,
         addToCart, removeItem, updateItemQuantity, setQuantity, clear,
         pricingTiers: PRICING_TIERS,
         digitalCopies, setDigitalCopies, digitalPrice,

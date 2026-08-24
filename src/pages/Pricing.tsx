@@ -5,7 +5,6 @@ import ReviewsBanner from "@/components/landing/ReviewsBanner";
 import PricingSection from "@/components/landing/PricingSection";
 import { trackProductView } from "@/lib/shopify-analytics";
 import { trackEvent } from "@/lib/analytics-tracker";
-import { metaViewContent } from "@/lib/meta-pixel";
 import { SHOPIFY_VARIANTS } from "@/lib/shopify";
 
 const Pricing = () => {
@@ -18,8 +17,9 @@ const Pricing = () => {
       variantId: SHOPIFY_VARIANTS.COLORING_BOOK,
       variantTitle: "20 Pages",
     });
+    // Meta ViewContent is fired by PricingSection, which owns the bundle
+    // selection and therefore the price to report.
     trackEvent("product_view", "/pricing");
-    metaViewContent();
   }, []);
 
   return (
