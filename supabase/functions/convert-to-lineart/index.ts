@@ -29,6 +29,49 @@ function exifSwapsDimensions(o: number): boolean { return o >= 5 && o <= 8; }
 const corsHeaders = { "Access-Control-Allow-Origin": "*", "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version" };
 const A4_PW = 1240, A4_PH = 1754, A4_LW = 1754, A4_LH = 1240;
 
+/**
+ * Stretch the input's contrast before sending it to the model.
+ *
+ * A dark or flat photo carries very little edge information, and the model
+ * fills that vacuum by inventing detail — added faces, invented furniture,
+ * populated shelves. Normalising first gives it real edges to trace. Clips
+ * the top and bottom 1% of the luminance histogram and rescales.
+ *
+ * No-ops on an image that is already well spread, or too flat to rescale
+ * safely.
+ */
+function autoContrast(img: Image): void {
+  const hist = new Uint32Array(256);
+  for (let x = 1; x <= img.width; x++) {
+    for (let y = 1; y <= img.height; y++) {
+      const p = img.getPixelAt(x, y);
+      const l = Math.round(((p >> 24) & 0xFF) * 0.299 + ((p >> 16) & 0xFF) * 0.587 + ((p >> 8) & 0xFF) * 0.114);
+      hist[l]++;
+    }
+  }
+  const cut = Math.floor((img.width * img.height) * 0.01);
+  let lo = 0, hi = 255, acc = 0;
+  for (let i = 0; i < 256; i++) { acc += hist[i]; if (acc > cut) { lo = i; break; } }
+  acc = 0;
+  for (let i = 255; i >= 0; i--) { acc += hist[i]; if (acc > cut) { hi = i; break; } }
+  // Already using most of the range, or so flat that stretching would only
+  // amplify noise — leave it alone.
+  if (hi - lo < 16 || (lo < 12 && hi > 243)) return;
+  const scale = 255 / (hi - lo);
+  const clamp = (v: number) => v < 0 ? 0 : v > 255 ? 255 : v;
+  for (let x = 1; x <= img.width; x++) {
+    for (let y = 1; y <= img.height; y++) {
+      const p = img.getPixelAt(x, y);
+      img.setPixelAt(x, y, Image.rgbaToColor(
+        clamp(Math.round((((p >> 24) & 0xFF) - lo) * scale)),
+        clamp(Math.round((((p >> 16) & 0xFF) - lo) * scale)),
+        clamp(Math.round((((p >> 8) & 0xFF) - lo) * scale)),
+        255,
+      ));
+    }
+  }
+}
+
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
   try {
@@ -89,18 +132,20 @@ Deno.serve(async (req) => {
       const swapped = exifSwapsDimensions(exifOri);
       actualIsLandscape = (swapped ? height : width) > (swapped ? width : height);
       const MAX_DIM = 1536;
+      let prepared = inputImg;
       if (width > MAX_DIM || height > MAX_DIM) {
         const scale = MAX_DIM / Math.max(width, height);
         width = Math.round(width * scale);
         height = Math.round(height * scale);
-        processedBuffer = (await inputImg.resize(width, height).encode()).buffer;
-      } else {
-        processedBuffer = (await inputImg.encode()).buffer;
+        prepared = inputImg.resize(width, height);
       }
+      // Resize first so the histogram pass runs over fewer pixels.
+      autoContrast(prepared);
+      processedBuffer = (await prepared.encode()).buffer;
     } catch (e) { processedBuffer = arrayBuffer; }
     const openaiPrompt = `Trace this photograph into a printable COLORING BOOK PAGE. This is a TRACING task, not an illustration task — reproduce what is actually in the photograph, do not reinterpret, restyle or embellish it.
 
-FIDELITY — THE MOST IMPORTANT RULE: Draw ONLY what is visibly present in the photograph. Do NOT add objects, people, animals, patterns, props, scenery, borders or decoration that are not in the original. Keep every subject in the same position, pose, scale and proportion as the photo. If a detail is not clearly visible, leave it out rather than inventing it.
+FIDELITY — THE MOST IMPORTANT RULE: Draw ONLY what is visibly present in the photograph. Do NOT add objects, people, animals, patterns, props, scenery, borders or decoration that are not in the original. Count the people in the photo and draw exactly that many — never add a person or a face that is not there. Do not populate empty rooms, walls, shelves or surfaces with invented pictures, portraits, plants or ornaments. Keep every subject in the same position, pose, scale and proportion as the photo. If the photo is dark, dim or hard to read, draw only the shapes you can genuinely make out and leave the rest white — do NOT fill the uncertainty with invented detail.
 
 PEOPLE — LIKENESS IS CRITICAL: Each person must stay recognisable as that specific individual. Follow the photograph exactly for head and face shape, jawline, the spacing/size/shape of the eyes, the shape of the nose and of the mouth, and the actual hairstyle, parting and hairline. Do NOT substitute a generic, idealised or cartoon face — a stock face that does not resemble the person in the photo is a failure. Draw only the features you can actually see. Faces must still be complete and readable, never blank ovals.
 
@@ -110,7 +155,7 @@ ANIMALS: Draw the features that are actually visible (eyes, nose, mouth, ears, f
 
 TEXT: If the photo contains any letters, numbers, words or signs, draw them as clear bold outlined letters in the same place — they must be readable.
 
-NO SOLID BLACK AREAS: Every region must be WHITE inside its outline. Dark hair, dark clothing, shadows, sunglasses, dark fur and dark backgrounds are drawn as OUTLINES ONLY with white interiors — never filled in, never blocked out. The single exception is the pupil of an eye, which may be a small filled dot. There must be no black patch anywhere else on the page.
+NO SOLID BLACK AREAS: Every region must be WHITE inside its outline. Dark hair, dark clothing, shadows, sunglasses, dark fur and dark backgrounds are drawn as OUTLINES ONLY with white interiors — never filled in, never blocked out. A black or dark suit, tuxedo, dinner jacket, dress or coat must show its lapels, buttons, seams and folds as LINES on a WHITE interior — a filled-in garment is a failure. The single exception is the pupil of an eye, which may be a small filled dot. There must be no black patch anywhere else on the page.
 
 FORBIDDEN: NO grey, NO shading, NO gradients, NO hatching or stippling, NO photo-realistic rendering. Background that is plain, blurred or out-of-focus must be left as plain white — do not invent decoration to fill it.
 
