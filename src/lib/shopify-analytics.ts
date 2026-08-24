@@ -17,8 +17,11 @@ export const SHOPIFY_ANALYTICS_CONFIG = {
   shopId: "gid://shopify/Shop/91857289589",
   shopDomain: "piccaload.myshopify.com",
   storefrontId: "piccoload-headless",
-  currency: "GBP",
-  acceptedLanguage: "en-GB",
+  // US-only storefront. This must track the market carts are created in
+  // (see STOREFRONT_COUNTRY in src/lib/shopify.ts) or Shopify's analytics
+  // reports a different currency than the customer is actually charged.
+  currency: "USD",
+  acceptedLanguage: "en-US",
 } as const;
 
 /* ─── Helpers ─── */
