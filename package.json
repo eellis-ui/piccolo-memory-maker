@@ -11,7 +11,8 @@
     "preview": "vite preview",
     "test": "vitest run",
     "test:watch": "vitest",
-    "verify:deploy": "node scripts/verify-deploy.mjs"
+    "verify:deploy": "node scripts/verify-deploy.mjs",
+    "verify:pricing": "node scripts/verify-pricing.mjs"
   },
   "dependencies": {
     "@dnd-kit/core": "^6.3.1",

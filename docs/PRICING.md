@@ -56,19 +56,47 @@ for display only. `PricingSection` derives its prices and savings badges from
 the same tiers rather than keeping a second hardcoded copy — the two used to
 drift independently.
 
-## Known add-on quirk
+## Add-on charges: 50 of 80 combinations undercharge
 
-The builder's title-page and dedication-page toggles both bill through the same
-Shopify `PERSONALIZE_COVER` variant, but the two sides count differently:
+`npm run verify:pricing` walks every combination a customer can select,
+computes the displayed total and creates a real Shopify cart from the lines
+the app would send. Result as of 24 Aug 2026: **30 of 80 match, 50 undercharge**
+by $1.99 or $3.98. Nothing overcharges.
 
-- **Displayed total** *sums* the contributions — title page, dedication page
-  and the basket's "personalize cover" option each add $1.99.
-- **The Shopify line** takes the *maximum* of the title-page-derived count and
-  the basket count, not the sum.
+Bundle prices, extra photos and the digital download are all correct. Every
+failure comes from the three add-on toggles, via two independent bugs:
 
-So a customer who selects more than one of those is shown more than Shopify
-charges. Not a currency or price-list problem — the two counting rules simply
-disagree. Reconciling them means picking which rule is intended.
+### 1. The dedication page is never charged
+
+The displayed total counts it (`perBookAddOnsTotal` includes
+`dedicationPageEnabled`), but the Shopify `PERSONALIZE_COVER` line derives its
+quantity from `titlePageEnabled` only. Dedication contributes to no line item,
+so it is advertised at +$1.99 and billed at $0 — in every combination where it
+is selected.
+
+### 2. Cover and title page collapse into one charge
+
+The displayed total *sums* the contributions: title page, dedication page and
+the basket's "personalize cover" option each add $1.99. The Shopify line takes
+the *maximum* of the title-page-derived count and the basket count. So a
+customer selecting both the basket cover option and a title page is shown
+2 x $1.99 and charged 1 x $1.99.
+
+The two bugs stack: cover + title + dedication is shown $3.98 above what
+Shopify charges.
+
+### Fixing it
+
+Both sides need one counting rule. Which rule is the pricing decision:
+
+- **Charge per add-on** (the displayed rule) — each of the three toggles bills
+  $1.99. Customers pay what they are shown; revenue rises up to $3.98/order.
+  Needs the cart lines changed, and a Shopify variant for the dedication page.
+- **Charge once** (the Shopify rule) — one $1.99 cover charge however many
+  toggles are on. Needs the displayed total changed to stop summing.
+
+Nothing is changed here pending that decision. No customer has been
+overcharged by this — it is lost revenue only.
 
 ## Not a thing any more
 
