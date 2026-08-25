@@ -30,6 +30,103 @@ async function verifyShopifyWebhook(body: string, hmacHeader: string): Promise<b
   return computed === hmacHeader;
 }
 
+/** SHA-256 hex digest — the format Meta requires for all PII fields. */
+async function sha256Hex(value: string): Promise<string> {
+  const digest = await crypto.subtle.digest(
+    "SHA-256",
+    new TextEncoder().encode(value.trim().toLowerCase()),
+  );
+  return Array.from(new Uint8Array(digest))
+    .map((b) => b.toString(16).padStart(2, "0"))
+    .join("");
+}
+
+/**
+ * Send the server-side Purchase to Meta's Conversions API.
+ *
+ * `eventId` must be byte-identical to the one the browser pixel used
+ * (`purchase-<shopify order number>`, built by purchaseEventId() in
+ * src/lib/meta-pixel.ts) so Meta deduplicates the pair rather than counting
+ * the order twice.
+ *
+ * This is the authoritative Purchase: the value comes from Shopify's own
+ * order total, so it already includes every add-on.
+ *
+ * Fire-and-forget — a Meta outage must never fail the Shopify webhook, which
+ * Shopify would then retry and double-process.
+ */
+async function sendMetaPurchase(params: {
+  eventId: string;
+  value: number;
+  currency: string;
+  numItems: number;
+  email?: string | null;
+  firstName?: string | null;
+  lastName?: string | null;
+  city?: string | null;
+  zip?: string | null;
+  country?: string | null;
+}): Promise<void> {
+  const accessToken = Deno.env.get("META_CAPI_ACCESS_TOKEN");
+  if (!accessToken) {
+    console.warn("META_CAPI_ACCESS_TOKEN is not set — skipping server-side Purchase");
+    return;
+  }
+
+  try {
+    const pixelId = Deno.env.get("META_PIXEL_ID") || "1809702712963152";
+    const testEventCode = Deno.env.get("META_TEST_EVENT_CODE");
+
+    const userData: Record<string, unknown> = {};
+    if (params.email) userData.em = [await sha256Hex(params.email)];
+    if (params.firstName) userData.fn = [await sha256Hex(params.firstName)];
+    if (params.lastName) userData.ln = [await sha256Hex(params.lastName)];
+    if (params.city) userData.ct = [await sha256Hex(params.city.replace(/\s/g, ""))];
+    if (params.zip) userData.zp = [await sha256Hex(params.zip.replace(/\s/g, ""))];
+    if (params.country) userData.country = [await sha256Hex(params.country)];
+
+    const res = await fetch(
+      `https://graph.facebook.com/v21.0/${pixelId}/events`,
+      {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          data: [
+            {
+              event_name: "Purchase",
+              event_time: Math.floor(Date.now() / 1000),
+              event_id: params.eventId,
+              action_source: "website",
+              event_source_url: Deno.env.get("SITE_URL") || undefined,
+              user_data: userData,
+              custom_data: {
+                value: Number(params.value.toFixed(2)),
+                currency: params.currency,
+                content_name: "Personalised Colouring Book",
+                content_type: "product",
+                num_items: params.numItems,
+              },
+            },
+          ],
+          access_token: accessToken,
+          ...(testEventCode ? { test_event_code: testEventCode } : {}),
+        }),
+      },
+    );
+
+    const result = await res.json();
+    if (!res.ok) {
+      console.error("Meta CAPI rejected Purchase:", params.eventId, JSON.stringify(result));
+    } else {
+      console.log("Meta CAPI accepted Purchase:", params.eventId, JSON.stringify(result));
+    }
+  } catch (err) {
+    console.error("Meta CAPI Purchase failed:", err);
+  }
+}
+
+console.log(`boot: META_CAPI_ACCESS_TOKEN set: ${!!Deno.env.get("META_CAPI_ACCESS_TOKEN")}`);
+
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
@@ -117,6 +214,43 @@ Deno.serve(async (req) => {
       }
 
       await admin.from("orders").update(updates).eq("id", order.id);
+    }
+
+    // Record the purchase for the admin live dashboard. Server-side because
+    // the browser-side event only fires if the customer returns to the
+    // builder tab after paying — most don't. A DB trigger dedupes on
+    // metadata->>'shopifyOrderNumber' so webhook retries and the client-side
+    // event can never double-count.
+    const { error: purchaseEvErr } = await admin.from("analytics_events").insert({
+      event_type: "purchase",
+      session_id: sessionId,
+      path: "/builder/checkout",
+      metadata: {
+        shopifyOrderNumber,
+        bookCount: orders.length,
+        orderTotal,
+        source: "shopify-webhook",
+      },
+    });
+    if (purchaseEvErr) {
+      console.warn("analytics purchase insert failed:", purchaseEvErr.message);
+    }
+
+    // Server-side Purchase for Meta — deduplicated against the browser pixel
+    // event via the shared, order-derived event ID.
+    if (shopifyOrderNumber) {
+      await sendMetaPurchase({
+        eventId: `purchase-${shopifyOrderNumber}`,
+        value: orderTotal,
+        currency: payload.currency || "USD",
+        numItems: orders.length,
+        email: customerEmail,
+        firstName: payload.customer?.first_name || payload.shipping_address?.first_name,
+        lastName: payload.customer?.last_name || payload.shipping_address?.last_name,
+        city: payload.shipping_address?.city,
+        zip: payload.shipping_address?.zip,
+        country: payload.shipping_address?.country_code,
+      });
     }
 
     // Track affiliate discount codes
