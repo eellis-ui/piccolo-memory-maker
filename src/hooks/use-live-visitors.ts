@@ -218,3 +218,78 @@ export function useLiveDashboard(): LiveDashboardData {
 
   return { visitorsNow, byPage, today, loading };
 }
+
+/* ─────────────────────────────────────────────
+   useBuilderFunnel — how far people get building a book
+   (last 7 days, from orders + order_photos — the source
+   of truth, not analytics events)
+   ───────────────────────────────────────────── */
+export interface BuilderFunnelStats {
+  buildsStarted: number;
+  booksWithPhotos: number;
+  photosUploaded: number;
+  reachedPreview: number;
+  purchased: number;
+}
+
+export function useBuilderFunnel(enabled: boolean): BuilderFunnelStats & { loading: boolean } {
+  const [stats, setStats] = useState<BuilderFunnelStats>({
+    buildsStarted: 0,
+    booksWithPhotos: 0,
+    photosUploaded: 0,
+    reachedPreview: 0,
+    purchased: 0,
+  });
+  const [loading, setLoading] = useState(true);
+
+  const fetchStats = useCallback(async () => {
+    const since = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString();
+
+    const [ordersRes, photosRes] = await Promise.all([
+      supabase
+        .from("orders")
+        .select("id, builder_step, status")
+        .gte("created_at", since),
+      supabase
+        .from("order_photos")
+        .select("order_id")
+        .gte("created_at", since),
+    ]);
+
+    if (ordersRes.error || photosRes.error) {
+      console.warn(
+        "[BuilderFunnel] Failed to fetch:",
+        ordersRes.error?.message || photosRes.error?.message
+      );
+      setLoading(false);
+      return;
+    }
+
+    const orders = (ordersRes.data ?? []) as unknown as {
+      id: string;
+      builder_step: string | null;
+      status: string;
+    }[];
+    const photos = (photosRes.data ?? []) as unknown as { order_id: string }[];
+
+    setStats({
+      buildsStarted: orders.length,
+      booksWithPhotos: new Set(photos.map((p) => p.order_id)).size,
+      photosUploaded: photos.length,
+      reachedPreview: orders.filter(
+        (o) => o.status !== "draft" || o.builder_step === "approve" || o.builder_step === "cover"
+      ).length,
+      purchased: orders.filter((o) => o.status !== "draft").length,
+    });
+    setLoading(false);
+  }, []);
+
+  useEffect(() => {
+    if (!enabled) return;
+    fetchStats();
+    const interval = setInterval(fetchStats, 60_000);
+    return () => clearInterval(interval);
+  }, [enabled, fetchStats]);
+
+  return { ...stats, loading };
+}

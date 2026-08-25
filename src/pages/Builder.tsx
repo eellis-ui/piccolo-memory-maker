@@ -19,7 +19,7 @@ import {
   updateGuestOrder,
 } from "@/lib/guest-api";
 import { trackProductView } from "@/lib/shopify-analytics";
-import { trackEvent } from "@/lib/analytics-tracker";
+import { trackEvent, type AnalyticsEvent } from "@/lib/analytics-tracker";
 import { metaViewContent } from "@/lib/meta-pixel";
 import { SHOPIFY_VARIANTS } from "@/lib/shopify";
 
@@ -100,6 +100,7 @@ const Builder = () => {
   // Save step to DB whenever it changes
   const persistStep = useCallback(async (orderId: string, step: BuilderStep) => {
     const sid = sessionId || getOrCreateSessionId();
+    trackEvent(`builder_${step}` as AnalyticsEvent, "/builder", { orderId });
     await updateGuestOrder(sid, orderId, { builder_step: step });
   }, [sessionId]);
 
