@@ -140,7 +140,7 @@ async function sendSaveLinkEmail(email: string, sessionId: string): Promise<bool
       body: JSON.stringify({
         from: fromEmail,
         to: [email],
-        subject: "Your Piccolo book is saved — here's your link",
+        subject: "Your Piccoload book is saved — here's your link",
         html,
       }),
     });
@@ -153,6 +153,56 @@ async function sendSaveLinkEmail(email: string, sessionId: string): Promise<bool
   } catch (err) {
     console.error("Save-link email error:", err);
     return false;
+  }
+}
+
+/**
+ * Put the captured email on the Shopify customer list (tagged, subscribed)
+ * so Shopify-side abandoned-cart and marketing emails cover this visitor.
+ * Best-effort: a Shopify hiccup never fails the save.
+ */
+async function syncShopifyCustomer(email: string): Promise<void> {
+  const token = Deno.env.get("SHOPIFY_ACCESS_TOKEN") ?? Deno.env.get("SHOPIFY_ADMIN_TOKEN");
+  if (!token) {
+    console.warn("SHOPIFY_ACCESS_TOKEN not set — Shopify customer sync skipped");
+    return;
+  }
+  const base = "https://piccaload.myshopify.com/admin/api/2025-07";
+  const headers = { "Content-Type": "application/json", "X-Shopify-Access-Token": token };
+  try {
+    const searchRes = await fetch(
+      `${base}/customers/search.json?query=${encodeURIComponent(`email:${email}`)}`,
+      { headers },
+    );
+    if (searchRes.ok) {
+      const found = await searchRes.json();
+      if (Array.isArray(found.customers) && found.customers.length > 0) {
+        console.log("Shopify customer already exists:", email);
+        return;
+      }
+    }
+    const createRes = await fetch(`${base}/customers.json`, {
+      method: "POST",
+      headers,
+      body: JSON.stringify({
+        customer: {
+          email,
+          tags: "builder-save",
+          email_marketing_consent: {
+            state: "subscribed",
+            opt_in_level: "single_opt_in",
+            consent_updated_at: new Date().toISOString(),
+          },
+        },
+      }),
+    });
+    if (!createRes.ok) {
+      console.error("Shopify customer create failed:", createRes.status, await createRes.text());
+    } else {
+      console.log("Shopify customer created:", email);
+    }
+  } catch (err) {
+    console.error("Shopify customer sync error:", err);
   }
 }
 
@@ -376,14 +426,18 @@ Deno.serve(async (req) => {
       if (draftErr) throw draftErr;
       if (!drafts || drafts.length === 0) throw new Error("No draft orders for session");
 
+      // builder_email survives even after the Shopify webhook overwrites
+      // customer_email with the address typed at checkout — account claiming
+      // matches on either, so orders stay reachable under both.
       const { error: updErr } = await supabase
         .from("orders")
-        .update({ customer_email: cleanEmail })
+        .update({ customer_email: cleanEmail, builder_email: cleanEmail })
         .eq("builder_session_id", sid)
         .eq("status", "draft");
       if (updErr) throw updErr;
 
       const emailSent = await sendSaveLinkEmail(cleanEmail, sid);
+      await syncShopifyCustomer(cleanEmail);
       return json({ success: true, emailSent });
     }
 

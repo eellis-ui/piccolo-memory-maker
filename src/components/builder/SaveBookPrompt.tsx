@@ -69,8 +69,8 @@ const SaveBookPrompt = ({ sessionId, hasConvertedPhotos }: { sessionId: string |
         <div className="flex-1">
           <p className="text-sm font-medium">Love how your pages look? Save your book</p>
           <p className="text-xs text-muted-foreground mb-3">
-            We&rsquo;ll email you a link so you can finish any time, on any device.
-            No spam — just your link.
+            We&rsquo;ll email you a link so you can finish any time, on any device,
+            plus the odd book reminder. Unsubscribe whenever you like.
           </p>
           <form
             className="flex flex-col sm:flex-row gap-2"
