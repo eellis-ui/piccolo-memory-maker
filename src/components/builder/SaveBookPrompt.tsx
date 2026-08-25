@@ -1,8 +1,9 @@
 /**
- * "Save your book" email capture — shown in the builder once the visitor
- * has uploaded at least one photo. Saves the email onto the session's draft
- * orders and emails a resume link straight away; a scheduled backend job
- * nudges once more if the build stalls.
+ * "Save your book" email capture — shown in the builder once at least one
+ * photo has been converted to line art, right after the visitor has seen
+ * the result. Saves the email onto the session's draft orders and emails a
+ * resume link straight away; a scheduled backend job nudges once more if
+ * the build stalls.
  */
 import { useState } from "react";
 import { Mail, X } from "lucide-react";
@@ -15,7 +16,7 @@ import { trackEvent } from "@/lib/analytics-tracker";
 const savedKey = (sessionId: string) => `piccoload_saved_email_${sessionId}`;
 const dismissedKey = "piccoload_save_prompt_dismissed";
 
-const SaveBookPrompt = ({ sessionId, hasPhotos }: { sessionId: string | null; hasPhotos: boolean }) => {
+const SaveBookPrompt = ({ sessionId, hasConvertedPhotos }: { sessionId: string | null; hasConvertedPhotos: boolean }) => {
   const [email, setEmail] = useState("");
   const [saving, setSaving] = useState(false);
   const [done, setDone] = useState(
@@ -25,7 +26,7 @@ const SaveBookPrompt = ({ sessionId, hasPhotos }: { sessionId: string | null; ha
     () => sessionStorage.getItem(dismissedKey) === "1"
   );
 
-  if (!sessionId || !hasPhotos || done || dismissed) return null;
+  if (!sessionId || !hasConvertedPhotos || done || dismissed) return null;
 
   const handleSave = async () => {
     const clean = email.trim();
@@ -66,7 +67,7 @@ const SaveBookPrompt = ({ sessionId, hasPhotos }: { sessionId: string | null; ha
       <div className="flex items-start gap-3">
         <Mail className="w-5 h-5 mt-0.5 text-muted-foreground shrink-0" />
         <div className="flex-1">
-          <p className="text-sm font-medium">Save your book for later</p>
+          <p className="text-sm font-medium">Love how your pages look? Save your book</p>
           <p className="text-xs text-muted-foreground mb-3">
             We&rsquo;ll email you a link so you can finish any time, on any device.
             No spam — just your link.

@@ -727,7 +727,9 @@ const Builder = () => {
               <>
                 <SaveBookPrompt
                   sessionId={sessionId}
-                  hasPhotos={books.some((b) => b.photos.length > 0)}
+                  hasConvertedPhotos={books.some((b) =>
+                    b.photos.some((p) => !!p.convertedUrl || p.conversionStatus === "completed")
+                  )}
                 />
 
                 {activeBook.step === "upload" && activeBookIndex === 0 && bookCount > 1 && (
