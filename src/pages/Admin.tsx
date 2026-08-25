@@ -24,6 +24,7 @@ import {
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { toast } from "sonner";
 import Navbar from "@/components/layout/Navbar";
+import VisitorJourneys from "@/components/admin/VisitorJourneys";
 import type { Json } from "@/integrations/supabase/types";
 
 /* ─── Constants & helpers ─── */
@@ -671,6 +672,9 @@ const Admin = () => {
               )}
             </div>
           </div>
+
+          {/* ─── Visitor journeys (timestamped) ─── */}
+          <VisitorJourneys enabled={isAdmin} />
 
           {/* ─── Orders header ─── */}
           <div className="flex items-center justify-between mb-4">
