@@ -1,4 +1,5 @@
 import { toast } from "sonner";
+import { getSavedBuilderEmail } from "@/lib/guest-api";
 
 const SHOPIFY_API_VERSION = '2025-07';
 const SHOPIFY_STORE_PERMANENT_DOMAIN = 'piccaload.myshopify.com';
@@ -91,6 +92,12 @@ export async function createShopifyCheckout(lines: CartLineInput[], note?: strin
   if (note) {
     input.note = note;
     input.attributes = [{ key: "builder_session_id", value: note }];
+  }
+  // Hand the saved email to Shopify so checkout is pre-filled and their
+  // abandoned-checkout emails cover this visitor too
+  const savedEmail = getSavedBuilderEmail();
+  if (savedEmail) {
+    input.buyerIdentity = { email: savedEmail };
   }
   const data = await storefrontApiRequest(CART_CREATE_MUTATION, { input });
 

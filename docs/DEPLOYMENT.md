@@ -7,7 +7,7 @@ separate paths, and confusing them wastes a lot of time.
 
 | Layer | Where it runs | How it deploys | Status |
 |---|---|---|---|
-| **Frontend** (Vite/React static build) | unknown host, behind Cloudflare | **not wired to GitHub** | ⚠️ **stale** |
+| **Frontend** (Vite/React static build) | Cloudflare Worker `piccoload` (static assets) | CI deploys on push to `main` once Cloudflare secrets are set | ⚠️ see below |
 | **Backend** (edge functions) | Supabase `msvcchcmxyghvpfscsmy` | pushed directly to Supabase | ✅ current |
 | **Checkout** | Shopify `piccaload.myshopify.com` | configured in Shopify admin | ✅ current |
 
@@ -40,35 +40,29 @@ live analytics dashboard.
 Order flow, checkout, and Shopify variant IDs were verified working
 throughout — the stale build does not break commerce.
 
-### What is known about the host
+### RESOLVED (25 Aug 2026): the host is a Cloudflare Worker
 
-- Registrar is **GoDaddy**, set to custom nameservers. It holds no records.
-- DNS is **Cloudflare** (`kallie.ns.cloudflare.com`, `leif.ns.cloudflare.com`).
-- Apex resolves to Cloudflare proxy IPs (`104.21.70.3`, `172.67.217.41`), so
-  the origin is masked. Cloudflare flattens root CNAMEs — the real target is
-  visible only inside the Cloudflare dashboard.
-- No deploy config exists in this repo (no `vercel.json`, `netlify.toml`,
-  `wrangler.toml`, `_redirects`, `CNAME`).
-- Probed `*.pages.dev`, `*.netlify.app`, `*.vercel.app`, `*.onrender.com` for
-  a build matching production's bundle hash — no match.
-- Response headers (`cache-control: public, max-age=0, must-revalidate`,
-  SPA 404 fallback) are *consistent with* Cloudflare Pages but not conclusive.
+The Cloudflare account contains a Worker named **`piccoload`** (static
+assets, no server script) — that is what serves piccoload.com. `wrangler.jsonc`
+in the repo root now targets it, and `.github/workflows/ci.yml` has a deploy
+job that uploads the build on every push to `main`.
 
-### To resolve
+The deploy job skips (with a warning) until two repo secrets are added:
+`CLOUDFLARE_API_TOKEN` (Cloudflare dashboard → My Profile → API Tokens,
+"Edit Cloudflare Workers" template) and `CLOUDFLARE_ACCOUNT_ID`.
 
-1. Cloudflare dashboard → **Workers & Pages** in the sidebar. If a project is
-   listed, that is the host; its **Deployments** tab has a redeploy button.
-2. Otherwise → **DNS → Records**, and read the `Content` of the apex
-   (`piccoload.com` / `@`) record.
-
-Once identified, add a deploy job to `.github/workflows/ci.yml` so pushes to
-`main` deploy automatically.
+**Before the first CI deploy, reconcile with Lovable.** Production is
+currently serving a build *newer than this repo* — published from Lovable
+around 24 Aug 2026 evening, containing at least a staff "Order desk" page
+(`AdminDashboard`), builder-step analytics events, and AI-placeholder
+Instagram images, none of which were ever committed to git (the Lovable →
+GitHub sync appears broken). Deploying from this repo will overwrite that
+build; port anything worth keeping into the repo first, or accept losing it.
 
 ## Known issue
 
-**`www.piccoload.com` does not resolve** — no `A`, no `CNAME`, `NXDOMAIN`.
-Anyone typing the `www` prefix gets a browser error. Fix by adding a proxied
-`CNAME` for `www` → `piccoload.com` in Cloudflare DNS.
+~~`www.piccoload.com` does not resolve~~ — fixed; `www` returns 200 as of
+25 Aug 2026.
 
 ## Gotchas when investigating a build
 

@@ -12,7 +12,14 @@ export type AnalyticsEvent =
   | "product_view"
   | "add_to_cart"
   | "checkout_initiated"
-  | "purchase";
+  | "purchase"
+  // Builder progress — one event per step the visitor reaches
+  | "builder_upload"
+  | "builder_approve"
+  | "builder_cover"
+  | "builder_convert"
+  // Visitor saved their email in the builder ("save your book")
+  | "email_saved";
 
 function getSessionId(): string {
   let id = sessionStorage.getItem("_analytics_session");

@@ -9,6 +9,7 @@ import UploadStep, { type LocalImage } from "@/components/builder/UploadStep";
 import ApproveStep from "@/components/builder/ApproveStep";
 import CoverStep from "@/components/builder/CoverStep";
 import CheckoutStep from "@/components/builder/CheckoutStep";
+import SaveBookPrompt from "@/components/builder/SaveBookPrompt";
 import RecapStep from "@/components/builder/RecapStep";
 import ThankYouStep from "@/components/builder/ThankYouStep";
 import UniquePhotosUpsellBanner from "@/components/builder/UniquePhotosUpsellBanner";
@@ -19,7 +20,7 @@ import {
   updateGuestOrder,
 } from "@/lib/guest-api";
 import { trackProductView } from "@/lib/shopify-analytics";
-import { trackEvent } from "@/lib/analytics-tracker";
+import { trackEvent, type AnalyticsEvent } from "@/lib/analytics-tracker";
 import { metaViewContent } from "@/lib/meta-pixel";
 import { SHOPIFY_VARIANTS } from "@/lib/shopify";
 
@@ -100,6 +101,7 @@ const Builder = () => {
   // Save step to DB whenever it changes
   const persistStep = useCallback(async (orderId: string, step: BuilderStep) => {
     const sid = sessionId || getOrCreateSessionId();
+    trackEvent(`builder_${step}` as AnalyticsEvent, "/builder", { orderId });
     await updateGuestOrder(sid, orderId, { builder_step: step });
   }, [sessionId]);
 
@@ -723,6 +725,13 @@ const Builder = () => {
           <div className="max-w-5xl mx-auto">
             {!showingCheckout && !showingRecap && activeBook && (
               <>
+                <SaveBookPrompt
+                  sessionId={sessionId}
+                  hasConvertedPhotos={books.some((b) =>
+                    b.photos.some((p) => !!p.convertedUrl || p.conversionStatus === "completed")
+                  )}
+                />
+
                 {activeBook.step === "upload" && activeBookIndex === 0 && bookCount > 1 && (
                   <div className="mb-6">
                     <UniquePhotosUpsellBanner />

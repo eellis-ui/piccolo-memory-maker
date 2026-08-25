@@ -2,7 +2,7 @@ import { useEffect, useState, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useIsAdmin } from "@/hooks/use-admin";
-import { useLiveDashboard } from "@/hooks/use-live-visitors";
+import { useLiveDashboard, useBuilderFunnel } from "@/hooks/use-live-visitors";
 import {
   Loader2, Package, Trash2, Edit2, Truck, Download, ChevronDown, ChevronRight, X, Save, FileText, Eye, Mail, ShoppingBag, ImagePlus, ArrowUp, ArrowDown, Instagram, Star, ExternalLink, Search, Users, ShoppingCart, CreditCard, CheckCircle,
 } from "lucide-react";
@@ -24,6 +24,7 @@ import {
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { toast } from "sonner";
 import Navbar from "@/components/layout/Navbar";
+import VisitorJourneys from "@/components/admin/VisitorJourneys";
 import type { Json } from "@/integrations/supabase/types";
 
 /* ─── Constants & helpers ─── */
@@ -139,6 +140,7 @@ const Admin = () => {
   const navigate = useNavigate();
   const { isAdmin, loading: roleLoading } = useIsAdmin();
   const live = useLiveDashboard();
+  const funnel = useBuilderFunnel(isAdmin);
 
   /* ─── Orders state ─── */
   const [orders, setOrders] = useState<OrderRow[]>([]);
@@ -627,6 +629,52 @@ const Admin = () => {
               )}
             </div>
           </div>
+
+          {/* ─── Builder funnel · last 7 days ─── */}
+          <p className="text-xs font-medium text-muted-foreground mb-2">Book builder &middot; last 7 days</p>
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-6">
+            <div className="rounded-xl border bg-background p-4">
+              <div className="flex items-center gap-2 text-muted-foreground text-xs font-medium mb-1">
+                <Package className="w-3.5 h-3.5" />
+                Builds started
+              </div>
+              <p className="text-2xl font-bold">{funnel.loading ? "\u2014" : funnel.buildsStarted}</p>
+            </div>
+            <div className="rounded-xl border bg-background p-4">
+              <div className="flex items-center gap-2 text-muted-foreground text-xs font-medium mb-1">
+                <ImagePlus className="w-3.5 h-3.5" />
+                Books with photos
+              </div>
+              <p className="text-2xl font-bold">{funnel.loading ? "\u2014" : funnel.booksWithPhotos}</p>
+              {!funnel.loading && funnel.photosUploaded > 0 && (
+                <p className="text-xs text-muted-foreground mt-0.5">
+                  {funnel.photosUploaded} photos uploaded
+                </p>
+              )}
+            </div>
+            <div className="rounded-xl border bg-background p-4">
+              <div className="flex items-center gap-2 text-muted-foreground text-xs font-medium mb-1">
+                <Eye className="w-3.5 h-3.5" />
+                Reached preview
+              </div>
+              <p className="text-2xl font-bold">{funnel.loading ? "\u2014" : funnel.reachedPreview}</p>
+            </div>
+            <div className="rounded-xl border bg-background p-4">
+              <div className="flex items-center gap-2 text-muted-foreground text-xs font-medium mb-1">
+                <ShoppingBag className="w-3.5 h-3.5" />
+                Paid
+              </div>
+              <p className="text-2xl font-bold">{funnel.loading ? "\u2014" : funnel.purchased}</p>
+              {!funnel.loading && funnel.buildsStarted > 0 && funnel.purchased > 0 && (
+                <p className="text-xs text-green-600 font-medium mt-0.5">
+                  {((funnel.purchased / funnel.buildsStarted) * 100).toFixed(0)}% of builds
+                </p>
+              )}
+            </div>
+          </div>
+
+          {/* ─── Visitor journeys (timestamped) ─── */}
+          <VisitorJourneys enabled={isAdmin} />
 
           {/* ─── Orders header ─── */}
           <div className="flex items-center justify-between mb-4">
