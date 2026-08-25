@@ -9,6 +9,7 @@ import UploadStep, { type LocalImage } from "@/components/builder/UploadStep";
 import ApproveStep from "@/components/builder/ApproveStep";
 import CoverStep from "@/components/builder/CoverStep";
 import CheckoutStep from "@/components/builder/CheckoutStep";
+import SaveBookPrompt from "@/components/builder/SaveBookPrompt";
 import RecapStep from "@/components/builder/RecapStep";
 import ThankYouStep from "@/components/builder/ThankYouStep";
 import UniquePhotosUpsellBanner from "@/components/builder/UniquePhotosUpsellBanner";
@@ -724,6 +725,11 @@ const Builder = () => {
           <div className="max-w-5xl mx-auto">
             {!showingCheckout && !showingRecap && activeBook && (
               <>
+                <SaveBookPrompt
+                  sessionId={sessionId}
+                  hasPhotos={books.some((b) => b.photos.length > 0)}
+                />
+
                 {activeBook.step === "upload" && activeBookIndex === 0 && bookCount > 1 && (
                   <div className="mb-6">
                     <UniquePhotosUpsellBanner />

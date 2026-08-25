@@ -17,7 +17,9 @@ export type AnalyticsEvent =
   | "builder_upload"
   | "builder_approve"
   | "builder_cover"
-  | "builder_convert";
+  | "builder_convert"
+  // Visitor saved their email in the builder ("save your book")
+  | "email_saved";
 
 function getSessionId(): string {
   let id = sessionStorage.getItem("_analytics_session");

@@ -20,6 +20,17 @@ export function getOrCreateSessionId(): string {
   return id;
 }
 
+/** Email captured by the "save your book" prompt, if any. */
+export function getSavedBuilderEmail(): string | null {
+  try {
+    const email = localStorage.getItem("piccoload_saved_email");
+    if (email && /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(email)) return email;
+  } catch {
+    // localStorage unavailable — no prefill
+  }
+  return null;
+}
+
 export async function createGuestOrders(sessionId: string, count: number) {
   const res = await fetch(`${BASE}/create`, {
     method: "POST",
@@ -101,6 +112,16 @@ export async function updateGuestOrder(
     body: JSON.stringify({ sessionId, orderId, updates }),
   });
   if (!res.ok) throw new Error(await res.text());
+}
+
+export async function saveBuilderEmail(sessionId: string, email: string) {
+  const res = await fetch(`${BASE}/save-email`, {
+    method: "POST",
+    headers: headers({ "Content-Type": "application/json" }),
+    body: JSON.stringify({ sessionId, email }),
+  });
+  if (!res.ok) throw new Error("Failed to save email");
+  return res.json();
 }
 
 export async function getSignedUrls(
