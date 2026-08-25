@@ -16,4 +16,16 @@ export default defineConfig(({ mode }) => ({
       "@": path.resolve(__dirname, "./src"),
     },
   },
+  build: {
+    rollupOptions: {
+      output: {
+        // Split stable vendor code out of the entry chunk so it caches
+        // across releases and downloads in parallel on first visit.
+        manualChunks: {
+          "vendor-react": ["react", "react-dom", "react-router-dom"],
+          "vendor-supabase": ["@supabase/supabase-js"],
+        },
+      },
+    },
+  },
 }));

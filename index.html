@@ -20,6 +20,18 @@
     <meta name="twitter:description" content="Transform your favourite photos into personalised colouring books." />
     <meta name="twitter:image" content="https://piccoload.com/images/og-image.jpg" />
 
+    <!-- Open connections early: fonts + the Supabase API every page calls on load -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link rel="preconnect" href="https://msvcchcmxyghvpfscsmy.supabase.co" crossorigin />
+    <link rel="dns-prefetch" href="https://connect.facebook.net" />
+    <!-- Loaded here as a plain stylesheet instead of a CSS @import, which
+         chained serially behind the app CSS and delayed first paint -->
+    <link
+      href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+
     <style>
       html, body, #root { background: #ffffff; margin: 0; }
     </style>
