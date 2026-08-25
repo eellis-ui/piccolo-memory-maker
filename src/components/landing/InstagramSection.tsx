@@ -68,7 +68,7 @@ const InstagramSection = () => {
               href={INSTAGRAM_URL}
               target="_blank"
               rel="noopener noreferrer"
-              className="group relative aspect-square overflow-hidden rounded-lg bg-muted"
+              className="group relative aspect-[3/4] overflow-hidden rounded-lg bg-muted"
             >
               <img
                 src={post.src}
