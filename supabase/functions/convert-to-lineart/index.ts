@@ -100,6 +100,8 @@ Deno.serve(async (req) => {
     } catch (e) { processedBuffer = arrayBuffer; }
     const openaiPrompt = `Convert this photo into a high-quality printable COLORING BOOK PAGE in the style of a published children's coloring book.
 
+DRAW ONLY WHAT IS THERE: Every person, animal, object and piece of scenery on the page must correspond to something visible in the photograph. Do NOT invent or add anything. Count the people in the photo and draw exactly that many — never add a person, a head or a face that is not there. If only part of a person is visible — legs, feet, a hand, an arm, a shoulder — draw only that part, exactly as cropped; do NOT complete them with an invented head, face or body. Do not fill empty walls, shelves, tables or floors with invented pictures, plants, ornaments or props. Do not add borders or decoration. Keep every subject in the same position, pose and scale as the photo. If part of the photo is dark, blurred or hard to read, draw only the shapes you can genuinely make out and leave the rest white — never fill uncertainty with invented detail.
+
 MUST: Bold uniform black outlines (#000000) on pure white background (#FFFFFF). Every line is the same thickness — drawn with a single confident black marker. Closed shapes large enough to colour with a crayon.
 
 FACES: For every person draw distinct outlined features — each eye (with iris, pupil, eyelashes), each eyebrow as a clear shape, the nose (bridge + nostrils), the mouth (upper lip + lower lip + parting line; for smiles, individual teeth), each ear (outline + inner detail), and hair (flowing strokes, parting, hairline). Faces must look complete and recognisable, NEVER blank ovals.
