@@ -81,6 +81,18 @@ Deno.serve(async (req) => {
     const arrayBuffer = await fileData.arrayBuffer();
     let processedBuffer: ArrayBuffer;
     let actualIsLandscape = isLandscape;
+    // A full-resolution original that slipped past the client-side resize
+    // (a 4-5MB JPEG can be a 48MP phone photo) decodes to hundreds of MB of
+    // raw RGBA and kills the isolate with "Memory limit exceeded" — no catch
+    // block ever runs, the photo sticks in "converting", and every retry dies
+    // the same way. Above this byte cap, skip our decode entirely: send the
+    // original to OpenAI as-is (well within its input limit) and trust the
+    // client-computed orientation flag instead of re-deriving it from pixels.
+    const MAX_DECODE_BYTES = 3_000_000;
+    if (arrayBuffer.byteLength > MAX_DECODE_BYTES) {
+      console.warn("Original too large to decode in-function, sending as-is:", photo.original_path, arrayBuffer.byteLength, "bytes");
+      processedBuffer = arrayBuffer;
+    } else {
     try {
       const rawInput = new Uint8Array(arrayBuffer);
       const inputImg = await Image.decode(rawInput);
@@ -98,6 +110,7 @@ Deno.serve(async (req) => {
         processedBuffer = (await inputImg.encode()).buffer;
       }
     } catch (e) { processedBuffer = arrayBuffer; }
+    }
     const openaiPrompt = `Convert this photo into a high-quality printable COLORING BOOK PAGE in the style of a published children's coloring book.
 
 Count the people in the photo and draw exactly that many — never add a person, a head or a face that is not there. If only part of a person is visible — legs, feet, a hand, an arm, a shoulder — draw only that part, exactly as cropped; do NOT complete them with an invented head, face or body.
