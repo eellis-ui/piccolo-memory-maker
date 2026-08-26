@@ -124,12 +124,12 @@ OUTPUT: ${actualIsLandscape ? "LANDSCAPE orientation (wider than tall)" : "PORTR
       fd.append("model", "gpt-image-1");
       fd.append("size", actualIsLandscape ? "1536x1024" : "1024x1536");
       fd.append("quality", "medium");
-      // Anchors the drawing to the actual input pixels. Prompt rules alone
-      // could not stop the model inventing faces and limbs that were not in
-      // the photo, or drawing generic faces instead of these people — it is
-      // redrawing from an impression, not copying. This is the parameter for
-      // that. Adds ~6k image input tokens (~$0.06) per conversion.
-      fd.append("input_fidelity", "high");
+      // Deliberately NOT setting input_fidelity. It anchors output to the
+      // input pixels, which sounds like what a likeness needs, but in practice
+      // it turns the result into an edge trace: every leaf, brick and thread
+      // of a patterned dress rendered as scratchy hairlines, faces included.
+      // That — not the prompt wording — is what made v108 and v114 look like
+      // photocopies. Tried twice, worse both times.
       const openaiResp = await fetch("https://api.openai.com/v1/images/edits", { method: "POST", headers: { Authorization: `Bearer ${openaiKey}` }, body: fd });
       if (openaiResp.ok) { const r = await openaiResp.json(); if (r.data?.[0]?.b64_json) imageBase64 = r.data[0].b64_json; }
       else { const errText = await openaiResp.text(); console.error("OpenAI failed:", openaiResp.status, errText); lastError = `OpenAI error ${openaiResp.status}`; }
