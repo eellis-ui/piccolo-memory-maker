@@ -277,12 +277,20 @@ const SortablePhotoCard = ({
     try {
       console.log(`[convert] Starting conversion for photo ${photoId}, session ${sessionId}`);
 
-      // Add a 90-second timeout so we don't hang forever
+      // Timeout so a hung request doesn't spin forever. The signal was never
+      // passed to invoke, so this aborted a controller attached to nothing and
+      // a stuck conversion would have spun indefinitely.
+      //
+      // 4 minutes rather than the 90s that was written here: a conversion now
+      // takes ~35s on its own, and convertAll fires batches of 10 at once, so
+      // a request can legitimately sit a good while before the model answers.
+      // This should only ever fire on something genuinely stuck.
       const controller = new AbortController();
-      const timeout = setTimeout(() => controller.abort(), 90000);
+      const timeout = setTimeout(() => controller.abort(), 240000);
 
       const { data, error } = await supabase.functions.invoke("convert-to-lineart", {
         body: { photoId, sessionId },
+        signal: controller.signal,
       });
 
       clearTimeout(timeout);

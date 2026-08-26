@@ -100,6 +100,8 @@ Deno.serve(async (req) => {
     } catch (e) { processedBuffer = arrayBuffer; }
     const openaiPrompt = `Convert this photo into a high-quality printable COLORING BOOK PAGE in the style of a published children's coloring book.
 
+Count the people in the photo and draw exactly that many — never add a person, a head or a face that is not there. If only part of a person is visible — legs, feet, a hand, an arm, a shoulder — draw only that part, exactly as cropped; do NOT complete them with an invented head, face or body.
+
 MUST: Bold uniform black outlines (#000000) on pure white background (#FFFFFF). Every line is the same thickness — drawn with a single confident black marker. Closed shapes large enough to colour with a crayon.
 
 FACES: For every person draw distinct outlined features — each eye (with iris, pupil, eyelashes), each eyebrow as a clear shape, the nose (bridge + nostrils), the mouth (upper lip + lower lip + parting line; for smiles, individual teeth), each ear (outline + inner detail), and hair (flowing strokes, parting, hairline). Faces must look complete and recognisable, NEVER blank ovals.
@@ -122,6 +124,12 @@ OUTPUT: ${actualIsLandscape ? "LANDSCAPE orientation (wider than tall)" : "PORTR
       fd.append("model", "gpt-image-1");
       fd.append("size", actualIsLandscape ? "1536x1024" : "1024x1536");
       fd.append("quality", "medium");
+      // Anchors the drawing to the actual input pixels. Prompt rules alone
+      // could not stop the model inventing faces and limbs that were not in
+      // the photo, or drawing generic faces instead of these people — it is
+      // redrawing from an impression, not copying. This is the parameter for
+      // that. Adds ~6k image input tokens (~$0.06) per conversion.
+      fd.append("input_fidelity", "high");
       const openaiResp = await fetch("https://api.openai.com/v1/images/edits", { method: "POST", headers: { Authorization: `Bearer ${openaiKey}` }, body: fd });
       if (openaiResp.ok) { const r = await openaiResp.json(); if (r.data?.[0]?.b64_json) imageBase64 = r.data[0].b64_json; }
       else { const errText = await openaiResp.text(); console.error("OpenAI failed:", openaiResp.status, errText); lastError = `OpenAI error ${openaiResp.status}`; }
@@ -149,6 +157,10 @@ OUTPUT: ${actualIsLandscape ? "LANDSCAPE orientation (wider than tall)" : "PORTR
       const a4H = actualIsLandscape ? A4_LH : A4_PH;
       finalImageBuffer = await srcImg.resize(a4W, a4H).encode();
     } catch (ppErr) {
+      // Logged, not just returned: this path used to fail silently, so a
+      // customer saw "Conversion failed" with nothing in the logs to explain
+      // it and no way to tell it apart from an OpenAI error.
+      console.error("Post-processing failed for photo", photoId, ppErr);
       await supabase.from("order_photos").update({ conversion_status: "failed" }).eq("id", photoId);
       return new Response(JSON.stringify({ error: `Post-processing failed: ${ppErr}` }), { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } });
     }
@@ -166,6 +178,9 @@ OUTPUT: ${actualIsLandscape ? "LANDSCAPE orientation (wider than tall)" : "PORTR
     const { data: signedUrlData } = await supabase.storage.from("order-files").createSignedUrl(convertedPath, 3600);
     return new Response(JSON.stringify({ success: true, convertedUrl: signedUrlData?.signedUrl || "", convertedPath }), { headers: { ...corsHeaders, "Content-Type": "application/json" } });
   } catch (error) {
+    // Same reason: anything reaching here — a failed download, a storage
+    // upload error, a bad row — was invisible in the logs.
+    console.error("convert-to-lineart failed:", error);
     return new Response(JSON.stringify({ error: `Unexpected: ${error}` }), { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } });
   }
 });
