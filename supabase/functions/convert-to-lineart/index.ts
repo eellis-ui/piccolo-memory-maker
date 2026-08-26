@@ -157,6 +157,10 @@ OUTPUT: ${actualIsLandscape ? "LANDSCAPE orientation (wider than tall)" : "PORTR
       const a4H = actualIsLandscape ? A4_LH : A4_PH;
       finalImageBuffer = await srcImg.resize(a4W, a4H).encode();
     } catch (ppErr) {
+      // Logged, not just returned: this path used to fail silently, so a
+      // customer saw "Conversion failed" with nothing in the logs to explain
+      // it and no way to tell it apart from an OpenAI error.
+      console.error("Post-processing failed for photo", photoId, ppErr);
       await supabase.from("order_photos").update({ conversion_status: "failed" }).eq("id", photoId);
       return new Response(JSON.stringify({ error: `Post-processing failed: ${ppErr}` }), { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } });
     }
@@ -174,6 +178,9 @@ OUTPUT: ${actualIsLandscape ? "LANDSCAPE orientation (wider than tall)" : "PORTR
     const { data: signedUrlData } = await supabase.storage.from("order-files").createSignedUrl(convertedPath, 3600);
     return new Response(JSON.stringify({ success: true, convertedUrl: signedUrlData?.signedUrl || "", convertedPath }), { headers: { ...corsHeaders, "Content-Type": "application/json" } });
   } catch (error) {
+    // Same reason: anything reaching here — a failed download, a storage
+    // upload error, a bad row — was invisible in the logs.
+    console.error("convert-to-lineart failed:", error);
     return new Response(JSON.stringify({ error: `Unexpected: ${error}` }), { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } });
   }
 });
