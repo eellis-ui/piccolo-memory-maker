@@ -171,7 +171,7 @@ const OrderReview = () => {
 
                         <Badge variant="secondary" className="text-[10px] font-bold uppercase tracking-wider bg-primary/10 text-primary border-0 px-2 py-0.5">
                           <Sparkles className="w-3 h-3 mr-1" />
-                          February Sale
+                          Sale
                         </Badge>
                       </div>
                     </div>

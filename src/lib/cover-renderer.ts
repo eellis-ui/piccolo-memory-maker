@@ -137,52 +137,74 @@ export async function renderBackCoverPng(
   ctx.fillStyle = "#fffaf3";
   ctx.fillRect(0, 0, W, H);
 
-  // Content sits in bottom 25%
-  const contentTop = Math.round(H * 0.75);
+  // The logo asset is a 2000x2000 square with the wordmark inset — 39% of the
+  // height is transparent padding above it and 36% below. Scaling the whole
+  // square to 40% of the page width therefore produced a 496px-tall block whose
+  // wordmark landed on top of the affiliate text drawn beneath it. Crop to the
+  // wordmark's own bounds so its height follows its real aspect ratio, and lay
+  // the block out bottom-up so every element reserves its own space.
+  const LOGO_BOX = { x: 308 / 2000, y: 780 / 2000, w: 1453 / 2000, h: 504 / 2000 };
 
-  // Logo — 40% width, centered
-  try {
-    const logo = await loadImage(logoSrc);
-    const logoW = Math.round(W * 0.4);
-    const logoH = Math.round(logoW * (logo.naturalHeight / logo.naturalWidth));
-    const logoX = Math.round((W - logoW) / 2);
-    ctx.drawImage(logo, logoX, contentTop, logoW, logoH);
-  } catch {
-    // Skip
-  }
+  const bottomMargin = Math.round(H * 0.034);
+  const logoW = Math.round(W * 0.36);
+  const logoH = Math.round(logoW * (LOGO_BOX.h / LOGO_BOX.w));
+  const logoX = Math.round((W - logoW) / 2);
+  const logoY = H - bottomMargin - logoH;
 
-  // Website + social — centered text
-  const textY = contentTop + Math.round(H * 0.06);
-  ctx.fillStyle = "#000000";
-  ctx.textAlign = "center";
-  ctx.font = `${Math.round(W * 0.016)}px "Yuji Syuku", serif`;
-  ctx.fillText("www.piccoload.com          @officialpiccoload", W / 2, textY);
-
-  // QR code + affiliate text
-  const qrY = textY + Math.round(H * 0.015);
+  // QR + affiliate text row, sitting clear above the logo
   const qrSize = Math.round(W * 0.065);
-  try {
-    const qr = await loadImage(qrCodeSrc);
-    const qrX = Math.round(W / 2 - qrSize - W * 0.04);
-    ctx.drawImage(qr, qrX, qrY, qrSize, qrSize);
-  } catch {
-    // Skip
-  }
-
-  // Affiliate text next to QR
-  const affTextX = Math.round(W / 2 + W * 0.01);
   const affFontSize = Math.round(W * 0.013);
-  ctx.font = `${affFontSize}px "Yuji Syuku", serif`;
-  ctx.textAlign = "left";
+  const affLeading = Math.round(affFontSize * 1.5);
   const affLines = [
     "Please scan the QR code for",
     "information on our affiliate",
     "programme. Make money for",
     "your referrals!",
   ];
+  const affBlockH = affFontSize + affLeading * (affLines.length - 1);
+  const rowH = Math.max(qrSize, affBlockH);
+  const rowTop = logoY - Math.round(H * 0.016) - rowH;
+
+  // Website + social — centered, above the QR row
+  const webFontSize = Math.round(W * 0.016);
+  const webBaseline = rowTop - Math.round(H * 0.0125);
+  ctx.fillStyle = "#000000";
+  ctx.textAlign = "center";
+  ctx.font = `${webFontSize}px "Yuji Syuku", serif`;
+  ctx.fillText("www.piccoload.com          @officialpiccoload", W / 2, webBaseline);
+
+  try {
+    const qr = await loadImage(qrCodeSrc);
+    const qrX = Math.round(W / 2 - qrSize - W * 0.04);
+    ctx.drawImage(qr, qrX, rowTop + Math.round((rowH - qrSize) / 2), qrSize, qrSize);
+  } catch {
+    // Skip
+  }
+
+  const affTextX = Math.round(W / 2 + W * 0.01);
+  ctx.font = `${affFontSize}px "Yuji Syuku", serif`;
+  ctx.textAlign = "left";
   affLines.forEach((line, i) => {
-    ctx.fillText(line, affTextX, qrY + affFontSize + i * Math.round(affFontSize * 1.5));
+    ctx.fillText(line, affTextX, rowTop + affFontSize + i * affLeading);
   });
+
+  // Logo last, cropped to the wordmark and anchored to the bottom margin
+  try {
+    const logo = await loadImage(logoSrc);
+    ctx.drawImage(
+      logo,
+      LOGO_BOX.x * logo.naturalWidth,
+      LOGO_BOX.y * logo.naturalHeight,
+      LOGO_BOX.w * logo.naturalWidth,
+      LOGO_BOX.h * logo.naturalHeight,
+      logoX,
+      logoY,
+      logoW,
+      logoH,
+    );
+  } catch {
+    // Skip
+  }
 
   return new Promise((resolve, reject) => {
     canvas.toBlob(
