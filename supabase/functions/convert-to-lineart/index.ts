@@ -121,7 +121,12 @@ OUTPUT: ${actualIsLandscape ? "LANDSCAPE orientation (wider than tall)" : "PORTR
       const fd = new FormData();
       fd.append("image", new File([new Uint8Array(processedBuffer)], "photo.png", { type: "image/png" }));
       fd.append("prompt", openaiPrompt);
-      fd.append("model", "gpt-image-1");
+      // gpt-image-1.5: newer image model, materially better at faces and at
+      // not inventing subjects — the two remaining complaints at gpt-image-1
+      // medium. Kept at quality medium deliberately: one variable changed, and
+      // its output tokens are cheaper ($32/1M vs $40/1M), so cost stays in the
+      // same bracket as before.
+      fd.append("model", "gpt-image-1.5");
       fd.append("size", actualIsLandscape ? "1536x1024" : "1024x1536");
       fd.append("quality", "medium");
       // Deliberately NOT setting input_fidelity. It anchors output to the
