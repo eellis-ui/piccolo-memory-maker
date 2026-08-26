@@ -149,6 +149,8 @@ FIDELITY — THE MOST IMPORTANT RULE: Draw ONLY what is visibly present in the p
 
 PEOPLE — LIKENESS IS CRITICAL: Each person must stay recognisable as that specific individual. Follow the photograph exactly for head and face shape, jawline, the spacing/size/shape of the eyes, the shape of the nose and of the mouth, and the actual hairstyle, parting and hairline. Do NOT substitute a generic, idealised or cartoon face — a stock face that does not resemble the person in the photo is a failure. Draw only the features you can actually see. Faces must still be complete and readable, never blank ovals.
 
+SIMPLIFY — THIS IS A COLOURING PAGE, NOT AN EDGE TRACE: Reduce what you see to clean, deliberate outlines. Do NOT trace texture. No individual leaves, twigs, blades of grass, brick courses, roof tiles, tarmac, fabric weave, tartan, checks, stripes, animal print, skin texture, individual hair strands, or creases and folds in cloth. Foliage becomes a few simple bold leaf-cluster shapes. A patterned garment becomes its outline plus two or three suggestion lines at most — never the pattern itself. A crowd or busy background becomes a handful of simple silhouette shapes, or is left plain white. Fewer, larger, more confident shapes are always better than many small ones. Someone must be able to colour each shape with a crayon.
+
 MUST: Bold uniform black outlines (#000000) on pure white background (#FFFFFF). Every line is the same thickness — drawn with a single confident black marker. Closed shapes large enough to colour with a crayon.
 
 ANIMALS: Draw the features that are actually visible (eyes, nose, mouth, ears, fur direction as bold strokes, paws). Keep the animal's real markings, proportions and pose.
@@ -159,7 +161,9 @@ NO SOLID BLACK AREAS: Every region must be WHITE inside its outline. Dark hair, 
 
 FORBIDDEN: NO grey, NO shading, NO gradients, NO hatching or stippling, NO photo-realistic rendering. Background that is plain, blurred or out-of-focus must be left as plain white — do not invent decoration to fill it.
 
-LINE QUALITY: Lines must be CRISP and CONTINUOUS — no broken/scratchy strokes. Bold but not overly thick.
+FACES — CLEAN, COMPLETE FEATURES: Draw every face with clear, deliberate, well-formed features: defined eyes with pupils and eyelids, eyebrows, a defined nose, and a defined mouth with a lip line — each placed, spaced and shaped as it appears in the photo. A face must NEVER be a blank oval, a smudge or a blob of small marks. Even a small or distant face gets complete, clean, confident features rather than scribble. Draw the features with the same solid line weight as the rest of the page.
+
+LINE QUALITY — SOLID AND CONFIDENT: Every stroke is a single, smooth, unbroken black line of consistent medium-heavy weight, as though drawn with a felt-tip marker in one pass. NO hairlines. NO faint or grey strokes. NO sketchy, scratchy, feathered or multi-stroke edges. NO dotted, dashed or broken segments. If a detail cannot be drawn as one clean confident line, leave it out entirely.
 
 OUTPUT: ${actualIsLandscape ? "LANDSCAPE orientation (wider than tall)" : "PORTRAIT orientation (taller than wide)"}. Fill the entire frame edge-to-edge with no margins. Same composition as the input photo.`;
     let imageBase64: string | null = null;
@@ -170,7 +174,11 @@ OUTPUT: ${actualIsLandscape ? "LANDSCAPE orientation (wider than tall)" : "PORTR
       fd.append("prompt", openaiPrompt);
       fd.append("model", "gpt-image-1");
       fd.append("size", actualIsLandscape ? "1536x1024" : "1024x1536");
-      fd.append("quality", "medium");
+      // "high" gives the model roughly four times the output detail budget of
+      // "medium" (6,240 image tokens vs 1,584). At medium it spent that budget
+      // on background texture and had nothing left for faces, which came back
+      // as blobs. Costs ~$0.25/image against ~$0.063.
+      fd.append("quality", "high");
       // Preserves faces so people stay recognisable as themselves. Costs extra
       // input tokens per image (~6k for these non-square sizes) but generic,
       // idealised faces were the single biggest complaint about conversions.
@@ -202,12 +210,32 @@ OUTPUT: ${actualIsLandscape ? "LANDSCAPE orientation (wider than tall)" : "PORTR
       // mouth — so faces lost their features and lines broke mid-stroke.
       // Dark goes solid black, near-white goes paper white, and the band
       // between keeps its anti-aliasing so strokes stay continuous.
-      const LO = 110, HI = 225;
-      for (let x = 1; x <= out.width; x++) for (let y = 1; y <= out.height; y++) {
-        const rgba = out.getPixelAt(x, y);
-        const grey = ((rgba >> 24) & 0xFF) * 0.299 + ((rgba >> 16) & 0xFF) * 0.587 + ((rgba >> 8) & 0xFF) * 0.114;
-        const v = grey <= LO ? 0 : grey >= HI ? 255 : Math.round(((grey - LO) / (HI - LO)) * 255);
-        out.setPixelAt(x, y, Image.rgbaToColor(v, v, v, 255));
+      // Ink mask, generous on purpose. Anything meaningfully darker than paper
+      // counts as a stroke — including the faint hairlines the model returns,
+      // which the old pass discarded and which were the missing facial
+      // features. Paper from this model sits at 245-255, so 205 is a safe
+      // cut: it keeps every real stroke without picking up the background.
+      const INK = 205;
+      const OW = out.width, OH = out.height;
+      const isInk = new Uint8Array(OW * OH);
+      for (let y = 0; y < OH; y++) for (let x = 0; x < OW; x++) {
+        const rgba = out.getPixelAt(x + 1, y + 1);
+        const g = ((rgba >> 24) & 0xFF) * 0.299 + ((rgba >> 16) & 0xFF) * 0.587 + ((rgba >> 8) & 0xFF) * 0.114;
+        isInk[y * OW + x] = g <= INK ? 1 : 0;
+      }
+      // Grow each stroke by one pixel, then print it solid black. The model
+      // returns lines of wildly varying weight — some solid, many hairline —
+      // which read as shaky and print faint. Dilating gives the whole page one
+      // consistent marker-like weight, which is what a colouring book needs.
+      for (let y = 0; y < OH; y++) for (let x = 0; x < OW; x++) {
+        const i = y * OW + x;
+        let dark = isInk[i] === 1;
+        if (!dark && x > 0) dark = isInk[i - 1] === 1;
+        if (!dark && x < OW - 1) dark = isInk[i + 1] === 1;
+        if (!dark && y > 0) dark = isInk[i - OW] === 1;
+        if (!dark && y < OH - 1) dark = isInk[i + OW] === 1;
+        const v = dark ? 0 : 255;
+        out.setPixelAt(x + 1, y + 1, Image.rgbaToColor(v, v, v, 255));
       }
       finalImageBuffer = await out.encode();
     } catch (ppErr) {
