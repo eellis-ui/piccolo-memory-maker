@@ -251,7 +251,7 @@ Deno.serve(async (req) => {
     doc.setFontSize(10);
     doc.setFont("helvetica", "normal");
     doc.setTextColor(180, 180, 180);
-    doc.text("piccolo'd", A4_W / 2, A4_H - 10, { align: "center" });
+    doc.text("piccoload", A4_W / 2, A4_H - 10, { align: "center" });
 
     if (order?.title_page_enabled && order?.title_page_text) {
       addTextPage(order.title_page_text, 28, "bold");

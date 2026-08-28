@@ -52,7 +52,7 @@ const BackCoverPage = () => {
           >
             <div>Please scan the QR code for</div>
             <div>information on our affiliate</div>
-            <div>programme. Make money for</div>
+            <div>program. Make money for</div>
             <div>your referrals!</div>
           </div>
         </div>

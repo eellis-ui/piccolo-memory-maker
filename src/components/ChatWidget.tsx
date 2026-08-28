@@ -7,17 +7,9 @@ type Msg = { role: "user" | "assistant"; content: string };
 
 const CHAT_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/chat`;
 
-// Detect locale: US if timezone is Americas, else UK
-const userLocale: "US" | "UK" = (() => {
-  try {
-    const tz = Intl.DateTimeFormat().resolvedOptions().timeZone;
-    // Default to US as primary market; UK only for explicit UK/European timezones
-    const ukTimezones = ["Europe/London", "Europe/Dublin"];
-    return ukTimezones.includes(tz) ? "UK" : "US";
-  } catch {
-    return "UK";
-  }
-})();
+// US-only launch: every visitor gets American English and USD pricing,
+// matching the storefront (the store sells in USD regardless of location).
+const userLocale: "US" | "UK" = "US";
 
 const STARTER_PROMPTS = [
   "How does it work?",
@@ -26,7 +18,7 @@ const STARTER_PROMPTS = [
   "What photo formats can I use?",
 ];
 
-const GREETING = "Hey! I'm Pico ✏️ Ask me anything about your colouring book — prices, delivery, photos, the lot.";
+const GREETING = "Hey! I'm Pico ✏️ Ask me anything about your coloring book — prices, shipping, photos, you name it.";
 
 const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
 

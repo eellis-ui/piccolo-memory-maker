@@ -334,7 +334,7 @@ const BecomeAffiliate = () => {
             Share the Love.<br />Earn the Rewards.
           </h1>
           <p className="text-base md:text-lg text-muted-foreground mb-10 max-w-xl mx-auto leading-relaxed">
-            Love Piccoload? Join our affiliate programme and earn money doing what you already do — sharing amazing things with your audience.
+            Love Piccoload? Join our affiliate program and earn money doing what you already do — sharing amazing things with your audience.
           </p>
           {renderHeroForm()}
         </div>

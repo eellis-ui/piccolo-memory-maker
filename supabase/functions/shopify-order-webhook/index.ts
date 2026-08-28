@@ -102,7 +102,7 @@ async function sendMetaPurchase(params: {
               custom_data: {
                 value: Number(params.value.toFixed(2)),
                 currency: params.currency,
-                content_name: "Personalised Colouring Book",
+                content_name: "Personalized Coloring Book",
                 content_type: "product",
                 num_items: params.numItems,
               },
@@ -157,7 +157,7 @@ Deno.serve(async (req) => {
       payload.billing_address?.name ||
       null;
     const orderTotal = parseFloat(payload.total_price || "0");
-    
+
     // Extract discount codes used in this order
     const discountCodes: { code: string; amount: string }[] = payload.discount_codes || [];
 
@@ -198,16 +198,21 @@ Deno.serve(async (req) => {
         item.sku?.toLowerCase().includes("digital"),
     );
 
-    // Update all orders in this session — lightweight status update only
+    // Update all orders in this session — lightweight status update only.
+    // customer_email is only written when Shopify actually provides one, so a
+    // payload without an email can never wipe an address captured in the builder.
     for (const order of orders) {
       const updates: Record<string, unknown> = {
         payment_status: "paid",
         status: "paid",
-        customer_email: customerEmail || null,
         shopify_order_number: shopifyOrderNumber || null,
         order_name: orderName,
         customer_name: customerName,
       };
+
+      if (customerEmail) {
+        updates.customer_email = customerEmail;
+      }
 
       if (hasDigitalDownload) {
         updates.digital_download = true;

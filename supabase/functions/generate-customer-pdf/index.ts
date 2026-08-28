@@ -77,15 +77,15 @@ async function sendDownloadEmail(customerEmail: string, downloadUrl: string, ord
   const html = `
     <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; max-width: 600px; margin: 0 auto; padding: 40px 20px;">
       <div style="text-align: center; margin-bottom: 32px;">
-        <h1 style="font-size: 24px; color: #1a1a1a; margin: 0;">Your Digital Colouring Book is Ready!</h1>
+        <h1 style="font-size: 24px; color: #1a1a1a; margin: 0;">Your Digital Coloring Book is Ready!</h1>
       </div>
       <p style="font-size: 16px; color: #333; line-height: 1.6;">
-        Thank you for your purchase! Your personalised colouring book is ready to download.
+        Thank you for your purchase! Your personalized coloring book is ready to download.
       </p>
       <div style="text-align: center; margin: 32px 0;">
         <a href="${downloadUrl}"
            style="display: inline-block; background-color: #1a1a1a; color: #ffffff; padding: 14px 32px; border-radius: 12px; text-decoration: none; font-weight: 600; font-size: 16px;">
-          Download Your Colouring Book
+          Download Your Coloring Book
         </a>
       </div>
       <p style="font-size: 14px; color: #666; line-height: 1.6;">
@@ -97,7 +97,7 @@ async function sendDownloadEmail(customerEmail: string, downloadUrl: string, ord
       </p>
       <hr style="border: none; border-top: 1px solid #eee; margin: 32px 0;" />
       <p style="font-size: 12px; color: #999; text-align: center;">
-        piccolo'd — Personalised Colouring Books
+        Piccoload — Personalized Coloring Books
       </p>
     </div>
   `;
@@ -112,7 +112,7 @@ async function sendDownloadEmail(customerEmail: string, downloadUrl: string, ord
       body: JSON.stringify({
         from: fromEmail,
         to: [customerEmail],
-        subject: "Your Digital Colouring Book is Ready!",
+        subject: "Your Digital Coloring Book is Ready!",
         html,
       }),
     });

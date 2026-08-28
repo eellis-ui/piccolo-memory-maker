@@ -6,12 +6,12 @@ const INSTAGRAM_URL = "https://www.instagram.com/officialpiccoload/";
 
 /** Fallback images used when no admin-uploaded photos exist yet */
 const FALLBACK_POSTS = [
-  { src: "/images/instagram/instagram-1.webp", alt: "Customer comparing his Piccolo colouring book pages with the original photo" },
-  { src: "/images/instagram/instagram-2.webp", alt: "Framed proposal photo ready to become a colouring page" },
-  { src: "/images/instagram/instagram-3.webp", alt: "Customer smiling at her personalised colouring book pages" },
-  { src: "/images/instagram/instagram-4.webp", alt: "Marathon crowd photo waiting to be turned into a colouring page" },
-  { src: "/images/instagram/instagram-5.webp", alt: "Piccolo'd colouring book cover — from pic to pen" },
-  { src: "/images/instagram/instagram-6.webp", alt: "Piccolo colouring book on a coffee table with pencils" },
+  { src: "/images/instagram/instagram-1.webp", alt: "Customer comparing his Piccolo coloring book pages with the original photo" },
+  { src: "/images/instagram/instagram-2.webp", alt: "Framed proposal photo ready to become a coloring page" },
+  { src: "/images/instagram/instagram-3.webp", alt: "Customer smiling at her personalized coloring book pages" },
+  { src: "/images/instagram/instagram-4.webp", alt: "Marathon crowd photo waiting to be turned into a coloring page" },
+  { src: "/images/instagram/instagram-5.webp", alt: "Piccolo'd coloring book cover — from pic to pen" },
+  { src: "/images/instagram/instagram-6.webp", alt: "Piccolo coloring book on a coffee table with pencils" },
 ];
 
 const InstagramSection = () => {

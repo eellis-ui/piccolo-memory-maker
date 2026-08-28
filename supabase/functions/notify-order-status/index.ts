@@ -31,7 +31,7 @@ function getEmailConfig(
       return {
         subject: "Order Confirmed — We're On It!",
         heading: "Your Order Has Been Confirmed!",
-        body: `Thank you for your order <strong>${orderNumber}</strong>! We've received your payment and our team is now getting started on your personalised coloring book. We'll keep you updated at every step.`,
+        body: `Thank you for your order <strong>${orderNumber}</strong>! We've received your payment and our team is now getting started on your personalized coloring book. We'll keep you updated at every step.`,
         ctaText: "View Your Order",
         ctaUrl: "https://piccoload.com/my-orders",
       };
@@ -59,7 +59,7 @@ function getEmailConfig(
           trackingNumber
             ? ` Your tracking number is <strong>${trackingNumber}</strong>.`
             : ""
-        } Keep an eye on your letterbox — it'll be with you soon!`,
+        } Keep an eye on your mailbox — it'll be with you soon!`,
         ctaText: trackingNumber ? "Track Your Order" : "View Your Order",
         ctaUrl: trackingNumber
           ? `https://www.royalmail.com/track-your-item#/tracking-results/${trackingNumber}`
@@ -94,7 +94,7 @@ function buildEmailHtml(config: StatusEmailConfig): string {
         </p>
       </div>
       <div style="text-align: center; margin-top: 24px;">
-        <p style="font-size: 12px; color: #bbb;">piccolo'd — Personalised Coloring Books</p>
+        <p style="font-size: 12px; color: #bbb;">Piccoload — Personalized Coloring Books</p>
       </div>
     </div>
   `;

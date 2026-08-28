@@ -449,9 +449,9 @@ const Navbar = () => {
           productGid: "gid://shopify/Product/15269689852277",
           variantGid: line.merchandiseId,
           title:
-            line.merchandiseId === SHOPIFY_VARIANTS.COLORING_BOOK ? "Personalised Coloring Book — 1 Book" :
-            line.merchandiseId === SHOPIFY_VARIANTS.COLORING_BOOK_2_BUNDLE ? "Personalised Coloring Book — 2-Book Bundle" :
-            line.merchandiseId === SHOPIFY_VARIANTS.COLORING_BOOK_3_BUNDLE ? "Personalised Coloring Book — 3-Book Bundle" :
+            line.merchandiseId === SHOPIFY_VARIANTS.COLORING_BOOK ? "Personalized Coloring Book — 1 Book" :
+            line.merchandiseId === SHOPIFY_VARIANTS.COLORING_BOOK_2_BUNDLE ? "Personalized Coloring Book — 2-Book Bundle" :
+            line.merchandiseId === SHOPIFY_VARIANTS.COLORING_BOOK_3_BUNDLE ? "Personalized Coloring Book — 3-Book Bundle" :
             line.merchandiseId === SHOPIFY_VARIANTS.DIGITAL_DOWNLOAD ? "Instant Digital Download" :
             line.merchandiseId === SHOPIFY_VARIANTS.UNIQUE_PHOTOS ? "Unique Photos" :
             line.merchandiseId === SHOPIFY_VARIANTS.PERSONALIZE_COVER ? "Personalized Cover" : "Item",
