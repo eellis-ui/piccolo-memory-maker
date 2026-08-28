@@ -157,14 +157,56 @@ async function sendSaveLinkEmail(email: string, sessionId: string): Promise<bool
 }
 
 /**
+ * Shopify Admin API auth. Dev Dashboard apps no longer issue permanent
+ * shpat_ tokens: SHOPIFY_CLIENT_ID + SHOPIFY_CLIENT_SECRET are exchanged via
+ * the OAuth client-credentials grant for a 24h token, cached per isolate.
+ * A static SHOPIFY_ACCESS_TOKEN / SHOPIFY_ADMIN_TOKEN (legacy custom app)
+ * still works as a fallback when the client credentials aren't set.
+ */
+let shopifyTokenCache: { token: string; expiresAt: number } | null = null;
+
+async function getShopifyToken(): Promise<string | null> {
+  const clientId = Deno.env.get("SHOPIFY_CLIENT_ID");
+  const clientSecret = Deno.env.get("SHOPIFY_CLIENT_SECRET");
+  if (clientId && clientSecret) {
+    if (shopifyTokenCache && Date.now() < shopifyTokenCache.expiresAt - 60_000) {
+      return shopifyTokenCache.token;
+    }
+    try {
+      const res = await fetch("https://piccaload.myshopify.com/admin/oauth/access_token", {
+        method: "POST",
+        headers: { "Content-Type": "application/x-www-form-urlencoded" },
+        body: new URLSearchParams({
+          grant_type: "client_credentials",
+          client_id: clientId,
+          client_secret: clientSecret,
+        }),
+      });
+      if (res.ok) {
+        const data = await res.json();
+        shopifyTokenCache = {
+          token: data.access_token,
+          expiresAt: Date.now() + (data.expires_in ?? 86399) * 1000,
+        };
+        return shopifyTokenCache.token;
+      }
+      console.error("Shopify client-credentials grant failed:", res.status, await res.text());
+    } catch (err) {
+      console.error("Shopify client-credentials grant error:", err);
+    }
+  }
+  return Deno.env.get("SHOPIFY_ACCESS_TOKEN") ?? Deno.env.get("SHOPIFY_ADMIN_TOKEN") ?? null;
+}
+
+/**
  * Put the captured email on the Shopify customer list (tagged, subscribed)
  * so Shopify-side abandoned-cart and marketing emails cover this visitor.
  * Best-effort: a Shopify hiccup never fails the save.
  */
 async function syncShopifyCustomer(email: string): Promise<void> {
-  const token = Deno.env.get("SHOPIFY_ACCESS_TOKEN") ?? Deno.env.get("SHOPIFY_ADMIN_TOKEN");
+  const token = await getShopifyToken();
   if (!token) {
-    console.warn("SHOPIFY_ACCESS_TOKEN not set — Shopify customer sync skipped");
+    console.warn("Shopify credentials not configured — customer sync skipped");
     return;
   }
   const base = "https://piccaload.myshopify.com/admin/api/2025-07";

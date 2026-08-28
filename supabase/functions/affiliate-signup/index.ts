@@ -23,12 +23,83 @@ async function fetchWithTimeout(url: string, options: RequestInit, timeoutMs = 1
   }
 }
 
+/**
+ * Shopify Admin API auth. Dev Dashboard apps no longer issue permanent
+ * shpat_ tokens: SHOPIFY_CLIENT_ID + SHOPIFY_CLIENT_SECRET are exchanged via
+ * the OAuth client-credentials grant for a 24h token, cached per isolate.
+ * A static SHOPIFY_ACCESS_TOKEN / SHOPIFY_ADMIN_TOKEN (legacy custom app)
+ * still works as a fallback when the client credentials aren't set.
+ */
+let shopifyTokenCache: { token: string; expiresAt: number } | null = null;
+
+async function getShopifyToken(): Promise<string | null> {
+  const clientId = Deno.env.get("SHOPIFY_CLIENT_ID");
+  const clientSecret = Deno.env.get("SHOPIFY_CLIENT_SECRET");
+  if (clientId && clientSecret) {
+    if (shopifyTokenCache && Date.now() < shopifyTokenCache.expiresAt - 60_000) {
+      return shopifyTokenCache.token;
+    }
+    try {
+      const res = await fetch("https://piccaload.myshopify.com/admin/oauth/access_token", {
+        method: "POST",
+        headers: { "Content-Type": "application/x-www-form-urlencoded" },
+        body: new URLSearchParams({
+          grant_type: "client_credentials",
+          client_id: clientId,
+          client_secret: clientSecret,
+        }),
+      });
+      if (res.ok) {
+        const data = await res.json();
+        shopifyTokenCache = {
+          token: data.access_token,
+          expiresAt: Date.now() + (data.expires_in ?? 86399) * 1000,
+        };
+        return shopifyTokenCache.token;
+      }
+      console.error("Shopify client-credentials grant failed:", res.status, await res.text());
+    } catch (err) {
+      console.error("Shopify client-credentials grant error:", err);
+    }
+  }
+  return Deno.env.get("SHOPIFY_ACCESS_TOKEN") ?? Deno.env.get("SHOPIFY_ADMIN_TOKEN") ?? null;
+}
+
+async function checkShopifyCodeExists(code: string): Promise<boolean> {
+  const shopDomain = "piccaload.myshopify.com";
+  const accessToken = await getShopifyToken();
+  if (!accessToken) return false;
+
+  try {
+    // Search for existing discount codes matching this code
+    const resp = await fetchWithTimeout(
+      `https://${shopDomain}/admin/api/2025-07/discount_codes/lookup.json?code=${encodeURIComponent(code.toUpperCase())}`,
+      {
+        method: "GET",
+        headers: { "X-Shopify-Access-Token": accessToken },
+      },
+    );
+    // 200 = code exists, 404 = code doesn't exist
+    return resp.ok;
+  } catch {
+    return false; // On error, let creation proceed
+  }
+}
+
 async function createShopifyDiscountCode(code: string): Promise<{ priceRuleId: string } | { error: string }> {
   const shopDomain = "piccaload.myshopify.com";
-  const accessToken = Deno.env.get("SHOPIFY_ACCESS_TOKEN");
+  const accessToken = await getShopifyToken();
   if (!accessToken) return { error: "Shopify access token not configured" };
 
-  // Create a price rule for 10% off
+  const upperCode = code.toUpperCase();
+
+  // Check if code already exists on Shopify
+  const exists = await checkShopifyCodeExists(upperCode);
+  if (exists) {
+    return { error: "This discount code already exists on Shopify. Please choose another." };
+  }
+
+  // Create a price rule for 10% off — title is just the code, no prefix
   let priceRuleRes: Response;
   try {
     priceRuleRes = await fetchWithTimeout(
@@ -41,7 +112,7 @@ async function createShopifyDiscountCode(code: string): Promise<{ priceRuleId: s
         },
         body: JSON.stringify({
           price_rule: {
-            title: `AFFILIATE_${code}`,
+            title: upperCode,
             target_type: "line_item",
             target_selection: "all",
             allocation_method: "across",
@@ -86,7 +157,7 @@ async function createShopifyDiscountCode(code: string): Promise<{ priceRuleId: s
           "X-Shopify-Access-Token": accessToken,
         },
         body: JSON.stringify({
-          discount_code: { code: code.toUpperCase() },
+          discount_code: { code: upperCode },
         }),
       },
     );
@@ -118,17 +189,16 @@ Deno.serve(async (req) => {
       { global: { headers: { Authorization: authHeader } } },
     );
 
-    const token = authHeader.replace("Bearer ", "");
-    const { data: claimsData, error: claimsError } = await supabaseClient.auth.getClaims(token);
-    if (claimsError || !claimsData?.claims) {
+    const { data: { user: authUser }, error: authError } = await supabaseClient.auth.getUser();
+    if (authError || !authUser) {
       return new Response(JSON.stringify({ error: "Unauthorized" }), {
         status: 401,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
 
-    const userId = claimsData.claims.sub as string;
-    const userEmail = claimsData.claims.email as string;
+    const userId = authUser.id;
+    const userEmail = authUser.email || "";
 
     const body = await req.json();
     const { full_name, instagram_handle, tiktok_handle, discount_code } = body;
@@ -160,7 +230,7 @@ Deno.serve(async (req) => {
 
     if (existing) {
       return new Response(JSON.stringify({ error: "You already have an affiliate account" }), {
-        status: 400,
+        status: 200,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
@@ -179,13 +249,20 @@ Deno.serve(async (req) => {
       });
     }
 
-    // Create discount code in Shopify
+    // Create discount code in Shopify — block if code already exists
+    let shopifyPriceRuleId: string | null = null;
     const shopifyResult = await createShopifyDiscountCode(discount_code);
     if ("error" in shopifyResult) {
-      return new Response(JSON.stringify({ error: shopifyResult.error }), {
-        status: 400,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-      });
+      // If the code already exists on Shopify, reject signup
+      if (shopifyResult.error.includes("already exists")) {
+        return new Response(JSON.stringify({ error: shopifyResult.error }), {
+          status: 400,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
+      console.warn("Shopify discount creation failed (will need manual setup):", shopifyResult.error);
+    } else {
+      shopifyPriceRuleId = shopifyResult.priceRuleId;
     }
 
     // Insert affiliate record
@@ -198,7 +275,7 @@ Deno.serve(async (req) => {
         instagram_handle: instagram_handle || null,
         tiktok_handle: tiktok_handle || null,
         discount_code: discount_code.toUpperCase(),
-        shopify_price_rule_id: shopifyResult.priceRuleId,
+        shopify_price_rule_id: shopifyPriceRuleId,
       })
       .select()
       .single();

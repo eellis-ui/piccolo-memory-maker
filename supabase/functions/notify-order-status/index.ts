@@ -62,7 +62,7 @@ function getEmailConfig(
         } Keep an eye on your mailbox — it'll be with you soon!`,
         ctaText: trackingNumber ? "Track Your Order" : "View Your Order",
         ctaUrl: trackingNumber
-          ? `https://www.royalmail.com/track-your-item#/tracking-results/${trackingNumber}`
+          ? `https://tools.usps.com/go/TrackConfirmAction?tLabels=${trackingNumber}`
           : "https://piccoload.com/my-orders",
       };
     default:
