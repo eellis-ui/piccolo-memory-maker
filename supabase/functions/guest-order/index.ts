@@ -94,7 +94,7 @@ async function sendSaveLinkEmail(email: string, sessionId: string): Promise<bool
         <table role="presentation" width="600" cellpadding="0" cellspacing="0" style="max-width:600px;width:100%;">
           <tr>
             <td align="center" style="padding-bottom:32px;">
-              <img src="${siteUrl}/images/piccoload-logo-main.png" alt="Piccolo" width="140" style="display:block;" />
+              <img src="${siteUrl}/images/piccoload-logo-large.png" alt="Piccoload" width="140" style="display:block;" />
             </td>
           </tr>
           <tr>

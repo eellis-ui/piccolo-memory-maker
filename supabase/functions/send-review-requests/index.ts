@@ -35,8 +35,8 @@ function buildEmailHtml(customerName?: string): string {
           <tr>
             <td align="center" style="padding-bottom:32px;">
               <img
-                src="${siteUrl}/images/piccoload-logo-main.png"
-                alt="Piccolo"
+                src="${siteUrl}/images/piccoload-logo-large.png"
+                alt="Piccoload"
                 width="140"
                 style="display:block;"
               />
