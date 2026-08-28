@@ -59,7 +59,7 @@ function buildReminderHtml(resumeUrl: string, siteUrl: string, photoCount: numbe
                 If you have any questions, reply to this email — we're happy to help!
               </p>
               <p style="margin:16px 0 0;font-size:12px;color:#ccc;">
-                © ${new Date().getFullYear()} Piccolo. All rights reserved.
+                © ${new Date().getFullYear()} Piccoload. All rights reserved.
               </p>
             </td>
           </tr>
@@ -165,7 +165,7 @@ Deno.serve(async (req) => {
         body: JSON.stringify({
           from: fromEmail,
           to: [s.email],
-          subject: "Your Piccolo colouring book is waiting for you 🖍️",
+          subject: "Your Piccoload colouring book is waiting for you 🖍️",
           html: buildReminderHtml(resumeUrl, siteUrl, photoCount),
         }),
       });
