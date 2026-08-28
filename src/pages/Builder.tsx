@@ -88,7 +88,7 @@ const Builder = () => {
   useEffect(() => {
     trackProductView({
       id: "gid://shopify/Product/15269689852277",
-      title: "Personalised Coloring Book",
+      title: "Personalized Coloring Book",
       price: "35.00",
       vendor: "Piccoload",
       variantId: SHOPIFY_VARIANTS.COLORING_BOOK,
@@ -705,14 +705,14 @@ const Builder = () => {
                   <Copy className="w-3.5 h-3.5" />
                   {uniquePhotos ? (
                     <>
-                      Customising{" "}
+                      Customizing{" "}
                       <span className="font-semibold text-foreground">
                         Book {activeBookIndex + 1} of {bookCount}
                       </span>
                     </>
                   ) : (
                     <span className="font-semibold text-foreground">
-                      Customising your books
+                      Customizing your books
                     </span>
                   )}
                 </p>

@@ -442,7 +442,7 @@ const MyOrders = () => {
                                           ? "Ready to download"
                                           : isPurchased
                                             ? "Generating your PDF…"
-                                            : "Printable colouring book PDF"}
+                                            : "Printable coloring book PDF"}
                                       </p>
                                     </div>
                                   </div>

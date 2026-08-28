@@ -19,7 +19,7 @@ declare global {
 }
 
 const CURRENCY = "GBP";
-const CONTENT_NAME = "Personalised Colouring Book";
+const CONTENT_NAME = "Personalized Coloring Book";
 
 function fbq(...args: unknown[]) {
   try {

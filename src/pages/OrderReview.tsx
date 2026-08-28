@@ -314,7 +314,7 @@ const OrderReview = () => {
                 </Button>
 
                 <p className="text-xs text-center text-muted-foreground pt-1">
-                  After checkout, you will be taken to a page where you can upload your photos and customise your books.
+                  After checkout, you will be taken to a page where you can upload your photos and customize your books.
                 </p>
 
                 <div className="flex items-center justify-center gap-2 text-xs text-muted-foreground pt-1">

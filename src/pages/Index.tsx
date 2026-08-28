@@ -21,7 +21,7 @@ const Index = () => {
   useEffect(() => {
     trackProductView({
       id: "gid://shopify/Product/15269689852277",
-      title: "Personalised Coloring Book",
+      title: "Personalized Coloring Book",
       price: "35.00",
       vendor: "Piccoload",
       variantId: SHOPIFY_VARIANTS.COLORING_BOOK,

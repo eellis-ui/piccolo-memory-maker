@@ -17,7 +17,7 @@ const RefundPolicy = () => {
         {/* 1 */}
         <section className="mb-8">
           <h2 className="font-display text-xl font-semibold text-foreground mb-3">
-            1. Customised Products Are Non-Refundable
+            1. Customized Products Are Non-Refundable
           </h2>
           <p className="text-muted-foreground mb-2">
             All items sold by piccoload.com are custom-made using customer-submitted photos.
@@ -29,7 +29,7 @@ const RefundPolicy = () => {
           <p className="text-muted-foreground mb-2">
             Because all Piccolo'd books are made using customer-submitted photos, results may vary
             depending on image quality and subject matter. We cannot guarantee that every photo will
-            produce a flattering or stylistically identical colouring-page likeness. Requests for
+            produce a flattering or stylistically identical coloring-page likeness. Requests for
             refunds or cancellations based solely on dissatisfaction with artistic interpretation
             (including perceived unflattering features or likeness) are not eligible under our refund
             policy due to approval.
@@ -74,7 +74,7 @@ const RefundPolicy = () => {
             After verification, we will reprint and replace the item at no cost.
           </p>
           <p className="text-muted-foreground">
-            Refunds are not provided for customised goods.
+            Refunds are not provided for customized goods.
           </p>
         </section>
 

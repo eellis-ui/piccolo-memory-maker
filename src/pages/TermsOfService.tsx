@@ -45,7 +45,7 @@ const TermsOfService = () => {
         <section className="mb-8">
           <h2 className="font-display text-xl font-semibold text-foreground mb-3">2. Our Products</h2>
           <p className="text-muted-foreground mb-2">
-            We have made every effort to provide an accurate representation of our products and services in our online stores. However, please note that colours or product appearance may differ from how they may appear on your screen due to the type of device you use to access the store and your device settings and configuration.
+            We have made every effort to provide an accurate representation of our products and services in our online stores. However, please note that colors or product appearance may differ from how they may appear on your screen due to the type of device you use to access the store and your device settings and configuration.
           </p>
           <p className="text-muted-foreground mb-2">
             We do not warrant that the appearance or quality of any products or services purchased by you will meet your expectations or be the same as depicted or rendered in our online stores. All descriptions of products are subject to change at any time without notice at our sole discretion.

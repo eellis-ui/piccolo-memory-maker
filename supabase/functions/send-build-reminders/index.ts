@@ -40,7 +40,7 @@ function buildReminderHtml(resumeUrl: string, siteUrl: string, photoCount: numbe
           <tr>
             <td style="background-color:#faf8f5;border-radius:16px;padding:40px 32px;text-align:center;">
               <h1 style="margin:0 0 8px;font-size:24px;font-weight:600;color:#1c1c1c;">
-                Your colouring book is waiting 🖍️
+                Your coloring book is waiting 🖍️
               </h1>
               <p style="margin:0 0 24px;font-size:16px;line-height:1.6;color:#555;">
                 You made a great start — ${photoLine} saved and ready.
@@ -165,7 +165,7 @@ Deno.serve(async (req) => {
         body: JSON.stringify({
           from: fromEmail,
           to: [s.email],
-          subject: "Your Piccoload colouring book is waiting for you 🖍️",
+          subject: "Your Piccoload coloring book is waiting for you 🖍️",
           html: buildReminderHtml(resumeUrl, siteUrl, photoCount),
         }),
       });

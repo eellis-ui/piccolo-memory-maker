@@ -158,7 +158,7 @@ export async function renderBackCoverPng(
   const affLines = [
     "Please scan the QR code for",
     "information on our affiliate",
-    "programme. Make money for",
+    "program. Make money for",
     "your referrals!",
   ];
   const affBlockH = affFontSize + affLeading * (affLines.length - 1);
