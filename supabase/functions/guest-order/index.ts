@@ -119,7 +119,7 @@ async function sendSaveLinkEmail(email: string, sessionId: string): Promise<bool
                 If you have any questions, reply to this email — we're happy to help!
               </p>
               <p style="margin:16px 0 0;font-size:12px;color:#ccc;">
-                © ${new Date().getFullYear()} Piccolo. All rights reserved.
+                © ${new Date().getFullYear()} Piccoload. All rights reserved.
               </p>
             </td>
           </tr>

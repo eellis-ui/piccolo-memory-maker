@@ -10,7 +10,7 @@ const corsHeaders = {
 // Edit the subject line, body copy, button text, colors and layout below.
 // Changes deploy automatically when you save this file.
 
-const EMAIL_SUBJECT = "How did you enjoy your Piccolo colouring book? 🎨";
+const EMAIL_SUBJECT = "How did you enjoy your Piccoload colouring book? 🎨";
 
 function buildEmailHtml(customerName?: string): string {
   const siteUrl = Deno.env.get("SITE_URL") || "https://piccoload.com";
@@ -50,11 +50,11 @@ function buildEmailHtml(customerName?: string): string {
                 We'd Love Your Feedback! ⭐
               </h1>
               <p style="margin:0 0 24px;font-size:16px;line-height:1.6;color:#555;">
-                ${greeting}, it's been a month since your Piccolo colouring book was created.
+                ${greeting}, it's been a month since your Piccoload colouring book was created.
                 We hope it brought plenty of smiles and colouring fun!
               </p>
               <p style="margin:0 0 32px;font-size:16px;line-height:1.6;color:#555;">
-                Your review helps other families discover Piccolo and means the world to our
+                Your review helps other families discover Piccoload and means the world to our
                 small team. It only takes a minute!
               </p>
 
@@ -73,11 +73,11 @@ function buildEmailHtml(customerName?: string): string {
           <tr>
             <td style="padding-top:32px;text-align:center;">
               <p style="margin:0;font-size:13px;color:#999;line-height:1.5;">
-                You're receiving this because you purchased a Piccolo colouring book.<br/>
+                You're receiving this because you purchased a Piccoload colouring book.<br/>
                 If you have any questions, reply to this email — we're happy to help!
               </p>
               <p style="margin:16px 0 0;font-size:12px;color:#ccc;">
-                © ${new Date().getFullYear()} Piccolo. All rights reserved.
+                © ${new Date().getFullYear()} Piccoload. All rights reserved.
               </p>
             </td>
           </tr>
