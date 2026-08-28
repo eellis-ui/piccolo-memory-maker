@@ -1,6 +1,6 @@
 import { Link, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { Menu, X, ShoppingCart, Minus, Plus, Trash2, Shield, ClipboardList, Sparkles, Tag, Check, Download, Loader2, Lock, Users } from "lucide-react";
+import { Menu, X, ShoppingCart, Minus, Plus, Trash2, Shield, ClipboardList, Sparkles, Tag, Check, Download, Loader2, Lock, Users, CircleUserRound, LogOut } from "lucide-react";
 import { createShopifyCheckout, SHOPIFY_VARIANTS, type CartLineInput } from "@/lib/shopify";
 import { trackAddToCart } from "@/lib/shopify-analytics";
 import { trackEvent } from "@/lib/analytics-tracker";
@@ -20,6 +20,13 @@ import {
   SheetTitle,
   SheetTrigger } from
 "@/components/ui/sheet";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger } from
+"@/components/ui/dropdown-menu";
 import { Separator } from "@/components/ui/separator";
 
 // ── Basket content (extracted outside Navbar to prevent remount on re-render) ──
@@ -531,45 +538,6 @@ const Navbar = () => {
                   {link.label}
                 </Link>
               )}
-              {isAdmin &&
-              <Link
-                to="/admin"
-                className="text-sm font-medium text-foreground hover:text-foreground/70 transition-colors flex items-center gap-1">
-
-                  <Shield className="w-3.5 h-3.5" />
-                  Admin
-                </Link>
-              }
-              {!authLoading && isAffiliate &&
-              <Link
-                to="/affiliates"
-                className="text-sm font-medium text-foreground hover:text-foreground/70 transition-colors flex items-center gap-1">
-                  <Users className="w-3.5 h-3.5" />
-                  Affiliate Dashboard
-                </Link>
-              }
-            {!authLoading && isLoggedIn &&
-              <Link
-                to="/account"
-                className="text-sm font-medium text-foreground hover:text-foreground/70 transition-colors flex items-center gap-1">
-                  <ClipboardList className="w-3.5 h-3.5" />
-                  My Account
-                </Link>
-              }
-              {!authLoading && isLoggedIn && (
-                <button
-                  onClick={() => {
-                    supabase.auth.signOut({ scope: 'local' }).then(() => {
-                      window.location.href = "/";
-                    }).catch(() => {
-                      window.location.href = "/";
-                    });
-                  }}
-                  className="text-sm font-medium text-foreground hover:text-foreground/70 transition-colors"
-                >
-                  Sign Out
-                </button>
-              )}
             </div>
           </div>
 
@@ -578,7 +546,7 @@ const Navbar = () => {
             <img alt="Piccoload – From pic to pen" className="h-14 w-auto" src="/images/piccoload-logo-large.png" />
           </Link>
 
-          {/* Right: Cart + CTA */}
+          {/* Right: Cart + Account + CTA */}
           <div className="ml-auto flex items-center gap-3">
             <CartButton
               isCartOpen={isCartOpen}
@@ -594,6 +562,56 @@ const Navbar = () => {
               >
                 Sign In
               </Link>
+            )}
+            {!authLoading && isLoggedIn && (
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <button
+                    className="hidden md:inline-flex items-center gap-1 text-sm font-medium text-foreground hover:text-foreground/70 transition-colors p-2 hover:bg-muted rounded-lg"
+                    aria-label="Account menu"
+                  >
+                    <CircleUserRound className="w-5 h-5" />
+                  </button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end" className="w-52">
+                  <DropdownMenuItem asChild>
+                    <Link to="/account" className="flex items-center gap-2 cursor-pointer">
+                      <ClipboardList className="w-4 h-4" />
+                      My Account
+                    </Link>
+                  </DropdownMenuItem>
+                  {isAffiliate && (
+                    <DropdownMenuItem asChild>
+                      <Link to="/affiliates" className="flex items-center gap-2 cursor-pointer">
+                        <Users className="w-4 h-4" />
+                        Affiliate Dashboard
+                      </Link>
+                    </DropdownMenuItem>
+                  )}
+                  {isAdmin && (
+                    <DropdownMenuItem asChild>
+                      <Link to="/admin" className="flex items-center gap-2 cursor-pointer">
+                        <Shield className="w-4 h-4" />
+                        Admin
+                      </Link>
+                    </DropdownMenuItem>
+                  )}
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem
+                    className="flex items-center gap-2 cursor-pointer"
+                    onClick={() => {
+                      supabase.auth.signOut({ scope: 'local' }).then(() => {
+                        window.location.href = "/";
+                      }).catch(() => {
+                        window.location.href = "/";
+                      });
+                    }}
+                  >
+                    <LogOut className="w-4 h-4" />
+                    Sign Out
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
             )}
             <Button asChild className="hidden md:inline-flex rounded-lg px-6 bg-foreground text-background hover:bg-foreground/90">
               <Link to="/pricing">Start Creating</Link>
