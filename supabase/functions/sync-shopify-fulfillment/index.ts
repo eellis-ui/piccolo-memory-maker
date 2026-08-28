@@ -17,13 +17,53 @@ const SHOPIFY_STORE = "piccaload.myshopify.com";
 const SHOPIFY_API_VERSION = "2025-07";
 
 /**
+ * Shopify Admin API auth. Dev Dashboard apps no longer issue permanent
+ * shpat_ tokens: SHOPIFY_CLIENT_ID + SHOPIFY_CLIENT_SECRET are exchanged via
+ * the OAuth client-credentials grant for a 24h token, cached per isolate.
+ * A static SHOPIFY_ACCESS_TOKEN / SHOPIFY_ADMIN_TOKEN (legacy custom app)
+ * still works as a fallback when the client credentials aren't set.
+ */
+let shopifyTokenCache: { token: string; expiresAt: number } | null = null;
+
+async function getShopifyToken(): Promise<string | null> {
+  const clientId = Deno.env.get("SHOPIFY_CLIENT_ID");
+  const clientSecret = Deno.env.get("SHOPIFY_CLIENT_SECRET");
+  if (clientId && clientSecret) {
+    if (shopifyTokenCache && Date.now() < shopifyTokenCache.expiresAt - 60_000) {
+      return shopifyTokenCache.token;
+    }
+    try {
+      const res = await fetch(`https://${SHOPIFY_STORE}/admin/oauth/access_token`, {
+        method: "POST",
+        headers: { "Content-Type": "application/x-www-form-urlencoded" },
+        body: new URLSearchParams({
+          grant_type: "client_credentials",
+          client_id: clientId,
+          client_secret: clientSecret,
+        }),
+      });
+      if (res.ok) {
+        const data = await res.json();
+        shopifyTokenCache = {
+          token: data.access_token,
+          expiresAt: Date.now() + (data.expires_in ?? 86399) * 1000,
+        };
+        return shopifyTokenCache.token;
+      }
+      console.error("Shopify client-credentials grant failed:", res.status, await res.text());
+    } catch (err) {
+      console.error("Shopify client-credentials grant error:", err);
+    }
+  }
+  return Deno.env.get("SHOPIFY_ACCESS_TOKEN") ?? Deno.env.get("SHOPIFY_ADMIN_TOKEN") ?? null;
+}
+
+/**
  * Makes a request to the Shopify Admin REST API.
- * Requires SHOPIFY_ADMIN_TOKEN env var (Admin API access token).
  */
 async function shopifyAdmin(endpoint: string, method = "GET", body?: unknown) {
-  // Matches the secret name already used by affiliate-signup
-  const token = Deno.env.get("SHOPIFY_ACCESS_TOKEN") ?? Deno.env.get("SHOPIFY_ADMIN_TOKEN");
-  if (!token) throw new Error("SHOPIFY_ACCESS_TOKEN not configured");
+  const token = await getShopifyToken();
+  if (!token) throw new Error("Shopify credentials not configured");
 
   const url = `https://${SHOPIFY_STORE}/admin/api/${SHOPIFY_API_VERSION}/${endpoint}`;
   const res = await fetch(url, {
