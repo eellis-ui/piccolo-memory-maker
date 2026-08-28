@@ -203,8 +203,8 @@ Deno.serve(async (req) => {
               notify_customer: false, // We send our own emails
               tracking_info: {
                 number: trackingNumber,
-                company: trackingCompany || "Royal Mail",
-                url: `https://www.royalmail.com/track-your-item#/tracking-results/${trackingNumber}`,
+                company: trackingCompany || "USPS",
+                url: `https://tools.usps.com/go/TrackConfirmAction?tLabels=${trackingNumber}`,
               },
             },
           },
@@ -240,8 +240,8 @@ Deno.serve(async (req) => {
         ],
         tracking_info: {
           number: trackingNumber,
-          company: trackingCompany || "Royal Mail",
-          url: `https://www.royalmail.com/track-your-item#/tracking-results/${trackingNumber}`,
+          company: trackingCompany || "USPS",
+          url: `https://tools.usps.com/go/TrackConfirmAction?tLabels=${trackingNumber}`,
         },
         notify_customer: false, // We handle our own email notifications
       },
