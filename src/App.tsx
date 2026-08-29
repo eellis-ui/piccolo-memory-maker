@@ -20,6 +20,8 @@ const Admin = lazy(() => import("./pages/Admin"));
 const MyOrders = lazy(() => import("./pages/MyOrders"));
 const HowItWorks = lazy(() => import("./pages/HowItWorks"));
 const Pricing = lazy(() => import("./pages/Pricing"));
+// Team preview of the proposed product page — see src/pages/PricingV2.tsx
+const PricingV2 = lazy(() => import("./pages/PricingV2"));
 const About = lazy(() => import("./pages/About"));
 const FAQ = lazy(() => import("./pages/FAQ"));
 const Contact = lazy(() => import("./pages/Contact"));
@@ -58,6 +60,7 @@ const App = () => (
                 <Route path="/auth" element={<Auth />} />
                 <Route path="/how-it-works" element={<HowItWorks />} />
                 <Route path="/pricing" element={<Pricing />} />
+                <Route path="/pricing-v2" element={<PricingV2 />} />
                 <Route path="/about" element={<About />} />
                 <Route path="/faq" element={<FAQ />} />
                 <Route path="/contact" element={<Contact />} />
