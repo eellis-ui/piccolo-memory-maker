@@ -1,97 +1,172 @@
 import { useState, useRef, useCallback } from "react";
 import { Button } from "@/components/ui/button";
 import { Upload, ArrowRight, Loader2, RefreshCw } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
 
+// Samples show real, already-converted pages from the marketing assets —
+// instant, and zero API cost.
 const SAMPLES = [
-  { label: "Family", src: "/images/before-family.webp" },
-  { label: "Pet", src: "/images/before-pet.webp" },
-  { label: "Vacation", src: "/images/before-vacation.webp" },
+  { label: "Family", before: "/images/before-family.webp", after: "/images/after-family.webp" },
+  { label: "Pet", before: "/images/before-pet.webp", after: "/images/after-pet.webp" },
+  { label: "Vacation", before: "/images/before-vacation.webp", after: "/images/after-vacation.webp" },
 ];
 
-const MAX_DIM = 900;
+const UPLOAD_MAX_DIM = 1024;
+const SKETCH_MAX_DIM = 700;
+
+type Phase = "idle" | "drawing" | "done" | "limited" | "failed";
+
+const loadImage = (src: string) =>
+  new Promise<HTMLImageElement>((resolve, reject) => {
+    const img = new window.Image();
+    img.crossOrigin = "anonymous";
+    img.onload = () => resolve(img);
+    img.onerror = reject;
+    img.src = src;
+  });
+
+/** Rough client-side sketch shown instantly while the real conversion draws. */
+const makeSketch = (img: HTMLImageElement): string => {
+  const scale = Math.min(1, SKETCH_MAX_DIM / Math.max(img.naturalWidth, img.naturalHeight));
+  const w = Math.round(img.naturalWidth * scale);
+  const h = Math.round(img.naturalHeight * scale);
+  const canvas = document.createElement("canvas");
+  canvas.width = w;
+  canvas.height = h;
+  const ctx = canvas.getContext("2d")!;
+  ctx.drawImage(img, 0, 0, w, h);
+  const { data } = ctx.getImageData(0, 0, w, h);
+  const gray = new Float32Array(w * h);
+  for (let i = 0; i < w * h; i++) {
+    gray[i] = 0.299 * data[i * 4] + 0.587 * data[i * 4 + 1] + 0.114 * data[i * 4 + 2];
+  }
+  const out = ctx.createImageData(w, h);
+  for (let y = 0; y < h; y++) {
+    for (let x = 0; x < w; x++) {
+      const i = y * w + x;
+      let v = 255;
+      if (x > 0 && x < w - 1 && y > 0 && y < h - 1) {
+        const gx = -gray[i - w - 1] - 2 * gray[i - 1] - gray[i + w - 1] + gray[i - w + 1] + 2 * gray[i + 1] + gray[i + w + 1];
+        const gy = -gray[i - w - 1] - 2 * gray[i - w] - gray[i - w + 1] + gray[i + w - 1] + 2 * gray[i + w] + gray[i + w + 1];
+        const mag = Math.sqrt(gx * gx + gy * gy);
+        if (mag >= 60) v = Math.max(0, 255 - (mag - 60) * 1.6);
+      }
+      out.data[i * 4] = out.data[i * 4 + 1] = out.data[i * 4 + 2] = v;
+      out.data[i * 4 + 3] = 255;
+    }
+  }
+  ctx.putImageData(out, 0, 0);
+  return canvas.toDataURL("image/jpeg", 0.85);
+};
+
+/** Resize for upload; returns base64 JPEG + orientation. */
+const prepareUpload = (img: HTMLImageElement) => {
+  const scale = Math.min(1, UPLOAD_MAX_DIM / Math.max(img.naturalWidth, img.naturalHeight));
+  const w = Math.round(img.naturalWidth * scale);
+  const h = Math.round(img.naturalHeight * scale);
+  const canvas = document.createElement("canvas");
+  canvas.width = w;
+  canvas.height = h;
+  canvas.getContext("2d")!.drawImage(img, 0, 0, w, h);
+  return { base64: canvas.toDataURL("image/jpeg", 0.9), isLandscape: w > h };
+};
+
+/** Bake the visible watermark into the displayed preview. */
+const watermark = async (src: string): Promise<string> => {
+  const img = await loadImage(src);
+  const canvas = document.createElement("canvas");
+  canvas.width = img.naturalWidth;
+  canvas.height = img.naturalHeight;
+  const ctx = canvas.getContext("2d")!;
+  ctx.drawImage(img, 0, 0);
+  ctx.save();
+  ctx.translate(canvas.width / 2, canvas.height / 2);
+  ctx.rotate(-Math.PI / 7);
+  ctx.font = `bold ${Math.max(20, canvas.width / 11)}px sans-serif`;
+  ctx.fillStyle = "rgba(0,0,0,0.12)";
+  ctx.textAlign = "center";
+  ctx.fillText("PICCOLOAD PREVIEW", 0, 0);
+  ctx.restore();
+  return canvas.toDataURL("image/png");
+};
 
 /**
- * On-page "try before you buy": upload a photo, see a line-art style preview.
- *
- * DEMO IMPLEMENTATION: the preview is generated entirely in the browser
- * (grayscale → Sobel edge detection → inverted, watermarked) so the demo page
- * needs no backend changes and photos never leave the visitor's device.
- * Production should call the real `convert-to-lineart` pipeline via a
- * rate-limited, watermarking preview endpoint for true output quality.
+ * On-page "try before you buy": upload a photo, watch the real AI converter
+ * draw it. Uses the preview-lineart edge function — the same model, prompt
+ * and post-processing as the book's converter — with a rough client-side
+ * sketch as the instant placeholder while it draws (~30s).
  */
 const TryYourPhoto = ({ onCtaClick }: { onCtaClick: () => void }) => {
   const [originalUrl, setOriginalUrl] = useState<string | null>(null);
   const [resultUrl, setResultUrl] = useState<string | null>(null);
-  const [busy, setBusy] = useState(false);
+  const [phase, setPhase] = useState<Phase>("idle");
+  const [limitMessage, setLimitMessage] = useState<string>("");
   const [dragOver, setDragOver] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
+  const runRef = useRef(0);
 
-  const convert = useCallback((src: string) => {
-    setBusy(true);
+  const reset = () => {
+    runRef.current++;
+    setOriginalUrl(null);
+    setResultUrl(null);
+    setLimitMessage("");
+    setPhase("idle");
+  };
+
+  const showSample = useCallback(async (sample: (typeof SAMPLES)[number]) => {
+    runRef.current++;
+    setOriginalUrl(sample.before);
+    setResultUrl(sample.after);
+    setPhase("done");
+  }, []);
+
+  const convert = useCallback(async (src: string) => {
+    const run = ++runRef.current;
     setOriginalUrl(src);
     setResultUrl(null);
-    const img = new window.Image();
-    img.crossOrigin = "anonymous";
-    img.onload = () => {
-      const scale = Math.min(1, MAX_DIM / Math.max(img.naturalWidth, img.naturalHeight));
-      const w = Math.round(img.naturalWidth * scale);
-      const h = Math.round(img.naturalHeight * scale);
-      const canvas = document.createElement("canvas");
-      canvas.width = w;
-      canvas.height = h;
-      const ctx = canvas.getContext("2d")!;
-      ctx.drawImage(img, 0, 0, w, h);
+    setPhase("drawing");
+    try {
+      const img = await loadImage(src);
+      // Instant rough sketch while the real page draws
+      const sketch = makeSketch(img);
+      if (run !== runRef.current) return;
+      setResultUrl(sketch);
 
-      const { data } = ctx.getImageData(0, 0, w, h);
-      // Grayscale
-      const gray = new Float32Array(w * h);
-      for (let i = 0; i < w * h; i++) {
-        gray[i] = 0.299 * data[i * 4] + 0.587 * data[i * 4 + 1] + 0.114 * data[i * 4 + 2];
-      }
-      // Sobel edge magnitude → inverted so lines are dark on white
-      const out = ctx.createImageData(w, h);
-      for (let y = 0; y < h; y++) {
-        for (let x = 0; x < w; x++) {
-          const i = y * w + x;
-          let v = 255;
-          if (x > 0 && x < w - 1 && y > 0 && y < h - 1) {
-            const gx =
-              -gray[i - w - 1] - 2 * gray[i - 1] - gray[i + w - 1] +
-              gray[i - w + 1] + 2 * gray[i + 1] + gray[i + w + 1];
-            const gy =
-              -gray[i - w - 1] - 2 * gray[i - w] - gray[i - w + 1] +
-              gray[i + w - 1] + 2 * gray[i + w] + gray[i + w + 1];
-            const mag = Math.sqrt(gx * gx + gy * gy);
-            // Noise floor keeps busy backgrounds white; soft threshold keeps
-            // sketch-like midtones on real edges instead of harsh binary lines
-            if (mag < 60) {
-              v = 255;
-            } else {
-              v = 255 - Math.min(255, (mag - 60) * 1.6);
-              v = v < 110 ? v * 0.35 : 255 - (255 - v) * 0.2;
-            }
-          }
-          out.data[i * 4] = out.data[i * 4 + 1] = out.data[i * 4 + 2] = v;
-          out.data[i * 4 + 3] = 255;
+      const { base64, isLandscape } = prepareUpload(img);
+      const { data, error } = await supabase.functions.invoke("preview-lineart", {
+        body: { imageBase64: base64, isLandscape },
+      });
+
+      if (run !== runRef.current) return;
+
+      if (error) {
+        // Rate limit comes back as a FunctionsHttpError with our JSON body
+        let body: { error?: string; message?: string } | null = null;
+        try {
+          const ctx = (error as { context?: Response }).context;
+          if (ctx && typeof ctx.json === "function") body = await ctx.json();
+        } catch { /* keep the sketch */ }
+        if (run !== runRef.current) return;
+        if (body?.error === "preview_limit") {
+          setLimitMessage(body.message || "Preview limit reached — start your book to convert every photo in full quality.");
+          setPhase("limited");
+        } else {
+          setPhase("failed");
         }
+        return;
       }
-      ctx.putImageData(out, 0, 0);
 
-      // Watermark
-      ctx.save();
-      ctx.translate(w / 2, h / 2);
-      ctx.rotate(-Math.PI / 7);
-      ctx.font = `bold ${Math.max(20, w / 12)}px sans-serif`;
-      ctx.fillStyle = "rgba(0,0,0,0.13)";
-      ctx.textAlign = "center";
-      ctx.fillText("PICCOLOAD PREVIEW", 0, 0);
-      ctx.restore();
-
-      setResultUrl(canvas.toDataURL("image/jpeg", 0.9));
-      setBusy(false);
-    };
-    img.onerror = () => setBusy(false);
-    img.src = src;
+      if (data?.image) {
+        const marked = await watermark(data.image);
+        if (run !== runRef.current) return;
+        setResultUrl(marked);
+        setPhase("done");
+      } else {
+        setPhase("failed");
+      }
+    } catch {
+      if (run === runRef.current) setPhase("failed");
+    }
   }, []);
 
   const handleFile = (file: File | undefined) => {
@@ -101,6 +176,8 @@ const TryYourPhoto = ({ onCtaClick }: { onCtaClick: () => void }) => {
     reader.readAsDataURL(file);
   };
 
+  const drawing = phase === "drawing";
+
   return (
     <section className="pt-4 pb-12 md:pt-6 md:pb-16 bg-background">
       <div className="container mx-auto px-4 sm:px-6 lg:px-8 max-w-4xl">
@@ -109,8 +186,8 @@ const TryYourPhoto = ({ onCtaClick }: { onCtaClick: () => void }) => {
             See the Magic — Try It With Your Photo
           </h2>
           <p className="text-sm text-muted-foreground max-w-xl mx-auto">
-            Drop in any photo and watch it become a coloring page. Right here, right now —
-            your photo never leaves your device.
+            Drop in any photo and our AI illustrator draws it as a real coloring
+            page — the same artist that draws every page of your book.
           </p>
         </div>
 
@@ -144,16 +221,16 @@ const TryYourPhoto = ({ onCtaClick }: { onCtaClick: () => void }) => {
               onChange={(e) => handleFile(e.target.files?.[0])}
             />
             <div className="flex items-center justify-center gap-3 mt-5">
-              <span className="text-xs text-muted-foreground">No photo handy? Try a sample:</span>
+              <span className="text-xs text-muted-foreground">No photo handy? See an example:</span>
               {SAMPLES.map((s) => (
                 <button
                   key={s.label}
                   type="button"
-                  onClick={() => convert(s.src)}
+                  onClick={() => showSample(s)}
                   className="rounded-lg overflow-hidden border border-border hover:border-primary transition-colors"
-                  aria-label={`Try sample: ${s.label}`}
+                  aria-label={`See example: ${s.label}`}
                 >
-                  <img src={s.src} alt={s.label} className="w-12 h-12 object-cover" loading="lazy" />
+                  <img src={s.before} alt={s.label} className="w-12 h-12 object-cover" loading="lazy" />
                 </button>
               ))}
             </div>
@@ -168,35 +245,59 @@ const TryYourPhoto = ({ onCtaClick }: { onCtaClick: () => void }) => {
                 <p className="text-xs text-muted-foreground text-center mt-2">Your photo</p>
               </div>
               <div>
-                <div className="aspect-[3/4] rounded-lg overflow-hidden border-2 border-primary bg-white flex items-center justify-center">
-                  {busy ? (
-                    <Loader2 className="w-8 h-8 text-primary animate-spin" />
+                <div className="relative aspect-[3/4] rounded-lg overflow-hidden border-2 border-primary bg-white flex items-center justify-center">
+                  {resultUrl ? (
+                    <img
+                      src={resultUrl}
+                      alt={drawing ? "Rough sketch while your page is drawn" : "Coloring page preview"}
+                      className={`w-full h-full object-cover ${drawing ? "opacity-40" : ""}`}
+                    />
                   ) : (
-                    resultUrl && <img src={resultUrl} alt="Line art preview" className="w-full h-full object-cover" />
+                    <Loader2 className="w-8 h-8 text-primary animate-spin" />
+                  )}
+                  {drawing && (
+                    <div className="absolute inset-0 flex flex-col items-center justify-center gap-2 bg-white/60">
+                      <Loader2 className="w-7 h-7 text-primary animate-spin" />
+                      <p className="text-xs font-semibold text-foreground bg-white/90 rounded-full px-3 py-1">
+                        Drawing your page… ~30 seconds
+                      </p>
+                    </div>
                   )}
                 </div>
-                <p className="text-xs text-primary font-semibold text-center mt-2">Your coloring page ✨</p>
+                <p className={`text-xs font-semibold text-center mt-2 ${phase === "done" ? "text-primary" : "text-muted-foreground"}`}>
+                  {drawing ? "Our AI illustrator is drawing…" : phase === "done" ? "Your coloring page ✨" : "Rough sketch"}
+                </p>
               </div>
             </div>
+
+            {phase === "limited" && (
+              <p className="text-sm text-foreground bg-primary/10 border border-primary/20 rounded-lg px-4 py-3 text-center mt-5 max-w-md mx-auto">
+                {limitMessage}
+              </p>
+            )}
+            {phase === "failed" && (
+              <p className="text-sm text-foreground bg-secondary rounded-lg px-4 py-3 text-center mt-5 max-w-md mx-auto">
+                The full conversion didn&apos;t come through — the sketch above is a rough
+                stand-in. Try another photo, or start your book to see the real thing.
+              </p>
+            )}
+
             <div className="flex flex-col sm:flex-row items-center justify-center gap-3 mt-6">
               <Button onClick={onCtaClick} size="lg" className="rounded-lg font-semibold">
                 Turn This Into My Book
                 <ArrowRight className="w-4 h-4 ml-2" />
               </Button>
-              <Button
-                variant="outline"
-                size="lg"
-                className="rounded-lg"
-                onClick={() => { setOriginalUrl(null); setResultUrl(null); }}
-              >
+              <Button variant="outline" size="lg" className="rounded-lg" onClick={reset} disabled={drawing}>
                 <RefreshCw className="w-4 h-4 mr-2" />
                 Try another photo
               </Button>
             </div>
-            <p className="text-[11px] text-muted-foreground text-center mt-4 max-w-md mx-auto">
-              Quick in-browser preview — the book itself is drawn by our full AI line-art
-              converter with far more detail than this sketch.
-            </p>
+            {phase === "done" && (
+              <p className="text-[11px] text-muted-foreground text-center mt-4 max-w-md mx-auto">
+                Drawn by the same AI illustrator that draws your book — shown here as a
+                watermarked preview.
+              </p>
+            )}
           </div>
         )}
       </div>
