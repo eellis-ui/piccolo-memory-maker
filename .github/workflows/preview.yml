@@ -1,0 +1,40 @@
+# Deploys this branch's build to a SEPARATE Cloudflare Worker
+# ("piccoload-preview") so the team can review proposed changes on a live
+# URL without touching the production "piccoload" Worker / piccoload.com.
+#
+# Lives only on the preview branch. Delete this file (and the Worker, with
+# `npx wrangler delete --name piccoload-preview`) when the review is done.
+
+name: Preview deploy
+
+on:
+  push:
+    branches: [claude/meta-capi-piccoload-ye0b6h]
+  workflow_dispatch:
+
+jobs:
+  deploy-preview:
+    name: Deploy preview to Cloudflare
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - run: npm ci --no-audit --no-fund
+
+      - run: npm run build
+
+      - name: Deploy to Cloudflare Worker "piccoload-preview"
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+        run: |
+          if [ -z "$CLOUDFLARE_API_TOKEN" ] || [ -z "$CLOUDFLARE_ACCOUNT_ID" ]; then
+            echo "::warning::Cloudflare secrets not set — skipping preview deploy"
+            exit 0
+          fi
+          npx wrangler deploy --name piccoload-preview
