@@ -18,7 +18,7 @@ declare global {
   }
 }
 
-const CURRENCY = "GBP";
+const CURRENCY = "USD";
 const CONTENT_NAME = "Personalized Coloring Book";
 
 function fbq(...args: unknown[]) {

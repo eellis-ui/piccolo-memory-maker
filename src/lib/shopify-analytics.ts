@@ -17,8 +17,8 @@ export const SHOPIFY_ANALYTICS_CONFIG = {
   shopId: "gid://shopify/Shop/91857289589",
   shopDomain: "piccaload.myshopify.com",
   storefrontId: "piccoload-headless",
-  currency: "GBP",
-  acceptedLanguage: "en-GB",
+  currency: "USD",
+  acceptedLanguage: "en-US",
 } as const;
 
 /* ─── Helpers ─── */
