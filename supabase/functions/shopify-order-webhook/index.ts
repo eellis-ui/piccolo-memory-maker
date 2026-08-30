@@ -66,6 +66,8 @@ async function sendMetaPurchase(params: {
   city?: string | null;
   zip?: string | null;
   country?: string | null;
+  fbp?: string | null;
+  fbc?: string | null;
 }): Promise<void> {
   const accessToken = Deno.env.get("META_CAPI_ACCESS_TOKEN");
   if (!accessToken) {
@@ -84,6 +86,10 @@ async function sendMetaPurchase(params: {
     if (params.city) userData.ct = [await sha256Hex(params.city.replace(/\s/g, ""))];
     if (params.zip) userData.zp = [await sha256Hex(params.zip.replace(/\s/g, ""))];
     if (params.country) userData.country = [await sha256Hex(params.country)];
+    // Browser identifiers are sent raw (Meta spec) — they are what lets
+    // Meta attribute this purchase to the ad click.
+    if (params.fbp) userData.fbp = params.fbp;
+    if (params.fbc) userData.fbc = params.fbc;
 
     const res = await fetch(
       `https://graph.facebook.com/v21.0/${pixelId}/events`,
@@ -166,6 +172,9 @@ Deno.serve(async (req) => {
     const sessionId = noteAttributes.find(
       (attr: { name: string }) => attr.name === "builder_session_id",
     )?.value;
+    // Meta browser identifiers, stashed as hidden cart attributes at checkout
+    const attrFbp = noteAttributes.find((a) => a.name === "_meta_fbp")?.value || null;
+    const attrFbc = noteAttributes.find((a) => a.name === "_meta_fbc")?.value || null;
 
     if (!sessionId) {
       console.log("No builder_session_id in order — skipping");
@@ -179,7 +188,7 @@ Deno.serve(async (req) => {
     // Find orders for this session
     const { data: orders, error: ordersErr } = await admin
       .from("orders")
-      .select("id, digital_download")
+      .select("id, digital_download, meta_fbp, meta_fbc")
       .eq("builder_session_id", sessionId);
 
     if (ordersErr || !orders || orders.length === 0) {
@@ -255,6 +264,8 @@ Deno.serve(async (req) => {
         city: payload.shipping_address?.city,
         zip: payload.shipping_address?.zip,
         country: payload.shipping_address?.country_code,
+        fbp: attrFbp ?? orders.find((o: { meta_fbp?: string | null }) => o.meta_fbp)?.meta_fbp ?? null,
+        fbc: attrFbc ?? orders.find((o: { meta_fbc?: string | null }) => o.meta_fbc)?.meta_fbc ?? null,
       });
     }
 

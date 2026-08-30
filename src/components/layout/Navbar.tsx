@@ -1,10 +1,7 @@
 import { Link, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Menu, X, ShoppingCart, Minus, Plus, Trash2, Shield, ClipboardList, Sparkles, Tag, Check, Download, Loader2, Lock, Users } from "lucide-react";
-import { createShopifyCheckout, SHOPIFY_VARIANTS, type CartLineInput } from "@/lib/shopify";
-import { trackAddToCart } from "@/lib/shopify-analytics";
 import { trackEvent } from "@/lib/analytics-tracker";
-import { metaAddToCart, metaInitiateCheckout } from "@/lib/meta-pixel";
 import { useState, useCallback, useEffect } from "react";
 import { useBasket, UNIQUE_PHOTOS_PRICE, DIGITAL_DOWNLOAD_PRICE, PERSONALIZE_COVER_PRICE } from "@/contexts/BasketContext";
 import { useIsAdmin } from "@/hooks/use-admin";
@@ -38,8 +35,6 @@ interface BasketContentProps {
   toggleItemPersonalizeCover: (id: string) => void;
   digitalCopies: number;
   setDigitalCopies: (n: number) => void;
-  isCheckingOut: boolean;
-  onCheckout: () => void;
   onNavigateToBuilder: () => void;
   grandTotal: number;
 }
@@ -59,8 +54,6 @@ const BasketContent = ({
   toggleItemPersonalizeCover,
   digitalCopies,
   setDigitalCopies,
-  isCheckingOut,
-  onCheckout,
   onNavigateToBuilder,
   grandTotal
 }: BasketContentProps) =>
@@ -76,17 +69,12 @@ const BasketContent = ({
 
     
 
-      {/* Free shipping bar */}
-      {(() => {
-      const subtotal = items.reduce((s, i) => s + i.totalPrice, 0);
-      const FREE_SHIPPING_THRESHOLD = 35;
-      const unlocked = subtotal >= FREE_SHIPPING_THRESHOLD;
-      const amountRemaining = (FREE_SHIPPING_THRESHOLD - subtotal).toFixed(2);
-      return (
+      {/* Shipping note — every order qualifies, so say it plainly */}
+      {hasItems && (
         <p className="text-center text-xs text-muted-foreground py-1">
-          {unlocked ? <span className="font-bold text-foreground">✓ Free shipping unlocked!</span> : <>Free shipping on orders over $35 · <span className="font-medium">${amountRemaining} away</span></>}
-        </p>);
-    })()}
+          <span className="font-bold text-foreground">✓ Free US shipping included</span>
+        </p>
+      )}
 
       {!hasItems &&
     <p className="text-center text-muted-foreground py-12 text-sm">
@@ -401,83 +389,9 @@ const Navbar = () => {
   const totalOriginal = items.reduce((s, i) => s + i.originalTotalPrice, 0);
   const totalDiscount = totalOriginal - bookTotal;
 
-  const [isCheckingOut, setIsCheckingOut] = useState(false);
-
-  const handleCheckout = useCallback(async () => {
-    setIsCheckingOut(true);
-    try {
-      const lines: CartLineInput[] = [];
-      // 1. Main product — group basket items by bundle size (1 / 2 / 3 books)
-      //    and send each group as N units of the matching variant. Variant
-      //    prices on Shopify ($31.99 / $49.99 / $59.99) make checkout math exact.
-      const oneBookCount = items.filter((i) => i.quantity === 1).length;
-      const twoBookCount = items.filter((i) => i.quantity === 2).length;
-      const threeBookCount = items.filter((i) => i.quantity >= 3).length;
-      if (oneBookCount > 0) {
-        lines.push({ merchandiseId: SHOPIFY_VARIANTS.COLORING_BOOK, quantity: oneBookCount });
-      }
-      if (twoBookCount > 0) {
-        lines.push({ merchandiseId: SHOPIFY_VARIANTS.COLORING_BOOK_2_BUNDLE, quantity: twoBookCount });
-      }
-      if (threeBookCount > 0) {
-        lines.push({ merchandiseId: SHOPIFY_VARIANTS.COLORING_BOOK_3_BUNDLE, quantity: threeBookCount });
-      }
-      // 2. Unique photos (relates to book)
-      const uniquePhotosItems = items.filter((i) => i.uniquePhotos);
-      if (uniquePhotosItems.length > 0) {
-        lines.push({ merchandiseId: SHOPIFY_VARIANTS.UNIQUE_PHOTOS, quantity: uniquePhotosItems.length });
-      }
-      // 3. Personalize cover (relates to book)
-      const personalizeCount = items.reduce((s, i) => {
-        if (!i.personalizeCover) return s;
-        return s + (i.uniquePhotos ? i.quantity : 1);
-      }, 0);
-      if (personalizeCount > 0) {
-        lines.push({ merchandiseId: SHOPIFY_VARIANTS.PERSONALIZE_COVER, quantity: personalizeCount });
-      }
-      // 4. Digital download last (standalone add-on)
-      if (digitalCopies > 0) {
-        lines.push({ merchandiseId: SHOPIFY_VARIANTS.DIGITAL_DOWNLOAD, quantity: 1 });
-      }
-      // Track events for our admin dashboard + Shopify
-      trackEvent("add_to_cart", "/cart", { totalBookCount });
-      trackEvent("checkout_initiated", "/cart", { totalBookCount });
-      metaAddToCart(grandTotal, totalBookCount);
-      metaInitiateCheckout(grandTotal, totalBookCount);
-      trackAddToCart(
-        lines.map((line) => ({
-          productGid: "gid://shopify/Product/15269689852277",
-          variantGid: line.merchandiseId,
-          title:
-            line.merchandiseId === SHOPIFY_VARIANTS.COLORING_BOOK ? "Personalized Coloring Book — 1 Book" :
-            line.merchandiseId === SHOPIFY_VARIANTS.COLORING_BOOK_2_BUNDLE ? "Personalized Coloring Book — 2-Book Bundle" :
-            line.merchandiseId === SHOPIFY_VARIANTS.COLORING_BOOK_3_BUNDLE ? "Personalized Coloring Book — 3-Book Bundle" :
-            line.merchandiseId === SHOPIFY_VARIANTS.DIGITAL_DOWNLOAD ? "Instant Digital Download" :
-            line.merchandiseId === SHOPIFY_VARIANTS.UNIQUE_PHOTOS ? "Unique Photos" :
-            line.merchandiseId === SHOPIFY_VARIANTS.PERSONALIZE_COVER ? "Personalized Cover" : "Item",
-          price:
-            line.merchandiseId === SHOPIFY_VARIANTS.COLORING_BOOK ? "31.99" :
-            line.merchandiseId === SHOPIFY_VARIANTS.COLORING_BOOK_2_BUNDLE ? "49.99" :
-            line.merchandiseId === SHOPIFY_VARIANTS.COLORING_BOOK_3_BUNDLE ? "59.99" :
-            line.merchandiseId === SHOPIFY_VARIANTS.DIGITAL_DOWNLOAD ? "5.99" :
-            line.merchandiseId === SHOPIFY_VARIANTS.UNIQUE_PHOTOS ? "5.99" :
-            line.merchandiseId === SHOPIFY_VARIANTS.PERSONALIZE_COVER ? "1.99" : "0",
-          quantity: line.quantity,
-        }))
-      );
-
-      const checkoutUrl = await createShopifyCheckout(lines);
-      if (checkoutUrl) {
-        setIsCartOpen(false);
-        window.open(checkoutUrl, "_blank");
-      }
-    } catch (err) {
-      console.error("Checkout error:", err);
-    } finally {
-      setIsCheckingOut(false);
-    }
-  }, [items, totalBookCount, digitalCopies, setIsCartOpen]);
-
+  // Checkout always goes through the builder (the only cart button navigates
+  // there) — the old direct-checkout path was dead code with stale prices and
+  // a diverging copy of the line-item builder, so it's gone.
   const basketContentProps: BasketContentProps = {
     hasItems,
     items,
@@ -493,8 +407,6 @@ const Navbar = () => {
     toggleItemPersonalizeCover,
     digitalCopies,
     setDigitalCopies,
-    isCheckingOut,
-    onCheckout: handleCheckout,
     onNavigateToBuilder: () => navigate('/builder'),
     grandTotal,
   };

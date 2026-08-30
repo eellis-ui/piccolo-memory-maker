@@ -289,7 +289,7 @@ const PricingSectionV2 = () => {
                 <div className="flex-1">
                   <p className="text-sm font-semibold text-foreground">
                     Personalize your cover!{" "}
-                    <span className="text-primary font-bold">+${PERSONALIZE_COVER_PRICE.toFixed(2)}/book</span>
+                    <span className="text-primary font-bold">+${PERSONALIZE_COVER_PRICE.toFixed(2)}{pendingUniquePhotos ? "/book" : ""}</span>
                   </p>
                   <p className="text-xs text-muted-foreground mt-0.5">
                     Add a custom title to the front cover of each book

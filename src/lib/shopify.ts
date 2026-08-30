@@ -1,5 +1,6 @@
 import { toast } from "sonner";
 import { getSavedBuilderEmail } from "@/lib/guest-api";
+import { getFbp, getFbc } from "@/lib/meta-capi";
 
 const SHOPIFY_API_VERSION = '2025-07';
 const SHOPIFY_STORE_PERMANENT_DOMAIN = 'piccaload.myshopify.com';
@@ -7,9 +8,9 @@ const SHOPIFY_STOREFRONT_URL = `https://${SHOPIFY_STORE_PERMANENT_DOMAIN}/api/${
 const SHOPIFY_STOREFRONT_TOKEN = '058e9ec2c0cbbfe183a10b575f6631ee';
 
 // Shopify product variant IDs (GraphQL format)
-// The Coloring Book product has three variants priced at $31.99 / $49.99 /
-// $59.99 so Shopify charges variant_price × quantity with no discount engine
-// involved. Cart code in CheckoutStep / Navbar maps basket items to the
+// The Coloring Book product has three variants priced at $35.00 / $59.50 /
+// $69.30 so Shopify charges variant_price × quantity with no discount engine
+// involved. Cart code in CheckoutStep maps basket items to the
 // matching bundle variant based on quantity.
 export const SHOPIFY_VARIANTS = {
   COLORING_BOOK: 'gid://shopify/ProductVariant/57146362364277',           // 1 Book — $31.99
@@ -89,10 +90,21 @@ export interface CartLineInput {
 
 export async function createShopifyCheckout(lines: CartLineInput[], note?: string): Promise<string | null> {
   const input: Record<string, unknown> = { lines };
+  const attributes: CartLineAttribute[] = [];
   if (note) {
     input.note = note;
-    input.attributes = [{ key: "builder_session_id", value: note }];
+    attributes.push({ key: "builder_session_id", value: note });
   }
+  // Meta browser identifiers ride along as hidden cart attributes
+  // (underscore prefix = not shown at checkout) so the order webhook can
+  // attach them to the server-side CAPI Purchase and Meta can attribute the
+  // sale to the ad click. Without them, attribution falls back to fuzzy
+  // email matching and paid conversions go unreported.
+  const fbp = getFbp();
+  const fbc = getFbc();
+  if (fbp) attributes.push({ key: "_meta_fbp", value: fbp.slice(0, 250) });
+  if (fbc) attributes.push({ key: "_meta_fbc", value: fbc.slice(0, 250) });
+  if (attributes.length > 0) input.attributes = attributes;
   // Hand the saved email to Shopify so checkout is pre-filled and their
   // abandoned-checkout emails cover this visitor too
   const savedEmail = getSavedBuilderEmail();

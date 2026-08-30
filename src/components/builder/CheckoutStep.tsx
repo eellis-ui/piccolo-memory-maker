@@ -11,6 +11,7 @@ import { trackAddToCart } from "@/lib/shopify-analytics";
 import { trackEvent } from "@/lib/analytics-tracker";
 import { metaAddToCart, metaInitiateCheckout, metaPurchase } from "@/lib/meta-pixel";
 import { getSessionOrders, uploadCover } from "@/lib/guest-api";
+import { toast } from "sonner";
 import { renderFrontCoverPng } from "@/lib/cover-renderer";
 import logoImg from "@/assets/piccoload-logo.png";
 
@@ -195,17 +196,20 @@ const CheckoutStep = ({ pageCount, extraPages, convertedUrls, onBack, onCheckout
   const extraPagesPrice = extraPages === 10 ? 6 : extraPages === 20 ? 10 : extraPages === 40 ? 18 : 0;
   const digitalCount = bookDigitalDownloads.filter(b => b.enabled).length;
   const digitalPrice = digitalCount * DIGITAL_DOWNLOAD_PRICE;
-  // Count per-book add-ons
-  const titlePageCount = bookAddOnsList.filter(b => b.titlePageEnabled).length;
-  const rawCoverPersonalizeCount = bookAddOnsList.filter(b => b.dedicationPageEnabled).length;
-  // Shared-photo bundles: charge once; unique-photos bundles: charge per book
-  const coverPersonalizeCount = rawCoverPersonalizeCount > 0 && !uniquePhotos ? 1 : rawCoverPersonalizeCount;
-  const perBookAddOnsTotal = (titlePageCount + coverPersonalizeCount) * addOnPrice;
-  const personalizeCoverBooksCount = personalizeCoverFromBasket ? (uniquePhotos ? bookCount : 1) : 0;
-  const basketPersonalizeCoverCost = personalizeCoverBooksCount * 1.99;
-  const totalPrice = (basePrice + extraPagesPrice) * bookCount + (uniquePhotos ? uniquePhotosPrice : 0) + digitalPrice + perBookAddOnsTotal + basketPersonalizeCoverCost;
+  // ── Personalized Cover: ONE count drives the summary line, the total, and
+  // the Shopify line item, so the displayed price is exactly what is charged.
+  // A book has the add-on if it carries custom cover text (either historical
+  // flag) or the visitor bought it on the pricing page (basket flag) before
+  // reaching the cover step. Shared-photo bundles are charged once;
+  // unique-photos bundles per book.
+  const booksWithCustomCover = bookAddOnsList.filter(b => b.titlePageEnabled || b.dedicationPageEnabled).length;
+  const basketCoverCount = personalizeCoverFromBasket ? (uniquePhotos ? bookCount : 1) : 0;
+  const rawCoverCount = Math.max(booksWithCustomCover, basketCoverCount);
+  const coverPersonalizeCount = rawCoverCount > 0 && !uniquePhotos ? 1 : rawCoverCount;
+  const coverPersonalizeTotal = coverPersonalizeCount * addOnPrice;
+  const totalPrice = (basePrice + extraPagesPrice) * bookCount + (uniquePhotos ? uniquePhotosPrice : 0) + digitalPrice + coverPersonalizeTotal;
   purchaseTotalsRef.current = { value: totalPrice, bookCount };
-  const originalTotalPrice = (originalBasePrice + extraPagesPrice) * bookCount + (uniquePhotos ? uniquePhotosPrice : 0) + digitalPrice + perBookAddOnsTotal;
+  const originalTotalPrice = (originalBasePrice + extraPagesPrice) * bookCount + (uniquePhotos ? uniquePhotosPrice : 0) + digitalPrice + coverPersonalizeTotal;
 
   const maxQuantity = Math.max(...pricingTiers.map((t) => t.quantity));
   const handleDecrement = () => { if (bookCount > 1) setQuantity(bookCount - 1); };
@@ -213,10 +217,24 @@ const CheckoutStep = ({ pageCount, extraPages, convertedUrls, onBack, onCheckout
 
   const handleCheckout = async () => {
     setIsCheckingOut(true);
-    // Open window immediately in trusted click context to avoid popup blocking
-    const newWindow = window.open('about:blank', '_blank');
+    // Open window immediately in trusted click context to avoid popup blocking,
+    // and give it real content — a buyer staring at about:blank while covers
+    // render (below) reads it as "checkout is broken" and closes the tab.
+    const newWindow = window.open('', '_blank');
+    if (newWindow) {
+      try {
+        newWindow.document.write(
+          '<title>Piccoload — Secure Checkout</title>' +
+          '<body style="margin:0;display:flex;align-items:center;justify-content:center;height:100vh;font-family:system-ui,sans-serif;color:#221F1A;background:#FAF8F3">' +
+          '<p style="font-size:16px">Preparing your secure checkout…</p></body>'
+        );
+      } catch { /* cross-origin quirks — the redirect below still works */ }
+    }
     try {
-      // Render and upload covers before checkout (fire-and-forget — don't block checkout)
+      // Render and upload covers before checkout, but never let a stalled
+      // canvas render (throttled background tab on iOS) hold checkout hostage:
+      // covers are also regenerated server-side if missing, so 12s is a cap,
+      // not a requirement.
       if (sessionId && orderIds.length > 0) {
         try {
           const coverPromises: Promise<unknown>[] = [];
@@ -237,8 +255,10 @@ const CheckoutStep = ({ pageCount, extraPages, convertedUrls, onBack, onCheckout
           // Back cover is a static asset in storage (covers/shared/back-cover.png)
           // — no need to render or upload it here
 
-          await Promise.allSettled(coverPromises);
-          console.log("Covers uploaded successfully");
+          await Promise.race([
+            Promise.allSettled(coverPromises),
+            new Promise((resolve) => setTimeout(resolve, 12000)),
+          ]);
         } catch (coverErr) {
           console.warn("Cover upload failed (non-blocking):", coverErr);
         }
@@ -247,7 +267,7 @@ const CheckoutStep = ({ pageCount, extraPages, convertedUrls, onBack, onCheckout
       const lines: CartLineInput[] = [];
 
       // 1. Main product — pick the bundle variant matching this book count
-      // ($31.99 / $49.99 / $59.99 priced on Shopify, so checkout math is exact)
+      // ($35.00 / $59.50 / $69.30 priced on Shopify, so checkout math is exact)
       const bookVariant =
         bookCount === 2 ? SHOPIFY_VARIANTS.COLORING_BOOK_2_BUNDLE :
         bookCount === 3 ? SHOPIFY_VARIANTS.COLORING_BOOK_3_BUNDLE :
@@ -270,15 +290,12 @@ const CheckoutStep = ({ pageCount, extraPages, convertedUrls, onBack, onCheckout
         });
       }
 
-      // 3. Personalize cover (book-related upsell)
-      const rawPersonalizeCount = bookAddOnsList.filter(b => b.titlePageEnabled).length;
-      const personalizeCount = rawPersonalizeCount > 0 && !uniquePhotos ? 1 : rawPersonalizeCount;
-      const basketPersonalizeCount = personalizeCoverFromBasket ? (uniquePhotos ? bookCount : 1) : 0;
-      const totalPersonalizeCount = Math.max(personalizeCount, basketPersonalizeCount);
-      if (totalPersonalizeCount > 0) {
+      // 3. Personalize cover — same count the summary displayed and the total
+      // charged, so Shopify's checkout matches the review screen exactly.
+      if (coverPersonalizeCount > 0) {
         lines.push({
           merchandiseId: SHOPIFY_VARIANTS.PERSONALIZE_COVER,
-          quantity: totalPersonalizeCount,
+          quantity: coverPersonalizeCount,
           attributes: [
              { key: "Add-on for", value: "Personalized Coloring Book" },
             { key: "_position", value: "3" },
@@ -316,10 +333,10 @@ const CheckoutStep = ({ pageCount, extraPages, convertedUrls, onBack, onCheckout
             line.merchandiseId === SHOPIFY_VARIANTS.UNIQUE_PHOTOS ? "Unique Photos" :
             line.merchandiseId === SHOPIFY_VARIANTS.PERSONALIZE_COVER ? "Personalized Cover" : "Item",
           price:
-            line.merchandiseId === SHOPIFY_VARIANTS.COLORING_BOOK ? "31.99" :
-            line.merchandiseId === SHOPIFY_VARIANTS.COLORING_BOOK_2_BUNDLE ? "49.99" :
-            line.merchandiseId === SHOPIFY_VARIANTS.COLORING_BOOK_3_BUNDLE ? "59.99" :
-            line.merchandiseId === SHOPIFY_VARIANTS.DIGITAL_DOWNLOAD ? "5.99" :
+            line.merchandiseId === SHOPIFY_VARIANTS.COLORING_BOOK ? "35.00" :
+            line.merchandiseId === SHOPIFY_VARIANTS.COLORING_BOOK_2_BUNDLE ? "59.50" :
+            line.merchandiseId === SHOPIFY_VARIANTS.COLORING_BOOK_3_BUNDLE ? "69.30" :
+            line.merchandiseId === SHOPIFY_VARIANTS.DIGITAL_DOWNLOAD ? "6.99" :
             line.merchandiseId === SHOPIFY_VARIANTS.UNIQUE_PHOTOS ? "5.99" :
             line.merchandiseId === SHOPIFY_VARIANTS.PERSONALIZE_COVER ? "1.99" : "0",
           quantity: line.quantity,
@@ -337,11 +354,17 @@ const CheckoutStep = ({ pageCount, extraPages, convertedUrls, onBack, onCheckout
         }
         setAwaitingPayment(true);
       } else {
+        // createShopifyCheckout already toasted the specific reason
         newWindow?.close();
       }
     } catch (error) {
+      // Never fail silently: an invisible error here reads as a dead button,
+      // and the buyer leaves without either of us knowing why.
       console.error('Checkout error:', error);
       newWindow?.close();
+      toast.error("Checkout couldn't start", {
+        description: "Please check your connection and tap Secure Checkout again — your book is saved.",
+      });
     } finally {
       setIsCheckingOut(false);
     }

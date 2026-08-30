@@ -3,6 +3,7 @@ import { Upload, X, Image as ImageIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import { toast } from "sonner";
+import { convertHeicToJpeg, normalizeImage } from "@/lib/image-normalize";
 import type { OrderPhoto } from "@/pages/Builder";
 import {
   uploadGuestPhoto,
@@ -47,91 +48,6 @@ const UploadStep = ({ orderId, sessionId, onImagesUploaded, maxImages = 20, init
     onImagesChangedRef(images);
   }, [images, onImagesChangedRef]);
 
-  // Convert HEIC to JPEG blob using heic-to
-  const convertHeicToJpeg = async (file: File): Promise<Blob> => {
-    const { heicTo } = await import("heic-to");
-    const result = await heicTo({ blob: file, type: "image/jpeg", quality: 0.92 });
-    return result;
-  };
-
-  // Normalize image: always output PORTRAIT A4 ratio.
-  // Landscape images are rotated 90° CW so they fill the portrait page.
-  // No stretching — only center-crop and rotation.
-  const normalizeImage = (blob: Blob): Promise<{ blob: Blob; isLandscape: boolean }> => {
-    return new Promise((resolve, reject) => {
-      const img = new window.Image();
-      img.onload = () => {
-        // 1536 matches the AI converter's input cap (convert-to-lineart MAX_DIM)
-        // — anything lower starves the line-art model of detail.
-        const MAX_DIM = 1536;
-        const A4_PORTRAIT_RATIO = 1 / Math.SQRT2; // ≈ 0.7071 (portrait A4: 210×297mm)
-
-        const natW = img.naturalWidth;
-        const natH = img.naturalHeight;
-        const needsRotation = natW > natH; // Landscape → rotate 90° CW to portrait
-
-        // Step 1: If landscape, rotate onto a temp canvas so it becomes portrait
-        let source: HTMLCanvasElement | HTMLImageElement;
-        let effW: number, effH: number;
-
-        if (needsRotation) {
-          const tmp = document.createElement("canvas");
-          tmp.width = natH;
-          tmp.height = natW;
-          const tCtx = tmp.getContext("2d")!;
-          tCtx.translate(natH, 0);
-          tCtx.rotate(Math.PI / 2);
-          tCtx.drawImage(img, 0, 0);
-          source = tmp;
-          effW = natH;
-          effH = natW;
-        } else {
-          source = img;
-          effW = natW;
-          effH = natH;
-        }
-
-        // Step 2: Cover-crop to portrait A4 ratio (no stretching)
-        let cropX = 0, cropY = 0, cropW = effW, cropH = effH;
-        const currentRatio = effW / effH;
-
-        if (currentRatio > A4_PORTRAIT_RATIO) {
-          // Wider than A4 portrait → crop sides
-          cropW = Math.round(effH * A4_PORTRAIT_RATIO);
-          cropX = Math.round((effW - cropW) / 2);
-        } else if (currentRatio < A4_PORTRAIT_RATIO) {
-          // Taller than A4 portrait → crop top/bottom
-          cropH = Math.round(effW / A4_PORTRAIT_RATIO);
-          cropY = Math.round((effH - cropH) / 2);
-        }
-
-        // Step 3: Scale down to max dimension
-        let w = cropW, h = cropH;
-        if (w > MAX_DIM || h > MAX_DIM) {
-          const scale = MAX_DIM / Math.max(w, h);
-          w = Math.round(w * scale);
-          h = Math.round(h * scale);
-        }
-
-        // Step 4: Draw final portrait image
-        const canvas = document.createElement("canvas");
-        canvas.width = w;
-        canvas.height = h;
-        const ctx = canvas.getContext("2d");
-        if (!ctx) return reject(new Error("No canvas context"));
-        ctx.drawImage(source, cropX, cropY, cropW, cropH, 0, 0, w, h);
-        canvas.toBlob(
-          (result) => (result ? resolve({ blob: result, isLandscape: false }) : reject(new Error("Canvas toBlob failed"))),
-          "image/jpeg",
-          0.85
-        );
-        URL.revokeObjectURL(img.src);
-      };
-      img.onerror = () => reject(new Error("Image load failed"));
-      img.src = URL.createObjectURL(blob);
-    });
-  };
-
   const uploadFile = async (file: File, localId: string, position: number): Promise<LocalImage | null> => {
     // Convert HEIC if needed
     let inputBlob: Blob = file;
@@ -147,10 +63,12 @@ const UploadStep = ({ orderId, sessionId, onImagesUploaded, maxImages = 20, init
       }
     }
 
-    // Normalize orientation via canvas before uploading
-    const { blob: normalizedBlob, isLandscape } = await normalizeImage(inputBlob);
-
+    // Normalize orientation via canvas before uploading. Inside the try:
+    // a single unreadable photo used to reject the whole Promise.all in
+    // handleFiles, leaving isUploading stuck true and the step frozen with
+    // every input disabled — the classic invisible mobile dead end.
     try {
+      const { blob: normalizedBlob, isLandscape } = await normalizeImage(inputBlob);
       const result = await uploadGuestPhoto(sessionId, orderId, normalizedBlob, position, isLandscape);
 
       return {
@@ -197,22 +115,25 @@ const UploadStep = ({ orderId, sessionId, onImagesUploaded, maxImages = 20, init
       setImages((prev) => [...prev, ...placeholders]);
 
       const startPosition = images.length;
-      const results = await Promise.all(
-        placeholders.map((ph, i) => uploadFile(ph.file, ph.id, startPosition + i + 1))
-      );
+      try {
+        const results = await Promise.all(
+          placeholders.map((ph, i) => uploadFile(ph.file, ph.id, startPosition + i + 1))
+        );
 
-      setImages((prev) =>
-        prev.map((img) => {
-          const result = results.find((r) => r?.id === img.id);
-          if (result) return result;
-          if (placeholders.find((p) => p.id === img.id) && !result) {
-            return { ...img, status: "error" as const };
-          }
-          return img;
-        })
-      );
-
-      setIsUploading(false);
+        setImages((prev) =>
+          prev.map((img) => {
+            const result = results.find((r) => r?.id === img.id);
+            if (result) return result;
+            if (placeholders.find((p) => p.id === img.id) && !result) {
+              return { ...img, status: "error" as const };
+            }
+            return img;
+          })
+        );
+      } finally {
+        // Whatever happens above, the step must never stay frozen
+        setIsUploading(false);
+      }
     },
     [images.length, maxImages, orderId, sessionId, isUploading]
   );
