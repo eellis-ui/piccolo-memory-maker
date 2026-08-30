@@ -13,7 +13,7 @@ import CatBanner from "../CatBanner";
 import InstagramSection from "../InstagramSection";
 import StickyMobileCTA from "../StickyMobileCTA";
 import FinalCTABlock from "../FinalCTABlock";
-import HonestCountdown from "./HonestCountdown";
+import HonestCountdown from "../HonestCountdown";
 import DeliveryEstimate from "./DeliveryEstimate";
 import GuaranteeBadgesV2 from "./GuaranteeBadgesV2";
 import TryYourPhoto from "./TryYourPhoto";
@@ -76,7 +76,9 @@ const PricingSectionV2 = () => {
     { url: "/images/product-gallery-5.webp", altText: "Coloring book page on sofa" },
     { url: "/images/product-gallery-6.webp", altText: "Coloring book on table with pencils" },
   ]);
-  const [imagesLoading, setImagesLoading] = useState(true);
+  // Local fallback images render immediately — the ad visitor's first
+  // paint must never wait on a cross-origin Shopify API round-trip.
+  const [imagesLoading] = useState(false);
   const ctaButtonRef = useRef<HTMLButtonElement>(null);
 
   useEffect(() => {
@@ -95,8 +97,6 @@ const PricingSectionV2 = () => {
         }
       } catch (err) {
         console.error("Failed to fetch product images:", err);
-      } finally {
-        setImagesLoading(false);
       }
     };
     fetchImages();
@@ -126,8 +126,9 @@ const PricingSectionV2 = () => {
             image: "https://piccoload.com/images/product-hero.webp",
             description: "A one-of-a-kind coloring book made from your personal photos, transformed into black-and-white line art.",
             brand: { "@type": "Brand", name: "Piccoload" },
+            // aggregateRating deliberately omitted until a real review feed
+            // backs the numbers — fabricated counts risk a Google penalty.
             offers: { "@type": "Offer", price: "35.00", priceCurrency: "USD", availability: "https://schema.org/InStock" },
-            aggregateRating: { "@type": "AggregateRating", ratingValue: "4.95", reviewCount: "3952" },
           }),
         }}
       />
@@ -161,7 +162,7 @@ const PricingSectionV2 = () => {
                     <Star key={i} className="w-4 h-4 fill-amber-400 text-amber-400" />
                   ))}
                 </div>
-                <span className="text-sm text-muted-foreground">4.95 out of 5 — 3,952 reviews</span>
+                <span className="text-sm text-muted-foreground">Loved by families across the US &amp; UK</span>
               </div>
 
               {/* Title */}

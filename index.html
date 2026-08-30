@@ -24,6 +24,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link rel="preconnect" href="https://msvcchcmxyghvpfscsmy.supabase.co" crossorigin />
+    <link rel="preconnect" href="https://piccaload.myshopify.com" crossorigin />
     <link rel="dns-prefetch" href="https://connect.facebook.net" />
     <!-- Loaded here as a plain stylesheet instead of a CSS @import, which
          chained serially behind the app CSS and delayed first paint -->
@@ -46,6 +47,12 @@
       t.src=v;s=b.getElementsByTagName(e)[0];
       s.parentNode.insertBefore(t,s)}(window, document,'script',
       'https://connect.facebook.net/en_US/fbevents.js');
+      // EU/UK visitors (timezone heuristic) start with consent revoked until
+      // the cookie banner records a choice; everyone else is unaffected.
+      try {
+        var euTz = /^Europe\//.test((Intl.DateTimeFormat().resolvedOptions().timeZone) || '');
+        if (euTz && localStorage.getItem('cookie_consent') !== 'granted') { fbq('consent', 'revoke'); }
+      } catch (e) {}
       fbq('init', '1809702712963152');
       fbq('track', 'PageView');
     </script>

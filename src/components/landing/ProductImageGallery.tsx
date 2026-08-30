@@ -45,6 +45,9 @@ const ProductImageGallery = ({ images, isLoading }: Props) => {
           src={displayImages[safeSelected].url}
           alt={displayImages[safeSelected].altText || "Personalized coloring book"}
           className="w-full h-full object-cover"
+          width={600}
+          height={600}
+          fetchPriority="high"
         />
       </div>
 
@@ -60,7 +63,7 @@ const ProductImageGallery = ({ images, isLoading }: Props) => {
                 : "border-border hover:border-muted-foreground/40"
             }`}
           >
-            <img src={img.url} alt={img.altText || `Thumbnail ${i + 1}`} className="w-full h-full object-cover" />
+            <img src={img.url} alt={img.altText || `Thumbnail ${i + 1}`} className="w-full h-full object-cover" width={80} height={80} loading="lazy" />
           </button>
         ))}
       </div>

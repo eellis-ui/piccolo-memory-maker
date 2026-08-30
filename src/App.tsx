@@ -6,14 +6,16 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { BasketProvider } from "@/contexts/BasketContext";
 import { AuthProvider } from "@/contexts/AuthContext";
-import Index from "./pages/Index";
 import ScrollToTop from "./components/ScrollToTop";
+import RouteMeta from "./components/RouteMeta";
+import CookieConsent from "./components/CookieConsent";
 import ChatWidget from "./components/ChatWidget";
 import ShopifyAnalytics from "./components/ShopifyAnalytics";
 import { useClaimOrders } from "./hooks/use-claim-orders";
 
-// Only the landing page is loaded eagerly; every other route is split into
-// its own chunk so first paint doesn't pay for the builder/admin bundles.
+// Every route is code-split so an ad click to /pricing never parses the
+// homepage tree (or vice versa).
+const Index = lazy(() => import("./pages/Index"));
 const Builder = lazy(() => import("./pages/Builder"));
 const Auth = lazy(() => import("./pages/Auth"));
 const Admin = lazy(() => import("./pages/Admin"));
@@ -52,9 +54,11 @@ const App = () => (
           <BasketProvider>
             <AppInner />
             <ScrollToTop />
+        <RouteMeta />
             <ShopifyAnalytics />
             <ChatWidget />
-            <Suspense fallback={null}>
+            <CookieConsent />
+            <Suspense fallback={<div className="min-h-screen bg-background flex items-center justify-center"><div className="w-8 h-8 rounded-full border-2 border-muted-foreground/30 border-t-foreground animate-spin" aria-label="Loading" /></div>}>
               <Routes>
                 <Route path="/" element={<Index />} />
                 <Route path="/auth" element={<Auth />} />

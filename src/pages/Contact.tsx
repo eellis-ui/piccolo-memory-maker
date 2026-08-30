@@ -3,22 +3,42 @@ import Footer from "@/components/layout/Footer";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { Checkbox } from "@/components/ui/checkbox";
 import { useState } from "react";
 import { toast } from "sonner";
+import { Loader2 } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
 
 const Contact = () => {
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [message, setMessage] = useState("");
-  const [saveInfo, setSaveInfo] = useState(false);
+  const [sending, setSending] = useState(false);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  // Actually delivers the message via the send-contact-message edge function.
+  // The previous handler showed "Message sent!" and threw every enquiry away.
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    toast.success("Message sent! We'll get back to you soon.");
-    setName("");
-    setEmail("");
-    setMessage("");
+    if (sending) return;
+    setSending(true);
+    try {
+      const { data, error } = await supabase.functions.invoke("send-contact-message", {
+        body: { name, email, message },
+      });
+      if (error || !data?.success) {
+        throw new Error(error?.message || "send failed");
+      }
+      toast.success("Message sent! We'll get back to you soon.");
+      setName("");
+      setEmail("");
+      setMessage("");
+    } catch (err) {
+      console.error("Contact form error:", err);
+      toast.error("Your message couldn't be sent", {
+        description: "Please try again, or email us directly at hello@piccoload.com.",
+      });
+    } finally {
+      setSending(false);
+    }
   };
 
   return (
@@ -65,18 +85,9 @@ const Contact = () => {
                   rows={8}
                   className="rounded-lg"
                 />
-                <div className="flex items-start gap-3">
-                  <Checkbox
-                    id="save-info"
-                    checked={saveInfo}
-                    onCheckedChange={(checked) => setSaveInfo(checked === true)}
-                  />
-                  <label htmlFor="save-info" className="text-sm text-muted-foreground leading-snug cursor-pointer">
-                    Save my name, email, and website in this browser for the next time I comment.
-                  </label>
-                </div>
-                <Button type="submit" className="px-10 py-5" size="lg">
-                  Submit Now
+                <Button type="submit" className="px-10 py-5" size="lg" disabled={sending}>
+                  {sending && <Loader2 className="w-4 h-4 mr-2 animate-spin" />}
+                  {sending ? "Sending…" : "Submit Now"}
                 </Button>
               </form>
             </div>

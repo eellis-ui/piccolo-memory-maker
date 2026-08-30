@@ -8,7 +8,7 @@ import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/
 import { useBasket, UNIQUE_PHOTOS_PRICE, PERSONALIZE_COVER_PRICE } from "@/contexts/BasketContext";
 import { toast } from "sonner";
 import ProductImageGallery, { type ProductImage } from "./ProductImageGallery";
-import CountdownTimer from "./CountdownTimer";
+import HonestCountdown from "./HonestCountdown";
 import { storefrontApiRequest } from "@/lib/shopify";
 import TrustBadges from "./TrustBadges";
 import CustomerReviewsSection from "./CustomerReviewsSection";
@@ -57,7 +57,7 @@ const featureBullets = [
 const faqs = [
   { question: "What quality and materials can I expect?", answer: "We use premium 170gsm uncoated paper, perfect for coloring with pencils, pens, or markers. The cover is printed on thick 350gsm card stock. Every book is professionally printed and bound to last." },
   { question: "How long will it take from ordering to delivery?", answer: "Books are printed and dispatched within 3–5 business days. US delivery typically takes an additional 3–5 business days, so you can expect your book within 1–2 weeks of ordering." },
-  { question: "What if something goes wrong – do you offer returns or replacements?", answer: "Because each book is custom-made from your uploaded photos, returns for standard \"change of mind\" are disallowed.\n\nCan I request changes?\n\nYou can make lots of changes throughout the 'creating stage'. You have the chance to choose custom front cover images, personalize the text, choose up to 20 images per book, and review your line art. Once the design is considered approved, no further changes or revisions can be made.\n\nIf you receive a damaged, misprinted or incorrect item, please contact our support team within 14 days of delivery with your order number and a photo of the issue. We will arrange a replacement or refund. If your book is simply no longer wanted, we may not accept a return given the bespoke nature — check our \"Refund Policy\" link for full details." },
+  { question: "What if something goes wrong – do you offer returns or replacements?", answer: "Every order is covered by our Love-Your-Book Guarantee: if your book arrives damaged, misprinted, or not what you approved, contact us within 14 days of delivery with your order number and a photo, and we'll send a free replacement or a full refund.\n\nBecause each book is custom-made from your photos, we can't accept change-of-mind returns — but you're in full control before printing: you choose every photo, preview every line-art page, and approve the final book in the builder. Nothing prints until you're happy with it. See our Refund Policy for full details." },
   { question: "Can anyone make a Piccoload book, even if they're not tech-savvy?", answer: "Absolutely! Our builder walks you through every step — just upload your photos, approve the line-art conversions, customize your cover, and checkout. No design skills needed." },
   { question: "What kind of photos work best?", answer: "Photos with clear subjects and good contrast work best — think portraits, pets, landmarks, and nature shots. Avoid very dark, blurry, or overly busy images for the best line-art results." },
   { question: "What size is the Piccoload book?", answer: "✨ Our Piccoload book is A4 size 8.3\" x 11.7\" (21 x 29.7 cm) in Portrait orientation.\n\nTo help you visualize it:\n\n👉 It's roughly the size of a standard magazine, similar to well-known U.S. titles like TIME, The New Yorker, or National Geographic.\n\nIt's easy to hold, fits in most backpacks, and gives plenty of room for photos, artwork, and stories.\n\nThe large pages give you plenty of room to color and add detail, and they look great on display." },
@@ -92,7 +92,9 @@ const PricingSection = () => {
     { url: "/images/product-gallery-5.webp", altText: "Coloring book page on sofa" },
     { url: "/images/product-gallery-6.webp", altText: "Coloring book on table with pencils" },
   ]);
-  const [imagesLoading, setImagesLoading] = useState(true);
+  // Local fallback images render immediately — the ad visitor's first
+  // paint must never wait on a cross-origin Shopify API round-trip.
+  const [imagesLoading] = useState(false);
   const ctaButtonRef = useRef<HTMLButtonElement>(null);
 
   useEffect(() => {
@@ -111,8 +113,6 @@ const PricingSection = () => {
         }
       } catch (err) {
         console.error("Failed to fetch product images:", err);
-      } finally {
-        setImagesLoading(false);
       }
     };
     fetchImages();
@@ -127,8 +127,6 @@ const PricingSection = () => {
     addToCart(selectedQuantity, { uniquePhotos: pendingUniquePhotos, personalizeCover: pendingPersonalizeCover });
     setIsCartOpen(true);
   };
-
-  const currentMonth = new Date().toLocaleString("default", { month: "long" }).toUpperCase();
 
   return (
     <>
@@ -150,7 +148,7 @@ const PricingSection = () => {
                     <Star key={i} className="w-4 h-4 fill-amber-400 text-amber-400" />
                   ))}
                 </div>
-                <span className="text-sm text-muted-foreground">4.95 out of 5 — 3,952 reviews</span>
+                <span className="text-sm text-muted-foreground">Loved by families across the US &amp; UK</span>
               </div>
 
               {/* Title */}
@@ -183,14 +181,15 @@ const PricingSection = () => {
                 </div>
                 <div className="relative flex justify-center">
                   <span className="bg-background px-4 text-xs font-bold uppercase tracking-widest text-foreground">
-                    {currentMonth} Sale — Final Day!
+                    Bundle &amp; Save up to 49%
                   </span>
                 </div>
               </div>
 
-              {/* Countdown timer */}
+              {/* Honest countdown — a real, recurring dispatch cutoff, not a
+                  timer that resets at midnight next to a permanent "final day" */}
               <div className="mb-6">
-                <CountdownTimer />
+                <HonestCountdown />
               </div>
 
               {/* Pricing tiers */}
@@ -357,6 +356,14 @@ const PricingSection = () => {
         setIsCartOpen(true);
       }} />
 
+      {/* Sticky mobile CTA — appears once the buy button scrolls out of view.
+          Was imported (and its trigger ref wired) but never rendered, leaving
+          mobile visitors with no way to buy below the fold. */}
+      <StickyMobileCTA
+        price={totalPrice.toFixed(2)}
+        onCtaClick={handleAddToBasket}
+        triggerRef={ctaButtonRef}
+      />
     </>
   );
 };

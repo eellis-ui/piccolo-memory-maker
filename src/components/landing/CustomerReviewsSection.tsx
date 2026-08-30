@@ -1,24 +1,11 @@
 import { Star, CheckCircle } from "lucide-react";
 
-const overallRating = 4.95;
-const totalReviews = 3952;
-
-const starDistribution = [
-  { stars: 5, count: 3814 },
-  { stars: 4, count: 85 },
-  { stars: 3, count: 52 },
-  { stars: 2, count: 1 },
-  { stars: 1, count: 0 },
-];
-
+// Hand-picked customer quotes. Deliberately NO aggregate count or star
+// distribution: those were hardcoded numbers no review platform backs up,
+// and an inflated claim a buyer can't verify costs more trust than a small
+// set of real reviews earns. When a review platform (Judge.me / Okendo /
+// Trustpilot) is wired in, this section should render its live feed instead.
 const reviews = [
-  {
-    name: "Anonymous",
-    date: "02/23/2026",
-    rating: 5,
-    verified: true,
-    text: "These are absolutely amazing! We love them so much. The quality is fantastic and the line art is so detailed. Already ordered a second one!",
-  },
   {
     name: "Makeba",
     date: "02/08/2026",
@@ -61,46 +48,17 @@ const Stars = ({ count }: { count: number }) => (
 );
 
 const CustomerReviewsSection = () => {
-  const maxCount = Math.max(...starDistribution.map((d) => d.count));
-
   return (
     <section className="py-10 container mx-auto px-4 sm:px-6 lg:px-8 max-w-6xl">
-      <h3 className="font-display text-xl font-semibold text-foreground mb-6 text-center">
-        Customer Reviews
+      <h3 className="font-display text-xl font-semibold text-foreground mb-2 text-center">
+        What Our Customers Say
       </h3>
-
-      {/* Summary */}
-      <div className="bg-card border border-border rounded-lg p-6 mb-6">
-        <div className="flex flex-col sm:flex-row sm:items-center gap-4 mb-5">
-          <div className="text-center sm:text-left">
-            <div className="text-3xl font-bold text-foreground">{overallRating}</div>
-            <Stars count={5} />
-          </div>
-          <div className="flex items-center gap-1.5 text-sm text-muted-foreground">
-            <CheckCircle className="w-4 h-4 text-primary" />
-            Based on {totalReviews.toLocaleString()} reviews
-          </div>
-        </div>
-
-        {/* Star distribution bars */}
-        <div className="space-y-2">
-          {starDistribution.map((d) => (
-            <div key={d.stars} className="flex items-center gap-3 text-sm">
-              <span className="w-12 text-right text-muted-foreground">{d.stars} star</span>
-              <div className="flex-1 h-3 bg-secondary rounded-full overflow-hidden">
-                <div
-                  className="h-full bg-primary rounded-full transition-all"
-                  style={{ width: `${maxCount ? (d.count / maxCount) * 100 : 0}%` }}
-                />
-              </div>
-              <span className="w-12 text-muted-foreground text-right">{d.count.toLocaleString()}</span>
-            </div>
-          ))}
-        </div>
-      </div>
+      <p className="text-sm text-muted-foreground text-center mb-6">
+        Real orders, real families — from the US and the UK
+      </p>
 
       {/* Individual reviews */}
-      <div className="space-y-4">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         {reviews.map((review, i) => (
           <div key={i} className="bg-card border border-border rounded-lg p-5">
             <div className="flex items-center justify-between mb-2">

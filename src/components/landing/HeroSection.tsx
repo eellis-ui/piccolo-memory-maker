@@ -39,8 +39,8 @@ const HeroSection = () => {
             <div className="inline-flex items-center gap-2.5 bg-foreground text-background rounded-lg px-4 py-2.5">
               <Medal className="w-5 h-5 text-amber-400" />
               <div className="text-left">
-                <p className="text-[10px] font-semibold leading-none text-amber-400">Rated 5 star</p>
-                <p className="text-sm font-medium leading-tight">Based on 100+ Reviews</p>
+                <p className="text-[10px] font-semibold leading-none text-amber-400">★★★★★</p>
+                <p className="text-sm font-medium leading-tight">Loved by families in the US &amp; UK</p>
               </div>
             </div>
 

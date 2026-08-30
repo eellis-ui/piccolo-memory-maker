@@ -10,7 +10,7 @@ const FALLBACK_POSTS = [
   { src: "/images/instagram/instagram-2.webp", alt: "Framed proposal photo ready to become a coloring page" },
   { src: "/images/instagram/instagram-3.webp", alt: "Customer smiling at her personalized coloring book pages" },
   { src: "/images/instagram/instagram-4.webp", alt: "Marathon crowd photo waiting to be turned into a coloring page" },
-  { src: "/images/instagram/instagram-5.webp", alt: "Piccolo'd coloring book cover — from pic to pen" },
+  { src: "/images/instagram/instagram-5.webp", alt: "Piccoload coloring book cover — from pic to pen" },
   { src: "/images/instagram/instagram-6.webp", alt: "Piccolo coloring book on a coffee table with pencils" },
 ];
 

@@ -1,8 +1,11 @@
 import { Truck, ShieldCheck, Award } from "lucide-react";
 
+// Labels must match the Refund Policy and FAQ exactly — a "Money-Back
+// Guarantee" badge above a policy that refuses refunds reads as a lie at the
+// moment of purchase. Free shipping is unconditional (cheapest cart is $35).
 const badges = [
-  { icon: Truck, label: "Free Shipping over $35" },
-  { icon: ShieldCheck, label: "Money-Back Guarantee" },
+  { icon: Truck, label: "Free US Shipping" },
+  { icon: ShieldCheck, label: "Love-Your-Book Guarantee" },
   { icon: Award, label: "Premium Quality" },
 ];
 

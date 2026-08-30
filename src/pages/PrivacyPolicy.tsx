@@ -7,7 +7,7 @@ const PrivacyPolicy = () => {
       <Navbar />
       <main className="container mx-auto px-4 sm:px-6 lg:px-8 py-16 max-w-3xl">
         <h1 className="font-display text-3xl sm:text-4xl font-bold text-foreground mb-2">Privacy Policy</h1>
-        <p className="text-sm text-muted-foreground mb-10">Last Updated: March 2025</p>
+        <p className="text-sm text-muted-foreground mb-10">Last Updated: August 2026</p>
 
         <div className="prose prose-sm max-w-none text-foreground space-y-8">
           <section>
@@ -114,7 +114,7 @@ const PrivacyPolicy = () => {
               <li>Personalize your experience</li>
               <li>Deliver relevant advertising (where legally allowed)</li>
             </ul>
-            <p className="text-muted-foreground mt-2">You may control cookie settings in your browser or through our cookie banner (if applicable). EU/UK users receive opt-in controls in accordance with GDPR.</p>
+            <p className="text-muted-foreground mt-2">You may control cookie settings in your browser. Visitors in the EU and UK are shown a cookie banner and advertising measurement stays off until they accept, in accordance with GDPR.</p>
           </section>
 
           <section>

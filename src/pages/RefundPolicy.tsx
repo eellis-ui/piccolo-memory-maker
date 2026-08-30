@@ -27,7 +27,7 @@ const RefundPolicy = () => {
             modifications may be made from that point forward.
           </p>
           <p className="text-muted-foreground mb-2">
-            Because all Piccolo'd books are made using customer-submitted photos, results may vary
+            Because all Piccoload books are made using customer-submitted photos, results may vary
             depending on image quality and subject matter. We cannot guarantee that every photo will
             produce a flattering or stylistically identical coloring-page likeness. Requests for
             refunds or cancellations based solely on dissatisfaction with artistic interpretation
@@ -62,7 +62,7 @@ const RefundPolicy = () => {
           </h2>
           <p className="text-muted-foreground mb-2">
             If your product arrives damaged or incorrect due to a manufacturing error, you must
-            notify us within <strong>seven (7) days</strong>.
+            notify us within <strong>fourteen (14) days</strong> of delivery.
           </p>
           <p className="text-muted-foreground mb-2">You must provide:</p>
           <ul className="list-disc pl-5 text-muted-foreground space-y-1 mb-2">
@@ -71,10 +71,11 @@ const RefundPolicy = () => {
             <li>Photo evidence</li>
           </ul>
           <p className="text-muted-foreground mb-2">
-            After verification, we will reprint and replace the item at no cost.
+            After verification, we will reprint and replace the item at no cost, or refund you in full.
           </p>
           <p className="text-muted-foreground">
-            Refunds are not provided for customized goods.
+            After verification we will send a free replacement or a full refund — this is our
+            Love-Your-Book Guarantee. Change-of-mind refunds on customized goods are not provided.
           </p>
         </section>
 

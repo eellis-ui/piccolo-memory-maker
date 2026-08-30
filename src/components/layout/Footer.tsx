@@ -35,6 +35,16 @@ const Footer = () => {
                 </Link>
               </li>
               <li>
+                <Link to="/how-it-works" className="text-sm text-muted-foreground hover:text-foreground transition-colors">
+                  How It Works
+                </Link>
+              </li>
+              <li>
+                <Link to="/faq" className="text-sm text-muted-foreground hover:text-foreground transition-colors">
+                  FAQ
+                </Link>
+              </li>
+              <li>
                 <Link to="/contact" className="text-sm text-muted-foreground hover:text-foreground transition-colors">
                   Contact Us
                 </Link>
@@ -102,7 +112,7 @@ const Footer = () => {
         {/* Bottom bar */}
         <div className="mt-16 pt-8 border-t border-border flex flex-col sm:flex-row items-center justify-between gap-4">
           <p className="text-sm text-muted-foreground">
-            © Piccolo'd {new Date().getFullYear()}. All Rights Reserved.
+            © Piccoload {new Date().getFullYear()}. All Rights Reserved.
           </p>
 
           {/* Payment icons */}

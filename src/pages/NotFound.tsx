@@ -1,6 +1,12 @@
-import { useLocation } from "react-router-dom";
+import { useLocation, Link } from "react-router-dom";
 import { useEffect } from "react";
+import Navbar from "@/components/layout/Navbar";
+import Footer from "@/components/layout/Footer";
+import { Button } from "@/components/ui/button";
 
+// A 404 for paid traffic must not be a dead end: keep the nav, keep the
+// cart, and point at the product — a stale ad URL still deserves a chance
+// to convert.
 const NotFound = () => {
   const location = useLocation();
 
@@ -9,14 +15,25 @@ const NotFound = () => {
   }, [location.pathname]);
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-muted">
-      <div className="text-center">
-        <h1 className="mb-4 text-4xl font-bold">404</h1>
-        <p className="mb-4 text-xl text-muted-foreground">Oops! Page not found</p>
-        <a href="/" className="text-primary underline hover:text-primary/90">
-          Return to Home
-        </a>
-      </div>
+    <div className="min-h-screen bg-background flex flex-col">
+      <Navbar />
+      <main className="flex-1 flex items-center justify-center px-4">
+        <div className="text-center py-20">
+          <h1 className="font-display text-5xl font-bold text-foreground mb-3">404</h1>
+          <p className="text-lg text-muted-foreground mb-8">
+            That page has wandered off to be colored in.
+          </p>
+          <div className="flex flex-col sm:flex-row gap-3 justify-center">
+            <Button asChild size="lg" className="rounded-lg">
+              <Link to="/pricing">Shop the Coloring Book</Link>
+            </Button>
+            <Button asChild variant="outline" size="lg" className="rounded-lg">
+              <Link to="/">Back to Home</Link>
+            </Button>
+          </div>
+        </div>
+      </main>
+      <Footer />
     </div>
   );
 };

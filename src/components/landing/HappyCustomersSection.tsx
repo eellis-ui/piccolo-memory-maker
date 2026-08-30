@@ -19,7 +19,7 @@ const reviews = [
   {
     name: "Georgie",
     title: "Most thoughtful gift ever",
-    text: "I ordered a Piccolo'd book for my mom's birthday with all her favorite family photos. She cried happy tears when she saw the line drawings. Honestly the most thoughtful gift I've ever given.",
+    text: "I ordered a Piccoload book for my mom's birthday with all her favorite family photos. She cried happy tears when she saw the line drawings. Honestly the most thoughtful gift I've ever given.",
     stars: 5,
     avatar: "/images/review-georgie.webp",
   },

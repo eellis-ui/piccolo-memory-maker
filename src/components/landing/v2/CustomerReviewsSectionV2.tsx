@@ -94,9 +94,8 @@ const CustomerReviewsSectionV2 = () => {
         </h3>
         <div className="flex items-center justify-center gap-2 text-sm text-muted-foreground">
           <Stars count={5} />
-          <span>4.95 out of 5</span>
           <span className="inline-flex items-center gap-1 text-primary font-medium">
-            <Camera className="w-3.5 h-3.5" /> with customer photos
+            <Camera className="w-3.5 h-3.5" /> Real customer photos &amp; words
           </span>
         </div>
       </div>
