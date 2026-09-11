@@ -9,6 +9,7 @@
  */
 import { useCallback, useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
+import { fetchAllRows } from "@/lib/fetch-all-rows";
 
 const WINDOW_DAYS = 7;
 
@@ -102,23 +103,30 @@ export function useJourneys(enabled: boolean): JourneyData {
     const since = new Date(Date.now() - WINDOW_DAYS * 24 * 60 * 60 * 1000).toISOString();
 
     const [eventsRes, ordersRes, photosRes] = await Promise.all([
-      supabase
-        .from("analytics_events")
-        .select("event_type, session_id, path, created_at")
-        .gte("created_at", since)
-        .order("created_at", { ascending: true })
-        .limit(10000),
+      // Paged: a week of events exceeds Supabase's 1,000-row cap, which used
+      // to drop the newest days from the journeys view entirely.
+      fetchAllRows<EventRow>((from, to) =>
+        supabase
+          .from("analytics_events")
+          .select("event_type, session_id, path, created_at")
+          .gte("created_at", since)
+          .order("created_at", { ascending: true })
+          .range(from, to) as unknown as PromiseLike<{ data: EventRow[] | null; error: { message: string } | null }>,
+      ),
       supabase
         .from("orders")
         .select("id, created_at, updated_at, builder_step, status, customer_name, shopify_order_number")
         .gte("created_at", since)
         .order("created_at", { ascending: false })
         .limit(200),
-      supabase
-        .from("order_photos")
-        .select("order_id, created_at")
-        .gte("created_at", since)
-        .limit(5000),
+      fetchAllRows<PhotoRow>((from, to) =>
+        supabase
+          .from("order_photos")
+          .select("order_id, created_at")
+          .gte("created_at", since)
+          .order("created_at", { ascending: true })
+          .range(from, to) as unknown as PromiseLike<{ data: PhotoRow[] | null; error: { message: string } | null }>,
+      ),
     ]);
 
     if (eventsRes.error || ordersRes.error || photosRes.error) {

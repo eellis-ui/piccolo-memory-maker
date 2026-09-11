@@ -8,6 +8,7 @@
 import { useEffect, useState, useRef, useCallback } from "react";
 import { useLocation } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
+import { fetchAllRows } from "@/lib/fetch-all-rows";
 import type { RealtimeChannel } from "@supabase/supabase-js";
 
 const CHANNEL_NAME = "piccoload-visitors";
@@ -101,10 +102,15 @@ export function useLiveDashboard(): LiveDashboardData {
     const startOfDay = new Date();
     startOfDay.setHours(0, 0, 0, 0);
 
-    const { data, error } = await supabase
-      .from("analytics_events")
-      .select("event_type, session_id")
-      .gte("created_at", startOfDay.toISOString());
+    // Paged past Supabase's 1,000-row cap so a busy day is never undercounted.
+    const { data, error } = await fetchAllRows<{ event_type: string; session_id: string | null }>((from, to) =>
+      supabase
+        .from("analytics_events")
+        .select("event_type, session_id")
+        .gte("created_at", startOfDay.toISOString())
+        .order("created_at", { ascending: true })
+        .range(from, to) as unknown as PromiseLike<{ data: { event_type: string; session_id: string | null }[] | null; error: { message: string } | null }>,
+    );
 
     if (error) {
       console.warn("[LiveDashboard] Failed to fetch stats:", error.message);

@@ -21,7 +21,7 @@ export type AnalyticsEvent =
   // Visitor saved their email in the builder ("save your book")
   | "email_saved";
 
-function getSessionId(): string {
+export function getSessionId(): string {
   let id = sessionStorage.getItem("_analytics_session");
   if (!id) {
     id = crypto.randomUUID();

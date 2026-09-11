@@ -438,14 +438,14 @@ Deno.serve(async (req) => {
         "builder_step", "cover_image_id", "title_page_enabled",
         "title_page_text", "dedication_page_enabled", "dedication_page_text",
         "extra_pages", "unique_photos",
-        "meta_fbp", "meta_fbc",
+        "meta_fbp", "meta_fbc", "analytics_session_id",
       ];
       for (const f of fields) {
         if (updates[f] !== undefined) allowed[f] = updates[f];
       }
       // Meta browser IDs are opaque short strings (fb.1.<ts>.<id>); refuse
       // anything else so a client can't stuff arbitrary payloads into them.
-      for (const f of ["meta_fbp", "meta_fbc"]) {
+      for (const f of ["meta_fbp", "meta_fbc", "analytics_session_id"]) {
         if (allowed[f] === undefined) continue;
         const v = allowed[f];
         if (v === null) continue;

@@ -774,7 +774,7 @@ const Admin = () => {
                     </TableHeader>
                     <TableBody>
                       {recentOrders.map((order) => (
-                        <TableRow key={order.id} className="cursor-pointer" onClick={() => setDetailOrder(order)}>
+                        <TableRow key={order.id} className="cursor-pointer" onClick={() => openDetail(order)}>
                           <TableCell className="font-medium">{order.order_name || order.shopify_order_number || order.id.slice(0, 8)}</TableCell>
                           <TableCell>
                             <p className="font-medium">{order.customer_name || "\u2014"}</p>

@@ -8,7 +8,7 @@ import { Switch } from "@/components/ui/switch";
 import { useBasket, DIGITAL_DOWNLOAD_PRICE } from "@/contexts/BasketContext";
 import { createShopifyCheckout, SHOPIFY_VARIANTS, type CartLineInput } from "@/lib/shopify";
 import { trackAddToCart } from "@/lib/shopify-analytics";
-import { trackEvent } from "@/lib/analytics-tracker";
+import { trackEvent, getSessionId as getAnalyticsSessionId } from "@/lib/analytics-tracker";
 import { metaInitiateCheckout, metaPurchase } from "@/lib/meta-pixel";
 import { getMetaBrowserIds } from "@/lib/meta-capi";
 import { getSessionOrders, updateGuestOrder, uploadCover } from "@/lib/guest-api";
@@ -370,6 +370,9 @@ const CheckoutStep = ({ pageCount, extraPages, convertedUrls, onBack, onCheckout
         const idUpdates: Record<string, string> = {};
         if (fbp) idUpdates.meta_fbp = fbp;
         if (fbc) idUpdates.meta_fbc = fbc;
+        // Links the paid order back to this browser's analytics session so the
+        // admin visitor-journey view can end the journey with "Purchased".
+        try { idUpdates.analytics_session_id = getAnalyticsSessionId(); } catch { /* storage unavailable */ }
         if (Object.keys(idUpdates).length > 0) {
           for (const orderId of orderIds) {
             updateGuestOrder(sessionId, orderId, idUpdates).catch(() => {});

@@ -207,7 +207,7 @@ Deno.serve(async (req) => {
     // Find orders for this session
     const { data: orders, error: ordersErr } = await admin
       .from("orders")
-      .select("id, digital_download, meta_fbp, meta_fbc")
+      .select("id, digital_download, meta_fbp, meta_fbc, analytics_session_id")
       .eq("builder_session_id", sessionId);
 
     if (ordersErr || !orders || orders.length === 0) {
@@ -263,14 +263,20 @@ Deno.serve(async (req) => {
     // builder tab after paying — most don't. A DB trigger dedupes on
     // metadata->>'shopifyOrderNumber' so webhook retries and the client-side
     // event can never double-count.
+    // Browsing events are keyed by the browser's analytics session (stamped on
+    // the draft orders at checkout); using it here lets the visitor-journey
+    // view show the purchase at the end of the journey that led to it.
+    const analyticsSessionId =
+      orders.find((o: { analytics_session_id?: string | null }) => o.analytics_session_id)?.analytics_session_id || null;
     const { error: purchaseEvErr } = await admin.from("analytics_events").insert({
       event_type: "purchase",
-      session_id: sessionId,
+      session_id: analyticsSessionId || sessionId,
       path: "/builder/checkout",
       metadata: {
         shopifyOrderNumber,
         bookCount: orders.length,
         orderTotal,
+        builderSessionId: sessionId,
         source: "shopify-webhook",
       },
     });
