@@ -11,6 +11,7 @@ import {
   AnalyticsEventName,
   ShopifySalesChannel,
 } from "@shopify/hydrogen-react";
+import { isAnalyticsOptedOut } from "@/lib/analytics-tracker";
 
 /* ─── Store config ─── */
 export const SHOPIFY_ANALYTICS_CONFIG = {
@@ -47,6 +48,7 @@ function buildBasePayload() {
  * Feeds: Sessions, Visitors, Live visitors, Top pages
  */
 export function trackPageView() {
+  if (isAnalyticsOptedOut()) return;
   try {
     const payload = buildBasePayload();
     sendShopifyAnalytics({
@@ -70,6 +72,7 @@ export function trackProductView(product: {
   variantId?: string;
   variantTitle?: string;
 }) {
+  if (isAnalyticsOptedOut()) return;
   try {
     const payload = {
       ...buildBasePayload(),
@@ -106,6 +109,7 @@ export function trackAddToCart(cartItems: Array<{
   price: string;
   quantity: number;
 }>) {
+  if (isAnalyticsOptedOut()) return;
   try {
     const totalValue = cartItems.reduce(
       (sum, item) => sum + parseFloat(item.price) * item.quantity,

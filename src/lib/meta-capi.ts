@@ -10,6 +10,7 @@
  * it with the authoritative Shopify order total.
  */
 import { supabase } from "@/integrations/supabase/client";
+import { isAnalyticsOptedOut } from "@/lib/analytics-tracker";
 
 export function readCookie(name: string): string | null {
   try {
@@ -62,6 +63,7 @@ export function relayMetaEvent(
   value: number,
   numItems: number,
 ) {
+  if (isAnalyticsOptedOut()) return;
   try {
     const { fbp, fbc } = getMetaBrowserIds();
     // Fire-and-forget: analytics must never block or break the app.

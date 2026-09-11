@@ -47,7 +47,10 @@
       s.parentNode.insertBefore(t,s)}(window, document,'script',
       'https://connect.facebook.net/en_US/fbevents.js');
       fbq('init', '1809702712963152');
-      fbq('track', 'PageView');
+      // Team browsers (flag set by the admin) and admin pages never ping Meta
+      try {
+        if (!localStorage.getItem('_analytics_optout') && location.pathname.indexOf('/admin') !== 0) fbq('track', 'PageView');
+      } catch (e) { fbq('track', 'PageView'); }
     </script>
     <!-- End Meta Pixel Code -->
   </head>

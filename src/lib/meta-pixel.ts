@@ -11,6 +11,7 @@
  */
 
 import { relayMetaEvent } from "@/lib/meta-capi";
+import { isAnalyticsOptedOut } from "@/lib/analytics-tracker";
 
 type Fbq = (...args: unknown[]) => void;
 
@@ -26,6 +27,7 @@ const CURRENCY = "USD";
 const CONTENT_NAME = "Personalized Coloring Book";
 
 function fbq(...args: unknown[]) {
+  if (isAnalyticsOptedOut()) return;
   try {
     window.fbq?.(...args);
   } catch {

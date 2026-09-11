@@ -25,6 +25,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { toast } from "sonner";
 import VisitorJourneys from "@/components/admin/VisitorJourneys";
 import AdminLayout, { ADMIN_SECTIONS, type AdminSection } from "@/components/admin/AdminLayout";
+import { setAnalyticsOptOut } from "@/lib/analytics-tracker";
 import type { Json } from "@/integrations/supabase/types";
 
 /* ─── Constants & helpers ─── */
@@ -618,6 +619,11 @@ const Admin = () => {
     await supabase.from("site_images").update({ sort_order: a.sort_order }).eq("id", b.id);
     fetchInstagramImages();
   };
+
+  /* ─── Team browsers are never analytics subjects ─── */
+  useEffect(() => {
+    if (isAdmin) setAnalyticsOptOut();
+  }, [isAdmin]);
 
   /* ─── Section-driven data loading ─── */
   useEffect(() => {

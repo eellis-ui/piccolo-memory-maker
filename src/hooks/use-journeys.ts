@@ -205,7 +205,20 @@ export function useJourneys(enabled: boolean): JourneyData {
       return;
     }
 
-    const events = (eventsRes.data ?? []) as unknown as EventRow[];
+    const rawEvents = (eventsRes.data ?? []) as unknown as EventRow[];
+    // Team activity is not a customer journey: drop every session (and every
+    // other session of the same browser) that ever opened the admin.
+    const adminSessions = new Set<string>();
+    const adminVisitors = new Set<string>();
+    for (const ev of rawEvents) {
+      if (ev.path?.startsWith("/admin")) {
+        if (ev.session_id) adminSessions.add(ev.session_id);
+        if (ev.visitor_id) adminVisitors.add(ev.visitor_id);
+      }
+    }
+    const events = rawEvents.filter(
+      (ev) => !(ev.session_id && adminSessions.has(ev.session_id)) && !(ev.visitor_id && adminVisitors.has(ev.visitor_id)),
+    );
     const orders = (ordersRes.data ?? []) as unknown as OrderRow[];
     const identityOrders = ((identityOrdersRes.data ?? []) as unknown as OrderRow[]).concat(orders);
     const photos = (photosRes.data ?? []) as unknown as PhotoRow[];

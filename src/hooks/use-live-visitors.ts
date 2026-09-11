@@ -9,6 +9,7 @@ import { useEffect, useState, useRef, useCallback } from "react";
 import { useLocation } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { fetchAllRows } from "@/lib/fetch-all-rows";
+import { isAnalyticsOptedOut } from "@/lib/analytics-tracker";
 import type { RealtimeChannel } from "@supabase/supabase-js";
 
 const CHANNEL_NAME = "piccoload-visitors";
@@ -26,6 +27,8 @@ export function useVisitorPresence() {
   const channelRef = useRef<RealtimeChannel | null>(null);
 
   useEffect(() => {
+    // Team browsers / admin pages don't count as live visitors
+    if (isAnalyticsOptedOut()) return;
     const tabId =
       sessionStorage.getItem("_visitor_tab_id") ||
       (() => {
@@ -103,13 +106,13 @@ export function useLiveDashboard(): LiveDashboardData {
     startOfDay.setHours(0, 0, 0, 0);
 
     // Paged past Supabase's 1,000-row cap so a busy day is never undercounted.
-    const { data, error } = await fetchAllRows<{ event_type: string; session_id: string | null; metadata: { test?: boolean; orderTotal?: number } | null }>((from, to) =>
+    const { data, error } = await fetchAllRows<{ event_type: string; session_id: string | null; path: string | null; metadata: { test?: boolean; orderTotal?: number } | null }>((from, to) =>
       supabase
         .from("analytics_events")
-        .select("event_type, session_id, metadata")
+        .select("event_type, session_id, path, metadata")
         .gte("created_at", startOfDay.toISOString())
         .order("created_at", { ascending: true })
-        .range(from, to) as unknown as PromiseLike<{ data: { event_type: string; session_id: string | null; metadata: { test?: boolean; orderTotal?: number } | null }[] | null; error: { message: string } | null }>,
+        .range(from, to) as unknown as PromiseLike<{ data: { event_type: string; session_id: string | null; path: string | null; metadata: { test?: boolean; orderTotal?: number } | null }[] | null; error: { message: string } | null }>,
     );
 
     if (error) {
@@ -119,6 +122,10 @@ export function useLiveDashboard(): LiveDashboardData {
     }
 
     if (data) {
+      // Any session that touched the admin belongs to the team — drop all of it
+      const adminSessions = new Set(
+        data.filter((r) => r.path?.startsWith("/admin") && r.session_id).map((r) => r.session_id as string),
+      );
       const sessionIds = new Set<string>();
       let productViews = 0;
       let addToCarts = 0;
@@ -126,6 +133,7 @@ export function useLiveDashboard(): LiveDashboardData {
       let purchases = 0;
 
       for (const row of data) {
+        if (row.session_id && adminSessions.has(row.session_id)) continue;
         if (row.session_id) sessionIds.add(row.session_id);
         switch (row.event_type) {
           case "product_view":

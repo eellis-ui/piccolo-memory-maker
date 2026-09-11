@@ -19,6 +19,7 @@ import { trackPageView } from "@/lib/shopify-analytics";
 import { trackEvent } from "@/lib/analytics-tracker";
 import { metaPageView } from "@/lib/meta-pixel";
 import { captureFbclid } from "@/lib/meta-capi";
+import { isAnalyticsOptedOut } from "@/lib/analytics-tracker";
 import { useVisitorPresence } from "@/hooks/use-live-visitors";
 
 export default function ShopifyAnalytics() {
@@ -40,6 +41,8 @@ export default function ShopifyAnalytics() {
 
   // Send page view on every route change
   useEffect(() => {
+    // Team browsers and the admin itself are never tracked
+    if (isAnalyticsOptedOut()) return;
     const timer = setTimeout(() => {
       trackPageView(); // Shopify Monorail
       trackEvent("page_view", location.pathname); // Our analytics

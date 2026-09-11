@@ -21,6 +21,25 @@ export type AnalyticsEvent =
   // Visitor saved their email in the builder ("save your book")
   | "email_saved";
 
+const OPT_OUT_KEY = "_analytics_optout";
+
+/**
+ * Team browsers are never analytics subjects. The flag is set the first time
+ * a browser opens the admin as an admin, and from then on nothing that
+ * browser does on the storefront is tracked (events, Shopify analytics,
+ * Meta pixel, live presence). Admin routes themselves are never tracked.
+ */
+export function setAnalyticsOptOut(): void {
+  try { localStorage.setItem(OPT_OUT_KEY, "1"); } catch { /* storage unavailable */ }
+}
+
+export function isAnalyticsOptedOut(): boolean {
+  try {
+    if (localStorage.getItem(OPT_OUT_KEY)) return true;
+  } catch { /* storage unavailable */ }
+  return typeof window !== "undefined" && window.location.pathname.startsWith("/admin");
+}
+
 function newId(): string {
   try {
     if (typeof crypto !== "undefined" && typeof crypto.randomUUID === "function") return crypto.randomUUID();
@@ -68,6 +87,7 @@ export function trackEvent(
   path?: string,
   metadata?: Record<string, unknown>
 ) {
+  if (isAnalyticsOptedOut()) return;
   try {
     supabase
       .from("analytics_events")
