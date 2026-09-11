@@ -1,5 +1,5 @@
 import { useEffect, useState, useMemo } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useIsAdmin } from "@/hooks/use-admin";
 import { useLiveDashboard, useBuilderFunnel } from "@/hooks/use-live-visitors";
@@ -23,8 +23,8 @@ import {
 } from "@/components/ui/alert-dialog";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { toast } from "sonner";
-import Navbar from "@/components/layout/Navbar";
 import VisitorJourneys from "@/components/admin/VisitorJourneys";
+import AdminLayout, { ADMIN_SECTIONS, type AdminSection } from "@/components/admin/AdminLayout";
 import type { Json } from "@/integrations/supabase/types";
 
 /* ─── Constants & helpers ─── */
@@ -56,6 +56,8 @@ interface OrderRow {
   cover_image_id: string | null;
   cover_image_id_2: string | null;
   builder_session_id: string | null;
+  order_total?: number | string | null;
+  order_currency?: string | null;
 }
 
 interface PhotoRow {
@@ -139,6 +141,10 @@ interface SiteImage {
 const Admin = () => {
   const navigate = useNavigate();
   const { isAdmin, loading: roleLoading } = useIsAdmin();
+  const { section: sectionParam } = useParams<{ section?: string }>();
+  const section: AdminSection = (ADMIN_SECTIONS as string[]).includes(sectionParam ?? "")
+    ? (sectionParam as AdminSection)
+    : "dashboard";
   const live = useLiveDashboard();
   const funnel = useBuilderFunnel(isAdmin);
 
@@ -235,6 +241,51 @@ const Admin = () => {
     unfulfilled: orders.filter((o) => o.status !== "shipped").length,
     shipped: orders.filter((o) => o.status === "shipped").length,
   }), [orders]);
+
+  /* ─── Computed: customers (one row per email, spend counted once per Shopify order) ─── */
+  const customers = useMemo(() => {
+    type CustomerRow = {
+      email: string; name: string | null; orderCount: number; spend: number;
+      lastOrderAt: string; lastStatus: string; seen: Set<string>;
+    };
+    const map = new Map<string, CustomerRow>();
+    for (const o of orders) {
+      const email = (o.customer_email || "").trim().toLowerCase();
+      if (!email) continue;
+      const orderKey = o.shopify_order_number || o.order_name || o.id;
+      const total = Number(o.order_total);
+      let row = map.get(email);
+      if (!row) {
+        row = { email, name: o.customer_name, orderCount: 0, spend: 0, lastOrderAt: o.created_at, lastStatus: o.status, seen: new Set() };
+        map.set(email, row);
+      }
+      if (!row.name && o.customer_name) row.name = o.customer_name;
+      if (!row.seen.has(orderKey)) {
+        row.seen.add(orderKey);
+        row.orderCount += 1;
+        if (Number.isFinite(total)) row.spend += total;
+      }
+      if (o.created_at > row.lastOrderAt) {
+        row.lastOrderAt = o.created_at;
+        row.lastStatus = o.status;
+      }
+    }
+    return Array.from(map.values()).sort((a, b) => b.lastOrderAt.localeCompare(a.lastOrderAt));
+  }, [orders]);
+
+  /* ─── Computed: recent orders for the dashboard (one row per Shopify order) ─── */
+  const recentOrders = useMemo(() => {
+    const seen = new Set<string>();
+    const out: OrderRow[] = [];
+    for (const o of orders) {
+      const key = o.shopify_order_number || o.order_name || o.id;
+      if (seen.has(key)) continue;
+      seen.add(key);
+      out.push(o);
+      if (out.length >= 6) break;
+    }
+    return out;
+  }, [orders]);
 
   /* ─── Auth guard ─── */
   useEffect(() => {
@@ -565,6 +616,22 @@ const Admin = () => {
     fetchInstagramImages();
   };
 
+  /* ─── Section-driven data loading ─── */
+  useEffect(() => {
+    if (!isAdmin) return;
+    if (section === "affiliates") {
+      setShowPayouts(true);
+      setShowRewards(true);
+      if (payoutRequests.length === 0) fetchPayouts();
+      if (rewardSubmissions.length === 0) fetchRewardSubmissions();
+    }
+    if (section === "content") {
+      setShowInstagram(true);
+      if (instagramImages.length === 0) fetchInstagramImages();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [section, isAdmin]);
+
   /* ─── Loading guard ─── */
   if (roleLoading || (!isAdmin && !roleLoading)) {
     return (
@@ -578,11 +645,9 @@ const Admin = () => {
      RENDER
      ═══════════════════════════════════════════ */
   return (
-    <div className="min-h-screen bg-background">
-      <Navbar />
-      <main className="pt-20 pb-8">
-        <div className="max-w-[1400px] mx-auto px-4 sm:px-6">
+    <AdminLayout section={section} unfulfilledCount={tabCounts.unfulfilled} liveVisitors={live.visitorsNow}>
 
+          {section === "dashboard" && (<>
           {/* ─── Live Dashboard ─── */}
           <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3 mb-6">
             <div className="rounded-xl border bg-background p-4">
@@ -630,6 +695,9 @@ const Admin = () => {
             </div>
           </div>
 
+          </>)}
+
+          {(section === "dashboard" || section === "analytics") && (<>
           {/* ─── Builder funnel · last 7 days ─── */}
           <p className="text-xs font-medium text-muted-foreground mb-2">Book builder &middot; last 7 days</p>
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-6">
@@ -673,9 +741,109 @@ const Admin = () => {
             </div>
           </div>
 
-          {/* ─── Visitor journeys (timestamped) ─── */}
-          <VisitorJourneys enabled={isAdmin} />
+          </>)}
 
+          {/* ─── Visitor journeys (timestamped) ─── */}
+          {section === "analytics" && <VisitorJourneys enabled={isAdmin} />}
+
+          {/* ─── Dashboard: recent orders ─── */}
+          {section === "dashboard" && (
+            <div className="rounded-xl border bg-background">
+              <div className="flex items-center justify-between px-4 py-3 border-b border-border">
+                <div>
+                  <h2 className="font-display text-base font-bold text-foreground">Recent orders</h2>
+                  <p className="text-xs text-muted-foreground">{tabCounts.unfulfilled} awaiting fulfilment</p>
+                </div>
+                <Button size="sm" variant="outline" onClick={() => navigate("/admin/orders")}>View all orders</Button>
+              </div>
+              {loading ? (
+                <div className="flex items-center justify-center py-10"><Loader2 className="w-5 h-5 animate-spin text-muted-foreground" /></div>
+              ) : recentOrders.length === 0 ? (
+                <p className="text-sm text-muted-foreground text-center py-10">No orders yet</p>
+              ) : (
+                <div className="overflow-x-auto">
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead>Order</TableHead>
+                        <TableHead>Customer</TableHead>
+                        <TableHead>Status</TableHead>
+                        <TableHead>Placed</TableHead>
+                        <TableHead></TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {recentOrders.map((order) => (
+                        <TableRow key={order.id} className="cursor-pointer" onClick={() => setDetailOrder(order)}>
+                          <TableCell className="font-medium">{order.order_name || order.shopify_order_number || order.id.slice(0, 8)}</TableCell>
+                          <TableCell>
+                            <p className="font-medium">{order.customer_name || "\u2014"}</p>
+                            <p className="text-xs text-muted-foreground">{order.customer_email || "\u2014"}</p>
+                          </TableCell>
+                          <TableCell><Badge variant={statusColor(order.status) as any} className="text-xs">{statusLabel(order.status)}</Badge></TableCell>
+                          <TableCell className="text-xs text-muted-foreground whitespace-nowrap">{new Date(order.created_at).toLocaleDateString("en-US", { month: "short", day: "numeric" })}</TableCell>
+                          <TableCell className="text-right"><Button size="sm" variant="ghost"><Eye className="w-4 h-4" /></Button></TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* ─── Customers ─── */}
+          {section === "customers" && (
+            <div className="rounded-xl border bg-background">
+              <div className="flex items-center justify-between px-4 py-3 border-b border-border">
+                <div>
+                  <h2 className="font-display text-base font-bold text-foreground">Customers</h2>
+                  <p className="text-xs text-muted-foreground">{customers.length} {customers.length === 1 ? "customer" : "customers"} · built from paid orders</p>
+                </div>
+              </div>
+              {loading ? (
+                <div className="flex items-center justify-center py-10"><Loader2 className="w-5 h-5 animate-spin text-muted-foreground" /></div>
+              ) : customers.length === 0 ? (
+                <p className="text-sm text-muted-foreground text-center py-10">No customers yet</p>
+              ) : (
+                <div className="overflow-x-auto">
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead>Customer</TableHead>
+                        <TableHead>Orders</TableHead>
+                        <TableHead>Spend</TableHead>
+                        <TableHead>Last order</TableHead>
+                        <TableHead>Latest status</TableHead>
+                        <TableHead></TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {customers.map((c) => (
+                        <TableRow key={c.email}>
+                          <TableCell>
+                            <p className="font-medium">{c.name || "\u2014"}</p>
+                            <a href={`mailto:${c.email}`} className="text-xs text-muted-foreground hover:underline">{c.email}</a>
+                          </TableCell>
+                          <TableCell>{c.orderCount}</TableCell>
+                          <TableCell>{c.spend > 0 ? `$${c.spend.toFixed(2)}` : "\u2014"}</TableCell>
+                          <TableCell className="text-xs text-muted-foreground whitespace-nowrap">{new Date(c.lastOrderAt).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}</TableCell>
+                          <TableCell><Badge variant={statusColor(c.lastStatus) as any} className="text-xs">{statusLabel(c.lastStatus)}</Badge></TableCell>
+                          <TableCell className="text-right">
+                            <Button size="sm" variant="outline" onClick={() => { setFilterTab("all"); setSearchQuery(c.email); navigate("/admin/orders"); }}>
+                              View orders
+                            </Button>
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                </div>
+              )}
+            </div>
+          )}
+
+          {section === "orders" && (<>
           {/* ─── Orders header ─── */}
           <div className="flex items-center justify-between mb-4">
             <div>
@@ -946,10 +1114,13 @@ const Admin = () => {
             </div>
           )}
 
+          </>)}
+
           {/* ═══════════════════════════════════════════
              Collapsible secondary sections
              ═══════════════════════════════════════════ */}
-          <div className="mt-10 space-y-2">
+          <div className="space-y-4">
+          {section === "affiliates" && (<>
 
             {/* ─── Affiliate Payouts ─── */}
             <div className="rounded-xl border">
@@ -1092,6 +1263,8 @@ const Admin = () => {
               )}
             </div>
 
+          </>)}
+          {section === "content" && (<>
             {/* ─── Instagram Photos ─── */}
             <div className="rounded-xl border">
               <button
@@ -1169,9 +1342,8 @@ const Admin = () => {
                 </div>
               )}
             </div>
+          </>)}
           </div>
-        </div>
-      </main>
 
       {/* ═══════════════════════════════════════════
          Dialogs
@@ -1503,7 +1675,7 @@ const Admin = () => {
           )}
         </DialogContent>
       </Dialog>
-    </div>
+    </AdminLayout>
   );
 };
 

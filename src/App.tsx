@@ -3,7 +3,7 @@ import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
+import { BrowserRouter, Routes, Route, Navigate, useLocation } from "react-router-dom";
 import { BasketProvider } from "@/contexts/BasketContext";
 import { AuthProvider } from "@/contexts/AuthContext";
 import Index from "./pages/Index";
@@ -40,6 +40,12 @@ const AppInner = () => {
   return null;
 };
 
+// The customer-facing chat bot has no place on the admin CRM screens.
+const CustomerChat = () => {
+  const { pathname } = useLocation();
+  return pathname.startsWith("/admin") ? null : <ChatWidget />;
+};
+
 const App = () => (
   <QueryClientProvider client={queryClient}>
     <TooltipProvider>
@@ -51,7 +57,7 @@ const App = () => (
             <AppInner />
             <ScrollToTop />
             <ShopifyAnalytics />
-            <ChatWidget />
+            <CustomerChat />
             <Suspense fallback={null}>
               <Routes>
                 <Route path="/" element={<Index />} />
@@ -63,6 +69,7 @@ const App = () => (
                 <Route path="/contact" element={<Contact />} />
                 <Route path="/builder" element={<Builder />} />
                 <Route path="/admin" element={<Admin />} />
+                <Route path="/admin/:section" element={<Admin />} />
                 <Route path="/my-orders" element={<MyOrders />} />
                 <Route path="/account" element={<Account />} />
                 <Route path="/reset-password" element={<ResetPassword />} />
