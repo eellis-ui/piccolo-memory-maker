@@ -129,11 +129,13 @@ const Builder = () => {
             // one-item-per-order loop re-priced every book at the single-book
             // rate (a $69.30 3-book bundle resumed as $105) and multiplied
             // the flat unique-photos charge per book.
+            // No basket-level personalizeCover here: the per-book cover flags
+            // are restored into bookAddOns below and CheckoutStep counts them
+            // per book. A synthesized bundle-wide flag gets multiplied across
+            // every book of a unique-photos bundle (and title_page_enabled
+            // defaults to true in the DB), overcharging covers never customized.
             addToCart(existingOrders.length, {
               uniquePhotos: existingOrders.some((o: any) => !!o.unique_photos),
-              personalizeCover: existingOrders.some(
-                (o: any) => !!o.title_page_enabled || !!o.dedication_page_enabled,
-              ),
             });
 
             const restoredBooks: BookState[] = existingOrders.map((order: any) => {
@@ -220,9 +222,6 @@ const Builder = () => {
               // line per order re-priced every book at the single-book rate.
               addToCart(existingOrders.length, {
                 uniquePhotos: existingOrders.some((o: any) => !!o.unique_photos),
-                personalizeCover: existingOrders.some(
-                  (o: any) => !!o.title_page_enabled || !!o.dedication_page_enabled,
-                ),
               });
 
               const restoredBooks: BookState[] = existingOrders.map((order: any) => {

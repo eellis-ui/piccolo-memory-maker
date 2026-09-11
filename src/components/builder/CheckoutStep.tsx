@@ -169,7 +169,9 @@ const CheckoutStep = ({ pageCount, extraPages, convertedUrls, onBack, onCheckout
             ? dbTotal
             : purchaseTotalsRef.current.value;
           const currency = paidOrder?.order_currency || "USD";
-          metaPurchase(value, purchaseTotalsRef.current.bookCount, shopifyNum, currency);
+          // num_items = number of book orders, the same figure the server-side
+          // Purchase reports, so the deduplicated pair agrees on every field.
+          metaPurchase(value, orders.length, shopifyNum, currency);
           onCheckoutComplete?.(shopifyNum);
           return true;
         }
