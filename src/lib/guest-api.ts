@@ -1,3 +1,4 @@
+import { getSessionId as getAnalyticsSessionId, getVisitorId as getAnalyticsVisitorId } from "@/lib/analytics-tracker";
 const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL;
 const SUPABASE_ANON_KEY = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY;
 
@@ -35,7 +36,14 @@ export async function createGuestOrders(sessionId: string, count: number) {
   const res = await fetch(`${BASE}/create`, {
     method: "POST",
     headers: headers({ "Content-Type": "application/json" }),
-    body: JSON.stringify({ sessionId, count }),
+    // Ties the build to the browser's analytics identity so the admin journey
+    // view can name the visitor once they save an email or buy.
+    body: JSON.stringify({
+      sessionId,
+      count,
+      analyticsSessionId: getAnalyticsSessionId(),
+      analyticsVisitorId: getAnalyticsVisitorId(),
+    }),
   });
   if (!res.ok) throw new Error(await res.text());
   return (await res.json()).orders as { id: string }[];

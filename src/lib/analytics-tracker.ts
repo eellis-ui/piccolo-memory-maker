@@ -21,13 +21,42 @@ export type AnalyticsEvent =
   // Visitor saved their email in the builder ("save your book")
   | "email_saved";
 
+function newId(): string {
+  try {
+    if (typeof crypto !== "undefined" && typeof crypto.randomUUID === "function") return crypto.randomUUID();
+  } catch { /* fall through */ }
+  return `${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 12)}`;
+}
+
+/** Per-tab session: a new one for every tab/visit. */
 export function getSessionId(): string {
-  let id = sessionStorage.getItem("_analytics_session");
-  if (!id) {
-    id = crypto.randomUUID();
-    sessionStorage.setItem("_analytics_session", id);
+  try {
+    let id = sessionStorage.getItem("_analytics_session");
+    if (!id) {
+      id = newId();
+      sessionStorage.setItem("_analytics_session", id);
+    }
+    return id;
+  } catch {
+    return "no-storage";
   }
-  return id;
+}
+
+/**
+ * Persistent visitor: survives tabs and return visits on the same browser,
+ * so the admin can stitch every session of one person into a single journey.
+ */
+export function getVisitorId(): string {
+  try {
+    let id = localStorage.getItem("_analytics_visitor");
+    if (!id) {
+      id = newId();
+      localStorage.setItem("_analytics_visitor", id);
+    }
+    return id;
+  } catch {
+    return getSessionId();
+  }
 }
 
 /**
@@ -45,6 +74,7 @@ export function trackEvent(
       .insert({
         event_type: eventType,
         session_id: getSessionId(),
+        visitor_id: getVisitorId(),
         path: path || window.location.pathname,
         metadata: metadata || {},
       })

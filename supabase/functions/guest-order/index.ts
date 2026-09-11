@@ -270,6 +270,12 @@ Deno.serve(async (req) => {
           }))
         : [{ count: Math.min(Math.max(body.count || 1, 1), 10), uniquePhotos: false }];
 
+      // Browser analytics identity, stamped on the draft so the admin can tie
+      // the build (and any email it captures) back to the visitor journey.
+      const idOk = (v: unknown): v is string => typeof v === "string" && /^[\w.\-:]{1,255}$/.test(v);
+      const analyticsSessionId = idOk(body.analyticsSessionId) ? body.analyticsSessionId : null;
+      const analyticsVisitorId = idOk(body.analyticsVisitorId) ? body.analyticsVisitorId : null;
+
       const orders: { id: string; bundle_id: string }[] = [];
       for (const bundle of bundles) {
         const bundleId = crypto.randomUUID();
@@ -282,6 +288,8 @@ Deno.serve(async (req) => {
               builder_step: "upload",
               bundle_id: bundleId,
               unique_photos: bundle.uniquePhotos,
+              analytics_session_id: analyticsSessionId,
+              analytics_visitor_id: analyticsVisitorId,
             })
             .select("id, bundle_id")
             .single();
@@ -438,14 +446,14 @@ Deno.serve(async (req) => {
         "builder_step", "cover_image_id", "title_page_enabled",
         "title_page_text", "dedication_page_enabled", "dedication_page_text",
         "extra_pages", "unique_photos",
-        "meta_fbp", "meta_fbc", "analytics_session_id",
+        "meta_fbp", "meta_fbc", "analytics_session_id", "analytics_visitor_id",
       ];
       for (const f of fields) {
         if (updates[f] !== undefined) allowed[f] = updates[f];
       }
       // Meta browser IDs are opaque short strings (fb.1.<ts>.<id>); refuse
       // anything else so a client can't stuff arbitrary payloads into them.
-      for (const f of ["meta_fbp", "meta_fbc", "analytics_session_id"]) {
+      for (const f of ["meta_fbp", "meta_fbc", "analytics_session_id", "analytics_visitor_id"]) {
         if (allowed[f] === undefined) continue;
         const v = allowed[f];
         if (v === null) continue;
