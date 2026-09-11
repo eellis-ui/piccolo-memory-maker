@@ -216,8 +216,13 @@ const Builder = () => {
               window.history.replaceState(null, "", `${window.location.pathname}?${newParams.toString()}`);
 
               clear();
-              existingOrders.forEach((order: any) => {
-                addToCart(1, { uniquePhotos: !!order.unique_photos });
+              // Same bundle-tier rebuild as the ?sessionId resume above — one
+              // line per order re-priced every book at the single-book rate.
+              addToCart(existingOrders.length, {
+                uniquePhotos: existingOrders.some((o: any) => !!o.unique_photos),
+                personalizeCover: existingOrders.some(
+                  (o: any) => !!o.title_page_enabled || !!o.dedication_page_enabled,
+                ),
               });
 
               const restoredBooks: BookState[] = existingOrders.map((order: any) => {

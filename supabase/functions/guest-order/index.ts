@@ -443,6 +443,16 @@ Deno.serve(async (req) => {
       for (const f of fields) {
         if (updates[f] !== undefined) allowed[f] = updates[f];
       }
+      // Meta browser IDs are opaque short strings (fb.1.<ts>.<id>); refuse
+      // anything else so a client can't stuff arbitrary payloads into them.
+      for (const f of ["meta_fbp", "meta_fbc"]) {
+        if (allowed[f] === undefined) continue;
+        const v = allowed[f];
+        if (v === null) continue;
+        if (typeof v !== "string" || v.length === 0 || v.length > 255 || !/^[\w.\-:]+$/.test(v)) {
+          delete allowed[f];
+        }
+      }
 
       const { error } = await supabase
         .from("orders")

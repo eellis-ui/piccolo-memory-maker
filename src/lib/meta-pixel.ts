@@ -33,6 +33,22 @@ function fbq(...args: unknown[]) {
   }
 }
 
+/**
+ * Shared browser/server event ID. crypto.randomUUID() is missing on older
+ * Safari/WebViews and throws outside secure contexts — this helper is called
+ * from inside the checkout handler, so it must never throw.
+ */
+function newEventId(prefix: string): string {
+  try {
+    if (typeof crypto !== "undefined" && typeof crypto.randomUUID === "function") {
+      return `${prefix}-${crypto.randomUUID()}`;
+    }
+  } catch {
+    // fall through to the non-crypto ID
+  }
+  return `${prefix}-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 12)}`;
+}
+
 /** SPA route change — the initial page load is tracked by index.html. */
 export function metaPageView() {
   fbq("track", "PageView");
@@ -52,7 +68,7 @@ export function metaViewContent(contentName: string = CONTENT_NAME) {
  * so ad-blocked visitors still count (server) and everyone else counts once.
  */
 export function metaAddToCart(value: number, numItems: number) {
-  const eventId = `atc-${crypto.randomUUID()}`;
+  const eventId = newEventId("atc");
   fbq(
     "track",
     "AddToCart",
@@ -69,7 +85,7 @@ export function metaAddToCart(value: number, numItems: number) {
 }
 
 export function metaInitiateCheckout(value: number, numItems: number) {
-  const eventId = `ic-${crypto.randomUUID()}`;
+  const eventId = newEventId("ic");
   fbq(
     "track",
     "InitiateCheckout",

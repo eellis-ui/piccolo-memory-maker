@@ -99,7 +99,11 @@ async function sendMetaPurchase(params: {
     // province code, both hashed like the other PII.
     if (params.clientIp) userData.client_ip_address = params.clientIp;
     if (params.userAgent) userData.client_user_agent = params.userAgent;
-    if (params.phone) userData.ph = [await sha256Hex(params.phone.replace(/\D/g, ""))];
+    // Meta's phone normalization: digits only, no leading zeros or '+'.
+    if (params.phone) {
+      const digits = params.phone.replace(/\D/g, "").replace(/^0+/, "");
+      if (digits) userData.ph = [await sha256Hex(digits)];
+    }
     if (params.state) userData.st = [await sha256Hex(params.state)];
 
     // Keys only, never values — this line is how attribution coverage gets
@@ -246,7 +250,12 @@ Deno.serve(async (req) => {
         updates.digital_download = true;
       }
 
-      await admin.from("orders").update(updates).eq("id", order.id);
+      const { error: updateErr } = await admin.from("orders").update(updates).eq("id", order.id);
+      if (updateErr) {
+        // A failed update here means the order never turns "paid" for the
+        // builder/admin — must be visible in the logs, never swallowed.
+        console.error(`orders update failed for ${order.id}:`, updateErr.message);
+      }
     }
 
     // Record the purchase for the admin live dashboard. Server-side because
