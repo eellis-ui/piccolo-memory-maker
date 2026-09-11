@@ -6,7 +6,6 @@ import HeroSection from "@/components/landing/HeroSection";
 import HappyCustomersSection from "@/components/landing/HappyCustomersSection";
 import { trackProductView } from "@/lib/shopify-analytics";
 import { trackEvent } from "@/lib/analytics-tracker";
-import { metaViewContent } from "@/lib/meta-pixel";
 import { SHOPIFY_VARIANTS } from "@/lib/shopify";
 import HeroVideoSection from "@/components/landing/HeroVideoSection";
 import LifestyleBanner from "@/components/landing/LifestyleBanner";
@@ -28,7 +27,9 @@ const Index = () => {
       variantTitle: "20 Pages",
     });
     trackEvent("product_view", "/");
-    metaViewContent("Landing Page");
+    // Deliberately NO Meta ViewContent here: firing it on every homepage
+    // load taught ad optimization that junk clicks were "product views".
+    // ViewContent belongs to /pricing and the builder only.
   }, []);
 
   return (

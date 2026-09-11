@@ -10,6 +10,8 @@
  * (ad blockers, script failed to load) — analytics must never break the app.
  */
 
+import { relayMetaEvent } from "@/lib/meta-capi";
+
 type Fbq = (...args: unknown[]) => void;
 
 declare global {
@@ -18,6 +20,8 @@ declare global {
   }
 }
 
+// The store sells in USD (Shopify charges USD; the server-side Purchase
+// reports USD). This was "GBP" for months, corrupting value reporting.
 const CURRENCY = "USD";
 const CONTENT_NAME = "Personalized Coloring Book";
 
@@ -42,24 +46,43 @@ export function metaViewContent(contentName: string = CONTENT_NAME) {
   });
 }
 
+/**
+ * AddToCart / InitiateCheckout fire twice with one shared event_id: the
+ * browser pixel AND the meta-capi server relay. Meta deduplicates the pair,
+ * so ad-blocked visitors still count (server) and everyone else counts once.
+ */
 export function metaAddToCart(value: number, numItems: number) {
-  fbq("track", "AddToCart", {
-    value: Number(value.toFixed(2)),
-    currency: CURRENCY,
-    content_name: CONTENT_NAME,
-    content_type: "product",
-    num_items: numItems,
-  });
+  const eventId = `atc-${crypto.randomUUID()}`;
+  fbq(
+    "track",
+    "AddToCart",
+    {
+      value: Number(value.toFixed(2)),
+      currency: CURRENCY,
+      content_name: CONTENT_NAME,
+      content_type: "product",
+      num_items: numItems,
+    },
+    { eventID: eventId },
+  );
+  relayMetaEvent("AddToCart", eventId, value, numItems);
 }
 
 export function metaInitiateCheckout(value: number, numItems: number) {
-  fbq("track", "InitiateCheckout", {
-    value: Number(value.toFixed(2)),
-    currency: CURRENCY,
-    content_name: CONTENT_NAME,
-    content_type: "product",
-    num_items: numItems,
-  });
+  const eventId = `ic-${crypto.randomUUID()}`;
+  fbq(
+    "track",
+    "InitiateCheckout",
+    {
+      value: Number(value.toFixed(2)),
+      currency: CURRENCY,
+      content_name: CONTENT_NAME,
+      content_type: "product",
+      num_items: numItems,
+    },
+    { eventID: eventId },
+  );
+  relayMetaEvent("InitiateCheckout", eventId, value, numItems);
 }
 
 /**
@@ -67,13 +90,30 @@ export function metaInitiateCheckout(value: number, numItems: number) {
  * this browser-side Purchase against any server-side / Shopify-side event
  * for the same order that uses the same ID.
  */
-export function metaPurchase(value: number, numItems: number, orderRef?: string | null) {
+export function metaPurchase(
+  value: number,
+  numItems: number,
+  orderRef?: string | null,
+  currency: string = CURRENCY,
+) {
+  // Idempotent per order: the payment poller and the tab-visibility handler
+  // can both observe "paid" within the same second, and Meta only dedupes
+  // browser-vs-server pairs, not two browser events with the same eventID.
+  if (orderRef) {
+    const key = `meta_purchase_sent:${orderRef}`;
+    try {
+      if (sessionStorage.getItem(key)) return;
+      sessionStorage.setItem(key, "1");
+    } catch {
+      // storage unavailable (private mode) — fall through and fire once anyway
+    }
+  }
   fbq(
     "track",
     "Purchase",
     {
       value: Number(value.toFixed(2)),
-      currency: CURRENCY,
+      currency,
       content_name: CONTENT_NAME,
       content_type: "product",
       num_items: numItems,

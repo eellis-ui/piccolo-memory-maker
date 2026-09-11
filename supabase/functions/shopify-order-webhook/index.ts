@@ -66,6 +66,12 @@ async function sendMetaPurchase(params: {
   city?: string | null;
   zip?: string | null;
   country?: string | null;
+  fbp?: string | null;
+  fbc?: string | null;
+  clientIp?: string | null;
+  userAgent?: string | null;
+  phone?: string | null;
+  state?: string | null;
 }): Promise<void> {
   const accessToken = Deno.env.get("META_CAPI_ACCESS_TOKEN");
   if (!accessToken) {
@@ -84,6 +90,21 @@ async function sendMetaPurchase(params: {
     if (params.city) userData.ct = [await sha256Hex(params.city.replace(/\s/g, ""))];
     if (params.zip) userData.zp = [await sha256Hex(params.zip.replace(/\s/g, ""))];
     if (params.country) userData.country = [await sha256Hex(params.country)];
+    // Browser identifiers are sent raw (Meta spec) — they are what lets
+    // Meta attribute this purchase to the ad click.
+    if (params.fbp) userData.fbp = params.fbp;
+    if (params.fbc) userData.fbc = params.fbc;
+    // Shopify records the checkout browser's IP and user agent; Meta wants
+    // both raw. Phone is digits only (incl. country code) and state is the
+    // province code, both hashed like the other PII.
+    if (params.clientIp) userData.client_ip_address = params.clientIp;
+    if (params.userAgent) userData.client_user_agent = params.userAgent;
+    if (params.phone) userData.ph = [await sha256Hex(params.phone.replace(/\D/g, ""))];
+    if (params.state) userData.st = [await sha256Hex(params.state)];
+
+    // Keys only, never values — this line is how attribution coverage gets
+    // verified from the logs (expect fbc,fbp in the list for ad-driven orders).
+    console.log("Meta CAPI Purchase user_data fields:", Object.keys(userData).sort().join(","));
 
     const res = await fetch(
       `https://graph.facebook.com/v21.0/${pixelId}/events`,
@@ -166,6 +187,9 @@ Deno.serve(async (req) => {
     const sessionId = noteAttributes.find(
       (attr: { name: string }) => attr.name === "builder_session_id",
     )?.value;
+    // Meta browser identifiers, stashed as hidden cart attributes at checkout
+    const attrFbp = noteAttributes.find((a) => a.name === "_meta_fbp")?.value || null;
+    const attrFbc = noteAttributes.find((a) => a.name === "_meta_fbc")?.value || null;
 
     if (!sessionId) {
       console.log("No builder_session_id in order — skipping");
@@ -179,7 +203,7 @@ Deno.serve(async (req) => {
     // Find orders for this session
     const { data: orders, error: ordersErr } = await admin
       .from("orders")
-      .select("id, digital_download")
+      .select("id, digital_download, meta_fbp, meta_fbc")
       .eq("builder_session_id", sessionId);
 
     if (ordersErr || !orders || orders.length === 0) {
@@ -208,6 +232,10 @@ Deno.serve(async (req) => {
         shopify_order_number: shopifyOrderNumber || null,
         order_name: orderName,
         customer_name: customerName,
+        // What Shopify actually charged, so the browser-side Purchase can
+        // report the same value/currency as the server-side one.
+        order_total: orderTotal,
+        order_currency: payload.currency || null,
       };
 
       if (customerEmail) {
@@ -255,6 +283,12 @@ Deno.serve(async (req) => {
         city: payload.shipping_address?.city,
         zip: payload.shipping_address?.zip,
         country: payload.shipping_address?.country_code,
+        fbp: attrFbp ?? orders.find((o: { meta_fbp?: string | null }) => o.meta_fbp)?.meta_fbp ?? null,
+        fbc: attrFbc ?? orders.find((o: { meta_fbc?: string | null }) => o.meta_fbc)?.meta_fbc ?? null,
+        clientIp: payload.client_details?.browser_ip,
+        userAgent: payload.client_details?.user_agent,
+        phone: payload.shipping_address?.phone || payload.billing_address?.phone || payload.phone,
+        state: payload.shipping_address?.province_code,
       });
     }
 

@@ -24,6 +24,7 @@ import { CSS } from "@dnd-kit/utilities";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import { convertHeicToJpeg, isHeicFile, normalizeImage } from "@/lib/image-normalize";
 
 
 import { useBasket } from "@/contexts/BasketContext";
@@ -415,11 +416,27 @@ const SortablePhotoCard = ({
   };
 
   const approveAll = async () => {
+    // Approving requires something to approve: without this gate the biggest
+    // button on screen could advance a book whose pages were never converted,
+    // and the customer paid for blank line art.
+    const unconverted = photos.filter((p) => p.conversionStatus !== "completed" || !p.convertedUrl);
+    if (unconverted.length > 0) {
+      toast.error("Convert your photos first", {
+        description: `${unconverted.length} photo${unconverted.length > 1 ? "s haven't" : " hasn't"} been turned into line art yet — tap Convert All, then approve.`,
+      });
+      return;
+    }
     const approved = photos.map((p) => ({ ...p, isApproved: true }));
     updatePhotos(() => approved);
-    await Promise.all(
-      photos.map((p) => updateGuestPhoto(sessionId, orderId, p.id, { is_approved: true }))
-    );
+    try {
+      await Promise.all(
+        photos.map((p) => updateGuestPhoto(sessionId, orderId, p.id, { is_approved: true }))
+      );
+    } catch (err) {
+      console.error("Approve all failed:", err);
+      toast.error("Couldn't save your approvals — please try again.");
+      return;
+    }
     onApprovalComplete(approved);
   };
 
@@ -470,18 +487,37 @@ const SortablePhotoCard = ({
     setIsAddingPhotos(true);
 
     try {
+      // Stale-closure fix: photos.length inside the loop gave every photo in
+      // one batch the same page_position; count up from a captured base.
+      let position = photos.length;
+      let added = 0;
       for (const file of filesToAdd) {
-        const position = photos.length;
+        position += 1;
 
-        // Check if landscape
-        const isLandscape = await new Promise<boolean>((resolve) => {
-          const img = new Image();
-          img.onload = () => resolve(img.width > img.height);
-          img.onerror = () => resolve(false);
-          img.src = URL.createObjectURL(file);
-        });
+        // Same pipeline as the Upload step — raw files (HEICs, full-res,
+        // landscape) used to be uploaded untouched here, producing pages the
+        // converter and printer couldn't handle.
+        let inputBlob: Blob = file;
+        if (isHeicFile(file)) {
+          try {
+            inputBlob = await convertHeicToJpeg(file);
+          } catch (err) {
+            console.error("HEIC conversion error:", err);
+            toast.error(`Couldn't read ${file.name} — please convert it to JPG first.`);
+            continue;
+          }
+        }
+        let normalizedBlob: Blob;
+        let isLandscape: boolean;
+        try {
+          ({ blob: normalizedBlob, isLandscape } = await normalizeImage(inputBlob));
+        } catch (err) {
+          console.error("Normalize error:", err);
+          toast.error(`Couldn't process ${file.name} — please try a different photo.`);
+          continue;
+        }
 
-        const result = await uploadGuestPhoto(sessionId, orderId, file, position, isLandscape);
+        const result = await uploadGuestPhoto(sessionId, orderId, normalizedBlob, position, isLandscape);
 
         const signedUrl = result.signedUrl || "";
 
@@ -498,8 +534,9 @@ const SortablePhotoCard = ({
         };
 
         updatePhotos((prev) => [...prev, newPhoto]);
+        added += 1;
       }
-      toast.success(`${filesToAdd.length} photo${filesToAdd.length > 1 ? "s" : ""} added`);
+      if (added > 0) toast.success(`${added} photo${added > 1 ? "s" : ""} added`);
     } catch (err) {
       console.error("Upload error:", err);
       toast.error("Failed to upload photo");

@@ -18,11 +18,18 @@ import { useShopifyCookies } from "@shopify/hydrogen-react";
 import { trackPageView } from "@/lib/shopify-analytics";
 import { trackEvent } from "@/lib/analytics-tracker";
 import { metaPageView } from "@/lib/meta-pixel";
+import { captureFbclid } from "@/lib/meta-capi";
 import { useVisitorPresence } from "@/hooks/use-live-visitors";
 
 export default function ShopifyAnalytics() {
   // Set _shopify_y (permanent visitor ID) and _shopify_s (session ID) cookies
   useShopifyCookies({ hasUserConsent: true });
+
+  // Remember the Meta ad click ID from the landing URL before any route
+  // change can strip it — attribution for the whole visit depends on it.
+  useEffect(() => {
+    captureFbclid();
+  }, []);
 
   // Track presence for live visitor counter in Admin
   useVisitorPresence();

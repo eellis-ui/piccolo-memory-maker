@@ -52,6 +52,16 @@ const BUNDLE_CHECKS = [
     "ad optimisation + conversion attribution",
   ],
   [
+    "Meta attribution IDs ride to Shopify + server relay wired",
+    (b) => b.includes("_meta_fbp") && b.includes("_meta_fbc") && b.includes("meta-capi"),
+    "ad-click attribution on server-side Purchase events",
+  ],
+  [
+    "browser Purchase is idempotent per order",
+    (b) => b.includes("meta_purchase_sent"),
+    "no double-counted Purchase events in Meta",
+  ],
+  [
     "legacy Shopify URL redirects",
     (b) => b.includes("/collections/"),
     "old /products/ and /collections/ links resolve",

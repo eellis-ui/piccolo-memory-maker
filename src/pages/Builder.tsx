@@ -71,7 +71,7 @@ const Builder = () => {
   const [searchParams] = useSearchParams();
   const resumeSessionId = searchParams.get("sessionId");
 
-  const { item, items, addOns, uniquePhotos, totalBookCount, addToCart, clear, setActiveSessionId } = useBasket();
+  const { item, items, addOns, uniquePhotos, totalBookCount, addToCart, clear, setActiveSessionId, digitalCopies } = useBasket();
   const bookCount = item?.quantity ?? 1;
 
   const [books, setBooks] = useState<BookState[]>([]);
@@ -125,8 +125,15 @@ const Builder = () => {
           if (existingOrders && existingOrders.length > 0) {
             // Reconstruct basket from DB — in-memory basket resets on refresh
             clear();
-            existingOrders.forEach((order: any) => {
-              addToCart(1, { uniquePhotos: !!order.unique_photos });
+            // Rebuild as ONE bundle line at the bundle tier price. The old
+            // one-item-per-order loop re-priced every book at the single-book
+            // rate (a $69.30 3-book bundle resumed as $105) and multiplied
+            // the flat unique-photos charge per book.
+            addToCart(existingOrders.length, {
+              uniquePhotos: existingOrders.some((o: any) => !!o.unique_photos),
+              personalizeCover: existingOrders.some(
+                (o: any) => !!o.title_page_enabled || !!o.dedication_page_enabled,
+              ),
             });
 
             const restoredBooks: BookState[] = existingOrders.map((order: any) => {
@@ -153,7 +160,10 @@ const Builder = () => {
                 bookAddOns: {
                   dedicationPageEnabled: order.dedication_page_enabled,
                   dedicationPageText: order.dedication_page_text || "",
-                  bottomTitle: order.title_page_text === "My Piccolo'd Colouring Book" || order.title_page_text === "My Piccolo'd Coloring Book" ? "color your memories" : order.title_page_text,
+                  // Null (order hasn't reached the cover step) and legacy
+                  // defaults both normalize to the stock title — a null here
+                  // used to read as "custom title" and add a phantom $1.99.
+                  bottomTitle: !order.title_page_text || order.title_page_text === "My Piccolo'd Colouring Book" || order.title_page_text === "My Piccolo'd Coloring Book" ? "color your memories" : order.title_page_text,
                 },
                 digitalDownload: false,
                 coverData: isCompleted ? { imageIds: [order.cover_image_id, order.cover_image_id_2 || order.cover_image_id], title: order.title_page_text, subtitle: "" } : null,
@@ -234,7 +244,10 @@ const Builder = () => {
                   bookAddOns: {
                     dedicationPageEnabled: order.dedication_page_enabled,
                     dedicationPageText: order.dedication_page_text || "",
-                    bottomTitle: order.title_page_text === "My Piccolo'd Colouring Book" || order.title_page_text === "My Piccolo'd Coloring Book" ? "color your memories" : order.title_page_text,
+                    // Null (order hasn't reached the cover step) and legacy
+                  // defaults both normalize to the stock title — a null here
+                  // used to read as "custom title" and add a phantom $1.99.
+                  bottomTitle: !order.title_page_text || order.title_page_text === "My Piccolo'd Colouring Book" || order.title_page_text === "My Piccolo'd Coloring Book" ? "color your memories" : order.title_page_text,
                   },
                   digitalDownload: false,
                   coverData: isCompleted ? { imageIds: [order.cover_image_id, order.cover_image_id_2 || order.cover_image_id], title: order.title_page_text, subtitle: "" } : null,
@@ -306,13 +319,16 @@ const Builder = () => {
           }
         }
 
-        const newBooks: BookState[] = orders.map((o) => ({
+        const newBooks: BookState[] = orders.map((o, i) => ({
           orderId: o.id,
           step: "upload" as const,
           photos: [],
           uploadImages: [],
           bookAddOns: { dedicationPageEnabled: false, dedicationPageText: "", bottomTitle: "color your memories" },
-          digitalDownload: false,
+          // Carry the cart's Digital PDF upsell into the builder — it used to
+          // be dropped here, so the customer paid attention to a toggle that
+          // never reached Shopify.
+          digitalDownload: i < digitalCopies,
           coverData: null,
           completed: false,
         }));

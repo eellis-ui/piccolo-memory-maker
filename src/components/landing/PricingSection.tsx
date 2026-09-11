@@ -10,6 +10,7 @@ import { toast } from "sonner";
 import ProductImageGallery, { type ProductImage } from "./ProductImageGallery";
 import CountdownTimer from "./CountdownTimer";
 import { storefrontApiRequest } from "@/lib/shopify";
+import { metaAddToCart } from "@/lib/meta-pixel";
 import TrustBadges from "./TrustBadges";
 import CustomerReviewsSection from "./CustomerReviewsSection";
 import HowItWorksSection from "./HowItWorksSection";
@@ -125,6 +126,9 @@ const PricingSection = () => {
   const handleAddToBasket = () => {
     clear();
     addToCart(selectedQuantity, { uniquePhotos: pendingUniquePhotos, personalizeCover: pendingPersonalizeCover });
+    // The real add-to-cart moment: value is the line just added (bundle +
+    // selected add-ons), so Meta's AddToCart audience is distinct from checkout.
+    metaAddToCart(totalPrice, selectedQuantity);
     setIsCartOpen(true);
   };
 
@@ -276,7 +280,7 @@ const PricingSection = () => {
                 <div className="flex-1">
                   <p className="text-sm font-semibold text-foreground">
                     Personalize your cover!{" "}
-                    <span className="text-primary font-bold">+${PERSONALIZE_COVER_PRICE.toFixed(2)}/book</span>
+                    <span className="text-primary font-bold">+${PERSONALIZE_COVER_PRICE.toFixed(2)}{pendingUniquePhotos ? "/book" : ""}</span>
                   </p>
                   <p className="text-xs text-muted-foreground mt-0.5">
                     Add a custom title to the front cover of each book
@@ -354,6 +358,7 @@ const PricingSection = () => {
       <FinalCTABlock onCtaClick={() => {
         clear();
         addToCart(selectedQuantity, { uniquePhotos: pendingUniquePhotos, personalizeCover: pendingPersonalizeCover });
+        metaAddToCart(totalPrice, selectedQuantity);
         setIsCartOpen(true);
       }} />
 

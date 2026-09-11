@@ -438,6 +438,7 @@ Deno.serve(async (req) => {
         "builder_step", "cover_image_id", "title_page_enabled",
         "title_page_text", "dedication_page_enabled", "dedication_page_text",
         "extra_pages", "unique_photos",
+        "meta_fbp", "meta_fbc",
       ];
       for (const f of fields) {
         if (updates[f] !== undefined) allowed[f] = updates[f];
