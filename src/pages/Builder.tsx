@@ -108,8 +108,6 @@ const Builder = () => {
   useEffect(() => {
     if (initialized) return;
     const init = async () => {
-      // If we have basket items and no explicit sessionId in the URL,
-      // always create a fresh session from the current cart (user clicked "Go To Next Step")
       const hasBasketItems = items.length > 0;
       const isResuming = !!resumeSessionId;
 
@@ -201,13 +199,29 @@ const Builder = () => {
         }
       }
 
-      // ── Also try localStorage session if no basket items (page refresh) ──
-      if (!hasBasketItems && !isResuming) {
+      // ── Also try the localStorage session (page refresh, or coming back
+      // via "Add to Cart"). A build the visitor has already put photos into
+      // is always restored, even when the basket has a fresh item in it:
+      // re-adding to cart and landing here used to create a brand-new empty
+      // build and orphan the one with their photos — one customer lost a
+      // fully converted 20-page book that way minutes before buying. With an
+      // empty basket (refresh / return visit) whatever exists is resumed.
+      if (!isResuming) {
         const storedSessionId = localStorage.getItem("guest_session_id");
         if (storedSessionId) {
           try {
             const existingOrders = await getSessionOrders(storedSessionId);
-            if (existingOrders && existingOrders.length > 0) {
+            const hasWorkInProgress = (existingOrders ?? []).some(
+              (o: any) => o.status === "draft" && (o.photos?.length ?? 0) > 0,
+            );
+            const shouldResume =
+              existingOrders && existingOrders.length > 0 && (!hasBasketItems || hasWorkInProgress);
+            if (shouldResume) {
+              if (hasBasketItems) {
+                toast.info("We restored the book you were already working on", {
+                  description: "Your uploaded photos are safe. Finish this book to check out.",
+                });
+              }
               const sid = storedSessionId;
               setSessionId(sid);
               setActiveSessionId(sid);
