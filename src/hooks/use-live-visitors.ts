@@ -103,13 +103,13 @@ export function useLiveDashboard(): LiveDashboardData {
     startOfDay.setHours(0, 0, 0, 0);
 
     // Paged past Supabase's 1,000-row cap so a busy day is never undercounted.
-    const { data, error } = await fetchAllRows<{ event_type: string; session_id: string | null }>((from, to) =>
+    const { data, error } = await fetchAllRows<{ event_type: string; session_id: string | null; metadata: { test?: boolean; orderTotal?: number } | null }>((from, to) =>
       supabase
         .from("analytics_events")
-        .select("event_type, session_id")
+        .select("event_type, session_id, metadata")
         .gte("created_at", startOfDay.toISOString())
         .order("created_at", { ascending: true })
-        .range(from, to) as unknown as PromiseLike<{ data: { event_type: string; session_id: string | null }[] | null; error: { message: string } | null }>,
+        .range(from, to) as unknown as PromiseLike<{ data: { event_type: string; session_id: string | null; metadata: { test?: boolean; orderTotal?: number } | null }[] | null; error: { message: string } | null }>,
     );
 
     if (error) {
@@ -138,7 +138,8 @@ export function useLiveDashboard(): LiveDashboardData {
             checkoutsInitiated++;
             break;
           case "purchase":
-            purchases++;
+            // Team test orders (100%-off) are flagged, or carry a zero total
+            if (!(row.metadata?.test || row.metadata?.orderTotal === 0)) purchases++;
             break;
         }
       }
@@ -254,7 +255,7 @@ export function useBuilderFunnel(enabled: boolean): BuilderFunnelStats & { loadi
     const [ordersRes, photosRes] = await Promise.all([
       supabase
         .from("orders")
-        .select("id, builder_step, status")
+        .select("id, builder_step, status, is_test")
         .gte("created_at", since),
       supabase
         .from("order_photos")
@@ -285,7 +286,7 @@ export function useBuilderFunnel(enabled: boolean): BuilderFunnelStats & { loadi
       reachedPreview: orders.filter(
         (o) => o.status !== "draft" || o.builder_step === "approve" || o.builder_step === "cover"
       ).length,
-      purchased: orders.filter((o) => o.status !== "draft").length,
+      purchased: orders.filter((o) => o.status !== "draft" && !o.is_test).length,
     });
     setLoading(false);
   }, []);

@@ -226,6 +226,11 @@ Deno.serve(async (req) => {
         item.sku?.toLowerCase().includes("digital"),
     );
 
+    // Zero-value orders (100%-off test codes) and Shopify test-gateway orders
+    // are NOT real conversions: reporting them shows phantom purchases in Ads
+    // Manager, trains ad delivery on fake buyers, and inflates admin stats.
+    const isTestOrder = payload.test === true || !(orderTotal > 0);
+
     // Update all orders in this session — lightweight status update only.
     // customer_email is only written when Shopify actually provides one, so a
     // payload without an email can never wipe an address captured in the builder.
@@ -240,6 +245,7 @@ Deno.serve(async (req) => {
         // report the same value/currency as the server-side one.
         order_total: orderTotal,
         order_currency: payload.currency || null,
+        is_test: isTestOrder,
       };
 
       if (customerEmail) {
@@ -278,6 +284,7 @@ Deno.serve(async (req) => {
         orderTotal,
         builderSessionId: sessionId,
         source: "shopify-webhook",
+        test: isTestOrder,
       },
     });
     if (purchaseEvErr) {
@@ -286,7 +293,10 @@ Deno.serve(async (req) => {
 
     // Server-side Purchase for Meta — deduplicated against the browser pixel
     // event via the shared, order-derived event ID.
-    if (shopifyOrderNumber) {
+    if (isTestOrder) {
+      console.log(`Skipping Meta Purchase for ${shopifyOrderNumber}: ${payload.test ? "Shopify test order" : "zero-value order"}`);
+    }
+    if (shopifyOrderNumber && !isTestOrder) {
       await sendMetaPurchase({
         eventId: `purchase-${shopifyOrderNumber}`,
         value: orderTotal,

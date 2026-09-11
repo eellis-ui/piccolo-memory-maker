@@ -58,6 +58,7 @@ interface OrderRow {
   builder_session_id: string | null;
   order_total?: number | string | null;
   order_currency?: string | null;
+  is_test?: boolean;
 }
 
 interface PhotoRow {
@@ -250,6 +251,7 @@ const Admin = () => {
     };
     const map = new Map<string, CustomerRow>();
     for (const o of orders) {
+      if (o.is_test) continue;
       const email = (o.customer_email || "").trim().toLowerCase();
       if (!email) continue;
       const orderKey = o.shopify_order_number || o.order_name || o.id;
@@ -278,6 +280,7 @@ const Admin = () => {
     const seen = new Set<string>();
     const out: OrderRow[] = [];
     for (const o of orders) {
+      if (o.is_test) continue;
       const key = o.shopify_order_number || o.order_name || o.id;
       if (seen.has(key)) continue;
       seen.add(key);
@@ -977,6 +980,7 @@ const Admin = () => {
                           <Badge variant={statusColor(order.status) as any} className="text-xs">
                             {statusLabel(order.status)}
                           </Badge>
+                          {order.is_test && <Badge variant="outline" className="text-[10px] ml-1">TEST</Badge>}
                           {order.digital_download && (
                             <Badge variant="secondary" className="ml-1 text-[10px] px-1.5 py-0">PDF</Badge>
                           )}

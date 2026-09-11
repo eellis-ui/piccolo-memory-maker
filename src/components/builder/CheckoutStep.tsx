@@ -171,7 +171,9 @@ const CheckoutStep = ({ pageCount, extraPages, convertedUrls, onBack, onCheckout
           const currency = paidOrder?.order_currency || "USD";
           // num_items = number of book orders, the same figure the server-side
           // Purchase reports, so the deduplicated pair agrees on every field.
-          metaPurchase(value, orders.length, shopifyNum, currency);
+          // Zero-value (test-code) orders are not conversions — the server
+          // skips them too, so Meta never hears about either half.
+          if (value > 0) metaPurchase(value, orders.length, shopifyNum, currency);
           onCheckoutComplete?.(shopifyNum);
           return true;
         }
