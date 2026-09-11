@@ -275,6 +275,7 @@ export function useBuilderFunnel(enabled: boolean): BuilderFunnelStats & { loadi
     const orders = (ordersRes.data ?? []) as unknown as {
       id: string;
       builder_step: string | null;
+      is_test?: boolean | null;
       status: string;
     }[];
     const photos = (photosRes.data ?? []) as unknown as { order_id: string }[];
