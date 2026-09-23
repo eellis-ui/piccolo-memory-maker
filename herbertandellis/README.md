@@ -1,58 +1,42 @@
 # Herbert & Ellis — website
 
-Single-page marketing site for [herbertandellis.com](https://www.herbertandellis.com). It is a self-contained static
-page: one `index.html` with inline CSS and JavaScript, Google Fonts (Fraunces + Archivo) and no build step.
+Static site for [herbertandellis.com](https://www.herbertandellis.com), in the live brand: white, black `#1a1a1a`,
+coral `#e8501e` and orange `#d4461a`, heavy uppercase system type, film grain, crosshair cursor with coral trail.
 
-## Files
+No build step. Every page is one self-contained HTML file with inline CSS and JavaScript.
 
-| File | Purpose |
+## Pages
+
+| Path | What it is |
 | --- | --- |
-| `index.html` | The whole site: nav, hero, services, lead generation, portfolio, approach, contact form, footer |
-| `logo-on-dark.svg` / `logo-on-light.svg` | Full lockup (seal + wordmark + strapline), outlined so it needs no fonts |
-| `logo-mark.svg` / `logo-mark-dark-on-light.svg` | The ampersand seal on its own, for favicons, avatars and stamps |
+| `index.html` | The live homepage, unchanged except for two additions: a fixed nav, and a fourth "Lead Generation" swipe card linking to the new page |
+| `lead-generation/index.html` | New lead generation page, served at `/lead-generation/` |
+| `concepts/green-brass-redesign/` | An earlier full redesign concept in a different identity. Not linked from anywhere; kept for reference only |
 
-## Identity
+The lead generation page includes the live site's stylesheet verbatim and adds its own rules after it, so shared
+elements (hero diagonal, marquee, swipe cards, manifesto, contact heading, cursor) match the homepage exactly.
 
-- **Palette** — deep green ink `#0c1512`, ivory `#f2ede3`, antique brass `#c9a35a` (deeper `#8f6d2f` on ivory), sage
-  grey for secondary text. Defined once as CSS custom properties at the top of `index.html`.
-- **Type** — Fraunces (display, italic accents) and Archivo (text and labels). Both load from Google Fonts with
-  system fallbacks.
-- **Logo** — the Fraunces italic ampersand inside a double ring, paired with a tracked, semi-expanded wordmark.
-  The `&` is the mark: it stands for the partnership and reads at favicon size.
+## Lead generation page — what's interactive
 
-## Sections
+1. **Targeting radar hero.** Prospects drift across the hero. The cursor is a spotlight; only prospects that fit the
+   ideal customer light up. Click and they fly into the diamond and count as booked. Auto-sweeps on touch devices.
+2. **Pipeline calculator.** Deal value, win rate and meetings per month give pipeline, revenue and value per meeting,
+   plus how many people need reaching at editable reply and conversion assumptions.
+3. **Targeting brief builder.** Pick decision makers, sectors, size, region and buying signals. A brief types itself
+   out with a focus meter. "Send this brief" drops it and the calculator numbers into the enquiry form.
+4. **Sequence player.** A 20-day multichannel sequence. Toggle email, LinkedIn, WhatsApp and SMS, press play, or click a
+   touchpoint to read an example message.
+5. **Process cards.** Five stages as the homepage's swipe cards, with drag, arrows and a progress bar.
+6. **Stack.** TT Prospecting and TT Commerce cards with 3D tilt, plus a hover grid of what's included.
+7. FAQ, the "WE DON'T CHASE LEADS." manifesto, and the audit form.
 
-1. Hero with the founding year, company count, sector count and discipline count
-2. Services accordion: Investment, Marketing, Consultancy, Lead Generation (tagged "New")
-3. Lead generation: stage-by-stage pipeline, five-step engagement, what's included, and the "built on our own stack"
-   panel linking TT Prospecting and TT Commerce
-4. Portfolio bento with all six operating companies
-5. Approach: four operating principles
-6. Contact: enquiry form plus direct email
+## The audit form
 
-## The enquiry form
-
-Out of the box the form opens the visitor's email app with the enquiry pre-filled and addressed to
-`hello@herbertandellis.com`, so it works with no backend.
-
-To send submissions to a form service instead (Formspree, Basin, a Cloudflare Worker, Zapier webhook), set the
-`data-endpoint` attribute on the `<form id="enquiry">` element to the endpoint URL. The page will `POST` JSON with
-`name`, `company`, `email`, `interest`, `revenue`, `message` and `source`. The hidden `website` field is a honeypot
-and should stay empty.
+With no configuration it opens the visitor's email app with the enquiry pre-filled to `hello@herbertandellis.com`.
+To collect submissions through a form service or Worker, set `data-endpoint` on `<form id="auditForm">`; the page will
+POST JSON with `name`, `company`, `email`, `website`, `brief` and `source`.
 
 ## Deploying
 
-Any static host works. The simplest options:
-
-- **Cloudflare Pages / Workers static assets** — point the project at this folder and deploy. Match the existing
-  `wrangler.jsonc` pattern in the repo root if you want CI to do it.
-- **Netlify / Vercel** — drag the folder in, or connect the repo with this folder as the publish directory.
-- **Existing host** — upload `index.html` and the four SVGs to the web root.
-
-Before going live, also add an `og-image.svg` (or `.png`, 1200×630) at the web root; the meta tags already point to
-`https://www.herbertandellis.com/og-image.svg`.
-
-## Editing
-
-Everything is in `index.html`. Copy is plain HTML, colours and type are CSS variables in the `:root` block, and the
-JavaScript at the bottom handles the nav, mobile menu, scroll reveals, services accordion, custom cursor and form.
+Upload the folder to the web root so the new page lives at `/lead-generation/`. The nav on both pages uses relative
+links (`lead-generation/` and `../`), so it works on any host that serves `index.html` for a folder path.
