@@ -26,9 +26,12 @@ elements (hero diagonal, marquee, swipe cards, manifesto, contact heading, curso
    out with a focus meter. "Send this brief" drops it and the calculator numbers into the enquiry form.
 4. **Sequence player.** A 20-day multichannel sequence. Toggle email, LinkedIn, WhatsApp and SMS, press play, or click a
    touchpoint to read an example message.
-5. **Process cards.** Five stages as the homepage's swipe cards, with drag, arrows and a progress bar.
-6. **Stack.** TT Prospecting and TT Commerce cards with 3D tilt, plus a hover grid of what's included.
-7. FAQ, the "WE DON'T CHASE LEADS." manifesto, and the audit form.
+5. **Google Ads + Meta funnel.** Six stages from ad to retargeting. Switch between "Ads only", where visitors leak
+   out at every unbuilt stage, and "The whole funnel", where a retargeting net catches drop-offs and brings them back.
+   Click a stage for what we build and what goes wrong without it.
+6. **Process cards.** Five stages as the homepage's swipe cards, with drag, arrows and a progress bar.
+7. **Stack.** TT Prospecting and TT Commerce cards with 3D tilt, plus a hover grid of what's included.
+8. FAQ, the "WE DON'T CHASE LEADS." manifesto, and the audit form.
 
 ## The audit form
 

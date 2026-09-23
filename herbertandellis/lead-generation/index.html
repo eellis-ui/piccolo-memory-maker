@@ -4,12 +4,12 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>Lead Generation — HERBERT &amp; ELLIS</title>
-<meta name="description" content="Lead generation by Herbert &amp; Ellis. Targeting, verified B2B data and multichannel outreach on our own platforms, with qualified meetings booked straight into your calendar.">
+<meta name="description" content="Lead generation by Herbert &amp; Ellis. Outbound outreach, Google Ads and Meta, with the whole funnel built behind them: landing pages, tracking, follow-up and retargeting. Qualified meetings and sales, not just clicks.">
 <link rel="canonical" href="https://www.herbertandellis.com/lead-generation/">
 <meta property="og:type" content="website">
 <meta property="og:url" content="https://www.herbertandellis.com/lead-generation/">
 <meta property="og:title" content="Lead Generation — HERBERT &amp; ELLIS">
-<meta property="og:description" content="Pipeline, engineered. Targeting, data, outreach and booked meetings, run on platforms we built.">
+<meta property="og:description" content="Pipeline, engineered. Outreach, Google Ads and Meta, with the whole funnel built behind them.">
 <meta property="og:image" content="https://www.herbertandellis.com/og-image.svg">
 <meta property="og:site_name" content="HERBERT &amp; ELLIS">
 <meta name="twitter:card" content="summary_large_image">
@@ -1285,9 +1285,6 @@ button { font: inherit; color: inherit; }
   .sx__head, .calc, .icp__grid, .book__grid { grid-template-columns: 1fr; }
   .out, .brief { position: relative; top: 0; }
   .tools { grid-template-columns: 1fr; }
-  .inc { grid-template-columns: 1fr 1fr; }
-  .inc__t:not(:nth-child(3n+1)) { border-left: 0; }
-  .inc__t:nth-child(even) { border-left: 1px solid rgba(255,255,255,.16); }
   .msg { grid-template-columns: 1fr; }
   .msg__body { border-left: 0; padding-left: 0; border-top: 1px solid rgba(255,255,255,.15); padding-top: 1.4rem; }
 }
@@ -1309,12 +1306,54 @@ button { font: inherit; color: inherit; }
   .brief__line { grid-template-columns: 4.6em 1fr; }
   .seq__bar .contact__cta { margin-left: 0; }
   .inc { grid-template-columns: 1fr; }
-  .inc__t:nth-child(even) { border-left: 0; }
+  .inc__t:not(:nth-child(3n+1)) { border-left: 0; }
   .f2 { grid-template-columns: 1fr; }
   .faq details p { padding-right: 0; }
   .book { padding: 5rem 5vw 3rem; }
   .tool { min-height: 300px; padding: 1.8rem; }
 }
+
+/* ---- Paid: Google Ads + Meta funnel (dark section) ---- */
+.paid { background: var(--black); color: var(--white); }
+.paid .ghost { color: var(--white); opacity: .04; }
+.paid .lead { opacity: .7; }
+.paid__bar { position: relative; z-index: 2; display: flex; flex-wrap: wrap; align-items: center; gap: 1rem 2rem; margin-bottom: 2.4rem; }
+.seg { display: inline-flex; border: 2px solid var(--white); }
+.seg__b { background: transparent; border: 0; color: var(--white); padding: .85rem 1.3rem; font-size: .72rem; font-weight: 800; letter-spacing: .2em; text-transform: uppercase; cursor: none; transition: background .3s, color .3s; }
+.seg__b[aria-pressed="true"] { background: var(--white); color: var(--black); }
+.seg__b[data-mode="whole"][aria-pressed="true"] { background: var(--coral); color: var(--white); }
+.seg__b:focus-visible { outline-color: var(--white); }
+.paid__mode { font-size: .9rem; opacity: .7; max-width: 52ch; line-height: 1.5; }
+.fun-wrap { position: relative; z-index: 2; overflow-x: auto; scrollbar-width: none; }
+.fun-wrap::-webkit-scrollbar { display: none; }
+.fun { position: relative; min-width: 900px; padding-top: 150px; padding-right: 110px; }
+.fun__cv { position: absolute; left: 0; top: 0; width: 100%; height: 150px; pointer-events: none; }
+.fun__end { position: absolute; right: 0; top: 34px; width: 96px; text-align: center; font-size: .6rem; letter-spacing: .25em; text-transform: uppercase; font-weight: 800; line-height: 1.5; }
+.fun__end i { display: block; width: 26px; height: 26px; margin: 0 auto 1.1rem; background: var(--coral); transform: rotate(45deg); transition: transform .25s var(--ease-snap); }
+.fun__end.pop i { transform: rotate(45deg) scale(1.5); }
+.fun__stages { display: grid; grid-template-columns: repeat(6, 1fr); gap: 10px; }
+.stg { position: relative; text-align: left; background: rgba(255,255,255,.04); border: 2px solid rgba(255,255,255,.22); color: var(--white); padding: 1.1rem 1rem 1.2rem; min-height: 150px; display: flex; flex-direction: column; gap: .35rem; cursor: none; transition: background .3s, border-color .3s, transform .4s var(--ease-snap), opacity .3s; }
+.stg:hover { transform: translateY(-4px); border-color: var(--white); }
+.stg small { font-size: .6rem; letter-spacing: .3em; font-weight: 700; opacity: .5; }
+.stg b { font-size: 1.25rem; font-weight: 900; text-transform: uppercase; letter-spacing: -.01em; margin-top: auto; }
+.stg span { font-size: .78rem; opacity: .65; line-height: 1.4; }
+.stg__flag { position: absolute; top: .9rem; right: .9rem; font-style: normal; font-size: .52rem; letter-spacing: .2em; text-transform: uppercase; font-weight: 800; padding: .25rem .45rem; background: var(--white); color: var(--black); opacity: 0; transition: opacity .3s; }
+.stg.sel { background: var(--coral); border-color: var(--coral); }
+.stg.sel small, .stg.sel span { opacity: .85; }
+.stg:focus-visible { outline-color: var(--white); }
+.fun[data-mode="ads"] .stg:not([data-i="0"]) { border-style: dashed; background: transparent; }
+.fun[data-mode="ads"] .stg:not([data-i="0"]) b { text-decoration: line-through; text-decoration-color: var(--coral); text-decoration-thickness: 3px; }
+.fun[data-mode="ads"] .stg:not([data-i="0"]) .stg__flag { opacity: 1; }
+.fun[data-mode="ads"] .stg.sel { background: rgba(232,80,30,.18); border-color: var(--coral); }
+.stg-detail { position: relative; z-index: 2; display: grid; grid-template-columns: 1.3fr 1fr; gap: 2rem 3rem; margin-top: 1.6rem; padding: 2rem 2.2rem; background: var(--white); color: var(--black); border-radius: 8px; }
+.stg-detail__k { display: block; font-size: .62rem; letter-spacing: .4em; text-transform: uppercase; font-weight: 800; color: var(--coral); margin-bottom: .8rem; }
+.stg-detail h3 { font-size: clamp(1.6rem, 3vw, 2.4rem); font-weight: 900; text-transform: uppercase; letter-spacing: -.02em; line-height: 1; margin-bottom: .9rem; }
+.stg-detail p { font-size: 1rem; line-height: 1.65; opacity: .8; max-width: 56ch; }
+.stg-detail__without { border-left: 6px solid var(--black); padding-left: 1.6rem; align-self: end; }
+.stg-detail__without p { font-weight: 700; opacity: 1; font-size: 1.1rem; }
+.paid__note { color: var(--white); }
+@media (max-width: 1000px) { .stg-detail { grid-template-columns: 1fr; } .stg-detail__without { align-self: start; } }
+@media (max-width: 767px) { .stg-detail { padding: 1.5rem; } }
 
 </style>
 </head>
@@ -1338,7 +1377,8 @@ button { font: inherit; color: inherit; }
   <ul class="nav__links">
     <li><a href="#maths" data-spy="maths">The maths</a></li>
     <li><a href="#targeting" data-spy="targeting">Targeting</a></li>
-    <li><a href="#sequence" data-spy="sequence">Sequence</a></li>
+    <li><a href="#sequence" data-spy="sequence">Outreach</a></li>
+    <li><a href="#paid" data-spy="paid">Google + Meta</a></li>
     <li><a href="#process" data-spy="process">Process</a></li>
     <li class="keep"><a href="#book" data-spy="book">Book an audit</a></li>
   </ul>
@@ -1350,7 +1390,7 @@ button { font: inherit; color: inherit; }
   <canvas class="radar" id="radar" aria-hidden="true"></canvas>
   <div class="hero__particles" id="heroParticles"></div>
   <div class="hero__content">
-    <div class="hero__est">Lead generation &middot; Herbert &amp; Ellis</div>
+    <div class="hero__est">Lead generation &middot; Outreach, Google &amp; Meta</div>
     <h1 class="hero__name">
       <span class="hero__name-line" id="heroL1" data-text="PIPELINE,"></span>
       <span class="hero__name-line" id="heroL2" data-text="ENGINEERED."></span>
@@ -1374,12 +1414,12 @@ button { font: inherit; color: inherit; }
 <!-- ========== MARQUEE ========== -->
 <section class="marquee-section" aria-hidden="true" data-theme="dark">
   <div class="marquee-row marquee-row--top">
-    <span class="marquee-item">FIND</span><span class="marquee-item">&middot;</span><span class="marquee-item">QUALIFY</span><span class="marquee-item">&middot;</span><span class="marquee-item">REACH</span><span class="marquee-item">&middot;</span><span class="marquee-item">FOLLOW UP</span><span class="marquee-item">&middot;</span><span class="marquee-item">BOOK</span><span class="marquee-item">&middot;</span><span class="marquee-item">CLOSE</span><span class="marquee-item">&middot;</span>
-    <span class="marquee-item">FIND</span><span class="marquee-item">&middot;</span><span class="marquee-item">QUALIFY</span><span class="marquee-item">&middot;</span><span class="marquee-item">REACH</span><span class="marquee-item">&middot;</span><span class="marquee-item">FOLLOW UP</span><span class="marquee-item">&middot;</span><span class="marquee-item">BOOK</span><span class="marquee-item">&middot;</span><span class="marquee-item">CLOSE</span><span class="marquee-item">&middot;</span>
+    <span class="marquee-item">FIND</span><span class="marquee-item">&middot;</span><span class="marquee-item">QUALIFY</span><span class="marquee-item">&middot;</span><span class="marquee-item">REACH</span><span class="marquee-item">&middot;</span><span class="marquee-item">GOOGLE ADS</span><span class="marquee-item">&middot;</span><span class="marquee-item">META</span><span class="marquee-item">&middot;</span><span class="marquee-item">FOLLOW UP</span><span class="marquee-item">&middot;</span><span class="marquee-item">BOOK</span><span class="marquee-item">&middot;</span><span class="marquee-item">CLOSE</span><span class="marquee-item">&middot;</span>
+    <span class="marquee-item">FIND</span><span class="marquee-item">&middot;</span><span class="marquee-item">QUALIFY</span><span class="marquee-item">&middot;</span><span class="marquee-item">REACH</span><span class="marquee-item">&middot;</span><span class="marquee-item">GOOGLE ADS</span><span class="marquee-item">&middot;</span><span class="marquee-item">META</span><span class="marquee-item">&middot;</span><span class="marquee-item">FOLLOW UP</span><span class="marquee-item">&middot;</span><span class="marquee-item">BOOK</span><span class="marquee-item">&middot;</span><span class="marquee-item">CLOSE</span><span class="marquee-item">&middot;</span>
   </div>
   <div class="marquee-row marquee-row--bottom">
-    <span class="marquee-item">FIND</span><span class="marquee-item">&middot;</span><span class="marquee-item">QUALIFY</span><span class="marquee-item">&middot;</span><span class="marquee-item">REACH</span><span class="marquee-item">&middot;</span><span class="marquee-item">FOLLOW UP</span><span class="marquee-item">&middot;</span><span class="marquee-item">BOOK</span><span class="marquee-item">&middot;</span><span class="marquee-item">CLOSE</span><span class="marquee-item">&middot;</span>
-    <span class="marquee-item">FIND</span><span class="marquee-item">&middot;</span><span class="marquee-item">QUALIFY</span><span class="marquee-item">&middot;</span><span class="marquee-item">REACH</span><span class="marquee-item">&middot;</span><span class="marquee-item">FOLLOW UP</span><span class="marquee-item">&middot;</span><span class="marquee-item">BOOK</span><span class="marquee-item">&middot;</span><span class="marquee-item">CLOSE</span><span class="marquee-item">&middot;</span>
+    <span class="marquee-item">FIND</span><span class="marquee-item">&middot;</span><span class="marquee-item">QUALIFY</span><span class="marquee-item">&middot;</span><span class="marquee-item">REACH</span><span class="marquee-item">&middot;</span><span class="marquee-item">GOOGLE ADS</span><span class="marquee-item">&middot;</span><span class="marquee-item">META</span><span class="marquee-item">&middot;</span><span class="marquee-item">FOLLOW UP</span><span class="marquee-item">&middot;</span><span class="marquee-item">BOOK</span><span class="marquee-item">&middot;</span><span class="marquee-item">CLOSE</span><span class="marquee-item">&middot;</span>
+    <span class="marquee-item">FIND</span><span class="marquee-item">&middot;</span><span class="marquee-item">QUALIFY</span><span class="marquee-item">&middot;</span><span class="marquee-item">REACH</span><span class="marquee-item">&middot;</span><span class="marquee-item">GOOGLE ADS</span><span class="marquee-item">&middot;</span><span class="marquee-item">META</span><span class="marquee-item">&middot;</span><span class="marquee-item">FOLLOW UP</span><span class="marquee-item">&middot;</span><span class="marquee-item">BOOK</span><span class="marquee-item">&middot;</span><span class="marquee-item">CLOSE</span><span class="marquee-item">&middot;</span>
   </div>
 </section>
 
@@ -1477,7 +1517,7 @@ button { font: inherit; color: inherit; }
 <section class="sx" id="sequence" data-theme="light">
   <div class="ghost" data-drift="0.1" aria-hidden="true">EVERY CHANNEL</div>
   <div class="sx__head">
-    <div class="rv"><span class="kicker">03 &mdash; The sequence</span><h2 class="big">One prospect. <em>Every</em> channel.</h2></div>
+    <div class="rv"><span class="kicker">03 &mdash; Outreach</span><h2 class="big">One prospect. <em>Every</em> channel.</h2></div>
     <p class="lead rv" style="--d:.1s">Cold outreach runs on email and LinkedIn. WhatsApp and SMS are kept for people who have already engaged. Switch channels off, press play, or click any touchpoint to read it.</p>
   </div>
   <div class="seq__bar rv">
@@ -1500,18 +1540,56 @@ button { font: inherit; color: inherit; }
   <p class="seq__note">Example sequence. Every campaign is written for your offer, in your voice.</p>
 </section>
 
+<!-- ========== PAID: GOOGLE ADS + META ========== -->
+<section class="sx paid" id="paid" data-theme="dark">
+  <div class="ghost" data-drift="0.12" aria-hidden="true">GOOGLE &middot; META</div>
+  <div class="sx__head">
+    <div class="rv"><span class="kicker">04 &mdash; Google Ads + Meta</span><h2 class="big">Ads are the easy part. We build the <em>whole funnel.</em></h2></div>
+    <p class="lead rv" style="--d:.1s">Most ad spend is lost after the click: pages that don't convert, tracking that doesn't fire, enquiries nobody follows up. We build and run every stage, from the first search or scroll to the booked call or the sale.</p>
+  </div>
+
+  <div class="paid__bar rv">
+    <div class="seg" role="group" aria-label="Funnel view">
+      <button type="button" class="seg__b" data-mode="ads" aria-pressed="false">Ads only</button>
+      <button type="button" class="seg__b" data-mode="whole" aria-pressed="true">The whole funnel</button>
+    </div>
+    <p class="paid__mode" id="paidMode" aria-live="polite">Every stage built and connected. People who drop off are brought back by retargeting.</p>
+  </div>
+
+  <div class="fun-wrap rv">
+    <div class="fun" id="fun">
+      <canvas class="fun__cv" id="funCv" aria-hidden="true"></canvas>
+      <div class="fun__end" aria-hidden="true"><i></i><span>Booked<br>or sold</span></div>
+      <div class="fun__stages" id="funStages">
+        <button type="button" class="stg" data-i="0"><small>01</small><b>Ads</b><span>Google + Meta</span><em class="stg__flag">Live</em></button>
+        <button type="button" class="stg" data-i="1"><small>02</small><b>Landing</b><span>Pages that convert</span><em class="stg__flag">Left to chance</em></button>
+        <button type="button" class="stg" data-i="2"><small>03</small><b>Capture</b><span>Forms, quotes, calculators</span><em class="stg__flag">Left to chance</em></button>
+        <button type="button" class="stg" data-i="3"><small>04</small><b>Tracking</b><span>GA4, pixel, Conversions API</span><em class="stg__flag">Left to chance</em></button>
+        <button type="button" class="stg" data-i="4"><small>05</small><b>Follow-up</b><span>Email, WhatsApp, SMS</span><em class="stg__flag">Left to chance</em></button>
+        <button type="button" class="stg" data-i="5"><small>06</small><b>Retarget</b><span>Bring them back</span><em class="stg__flag">Missing</em></button>
+      </div>
+    </div>
+  </div>
+
+  <div class="stg-detail rv" aria-live="polite">
+    <div><span class="stg-detail__k">What we build</span><h3 id="sdTitle">Ads</h3><p id="sdBuild"></p></div>
+    <div class="stg-detail__without"><span class="stg-detail__k">Without it</span><p id="sdWithout"></p></div>
+  </div>
+  <p class="seq__note paid__note">Illustration of how a funnel leaks, not measured data. Ad spend is paid by you directly to Google and Meta.</p>
+</section>
+
 <!-- ========== PROCESS (horizontal cards, as on the homepage) ========== -->
 <section class="proc" id="process" data-theme="light">
   <div class="sx__head">
-    <div class="rv"><span class="kicker">04 &mdash; The process</span><h2 class="big">From audit to <em>booked.</em></h2></div>
+    <div class="rv"><span class="kicker">05 &mdash; The process</span><h2 class="big">From audit to <em>booked.</em></h2></div>
     <p class="lead rv" style="--d:.1s">Five stages, run by us, reported every week. Drag, swipe or use the arrows.</p>
   </div>
   <div class="pillars__track" id="procTrack">
     <div class="pillar-card pillar-card--investment"><div class="pillar-card__number">01</div><div class="pillar-card__label">Audit</div><h3 class="pillar-card__title">Pipeline<br>Audit</h3><p class="pillar-card__desc">A working session on your offer, ideal customer, sales process and numbers. You leave with a written plan, whether or not we work together.</p></div>
-    <div class="pillar-card pillar-card--marketing"><div class="pillar-card__number">02</div><div class="pillar-card__label">Build</div><h3 class="pillar-card__title">The<br>Machine</h3><p class="pillar-card__desc">We map the market, build and verify the target list, write the messaging, and set up sending domains, inboxes, sequences and tracking.</p></div>
-    <div class="pillar-card pillar-card--consultancy"><div class="pillar-card__number">03</div><div class="pillar-card__label">Launch</div><h3 class="pillar-card__title">Go<br>Live</h3><p class="pillar-card__desc">Outreach goes live across channels. We test angles, segments and timing, then double down on whatever gets replies.</p></div>
+    <div class="pillar-card pillar-card--marketing"><div class="pillar-card__number">02</div><div class="pillar-card__label">Build</div><h3 class="pillar-card__title">The<br>Machine</h3><p class="pillar-card__desc">We map the market, build the target list and the ad campaigns, write the messaging and creative, and set up landing pages, tracking, sending domains and sequences.</p></div>
+    <div class="pillar-card pillar-card--consultancy"><div class="pillar-card__number">03</div><div class="pillar-card__label">Launch</div><h3 class="pillar-card__title">Go<br>Live</h3><p class="pillar-card__desc">Outreach and ads go live together. We test angles, audiences and timing, then double down on whatever brings in leads.</p></div>
     <div class="pillar-card pillar-card--black2"><div class="pillar-card__number">04</div><div class="pillar-card__label">Book</div><h3 class="pillar-card__title">In the<br>Diary</h3><p class="pillar-card__desc">We handle every reply. Qualified meetings land in your calendar with context notes and sync to your CRM, so nothing leaks between us and your closers.</p></div>
-    <div class="pillar-card pillar-card--investment"><div class="pillar-card__number">05</div><div class="pillar-card__label">Scale</div><h3 class="pillar-card__title">More of<br>What Works</h3><p class="pillar-card__desc">Weekly reporting on sends, replies, meetings and pipeline value. When a segment works, we scale it.</p></div>
+    <div class="pillar-card pillar-card--investment"><div class="pillar-card__number">05</div><div class="pillar-card__label">Scale</div><h3 class="pillar-card__title">More of<br>What Works</h3><p class="pillar-card__desc">Weekly reporting on replies, ad spend, leads, meetings and pipeline value. When a segment or campaign works, we scale it.</p></div>
   </div>
   <div class="proc__nav">
     <button class="sqbtn" type="button" id="procPrev" aria-label="Previous stage">&larr;</button>
@@ -1524,8 +1602,8 @@ button { font: inherit; color: inherit; }
 <section class="sx stack" id="stack" data-theme="dark">
   <div class="ghost" data-drift="0.14" aria-hidden="true">OUR OWN STACK</div>
   <div class="sx__head">
-    <div class="rv"><span class="kicker">05 &mdash; The stack</span><h2 class="big">We don't rent the tools. <em>We built them.</em></h2></div>
-    <p class="lead rv" style="--d:.1s">Your campaigns run on platforms we own, improve and stand behind. Both are Herbert &amp; Ellis companies.</p>
+    <div class="rv"><span class="kicker">06 &mdash; The stack</span><h2 class="big">We don't rent the tools. <em>We built them.</em></h2></div>
+    <p class="lead rv" style="--d:.1s">Outreach runs on platforms we own, improve and stand behind. Both are Herbert &amp; Ellis companies. Everything else in the funnel, we build.</p>
   </div>
   <div class="tools">
     <a class="tool tool--p rv" href="https://ttprospecting.com" target="_blank" rel="noopener">
@@ -1547,20 +1625,25 @@ button { font: inherit; color: inherit; }
     <div class="inc__t rv" style="--d:.1s"><i></i><h3>Copy in your voice</h3><p>Every message written for your offer and tested against real replies.</p></div>
     <div class="inc__t rv"><i></i><h3>Domains and deliverability</h3><p>Dedicated sending domains, warm-up and inbox health, so mail lands.</p></div>
     <div class="inc__t rv" style="--d:.05s"><i></i><h3>Replies and booking</h3><p>Every reply handled, meetings booked and confirmed, no-shows chased.</p></div>
-    <div class="inc__t rv" style="--d:.1s"><i></i><h3>Weekly reporting</h3><p>Sends, replies, meetings and pipeline value, in one place, every week.</p></div>
+    <div class="inc__t rv" style="--d:.1s"><i></i><h3>Weekly reporting</h3><p>Replies, ad spend, leads, meetings and pipeline value, in one place, every week.</p></div>
+    <div class="inc__t rv"><i></i><h3>Google Ads and Meta</h3><p>Search, Shopping and social campaigns, retargeting audiences and creative, built and run by us.</p></div>
+    <div class="inc__t rv" style="--d:.05s"><i></i><h3>Landing pages</h3><p>Pages built for the ad or search that brought each visitor, with one clear next step.</p></div>
+    <div class="inc__t rv" style="--d:.1s"><i></i><h3>Tracking you can trust</h3><p>GA4, Merchant Center, Meta pixel and Conversions API, so the platforms optimise for real leads and sales.</p></div>
   </div>
 </section>
 
 <!-- ========== FAQ ========== -->
 <section class="sx" id="faq" data-theme="light">
   <div class="sx__head">
-    <div class="rv"><span class="kicker">06 &mdash; Straight answers</span><h2 class="big">Before you <em>ask.</em></h2></div>
+    <div class="rv"><span class="kicker">07 &mdash; Straight answers</span><h2 class="big">Before you <em>ask.</em></h2></div>
   </div>
   <div class="faq rv">
     <details open><summary>Who is this for?<span class="pm" aria-hidden="true"></span></summary><p>B2B businesses with a clear offer and someone ready to take the meetings: agencies, SaaS, professional services, trade suppliers, and hospitality groups selling events and corporate bookings.</p></details>
     <details><summary>Do we need our own data or tools?<span class="pm" aria-hidden="true"></span></summary><p>No. Data, sending and sequencing run on our own platforms. You bring the offer and the calendar.</p></details>
     <details><summary>Will it put our main email at risk?<span class="pm" aria-hidden="true"></span></summary><p>Outreach sends from separate domains that we set up and warm up, so your main domain and day-to-day email stay protected.</p></details>
     <details><summary>What about GDPR?<span class="pm" aria-hidden="true"></span></summary><p>B2B outreach relies on legitimate interest. Every message carries a clear opt-out, and anyone who says no goes on a suppression list. We walk through the detail in the audit.</p></details>
+    <details><summary>Do you run the Google Ads and Meta accounts?<span class="pm" aria-hidden="true"></span></summary><p>Yes. We set up the accounts, tracking, campaigns and creative, then manage and improve them every month. Ad spend is paid by you directly to Google and Meta.</p></details>
+    <details><summary>How much ad budget do we need?<span class="pm" aria-hidden="true"></span></summary><p>It depends on your market and your goal. We recommend a starting budget in the audit, based on what the campaigns need to gather enough data to optimise.</p></details>
     <details><summary>How is it priced?<span class="pm" aria-hidden="true"></span></summary><p>We quote after the audit, once we know your market, volumes and channels. No guesswork, no padded packages.</p></details>
   </div>
 </section>
@@ -1586,7 +1669,7 @@ button { font: inherit; color: inherit; }
         <span class="contact__line--hidden" id="contactLets" style="display:block">LET'S</span>
         <span class="contact__talk contact__line--hidden" id="contactTalk">BOOK IT.</span>
       </div>
-      <p class="lead">Tell us who you sell to and what a good month looks like. We'll come back with a pipeline audit and a straight answer on whether we can help.</p>
+      <p class="lead">Tell us who you sell to, where your leads come from today, and what a good month looks like. We'll come back with a pipeline audit and a straight answer on whether we can help.</p>
       <a class="book__mail contact__cta-text--glitch" href="mailto:hello@herbertandellis.com">hello@herbertandellis.com</a>
     </div>
     <form class="form" id="auditForm" novalidate data-endpoint="">
@@ -2192,6 +2275,121 @@ button { font: inherit; color: inherit; }
   window.addEventListener('scroll', function () { if (!busy) { busy = true; requestAnimationFrame(update); } }, { passive: true });
   nav.addEventListener('focusin', function () { nav.classList.remove('hide'); });
   update();
+})();
+
+/* =========================================================
+   PAID — Google Ads + Meta funnel: ads only vs the whole funnel
+   ========================================================= */
+(function () {
+  var fun = document.getElementById('fun'); if (!fun) return;
+  var reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  var cv = document.getElementById('funCv'), ctx = cv.getContext('2d');
+  var tiles = Array.prototype.slice.call(fun.querySelectorAll('.stg'));
+  var endEl = fun.querySelector('.fun__end'), modeTxt = document.getElementById('paidMode');
+  var STAGES = [
+    { t: 'Ads', b: 'Google Search and Shopping campaigns for people already looking, and Meta campaigns on Facebook and Instagram to reach them before they search. Accounts, audiences and all the creative, built and launched by us.', w: 'No traffic, or the wrong traffic.' },
+    { t: 'Landing pages', b: 'Fast pages written for the search or ad that brought each visitor, with one clear next step. No sending paid clicks to a homepage and hoping.', w: 'You pay for clicks that bounce.' },
+    { t: 'Capture', b: 'Enquiry forms, quote builders and calculators that make it easy to say yes, and hand every lead over with the context your team needs.', w: 'Interest with nowhere to go.' },
+    { t: 'Tracking', b: 'GA4, Google Merchant Center, the Meta pixel and Conversions API, set up so Google and Meta optimise for real leads and sales, with a reporting dashboard you can read.', w: 'The platforms optimise for the wrong thing, and nobody can see what is working.' },
+    { t: 'Follow-up', b: 'Email, WhatsApp and SMS flows that follow up every enquiry, quote and abandoned checkout, so no lead waits for someone to remember to call.', w: 'Leads go cold before anyone gets back to them.' },
+    { t: 'Retargeting', b: 'Audiences on Google and Meta that bring back people who visited but did not act, with ads written for the point where they dropped off.', w: 'Most visitors leave and never come back.' }
+  ];
+  // Chance a visitor drops out as they reach each stage (illustrative only)
+  var DROP = { ads: [0, 0.45, 0.4, 0.12, 0.45, 0], whole: [0, 0.22, 0.18, 0, 0.14, 0] };
+  var mode = 'whole', sel = 0, W = 0, H = 150, nodes = [], endX = 0, dots = [], frame = 0, visible = false;
+  var PIPE = 60, NET = 118;
+
+  function size() {
+    var d = Math.min(2, window.devicePixelRatio || 1), fr = fun.getBoundingClientRect();
+    W = fr.width; cv.width = Math.round(W * d); cv.height = Math.round(H * d); ctx.setTransform(d, 0, 0, d, 0, 0);
+    nodes = tiles.map(function (t) { var r = t.getBoundingClientRect(); return r.left - fr.left + r.width / 2; });
+    var er = endEl.getBoundingClientRect(); endX = er.left - fr.left + er.width / 2;
+  }
+  function diamond(x, y, s, fill, stroke) {
+    ctx.save(); ctx.translate(x, y); ctx.rotate(Math.PI / 4);
+    if (fill) { ctx.fillStyle = fill; ctx.fillRect(-s, -s, 2 * s, 2 * s); }
+    if (stroke) { ctx.strokeStyle = stroke; ctx.lineWidth = 2; ctx.strokeRect(-s, -s, 2 * s, 2 * s); }
+    ctx.restore();
+  }
+  function spawn() { dots.push({ x: -6, y: PIPE, next: 0, st: 'pipe', a: 1, vy: 0, keep: Math.random() < 0.6 }); }
+
+  function step() {
+    ctx.clearRect(0, 0, W, H);
+    var whole = mode === 'whole';
+    // pipe
+    ctx.lineWidth = 2; ctx.strokeStyle = 'rgba(255,255,255,.85)';
+    ctx.beginPath(); ctx.moveTo(0, PIPE); ctx.lineTo(whole ? endX : nodes[1], PIPE); ctx.stroke();
+    if (!whole) { ctx.setLineDash([6, 8]); ctx.strokeStyle = 'rgba(255,255,255,.35)'; ctx.beginPath(); ctx.moveTo(nodes[1], PIPE); ctx.lineTo(endX, PIPE); ctx.stroke(); ctx.setLineDash([]); }
+    // retargeting net: catches drop-outs and carries them back in at the retarget stage
+    if (whole) {
+      ctx.setLineDash([4, 6]); ctx.strokeStyle = 'rgba(232,80,30,.9)';
+      ctx.beginPath(); ctx.moveTo(nodes[1] - 30, NET); ctx.lineTo(nodes[5] - 24, NET);
+      ctx.quadraticCurveTo(nodes[5], NET, nodes[5], PIPE + 14); ctx.stroke(); ctx.setLineDash([]);
+      ctx.fillStyle = 'rgba(232,80,30,.9)'; ctx.font = '700 9px -apple-system, Helvetica, Arial, sans-serif';
+      ctx.fillText('RETARGETING', nodes[1] - 30, NET + 18);
+    }
+    // stage nodes
+    nodes.forEach(function (x, i) {
+      var live = whole || i === 0;
+      diamond(x, PIPE, i === sel ? 9 : 7, live ? (i === sel ? '#e8501e' : '#ffffff') : null, live ? null : 'rgba(255,255,255,.45)');
+    });
+    // visitors
+    if (!reduce && ++frame % (whole ? 9 : 9) === 0) spawn();
+    for (var i = dots.length - 1; i >= 0; i--) {
+      var d = dots[i], sp = reduce ? 0 : 2.1;
+      if (d.st === 'pipe') {
+        d.x += sp;
+        if (d.next < nodes.length && d.x >= nodes[d.next]) {
+          var p = DROP[mode][d.next]; d.next++;
+          if (Math.random() < p) { d.st = whole ? 'drop' : 'fall'; d.vy = 0.6; }
+        }
+        if (d.x >= endX) { dots.splice(i, 1); endEl.classList.add('pop'); setTimeout(function () { endEl.classList.remove('pop'); }, 120); continue; }
+        ctx.fillStyle = '#e8501e'; ctx.fillRect(d.x - 2.5, d.y - 2.5, 5, 5);
+      } else if (d.st === 'fall') {           // ads only: lost for good
+        d.vy += 0.12; d.y += d.vy; d.x += 0.6; d.a -= 0.02;
+        ctx.fillStyle = 'rgba(255,255,255,' + Math.max(0, d.a) + ')'; ctx.fillRect(d.x - 2, d.y - 2, 4, 4);
+        if (d.a <= 0 || d.y > H) dots.splice(i, 1);
+      } else if (d.st === 'drop') {           // whole funnel: falls into the retargeting net
+        d.y += 2.2; if (d.y >= NET) { d.y = NET; d.st = 'net'; }
+        ctx.fillStyle = '#ffffff'; ctx.fillRect(d.x - 2, d.y - 2, 4, 4);
+      } else if (d.st === 'net') {
+        d.x += sp * 1.3;
+        if (d.x >= nodes[5] - 24) {
+          if (!d.keep) { d.st = 'fall'; d.a = 0.8; d.vy = 0.2; continue; } // not everyone comes back
+          d.st = 'rise';
+        }
+        ctx.fillStyle = '#ffffff'; ctx.fillRect(d.x - 2, d.y - 2, 4, 4);
+      } else if (d.st === 'rise') {
+        d.x += (nodes[5] - d.x) * 0.2; d.y -= 2.4;
+        if (d.y <= PIPE) { d.y = PIPE; d.x = nodes[5]; d.st = 'pipe'; d.next = 6; }
+        ctx.fillStyle = '#e8501e'; ctx.fillRect(d.x - 2.5, d.y - 2.5, 5, 5);
+      }
+    }
+  }
+
+  function select(i) {
+    sel = i; var s = STAGES[i];
+    tiles.forEach(function (t, j) { t.classList.toggle('sel', j === i); t.setAttribute('aria-pressed', String(j === i)); });
+    document.getElementById('sdTitle').textContent = s.t;
+    document.getElementById('sdBuild').textContent = s.b;
+    document.getElementById('sdWithout').textContent = s.w;
+  }
+  function setMode(m) {
+    mode = m; fun.setAttribute('data-mode', m); dots = [];
+    Array.prototype.forEach.call(document.querySelectorAll('.seg__b'), function (b) { b.setAttribute('aria-pressed', String(b.getAttribute('data-mode') === m)); });
+    modeTxt.textContent = m === 'whole'
+      ? 'Every stage built and connected. People who drop off are brought back by retargeting.'
+      : 'Ads running into a funnel nobody built. Watch where the visitors fall out.';
+    if (reduce) step();
+  }
+  tiles.forEach(function (t, i) { t.addEventListener('click', function () { select(i); if (reduce) step(); }); });
+  Array.prototype.forEach.call(document.querySelectorAll('.seg__b'), function (b) { b.addEventListener('click', function () { setMode(b.getAttribute('data-mode')); }); });
+
+  size(); setMode('whole'); select(0); step();
+  var rt; window.addEventListener('resize', function () { clearTimeout(rt); rt = setTimeout(function () { size(); step(); }, 150); });
+  if ('IntersectionObserver' in window) new IntersectionObserver(function (es) { visible = es[0].isIntersecting; }).observe(fun);
+  else visible = true;
+  (function loop() { if (visible && !reduce) step(); requestAnimationFrame(loop); })();
 })();
 
 </script>
