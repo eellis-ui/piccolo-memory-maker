@@ -1,46 +1,49 @@
 # Herbert & Ellis — website
 
-Static site for [herbertandellis.com](https://www.herbertandellis.com), in the live brand: white, black `#1a1a1a`,
-coral `#e8501e` and orange `#d4461a`, heavy uppercase system type, film grain, crosshair cursor with coral trail.
+Static site for [herbertandellis.com](https://www.herbertandellis.com). No build step: plain HTML, one shared
+stylesheet and one shared script.
 
-No build step. Every page is one self-contained HTML file with inline CSS and JavaScript.
-
-## Pages
+## Files
 
 | Path | What it is |
 | --- | --- |
-| `index.html` | The live homepage, unchanged except for three additions: a fixed nav, a fourth "Lead Generation" swipe card, and a coral "Want more leads?" band before the manifesto |
-| `lead-generation/index.html` | New lead generation page, served at `/lead-generation/` |
+| `index.html` | Homepage |
+| `lead-generation/index.html` | Lead generation page, served at `/lead-generation/` |
+| `assets/site.css` | Shared design system: colours, type, buttons, stickers, phone carousel, cards, panels |
+| `assets/site.js` | Shared behaviour: nav, giant-word letters, phone carousel, reveals, sticky "Get leads" button |
 
-The lead generation page includes the live site's stylesheet verbatim and adds its own rules after it, so shared
-elements (hero diagonal, marquee, swipe cards, manifesto, contact heading, cursor) match the homepage exactly.
+## Look and feel
 
-## Lead generation page — what's on it
+Bold, warm and playful. Inspired by Bandi, Writ Large and twoplusone.
 
-Bold and kinetic, in the homepage's own language: big type, solid colour blocks, marquees. Short copy throughout.
+- **Colours:** cream `#FFF5EA` ground, orange `#FF6A33` lead, with lilac `#BBA9FF`, lime `#D9F26B`, sky `#A6D6F2`
+  and pink `#FFAFCB` accents, and a soft deep navy `#1F1D36` instead of black. All set as CSS variables at the top
+  of `assets/site.css`.
+- **Type:** Bagel Fat One for the giant chunky words (HERBERT & ELLIS, LEADS, MORE LEADS?, Hello!), Bricolage
+  Grotesque for everything else. Both from Google Fonts.
+- **Shapes:** big rounded corners, pill buttons, tilted stickers, colour cards with a notched arrow corner.
 
-1. **Hero.** "PIPELINE, ENGINEERED." Letters lift and turn coral under the cursor; a slot on the coral diagonal
-   rotates through "More meetings. More sales. Full calendars…".
-2. **The maths.** Deal value, win rate and meetings a month give pipeline, revenue and value per meeting.
-3. **Targeting.** Tap who you sell to; a brief types itself out. "Send this brief" carries it into the form.
-4. **Outreach.** A row of colour-block message cards (email, LinkedIn, WhatsApp, SMS). Press play and they deal out
-   one by one; click any card to read the example message.
-5. **Google + Meta.** Six solid colour bars that build themselves into a funnel ending in "Booked or sold". Click a
-   stage for what we build.
-6. **"Want more leads?"** Full-width coral push to get in touch. Goal picks pre-fill the form. A sticky "Get leads"
-   button follows visitors down the page.
-7. **Process.** Five swipe cards, one line each.
-8. **What's included.** Nine colour tiles.
-9. **Portfolio.** The homepage's portfolio cards: "We build and back businesses…".
-10. FAQ (four questions), the manifesto, and the audit form.
+## The phone carousel
 
-## The audit form
+Both heroes have a giant word with three phones in front, each showing a different service. They rotate on their
+own every few seconds and pause on hover. Visitors can click the side phones, use the arrows, tap a service pill,
+swipe or drag, scroll sideways on a trackpad, or use the arrow keys.
 
-With no configuration it opens the visitor's email app with the enquiry pre-filled to `hello@herbertandellis.com`.
-To collect submissions through a form service or Worker, set `data-endpoint` on `<form id="auditForm">`; the page will
-POST JSON with `name`, `company`, `email`, `website`, `brief` and `source`.
+The phones are built in HTML and CSS, so there are no images to manage. To change what a phone shows, edit the
+screens in the page: each phone is a `.phone` element with `data-title` and `data-line` for its caption.
+
+## Lead generation page
+
+Hero carousel, the meetings calculator, the targeting brief builder, the outreach sequence cards, the Google and
+Meta funnel, the "MORE LEADS?" contact push, five steps, what's included, the portfolio, FAQ, and the "Hello!" form.
+Goal picks, the brief builder and the calculator all pre-fill the form.
+
+## The form
+
+With no configuration it opens the visitor's email app pre-filled to `hello@herbertandellis.com`. To collect
+submissions through a form service or Worker, set `data-endpoint` on `<form id="auditForm">`; the page POSTs JSON
+with `name`, `company`, `email`, `website`, `brief` and `source`.
 
 ## Deploying
 
-Upload the folder to the web root so the new page lives at `/lead-generation/`. The nav on both pages uses relative
-links (`lead-generation/` and `../`), so it works on any host that serves `index.html` for a folder path.
+Upload the whole folder to the web root, keeping `assets/` and `lead-generation/` as folders.
