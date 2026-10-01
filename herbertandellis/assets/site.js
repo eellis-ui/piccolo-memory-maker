@@ -74,17 +74,29 @@
     function go(k) { i = ((k % n) + n) % n; render(); restart(); }
     function next() { go(i + 1); }
     function prev() { go(i - 1); }
-    function restart() { clearInterval(timer); if (!reduce && !paused) timer = setInterval(function () { i = (i + 1) % n; render(); }, 3800); }
+    function refill() {
+      var bar = tabs[i] && $('i', tabs[i]); if (!bar) return;
+      bar.style.transition = 'none'; bar.style.width = '0'; void bar.offsetWidth; bar.style.transition = ''; bar.style.width = '';
+    }
+    function restart() {
+      clearInterval(timer); car.classList.toggle('is-paused', paused || reduce);
+      if (!reduce && !paused) { refill(); timer = setInterval(function () { i = (i + 1) % n; render(); }, 3800); }
+    }
     tabs.forEach(function (t, k) { t.addEventListener('click', function () { go(k); }); });
     var pBtn = $('.stage__arrow--prev', car), nBtn = $('.stage__arrow--next', car);
     if (pBtn) pBtn.addEventListener('click', prev);
     if (nBtn) nBtn.addEventListener('click', next);
-    phones.forEach(function (p, k) { p.addEventListener('click', function () { var d = off(k); if (d === -1) prev(); else if (d === 1) next(); }); });
+    phones.forEach(function (p, k) { p.addEventListener('click', function () { if (swiped) return; var d = off(k); if (d === -1) prev(); else if (d === 1) next(); }); });
     stage.addEventListener('keydown', function (e) { if (e.key === 'ArrowRight') { e.preventDefault(); next(); } if (e.key === 'ArrowLeft') { e.preventDefault(); prev(); } });
     // drag / swipe
-    var sx = null;
+    var sx = null, swiped = false;
     stage.addEventListener('pointerdown', function (e) { sx = e.clientX; });
-    window.addEventListener('pointerup', function (e) { if (sx === null) return; var dx = e.clientX - sx; sx = null; if (Math.abs(dx) > 40) { dx < 0 ? next() : prev(); } });
+    stage.addEventListener('dragstart', function (e) { e.preventDefault(); });
+    window.addEventListener('pointerup', function (e) {
+      if (sx === null) return; var dx = e.clientX - sx; sx = null;
+      if (Math.abs(dx) > 40) { swiped = true; setTimeout(function () { swiped = false; }, 50); dx < 0 ? next() : prev(); }
+    });
+    window.addEventListener('pointercancel', function () { sx = null; });
     // sideways trackpad scroll spins the phones (vertical scroll is left alone)
     stage.addEventListener('wheel', function (e) {
       if (Math.abs(e.deltaX) <= Math.abs(e.deltaY) || Math.abs(e.deltaX) < 12) return;

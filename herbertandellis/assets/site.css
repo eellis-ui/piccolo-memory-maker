@@ -104,11 +104,12 @@ button { cursor: pointer; }
   .giant__ch.out { animation: lift .3s var(--ease) forwards; animation-delay: calc(var(--i, 0) * 22ms); }
   @keyframes lift { from { opacity: 1; transform: none; } to { opacity: 0; transform: translateY(-.3em); } }
 }
-.giant--swap { height: .84em; display: flex; align-items: flex-end; justify-content: center; }
+.giant--swap { height: .84em; display: flex; align-items: center; justify-content: center; }
 .giant--swap .giant__line { width: 100%; overflow: hidden; padding-inline: .02em; }
 .hero__intro { text-align: center; margin: clamp(10px, 1.5vw, 18px) auto 0; font-weight: 700; font-size: clamp(1rem, 1.5vw, 1.2rem); position: relative; z-index: 3; }
 
-.stage { --pf: clamp(9.5px, 1vw, 14.5px); --lap: clamp(24px, 5vw, 84px); position: relative; z-index: 2; height: calc(37em + 30px); font-size: var(--pf); margin-top: calc(-1 * var(--lap)); display: grid; place-items: center; perspective: 1600px; touch-action: pan-y; outline: none; }
+.stage { --pf: clamp(9.5px, 1vw, 14.5px); --lap: clamp(24px, 5vw, 84px); position: relative; z-index: 2; height: calc(37em + 30px); font-size: var(--pf); margin-top: calc(-1 * var(--lap)); display: grid; place-items: center; perspective: 1600px; touch-action: pan-y; outline: none; -webkit-user-select: none; user-select: none; cursor: grab; }
+.stage:active { cursor: grabbing; }
 .stage:focus-visible .phone[data-d="0"] { box-shadow: 0 0 0 4px var(--orange), 0 30px 60px -22px rgba(31,29,54,.5); }
 .phone { position: absolute; top: 0; width: 18em; height: 37em; border-radius: 2.8em; background: var(--ink); padding: .55em; box-shadow: 0 30px 60px -22px rgba(31,29,54,.5); transform-style: preserve-3d;
   transition: transform .9s var(--ease), opacity .6s var(--ease), filter .6s; opacity: 0; transform: translateX(0) scale(.5); pointer-events: none; }
@@ -125,10 +126,15 @@ button { cursor: pointer; }
 .stage__arrow--prev { left: max(8px, calc(50% - 35em)); }
 .stage__arrow--next { right: max(8px, calc(50% - 35em)); }
 @media (max-width: 640px) { .stage__arrow { width: 44px; height: 44px; top: auto; bottom: 0; } }
-.offers { display: flex; flex-wrap: wrap; justify-content: center; gap: .5rem; margin-top: 1.4rem; position: relative; z-index: 3; }
-.offers button { border: 2px solid var(--ink); background: transparent; border-radius: 999px; padding: .5rem 1rem; font-weight: 700; font-size: .92rem; transition: background .25s, color .25s, transform .4s var(--spring); }
-.offers button:hover { transform: translateY(-2px); }
-.offers button[aria-selected="true"] { background: var(--ink); color: var(--cream); }
+.offers { display: flex; justify-content: center; gap: 8px; margin-top: 1.4rem; position: relative; z-index: 3; }
+.offers button { position: relative; width: 46px; height: 20px; border: 0; background: none; padding: 0; }
+.offers button::before, .offers button i { content: ""; position: absolute; left: 0; top: 8px; height: 4px; border-radius: 4px; }
+.offers button::before { right: 0; background: rgba(22,21,31,.16); transition: background .25s; }
+.offers button:hover::before { background: rgba(22,21,31,.35); }
+.offers button i { width: 0; background: var(--orange); transition: none; }
+.offers button[aria-selected="true"] i { width: 100%; transition: width 3.8s linear; }
+[data-carousel].is-paused .offers button[aria-selected="true"] i { transition: none; width: 100%; }
+@media (prefers-reduced-motion: reduce) { .offers button[aria-selected="true"] i { transition: none; } }
 .cap { text-align: center; margin-top: 1.3rem; min-height: 4.4em; position: relative; z-index: 3; }
 .cap__t { font-size: clamp(1.5rem, 2.6vw, 2.2rem); font-weight: 800; font-variation-settings: "wdth" 90; letter-spacing: -.015em; line-height: 1.05; }
 .cap__l { color: var(--ink-2); margin-top: .35rem; }
@@ -268,3 +274,6 @@ html.js .rv.in { opacity: 1; transform: none; }
 .chathead small { display: block; font-weight: 600; font-size: .75em; color: var(--ink-2); }
 .sys { align-self: center; font-size: .72em; font-weight: 700; color: var(--ink-2); background: #F6F3EF; padding: .35em .8em; border-radius: 999px; }
 .curve { border-radius: 1em; background: var(--lime); padding: .8em; }
+.arr { align-self: center; font-weight: 800; color: var(--ink-2); font-size: .8em; line-height: .5; }
+.sw-on { margin-left: auto; flex: none; width: 2.6em; height: 1.5em; border-radius: 999px; background: var(--orange); position: relative; }
+.sw-on::after { content: ""; position: absolute; right: .2em; top: .2em; width: 1.1em; height: 1.1em; border-radius: 50%; background: var(--white); }
