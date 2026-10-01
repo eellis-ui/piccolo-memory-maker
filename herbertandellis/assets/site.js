@@ -19,15 +19,13 @@
     spy.forEach(function (a) { var t = document.getElementById(a.getAttribute('href').slice(1)); if (t) sio.observe(t); });
   }
 
-  /* Giant word: each letter gets its own bounce and tilt, like a hand-set sign */
-  var tilts = [-5, 3, -2, 4, -4, 2, -3, 5, -1, 3, -4, 2];
-  var lifts = [0, -14, 6, -8, 10, -4, 8, -12, 4, -6, 10, -2];
+  /* Giant word: letters rise in one after another on load */
   $$('.giant__line').forEach(function (line, li) {
     var text = line.textContent; line.textContent = ''; line.setAttribute('aria-hidden', 'true');
     for (var i = 0; i < text.length; i++) {
-      var s = document.createElement('span'), k = (i + li * 3) % tilts.length;
+      var s = document.createElement('span');
       s.className = 'giant__ch'; s.textContent = text[i] === ' ' ? ' ' : text[i];
-      s.style.setProperty('--r', tilts[k] + 'deg'); s.style.setProperty('--y', (lifts[k] * 0.006).toFixed(3) + 'em'); s.style.setProperty('--i', i + li * 4);
+      s.style.setProperty('--i', i + li * 7);
       line.appendChild(s);
     }
   });

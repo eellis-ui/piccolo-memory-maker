@@ -17,11 +17,11 @@
 <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='18' fill='%23FF6A33'/%3E%3Ctext x='32' y='43' text-anchor='middle' font-family='Arial Black,Arial,sans-serif' font-weight='900' font-size='26' fill='%23FFF5EA'%3EH%26E%3C/text%3E%3C/svg%3E">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bagel+Fat+One&family=Bricolage+Grotesque:opsz,wdth,wght@12..96,75..100,300..800&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wdth,wght@12..96,75..100,300..800&display=swap">
 <link rel="stylesheet" href="../assets/site.css">
 <style>
 /* ---------- Lead generation page ---------- */
-.giant--leads { font-size: clamp(6rem, 31vw, 27rem); }
+.giant--leads { font-size: clamp(6.5rem, 36vw, 32rem); }
 .hero--leads .stage { --lap: clamp(20px, 7vw, 120px); }
 
 /* The maths */
@@ -70,7 +70,7 @@
 .group h3 small { font-weight: 600; opacity: .65; font-size: .85rem; }
 .chips { display: flex; flex-wrap: wrap; gap: .45rem; }
 .chip-t { border: 2px solid var(--ink); background: var(--white); border-radius: 999px; padding: .45rem .95rem; font-weight: 700; font-size: .92rem; transition: background .25s, color .25s, transform .4s var(--spring); }
-.chip-t:hover { transform: translateY(-3px) rotate(-1.5deg); }
+.chip-t:hover { transform: translateY(-2px); }
 .chip-t[aria-pressed="true"] { background: var(--ink); color: var(--cream); }
 .brief { background: var(--white); border-radius: var(--r); padding: 1.6rem 1.6rem 1.8rem; display: flex; flex-direction: column; gap: 1.3rem; box-shadow: 0 24px 50px -30px rgba(31,29,54,.5); }
 .brief__top { display: flex; justify-content: space-between; align-items: center; font-weight: 800; }
@@ -85,7 +85,7 @@
 .meter__head b { color: var(--orange-2); }
 .meter { display: grid; grid-template-columns: repeat(5, 1fr); gap: 5px; }
 .meter i { height: 10px; border-radius: 999px; background: var(--cream-2); transition: background .35s; }
-.meter i.on { background: var(--lime); box-shadow: inset 0 0 0 2px var(--ink); }
+.meter i.on { background: var(--orange); }
 
 /* Outreach deck */
 .seq__bar { display: flex; flex-wrap: wrap; gap: .5rem; align-items: center; margin-bottom: 1.4rem; }
@@ -93,29 +93,29 @@
 .chan:hover { transform: translateY(-2px); }
 .chan[aria-pressed="false"] { opacity: .35; }
 .dot { width: 12px; height: 12px; border-radius: 50%; border: 2px solid var(--ink); }
-.d-email { background: var(--ink); } .d-linkedin { background: var(--sky); } .d-whatsapp { background: var(--lime); } .d-sms { background: var(--pink); }
+.d-email { background: var(--ink); } .d-linkedin { background: var(--lilac); } .d-whatsapp { background: var(--lime); } .d-sms { background: var(--sky); }
 .seq__bar .btn { margin-left: auto; }
 .deck-wrap { overflow-x: auto; scrollbar-width: none; padding: 22px 6px 12px; margin: -22px -6px 0; }
 .deck-wrap::-webkit-scrollbar { display: none; }
 .deck { display: flex; gap: 12px; width: max-content; }
 .mcard { flex: 0 0 180px; height: 230px; border: 0; border-radius: 24px; padding: 1.2rem; display: flex; flex-direction: column; justify-content: space-between; text-align: left; color: var(--ink);
   transition: transform .55s var(--spring), opacity .35s, flex-basis .5s var(--ease), padding .5s var(--ease), margin .5s var(--ease), box-shadow .4s; }
-.mcard.email { background: var(--ink); color: var(--cream); } .mcard.linkedin { background: var(--sky); } .mcard.whatsapp { background: var(--lime); } .mcard.sms { background: var(--pink); }
+.mcard.email { background: var(--ink); color: var(--cream); } .mcard.linkedin { background: var(--lilac); color: var(--white); } .mcard.whatsapp { background: var(--lime); } .mcard.sms { background: var(--sky); }
 .mcard__ch { font-weight: 700; font-size: .85rem; opacity: .8; }
-.mcard__d { font-family: var(--chunk); font-size: 4.2rem; line-height: .8; }
-.mcard__d small { display: block; font-family: var(--font); font-size: .8rem; font-weight: 700; opacity: .7; margin-bottom: .4rem; }
+.mcard__d { font-weight: 800; font-variation-settings: "wdth" 75, "opsz" 96; letter-spacing: -.01em; font-size: 4.4rem; line-height: .8; }
+.mcard__d small { display: block; font-size: .8rem; font-weight: 700; font-variation-settings: "wdth" 100; letter-spacing: 0; opacity: .7; margin-bottom: .4rem; }
 .mcard__t { font-weight: 800; font-size: 1.02rem; line-height: 1.1; }
-.mcard:hover { transform: translateY(-8px) rotate(-1deg); }
-.mcard.cur { transform: translateY(-16px) rotate(-3deg); box-shadow: 0 22px 34px -12px rgba(31,29,54,.35); }
+.mcard:hover { transform: translateY(-6px); }
+.mcard.cur { transform: translateY(-14px); box-shadow: 0 22px 34px -12px rgba(31,29,54,.35); }
 .mcard.pop { animation: pop .55s var(--spring); }
-@keyframes pop { 0% { transform: translateY(20px) scale(.92); } 100% { transform: translateY(-16px) rotate(-3deg); } }
+@keyframes pop { 0% { transform: translateY(16px) scale(.96); } 100% { transform: translateY(-14px); } }
 .mcard.off { flex-basis: 0; padding-inline: 0; margin-right: -12px; opacity: 0; pointer-events: none; }
 .msg { display: grid; grid-template-columns: 220px 1fr; gap: 1.5rem 2rem; margin-top: 1rem; }
-.msg__day { font-family: var(--chunk); font-size: 3.4rem; line-height: .85; color: var(--orange); }
+.msg__day { font-weight: 800; font-variation-settings: "wdth" 75, "opsz" 96; letter-spacing: -.01em; font-size: 3.6rem; line-height: .85; color: var(--orange); }
 .msg__ch { display: inline-flex; align-items: center; gap: .5rem; margin-top: .8rem; font-weight: 700; }
 .msg__title { font-weight: 800; font-size: 1.25rem; margin-top: .5rem; line-height: 1.1; }
 .msg__text { white-space: pre-wrap; line-height: 1.6; }
-.msg__text mark { background: var(--lime); color: var(--ink); padding: 0 .2em; border-radius: 4px; }
+.msg__text mark { background: var(--cream-2); color: var(--ink); padding: 0 .2em; border-radius: 4px; }
 .msg__why { margin-top: 1rem; padding-top: .9rem; border-top: 2px dashed var(--cream-2); font-size: .92rem; color: var(--ink-2); }
 .msg__why b { color: var(--orange-2); margin-right: .4rem; }
 .note { margin-top: .9rem; font-size: .85rem; color: var(--ink-2); }
@@ -124,16 +124,16 @@
 .blocks { display: grid; gap: 8px; }
 .blk { width: var(--w); display: grid; grid-template-columns: 2.6rem auto 1fr; align-items: center; gap: 1rem; padding: 1rem 1.4rem; border: 0; border-radius: 22px; text-align: left; color: var(--ink);
   transition: transform .8s var(--spring), opacity .6s, box-shadow .3s; transition-delay: calc(var(--k) * 100ms); }
-.blk:nth-child(1) { background: var(--orange); color: var(--white); } .blk:nth-child(2) { background: var(--lilac); } .blk:nth-child(3) { background: var(--sky); }
+.blk:nth-child(1) { background: var(--orange); color: var(--white); } .blk:nth-child(2) { background: var(--lilac); color: var(--white); } .blk:nth-child(3) { background: var(--sky); }
 .blk:nth-child(4) { background: var(--lime); } .blk:nth-child(5) { background: var(--pink); } .blk:nth-child(6) { background: var(--ink); color: var(--cream); }
-.blk small { font-family: var(--chunk); font-size: 1.3rem; line-height: 1; opacity: .9; }
+.blk small { font-weight: 800; font-size: 1rem; line-height: 1; opacity: .75; }
 .blk b { font-size: clamp(1.4rem, 3vw, 2.5rem); font-weight: 800; font-variation-settings: "wdth" 88; letter-spacing: -.02em; line-height: 1; }
 .blk span { justify-self: end; text-align: right; font-weight: 600; font-size: .92rem; opacity: .85; }
-button.blk:hover { transform: translateX(10px) rotate(-.5deg); transition-delay: 0s; }
+button.blk:hover { transform: translateX(8px); transition-delay: 0s; }
 .blk.sel { box-shadow: 0 0 0 3px var(--cream), 0 0 0 6px var(--ink); }
 .blk--end { background: var(--cream) !important; color: var(--orange-2) !important; box-shadow: inset 0 0 0 3px var(--orange); grid-template-columns: 1fr; }
-.blk--end b { font-family: var(--chunk); font-weight: 400; font-size: clamp(1.6rem, 3.4vw, 2.8rem); letter-spacing: -.01em; }
-html.js .blocks:not(.built) .blk { opacity: 0; transform: translateY(40px) rotate(calc((var(--k) - 3) * 2deg)); }
+.blk--end b { font-weight: 800; font-variation-settings: "wdth" 80; font-size: clamp(1.6rem, 3.4vw, 2.8rem); letter-spacing: -.03em; }
+html.js .blocks:not(.built) .blk { opacity: 0; transform: translateX(-40px); }
 .detail { margin-top: 12px; }
 .detail h3 { font-size: clamp(1.5rem, 2.6vw, 2.1rem); font-weight: 800; letter-spacing: -.02em; line-height: 1; margin-bottom: .5rem; }
 .detail p { max-width: 62ch; color: var(--ink-2); font-size: 1.05rem; }
@@ -147,26 +147,27 @@ html.js .blocks:not(.built) .blk { opacity: 0; transform: translateY(40px) rotat
 .goal b { font-size: clamp(1.4rem, 2.4vw, 2rem); font-weight: 800; letter-spacing: -.02em; line-height: 1; padding-right: 2.6rem; }
 .goal span { color: var(--ink-2); font-weight: 600; }
 .goal i { position: absolute; top: 1.1rem; right: 1.1rem; width: 2.4rem; height: 2.4rem; border-radius: 50%; background: var(--ink); color: var(--white); display: grid; place-items: center; font-style: normal; font-weight: 800; transition: transform .45s var(--spring); }
-.goal:hover { transform: translateY(-5px) rotate(-1deg); background: var(--lime); }
+.goal:hover { transform: translateY(-4px); background: var(--lime); }
 .goal:hover i { transform: rotate(-45deg); }
 .goal.sel { background: var(--lime); box-shadow: inset 0 0 0 3px var(--ink); }
 .ask__cta { display: flex; flex-wrap: wrap; align-items: center; gap: 1rem 1.6rem; margin-top: 2rem; }
 .ask__cta .link { color: var(--white); }
-.ask .sticker { position: absolute; z-index: 1; font-size: 1.05rem; }
-.ak1 { top: 8%; right: 7%; } .ak2 { top: 22%; right: 24%; } .ak3 { top: 6%; right: 40%; }
 
 /* Process */
 .steps { display: grid; grid-template-columns: repeat(5, 1fr); gap: 12px; }
 .step { border-radius: var(--r); padding: 1.4rem 1.3rem 1.6rem; min-height: 230px; display: flex; flex-direction: column; gap: .5rem; transition: transform .5s var(--spring); }
-.step:hover { transform: translateY(-6px) rotate(-1deg); }
-.step em { font-family: var(--chunk); font-style: normal; font-size: 3.4rem; line-height: .85; margin-bottom: auto; }
+.step:hover { transform: translateY(-5px); }
+.step em { font-style: normal; font-weight: 800; font-variation-settings: "wdth" 75, "opsz" 96; letter-spacing: -.01em; font-size: 3.2rem; line-height: .85; margin-bottom: auto; opacity: .9; }
 .step b { font-size: 1.35rem; font-weight: 800; letter-spacing: -.01em; line-height: 1.05; }
 .step p { font-size: .95rem; opacity: .85; }
 
-/* Included: sticker cloud */
-.cloud { display: flex; flex-wrap: wrap; justify-content: center; gap: 14px 16px; max-width: 980px; margin-inline: auto; }
-.cloud .sticker { font-size: clamp(1.05rem, 1.8vw, 1.45rem); padding: .75rem 1.4rem; transition: transform .5s var(--spring); }
-.cloud .sticker:hover { transform: rotate(calc(var(--rot) * -1)) scale(1.06); }
+/* Included: a tidy list on sand */
+.incl { background: var(--cream-2); display: grid; grid-template-columns: 1fr 1.4fr; gap: 2rem 4rem; align-items: start; }
+.incl__list { list-style: none; display: grid; grid-template-columns: 1fr 1fr; gap: 0 2rem; }
+.incl__list li { display: flex; gap: .8rem; align-items: center; padding: .9rem 0; border-bottom: 1.5px solid rgba(22,21,31,.12); font-weight: 700; font-size: 1.08rem; }
+.incl__list li::before { content: ""; flex: none; width: 1.5rem; height: 1.5rem; border-radius: 50%; background: var(--orange) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M6 12.5l4 4 8-9' fill='none' stroke='%23fff' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E") center / 70% no-repeat; }
+@media (max-width: 900px) { .incl { grid-template-columns: 1fr; } }
+@media (max-width: 560px) { .incl__list { grid-template-columns: 1fr; } }
 
 /* FAQ */
 .faq { display: grid; gap: 10px; max-width: 960px; }
@@ -180,7 +181,7 @@ html.js .blocks:not(.built) .blk { opacity: 0; transform: translateY(40px) rotat
 
 /* Book */
 .book__grid { display: grid; grid-template-columns: 1fr 1.1fr; gap: 2rem; align-items: start; margin-top: clamp(14px, 2vw, 22px); }
-.book__side strong { display: block; font-size: clamp(2rem, 5vw, 4.2rem); font-weight: 800; font-variation-settings: "wdth" 86; letter-spacing: -.025em; line-height: .95; color: var(--white); }
+.book__side strong { display: block; font-size: clamp(2rem, 5vw, 4.2rem); font-weight: 800; font-variation-settings: "wdth" 86; letter-spacing: -.025em; line-height: .95; color: var(--ink); }
 .book__side p { font-weight: 700; margin-top: 1rem; max-width: 30ch; }
 .book__side .link { display: inline-block; margin-top: 1.4rem; }
 .form { background: var(--white); border-radius: var(--r); padding: clamp(20px, 3vw, 32px); display: grid; gap: 12px; }
@@ -205,7 +206,6 @@ html.js .blocks:not(.built) .blk { opacity: 0; transform: translateY(40px) rotat
   .f2 { grid-template-columns: 1fr; }
   .seq__bar .btn { margin-left: 0; }
   .fn { grid-template-columns: 5.6rem 1fr 3.2rem; font-size: .8rem; }
-  .ask .sticker { display: none; }
 }
 @media (prefers-reduced-motion: reduce) { html.js .blocks:not(.built) .blk { opacity: 1; transform: none; } .mcard.pop { animation: none; } }
 </style>
@@ -240,7 +240,7 @@ html.js .blocks:not(.built) .blk { opacity: 0; transform: translateY(40px) rotat
 <div class="org"><div class="bar" style="width:35%"></div><div class="bar" style="width:80%;height:.8em"></div><div class="bar" style="width:66%"></div></div></div></div></div></div>
 <div class="phone" data-title="Meta ads" data-line="Reach them on Facebook and Instagram before they search." role="group" aria-roledescription="slide" aria-label="Meta ads"><div class="phone__screen"><div class="scr"><div class="scr__status"><span>9:41</span><span>&#9679;&#9679;&#9679;</span></div><div class="scr__body" style="padding-top:.6em">
 <div class="post__who"><span class="av s-orange">YB</span><p><b>yourbrand</b><small>Sponsored</small></p></div>
-<div class="post__img" style="background:linear-gradient(135deg,#FF6A33,#FFAFCB)">Your<br>ad<br>here</div>
+<div class="post__img" style="background:linear-gradient(135deg,#FF5B1F,#E4B8A3)">Your<br>ad<br>here</div>
 <div class="post__acts"><i></i><i></i><i></i></div><div class="bar" style="width:80%"></div><div class="bar" style="width:55%"></div>
 <div class="post__cta"><span>Book a call</span><span>&rarr;</span></div></div></div></div></div>
 <div class="phone" data-title="Landing pages" data-line="One clear next step, so clicks turn into enquiries." role="group" aria-roledescription="slide" aria-label="Landing pages"><div class="phone__screen"><div class="scr"><div class="scr__status"><span>9:41</span><span>&#9679;&#9679;&#9679;</span></div><div class="scr__head"><span style="display:flex;gap:.3em;align-items:center"><span class="av s-orange" style="width:1.4em;height:1.4em"></span><span class="bar" style="width:3.5em"></span></span><span class="bar" style="width:2.5em"></span></div><div class="scr__body">
@@ -390,9 +390,6 @@ html.js .blocks:not(.built) .blk { opacity: 0; transform: translateY(40px) rotat
 <section class="sec ask" id="ask" data-hide-stick style="padding-top:0">
   <div class="wrap">
     <div class="panel panel--orange rv">
-      <span class="sticker s-sky ak1" style="--rot:8deg">Google Ads</span>
-      <span class="sticker s-pink ak2" style="--rot:-7deg">Meta</span>
-      <span class="sticker s-lime ak3" style="--rot:5deg">Outreach</span>
       <div class="ask__in">
         <h2 class="mega">MORE<br>LEADS?</h2>
         <p class="ask__lead">Tell us what a good month looks like. We&rsquo;ll show you how to get there.</p>
@@ -417,29 +414,30 @@ html.js .blocks:not(.built) .blk { opacity: 0; transform: translateY(40px) rotat
       <p class="lead rv" style="--d:.08s">Five steps. Run by us. Reported weekly.</p>
     </div>
     <div class="steps">
-      <div class="step s-lime rv"><em>1</em><b>Audit</b><p>Your offer, customers and numbers. You leave with a plan.</p></div>
-      <div class="step s-lilac rv" style="--d:.05s"><em>2</em><b>Build</b><p>Targets, ads, copy, pages and tracking, all set up.</p></div>
-      <div class="step s-sky rv" style="--d:.1s"><em>3</em><b>Launch</b><p>Outreach and ads go live. We test, then double down.</p></div>
-      <div class="step s-pink rv" style="--d:.15s"><em>4</em><b>Book</b><p>Replies handled. Meetings land in your calendar.</p></div>
-      <div class="step s-orange rv" style="--d:.2s;color:var(--white)"><em>5</em><b>Scale</b><p>Weekly numbers. More of whatever works.</p></div>
+      <div class="step s-lime rv"><em>01</em><b>Audit</b><p>Your offer, customers and numbers. You leave with a plan.</p></div>
+      <div class="step s-lilac rv" style="--d:.05s"><em>02</em><b>Build</b><p>Targets, ads, copy, pages and tracking, all set up.</p></div>
+      <div class="step s-sky rv" style="--d:.1s"><em>03</em><b>Launch</b><p>Outreach and ads go live. We test, then double down.</p></div>
+      <div class="step s-pink rv" style="--d:.15s"><em>04</em><b>Book</b><p>Replies handled. Meetings land in your calendar.</p></div>
+      <div class="step s-orange rv" style="--d:.2s;color:var(--white)"><em>05</em><b>Scale</b><p>Weekly numbers. More of whatever works.</p></div>
     </div>
   </div>
 </section>
 
-<section class="sec" id="included" style="padding-top:0;text-align:center">
+<section class="sec" id="included" style="padding-top:0">
   <div class="wrap">
-    <span class="tag rv">What&rsquo;s included</span>
-    <h2 class="h2 rv" style="margin-bottom:clamp(28px,4vw,48px)">Everything. <em>One team.</em></h2>
-    <div class="cloud rv">
-      <span class="sticker s-orange" style="--rot:-4deg">ICP and market map</span>
-      <span class="sticker s-lilac" style="--rot:3deg">Verified contact data</span>
-      <span class="sticker s-lime" style="--rot:-2deg">Copy in your voice</span>
-      <span class="sticker s-sky" style="--rot:4deg">Google Ads and Meta</span>
-      <span class="sticker s-pink" style="--rot:-3deg">Landing pages</span>
-      <span class="sticker " style="--rot:2deg">Tracking you can trust</span>
-      <span class="sticker s-ink" style="--rot:-5deg">Sending domains</span>
-      <span class="sticker s-lime" style="--rot:3deg">Replies and booking</span>
-      <span class="sticker s-lilac" style="--rot:-2deg">Weekly reporting</span>
+    <div class="incl panel rv">
+      <div><span class="tag">What&rsquo;s included</span><h2 class="h2">Everything. <em>One team.</em></h2></div>
+      <ul class="incl__list">
+        <li>ICP and market map</li>
+        <li>Verified contact data</li>
+        <li>Copy in your voice</li>
+        <li>Google Ads and Meta</li>
+        <li>Landing pages</li>
+        <li>Tracking you can trust</li>
+        <li>Sending domains</li>
+        <li>Replies and booking</li>
+        <li>Weekly reporting</li>
+      </ul>
     </div>
   </div>
 </section>
@@ -455,8 +453,8 @@ html.js .blocks:not(.built) .blk { opacity: 0; transform: translateY(40px) rotat
   <a class="pcard s-pink rv" style="--d:0.06s" href="https://knockandsnitch.co.uk/" target="_blank" rel="noopener"><span class="pcard__sector">Hospitality</span><span class="pcard__name">Knock &amp; Snitch</span><span class="pcard__type">Secret bar, Oswestry</span><span class="pcard__desc">Cocktails, live music, comedy nights and private events.</span><span class="pcard__url">knockandsnitch.co.uk</span></a>
   <a class="pcard s-sky rv" style="--d:0.12s" href="https://piccoload.com" target="_blank" rel="noopener"><span class="pcard__sector">Ecommerce</span><span class="pcard__name">Piccoload</span><span class="pcard__type">From pic to pen</span><span class="pcard__desc">Photos turned into personalised colouring books.</span><span class="pcard__url">piccoload.com</span></a>
   <a class="pcard pc-orange rv" style="--d:0.00s" href="https://ttprospecting.com" target="_blank" rel="noopener"><span class="sticker s-ink" style="--rot:4deg">Powers your outreach</span><span class="pcard__sector">SaaS</span><span class="pcard__name">TT Prospecting</span><span class="pcard__type">Sales intelligence</span><span class="pcard__desc">AI-powered B2B contact discovery and outreach.</span><span class="pcard__url">ttprospecting.com</span></a>
-  <a class="pcard s-lilac rv" style="--d:0.06s" href="https://musefile.com" target="_blank" rel="noopener"><span class="pcard__sector">Ecommerce</span><span class="pcard__name">Musefile</span><span class="pcard__type">Professional nail tools</span><span class="pcard__desc">Premium kit for nail professionals across the UK.</span><span class="pcard__url">musefile.com</span></a>
-  <a class="pcard s-lime rv" style="--d:0.12s" href="https://ttcommerce.co" target="_blank" rel="noopener"><span class="sticker s-ink" style="--rot:4deg">Powers your follow-up</span><span class="pcard__sector">SaaS</span><span class="pcard__name">TT Commerce</span><span class="pcard__type">Customer journey automation</span><span class="pcard__desc">Follow-up and outreach across WhatsApp, SMS and email.</span><span class="pcard__url">ttcommerce.co</span></a>
+  <a class="pcard s-lime rv" style="--d:0.06s" href="https://musefile.com" target="_blank" rel="noopener"><span class="pcard__sector">Ecommerce</span><span class="pcard__name">Musefile</span><span class="pcard__type">Professional nail tools</span><span class="pcard__desc">Premium kit for nail professionals across the UK.</span><span class="pcard__url">musefile.com</span></a>
+  <a class="pcard pc-cobalt rv" style="--d:0.12s" href="https://ttcommerce.co" target="_blank" rel="noopener"><span class="sticker s-ink" style="--rot:4deg">Powers your follow-up</span><span class="pcard__sector">SaaS</span><span class="pcard__name">TT Commerce</span><span class="pcard__type">Customer journey automation</span><span class="pcard__desc">Follow-up and outreach across WhatsApp, SMS and email.</span><span class="pcard__url">ttcommerce.co</span></a>
 </div>
 
   </div>

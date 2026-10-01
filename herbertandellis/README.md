@@ -14,14 +14,16 @@ stylesheet and one shared script.
 
 ## Look and feel
 
-Bold, warm and playful. Inspired by Bandi, Writ Large and twoplusone.
+Bold and warm, but grown-up. Inspired by Bandi's phones, Writ Large's cards, twoplusone's "Hello!" panel and the
+Wade & Leta palette.
 
-- **Colours:** cream `#FFF5EA` ground, orange `#FF6A33` lead, with lilac `#BBA9FF`, lime `#D9F26B`, sky `#A6D6F2`
-  and pink `#FFAFCB` accents, and a soft deep navy `#1F1D36` instead of black. All set as CSS variables at the top
-  of `assets/site.css`.
-- **Type:** Bagel Fat One for the giant chunky words (HERBERT & ELLIS, LEADS, MORE LEADS?, Hello!), Bricolage
-  Grotesque for everything else. Both from Google Fonts.
-- **Shapes:** big rounded corners, pill buttons, tilted stickers, colour cards with a notched arrow corner.
+- **Colours:** cream `#F5EFE6` ground, ink `#16151F`, orange `#FF5B1F` as the lead colour, cobalt `#2D3BD6` as the
+  one strong second colour, with sand `#E6DCCB`, dusty sky `#C3DAE6` and clay `#E4B8A3` in support. All are CSS
+  variables at the top of `assets/site.css`. (The variable names `--lilac`, `--lime` and `--pink` now hold cobalt,
+  sand and clay.)
+- **Type:** Bricolage Grotesque throughout. The giant words use it at its heaviest and most condensed.
+- **Shapes:** rounded corners, pill buttons, straight outline tags, colour cards with a notched arrow corner.
+  Motion is limited to letters rising in, cards lifting on hover, and the phone carousel.
 
 ## The phone carousel
 
