@@ -9,9 +9,8 @@ No build step. Every page is one self-contained HTML file with inline CSS and Ja
 
 | Path | What it is |
 | --- | --- |
-| `index.html` | The live homepage, unchanged except for two additions: a fixed nav, and a fourth "Lead Generation" swipe card linking to the new page |
+| `index.html` | The live homepage, unchanged except for three additions: a fixed nav, a fourth "Lead Generation" swipe card, and a coral "Want more leads?" band before the manifesto |
 | `lead-generation/index.html` | New lead generation page, served at `/lead-generation/` |
-| `concepts/green-brass-redesign/` | An earlier full redesign concept in a different identity. Not linked from anywhere; kept for reference only |
 
 The lead generation page includes the live site's stylesheet verbatim and adds its own rules after it, so shared
 elements (hero diagonal, marquee, swipe cards, manifesto, contact heading, cursor) match the homepage exactly.
@@ -29,9 +28,13 @@ elements (hero diagonal, marquee, swipe cards, manifesto, contact heading, curso
 5. **Google Ads + Meta funnel.** Six stages from ad to retargeting. Switch between "Ads only", where visitors leak
    out at every unbuilt stage, and "The whole funnel", where a retargeting net catches drop-offs and brings them back.
    Click a stage for what we build and what goes wrong without it.
-6. **Process cards.** Five stages as the homepage's swipe cards, with drag, arrows and a progress bar.
-7. **Stack.** TT Prospecting and TT Commerce cards with 3D tilt, plus a hover grid of what's included.
-8. FAQ, the "WE DON'T CHASE LEADS." manifesto, and the audit form.
+6. **"Want more leads?"** A full-width coral section pushing visitors to get in touch. Picking "More meetings",
+   "More sales" or "Both" pre-fills the form and jumps to it. A sticky "Get leads" button follows visitors down the page,
+   and the calculator has its own "Get me these meetings" button that carries the numbers over.
+7. **Process cards.** Five stages as the homepage's swipe cards, with drag, arrows and a progress bar.
+8. **What's included.** A hover grid of everything in the funnel.
+9. **Portfolio.** The homepage's portfolio cards, with TT Prospecting and TT Commerce tagged as the platforms behind the work.
+10. FAQ, the "WE DON'T CHASE LEADS." manifesto, and the audit form.
 
 ## The audit form
 

@@ -1355,6 +1355,66 @@ button { font: inherit; color: inherit; }
 @media (max-width: 1000px) { .stg-detail { grid-template-columns: 1fr; } .stg-detail__without { align-self: start; } }
 @media (max-width: 767px) { .stg-detail { padding: 1.5rem; } }
 
+/* ---- WANT LEADS? ---- */
+.ask { position: relative; overflow: hidden; background: linear-gradient(135deg, var(--coral), var(--orange)); background-size: 200% 200%; animation: diagGradient 8s var(--ease-breathe) infinite; color: var(--black); padding: 9rem 6vw; }
+.ask__bg { position: absolute; inset: -10% -20%; display: flex; flex-direction: column; justify-content: center; gap: 1rem; transform: rotate(-6deg); pointer-events: none; }
+.ask__row { white-space: nowrap; font-size: clamp(5rem, 13vw, 12rem); font-weight: 900; letter-spacing: -.02em; line-height: .95; color: transparent; -webkit-text-stroke: 2px rgba(255,255,255,.22); animation: marqueeRight 40s linear infinite; width: max-content; }
+.ask__row--rev { animation: marqueeLeft 46s linear infinite; -webkit-text-stroke-color: rgba(26,26,26,.12); }
+.ask__particles { position: absolute; inset: 0; pointer-events: none; z-index: 5; }
+.ask__in { position: relative; z-index: 2; }
+.ask .kicker { opacity: .75; }
+.ask__h { font-size: clamp(4rem, 13vw, 13rem); font-weight: 900; text-transform: uppercase; line-height: .86; letter-spacing: -.045em; }
+.ask__h span { display: block; }
+.ask__l2 { color: var(--white); }
+.ask__lead { margin-top: 2.4rem; font-size: clamp(1.1rem, 1.6vw, 1.4rem); line-height: 1.55; max-width: 44ch; font-weight: 600; }
+.ask__pick { margin-top: 3rem; font-size: .7rem; letter-spacing: .4em; text-transform: uppercase; font-weight: 800; }
+.goals { margin-top: 1rem; display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; max-width: 1200px; }
+.goal { position: relative; isolation: isolate; text-align: left; background: transparent; border: 3px solid var(--black); color: var(--black); padding: 1.6rem 1.5rem 1.7rem; display: flex; flex-direction: column; gap: .5rem; cursor: none; overflow: hidden; transition: color .3s, transform .4s var(--ease-snap); }
+.goal::before { content: ''; position: absolute; inset: 0; z-index: -1; background: var(--black); transform: translateY(101%); transition: transform .45s var(--ease-snap); }
+.goal:hover::before, .goal.sel::before { transform: none; }
+.goal:hover, .goal.sel { color: var(--white); transform: translateY(-4px); }
+.goal b { font-size: clamp(1.5rem, 2.6vw, 2.3rem); font-weight: 900; text-transform: uppercase; letter-spacing: -.02em; line-height: .95; }
+.goal span { font-size: .9rem; font-weight: 600; opacity: .8; line-height: 1.4; max-width: 26ch; }
+.goal i { position: absolute; right: 1.4rem; top: 1.3rem; font-style: normal; font-size: 1.6rem; font-weight: 900; transition: transform .4s var(--ease-snap); }
+.goal:hover i { transform: translateX(6px); }
+.goal:focus-visible { outline-color: var(--white); }
+.ask__cta { margin-top: 3rem; display: flex; flex-wrap: wrap; align-items: center; gap: 1.4rem 2.4rem; }
+.ask__btn { font-size: clamp(1rem, 1.6vw, 1.4rem); padding: 1.6rem 3.4rem; will-change: transform; }
+.ask__btn::before { background: linear-gradient(90deg, var(--white), #f3f3f3); }
+.ask__btn::after { display: none; }
+.ask__btn:hover { color: var(--black); }
+.ask__mail { font-size: .78rem; letter-spacing: .25em; text-transform: uppercase; font-weight: 700; cursor: none; border-bottom: 2px solid var(--black); padding-bottom: .3rem; }
+.ask__mail span { letter-spacing: .12em; }
+
+/* ---- Sticky "Get leads" button ---- */
+.stick { position: fixed; right: 24px; bottom: calc(24px + env(safe-area-inset-bottom, 0px)); z-index: 8000; display: inline-flex; align-items: center; gap: .9rem; background: var(--black); color: var(--white); padding: 1.05rem 1.5rem; font-size: .74rem; font-weight: 800; letter-spacing: .3em; text-transform: uppercase; cursor: none; box-shadow: 0 18px 40px rgba(0,0,0,.25); transform: translateY(160%); transition: transform .5s var(--ease-snap), background .3s; }
+.stick.on { transform: none; }
+.stick:hover { background: var(--coral); }
+.stick i { width: 9px; height: 9px; background: var(--coral); transform: rotate(45deg); box-shadow: 0 0 0 0 rgba(232,80,30,.6); animation: stickPulse 1.8s infinite; }
+.stick:hover i { background: var(--white); }
+.stick b { font-size: 1rem; transition: transform .3s var(--ease-snap); }
+.stick:hover b { transform: translateX(4px); }
+@keyframes stickPulse { 70% { box-shadow: 0 0 0 10px rgba(232,80,30,0); } 100% { box-shadow: 0 0 0 0 rgba(232,80,30,0); } }
+
+/* ---- Calculator nudge ---- */
+.out__cta { margin-top: 1.6rem; background: var(--white); color: var(--black); font-size: .85rem; padding: 1.1rem 2.2rem; }
+.out__cta:hover { color: var(--white); }
+
+/* ---- Portfolio (homepage cards) ---- */
+.pf .portfolio__grid { max-width: none; grid-auto-flow: dense; }
+.pf-tag { display: inline-block; align-self: flex-start; margin-bottom: .9rem; font-size: .55rem; letter-spacing: .25em; text-transform: uppercase; font-weight: 800; padding: .4rem .65rem; background: var(--black); color: var(--white); }
+.pf-tag--coral { background: var(--coral); }
+.pf__note { position: relative; z-index: 2; margin-top: 2.4rem; display: flex; flex-wrap: wrap; align-items: center; gap: 1rem 2rem; }
+.pf__note p { font-size: 1.05rem; font-weight: 700; max-width: 48ch; }
+
+@media (max-width: 1000px) { .goals { grid-template-columns: 1fr; max-width: 560px; } }
+@media (max-width: 767px) {
+  .ask { padding: 5rem 5vw; }
+  .ask__btn { padding: 1.3rem 2.2rem; }
+  .stick { left: 12px; right: 12px; justify-content: center; }
+}
+@media (prefers-reduced-motion: reduce) { .ask, .ask__row, .stick i { animation: none; } }
+
 </style>
 </head>
 <body>
@@ -1371,6 +1431,7 @@ button { font: inherit; color: inherit; }
 <div class="geo-shape geo-shape--cross" style="animation: geoFloat5 32s linear infinite;"></div>
 
 <a class="sr" href="#maths">Skip to content</a>
+<a class="stick" id="stick" href="#ask"><i aria-hidden="true"></i><span>Get leads</span><b aria-hidden="true">&rarr;</b></a>
 
 <nav class="nav" aria-label="Primary" data-theme="light">
   <a class="nav__brand" href="../">Herbert <span>&amp;</span> Ellis</a>
@@ -1379,7 +1440,7 @@ button { font: inherit; color: inherit; }
     <li><a href="#targeting" data-spy="targeting">Targeting</a></li>
     <li><a href="#sequence" data-spy="sequence">Outreach</a></li>
     <li><a href="#paid" data-spy="paid">Google + Meta</a></li>
-    <li><a href="#process" data-spy="process">Process</a></li>
+    <li><a href="#portfolio" data-spy="portfolio">Portfolio</a></li>
     <li class="keep"><a href="#book" data-spy="book">Book an audit</a></li>
   </ul>
 </nav>
@@ -1476,6 +1537,7 @@ button { font: inherit; color: inherit; }
         <div class="fn"><span>Customers</span><div class="fn__bar"><i id="bW"></i></div><b id="nW">2.4</b></div>
       </div>
       <p class="out__say" id="vSay">To book <b>12 meetings</b> a month at these rates, we need to reach about <b>960 of the right people</b>. Finding them is our job.</p>
+      <a class="contact__cta out__cta" id="calcCta" href="#book"><span class="contact__cta-text">Get me these meetings &rarr;</span></a>
       <p class="fine">Your inputs, simple maths. A planning tool, not a forecast or a guarantee.</p>
     </div>
   </div>
@@ -1578,6 +1640,30 @@ button { font: inherit; color: inherit; }
   <p class="seq__note paid__note">Illustration of how a funnel leaks, not measured data. Ad spend is paid by you directly to Google and Meta.</p>
 </section>
 
+<!-- ========== WANT LEADS? (big contact push) ========== -->
+<section class="ask" id="ask" data-theme="coral">
+  <div class="ask__bg" aria-hidden="true">
+    <div class="ask__row">LEADS &middot; MEETINGS &middot; SALES &middot; PIPELINE &middot; LEADS &middot; MEETINGS &middot; SALES &middot; PIPELINE &middot; LEADS &middot; MEETINGS &middot; SALES &middot; PIPELINE &middot;&nbsp;</div>
+    <div class="ask__row ask__row--rev">PIPELINE &middot; SALES &middot; MEETINGS &middot; LEADS &middot; PIPELINE &middot; SALES &middot; MEETINGS &middot; LEADS &middot; PIPELINE &middot; SALES &middot; MEETINGS &middot; LEADS &middot;&nbsp;</div>
+  </div>
+  <div class="ask__particles" id="askParticles"></div>
+  <div class="ask__in">
+    <span class="kicker">Your move</span>
+    <h2 class="ask__h"><span class="ask__l1" id="askL1">WANT MORE</span><span class="ask__l2" id="askL2">LEADS?</span></h2>
+    <p class="ask__lead">Then let's talk. Tell us what a good month looks like and we'll show you exactly how we'd get you there: who to target, which channels, and what it takes.</p>
+    <p class="ask__pick">What do you need most? Pick one.</p>
+    <div class="goals" role="group" aria-label="What do you need most?">
+      <button type="button" class="goal" data-goal="More meetings: B2B pipeline from targeted outreach"><b>More meetings</b><span>B2B pipeline from targeted outreach</span><i aria-hidden="true">&rarr;</i></button>
+      <button type="button" class="goal" data-goal="More sales: Google Ads, Meta and the funnel behind them"><b>More sales</b><span>Google Ads, Meta and the funnel behind them</span><i aria-hidden="true">&rarr;</i></button>
+      <button type="button" class="goal" data-goal="Both: the whole engine, outreach and paid"><b>Both</b><span>The whole engine, built and run by us</span><i aria-hidden="true">&rarr;</i></button>
+    </div>
+    <div class="ask__cta">
+      <a class="contact__cta ask__btn" id="askBtn" href="#book"><span class="contact__cta-text">Get me leads &rarr;</span></a>
+      <a class="ask__mail" href="mailto:hello@herbertandellis.com">or email <span class="contact__cta-text--glitch">hello@herbertandellis.com</span></a>
+    </div>
+  </div>
+</section>
+
 <!-- ========== PROCESS (horizontal cards, as on the homepage) ========== -->
 <section class="proc" id="process" data-theme="light">
   <div class="sx__head">
@@ -1600,24 +1686,10 @@ button { font: inherit; color: inherit; }
 
 <!-- ========== STACK ========== -->
 <section class="sx stack" id="stack" data-theme="dark">
-  <div class="ghost" data-drift="0.14" aria-hidden="true">OUR OWN STACK</div>
+  <div class="ghost" data-drift="0.14" aria-hidden="true">ALL IN</div>
   <div class="sx__head">
-    <div class="rv"><span class="kicker">06 &mdash; The stack</span><h2 class="big">We don't rent the tools. <em>We built them.</em></h2></div>
-    <p class="lead rv" style="--d:.1s">Outreach runs on platforms we own, improve and stand behind. Both are Herbert &amp; Ellis companies. Everything else in the funnel, we build.</p>
-  </div>
-  <div class="tools">
-    <a class="tool tool--p rv" href="https://ttprospecting.com" target="_blank" rel="noopener">
-      <span class="tool__glare"></span><span class="tool__big" aria-hidden="true">TT</span><span class="tool__go">Visit &rarr;</span>
-      <span class="tool__role">Finds and verifies the people</span>
-      <span class="tool__name">TT Prospecting</span>
-      <span class="tool__desc">AI-powered B2B contact discovery and outreach platform. Find anyone, reach everyone. Our flagship SaaS product.</span>
-    </a>
-    <a class="tool tool--c rv" style="--d:.1s" href="https://ttcommerce.co" target="_blank" rel="noopener">
-      <span class="tool__glare"></span><span class="tool__go">Visit &rarr;</span>
-      <span class="tool__role">Automates the follow-up</span>
-      <span class="tool__name">TT Commerce</span>
-      <span class="tool__desc">AI-powered follow-up and outreach, automated across WhatsApp, SMS and email.</span>
-    </a>
+    <div class="rv"><span class="kicker">06 &mdash; What's included</span><h2 class="big">Everything the funnel needs. <em>One team.</em></h2></div>
+    <p class="lead rv" style="--d:.1s">No patchwork of agencies and freelancers. We build and run every piece, on our own platforms where it counts.</p>
   </div>
   <div class="inc">
     <div class="inc__t rv"><i></i><h3>ICP and market map</h3><p>A defined target market with named accounts, decision makers and buying signals.</p></div>
@@ -1632,10 +1704,89 @@ button { font: inherit; color: inherit; }
   </div>
 </section>
 
+<!-- ========== PORTFOLIO (homepage cards) ========== -->
+<section class="sx pf" id="portfolio" data-theme="light">
+  <div class="ghost" data-drift="0.12" aria-hidden="true">THE PORTFOLIO</div>
+  <div class="sx__head">
+    <div class="rv"><span class="kicker">07 &mdash; The portfolio</span><h2 class="big">We've sat in <em>your seat.</em></h2></div>
+    <p class="lead rv" style="--d:.1s">Herbert &amp; Ellis builds and backs businesses across hospitality, ecommerce and SaaS. Two of them, TT Prospecting and TT Commerce, power the outreach and follow-up behind your campaigns.</p>
+  </div>
+  <div class="portfolio__grid">
+    <!-- The Lounge — TALL featured card -->
+    <a href="https://theloungeoswestry.co.uk/" target="_blank" rel="noopener" class="portfolio__card portfolio__card--tall portfolio__card--scatter" style="--scatter-x: -120px; --scatter-y: -80px; background: linear-gradient(160deg, #1a1a1a 0%, #2a1f1a 50%, #1a1a1a 100%); border-left: 3px solid var(--coral);">
+      <span class="portfolio__card-icon" style="font-size: 3.5rem; opacity: 0.15;">&#127941;</span>
+      <span class="portfolio__card-visit">VISIT &rarr;</span>
+      <span class="portfolio__card-label">Hospitality</span>
+      <span class="portfolio__card-name" style="font-size: clamp(2rem, 4vw, 3rem);">The Lounge</span>
+      <span class="portfolio__card-type">Sports Bar &mdash; Oswestry</span>
+      <span class="portfolio__card-desc">Oswestry's premier sports bar. 10+ screens with live Sky &amp; TNT Sports, smart darts, shuffleboard, pool &amp; live music.</span>
+      <span class="portfolio__card-url">theloungeoswestry.co.uk &rarr;</span>
+    </a>
+
+    <!-- Knock & Snitch -->
+    <a href="https://knockandsnitch.co.uk/" target="_blank" rel="noopener" class="portfolio__card portfolio__card--scatter" style="--scatter-x: -80px; --scatter-y: 100px; background: var(--coral); border-left: 3px solid var(--black);">
+      <span class="portfolio__card-icon" style="font-size: 2.5rem; opacity: 0.2;">&#127867;</span>
+      <span class="portfolio__card-visit">VISIT &rarr;</span>
+      <span class="portfolio__card-label">Hospitality</span>
+      <span class="portfolio__card-name">Knock &amp; Snitch</span>
+      <span class="portfolio__card-type">Secret Bar &mdash; Oswestry</span>
+      <span class="portfolio__card-desc">Oswestry's best kept secret. Cocktails, live music, comedy nights &amp; private events in an intimate, quirky setting.</span>
+      <span class="portfolio__card-url">knockandsnitch.co.uk &rarr;</span>
+    </a>
+
+    <!-- Piccolo AD -->
+    <a href="https://piccoload.com" target="_blank" rel="noopener" class="portfolio__card portfolio__card--scatter" style="--scatter-x: 120px; --scatter-y: -60px; background: linear-gradient(135deg, #0d0d0d 0%, #1a1a2e 100%); border-left: 3px solid var(--orange);">
+      <span class="portfolio__card-icon" style="font-size: 2.5rem; opacity: 0.2;">&#127912;</span>
+      <span class="portfolio__card-visit">VISIT &rarr;</span>
+      <span class="portfolio__card-label">Ecommerce</span>
+      <span class="portfolio__card-name">Piccoload</span>
+      <span class="portfolio__card-type">From Pic to Pen</span>
+      <span class="portfolio__card-desc">Turn your photos into personalised colouring books. Upload, create &amp; print — unique gifts made from your memories.</span>
+      <span class="portfolio__card-url">piccoload.com &rarr;</span>
+    </a>
+
+    <!-- TT Prospecting — WIDE featured card -->
+    <a href="https://ttprospecting.com" target="_blank" rel="noopener" class="portfolio__card portfolio__card--wide portfolio__card--scatter" style="--scatter-x: -60px; --scatter-y: 120px; background: linear-gradient(135deg, var(--coral) 0%, var(--orange) 100%); border-left: 3px solid var(--black);">
+      <span class="portfolio__card-icon" style="font-size: 3rem; opacity: 0.15;">&#9889;</span>
+      <span class="portfolio__card-visit">VISIT &rarr;</span>
+      <span class="pf-tag">Powers your outreach</span>
+      <span class="portfolio__card-label">SaaS &mdash; Flagship</span>
+      <span class="portfolio__card-name" style="font-size: clamp(1.8rem, 3.5vw, 2.5rem);">TT Prospecting</span>
+      <span class="portfolio__card-type">Sales Intelligence Platform</span>
+      <span class="portfolio__card-desc">AI-powered B2B contact discovery &amp; outreach platform. Find anyone, reach everyone. Our flagship SaaS product.</span>
+      <span class="portfolio__card-url">ttprospecting.com &rarr;</span>
+    </a>
+
+    <!-- Musefile -->
+    <a href="https://musefile.com" target="_blank" rel="noopener" class="portfolio__card portfolio__card--scatter" style="--scatter-x: 100px; --scatter-y: 80px; background: var(--orange); border-left: 3px solid var(--black);">
+      <span class="portfolio__card-icon" style="font-size: 2.5rem; opacity: 0.2;">&#128133;</span>
+      <span class="portfolio__card-visit">VISIT &rarr;</span>
+      <span class="portfolio__card-label">Ecommerce</span>
+      <span class="portfolio__card-name">Musefile</span>
+      <span class="portfolio__card-type">Professional Nail Tools</span>
+      <span class="portfolio__card-desc">Premium tools &amp; equipment for nail professionals. Quality kit for the beauty industry, delivered across the UK.</span>
+      <span class="portfolio__card-url">musefile.com &rarr;</span>
+    </a>
+
+    <!-- TT Commerce -->
+    <a href="https://ttcommerce.co" target="_blank" rel="noopener" class="portfolio__card portfolio__card--scatter" style="--scatter-x: 80px; --scatter-y: 100px; background: linear-gradient(135deg, #1a1a1a 0%, #222 100%); border-left: 3px solid var(--coral);">
+      <span class="portfolio__card-icon" style="font-size: 2.5rem; opacity: 0.2;">&#128640;</span>
+      <span class="portfolio__card-visit">VISIT &rarr;</span>
+      <span class="pf-tag pf-tag--coral">Powers your follow-up</span>
+      <span class="portfolio__card-label">SaaS</span>
+      <span class="portfolio__card-name">TT Commerce</span>
+      <span class="portfolio__card-type">Customer Journey Automation</span>
+      <span class="portfolio__card-desc">AI-powered cart recovery, customer service, upselling &amp; outreach — automated across WhatsApp, SMS &amp; email.</span>
+      <span class="portfolio__card-url">ttcommerce.co &rarr;</span>
+    </a>
+  </div>
+  <div class="pf__note rv"><p>Growing businesses is what we do every day. Let's grow yours.</p><a class="contact__cta cta-sm" href="#book"><span class="contact__cta-text">Talk to us about leads &rarr;</span></a></div>
+</section>
+
 <!-- ========== FAQ ========== -->
 <section class="sx" id="faq" data-theme="light">
   <div class="sx__head">
-    <div class="rv"><span class="kicker">07 &mdash; Straight answers</span><h2 class="big">Before you <em>ask.</em></h2></div>
+    <div class="rv"><span class="kicker">08 &mdash; Straight answers</span><h2 class="big">Before you <em>ask.</em></h2></div>
   </div>
   <div class="faq rv">
     <details open><summary>Who is this for?<span class="pm" aria-hidden="true"></span></summary><p>B2B businesses with a clear offer and someone ready to take the meetings: agencies, SaaS, professional services, trade suppliers, and hospitality groups selling events and corporate bookings.</p></details>
@@ -2028,11 +2179,29 @@ button { font: inherit; color: inherit; }
     return 'Numbers from the calculator: average deal ' + gbp(calcState.deal) + ', ' + Math.round(calcState.close * 100) +
       '% of meetings won, target ' + calcState.meet + ' qualified meetings a month.';
   }
-  $('#sendBrief').addEventListener('click', function () {
-    $('#fBrief').value = 'Targeting brief\n' + briefText() + '\n\n' + numbersText() + '\n\nWhat we sell: ';
+  // Everything that sends people to the form pre-fills what they've already told us
+  var pre = { goal: '', brief: false, nums: false }, briefDirty = false;
+  $('#fBrief').addEventListener('input', function () { briefDirty = true; });
+  function composeBrief() {
+    var out = [];
+    if (pre.goal) out.push('Goal: ' + pre.goal);
+    if (pre.brief) out.push('Targeting brief\n' + briefText());
+    if (pre.nums) out.push(numbersText());
+    return out.join('\n\n') + '\n\nWhat we sell: ';
+  }
+  function goBook(change) {
+    var add = change.goal ? 'Goal: ' + change.goal : change.brief ? 'Targeting brief\n' + briefText() : change.nums ? numbersText() : '';
+    for (var k in change) pre[k] = change[k];
+    var ta = $('#fBrief');
+    if (!briefDirty) ta.value = composeBrief();
+    else if (add) ta.value = ta.value.replace(/\s*$/, '') + '\n\n' + add;
     $('#book').scrollIntoView({ behavior: reduce ? 'auto' : 'smooth' });
     setTimeout(function () { $('#fName').focus({ preventScroll: true }); }, reduce ? 0 : 700);
-  });
+  }
+  window.HE_goBook = goBook;
+  $('#sendBrief').addEventListener('click', function () { goBook({ brief: true, nums: true }); });
+  var calcCta = $('#calcCta');
+  if (calcCta) calcCta.addEventListener('click', function (e) { e.preventDefault(); goBook({ nums: true }); });
 
   /* =========================================================
      SEQUENCE — playable multichannel timeline
@@ -2390,6 +2559,91 @@ button { font: inherit; color: inherit; }
   if ('IntersectionObserver' in window) new IntersectionObserver(function (es) { visible = es[0].isIntersecting; }).observe(fun);
   else visible = true;
   (function loop() { if (visible && !reduce) step(); requestAnimationFrame(loop); })();
+})();
+
+
+/* =========================================================
+   WANT LEADS? — goal picks, magnetic button, slam-in headline, sticky button
+   ========================================================= */
+(function () {
+  var reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  var isMobile = window.innerWidth < 768;
+  var ask = document.getElementById('ask'); if (!ask) return;
+  var goals = Array.prototype.slice.call(ask.querySelectorAll('.goal'));
+  goals.forEach(function (g) {
+    g.addEventListener('click', function () {
+      goals.forEach(function (o) { o.classList.toggle('sel', o === g); o.setAttribute('aria-pressed', String(o === g)); });
+      if (window.HE_goBook) window.HE_goBook({ goal: g.getAttribute('data-goal') });
+    });
+  });
+  document.getElementById('askBtn').addEventListener('click', function (e) {
+    e.preventDefault();
+    var sel = ask.querySelector('.goal.sel');
+    if (window.HE_goBook) window.HE_goBook(sel ? { goal: sel.getAttribute('data-goal') } : {});
+  });
+
+  // Magnetic main button
+  var btn = document.getElementById('askBtn');
+  if (!isMobile && !reduce) {
+    ask.addEventListener('pointermove', function (e) {
+      var r = btn.getBoundingClientRect(), cx = r.left + r.width / 2, cy = r.top + r.height / 2;
+      var dx = e.clientX - cx, dy = e.clientY - cy, d = Math.hypot(dx, dy);
+      btn.style.transform = d < 220 ? 'translate(' + dx * 0.22 + 'px,' + dy * 0.3 + 'px)' : '';
+    });
+    ask.addEventListener('pointerleave', function () { btn.style.transform = ''; });
+  }
+
+  // Headline slams in from both sides with a particle burst, like the homepage manifesto
+  function burst(el) {
+    if (reduce) return;
+    var box = document.getElementById('askParticles'), br = box.getBoundingClientRect(), r = el.getBoundingClientRect();
+    for (var i = 0; i < 14; i++) {
+      var p = document.createElement('div'); p.className = 'manifesto__particle'; p.style.background = '#1a1a1a';
+      var a = Math.PI * 2 / 14 * i, dist = 60 + Math.random() * 90;
+      p.style.left = (r.left + r.width / 2 - br.left) + 'px'; p.style.top = (r.top + r.height / 2 - br.top) + 'px'; p.style.opacity = '1';
+      p.style.transition = 'transform .6s cubic-bezier(.16,1,.3,1), opacity .6s ease-out'; box.appendChild(p);
+      (function (p, a, dist) { requestAnimationFrame(function () { p.style.transform = 'translate(' + Math.cos(a) * dist + 'px,' + Math.sin(a) * dist + 'px) rotate(' + Math.random() * 360 + 'deg)'; p.style.opacity = '0'; }); })(p, a, dist);
+      setTimeout(function (el) { el.remove(); }, 700, p);
+    }
+  }
+  var l1 = document.getElementById('askL1'), l2 = document.getElementById('askL2');
+  if (!reduce && 'IntersectionObserver' in window) {
+    l1.style.transform = 'translateX(-100vw)'; l2.style.transform = 'translateX(100vw)';
+    var io = new IntersectionObserver(function (es) {
+      if (!es[0].isIntersecting) return; io.disconnect();
+      [l1, l2].forEach(function (l, i) {
+        setTimeout(function () {
+          l.style.transition = 'transform .6s cubic-bezier(.16,1,.3,1)'; l.style.transform = 'translateX(0)';
+          setTimeout(function () { burst(l); }, 350);
+        }, i * 300);
+      });
+    }, { threshold: 0.3 });
+    io.observe(ask);
+  }
+
+  // Sticky "Get leads" button: shows after the hero, hides when the ask or the form is on screen
+  var stick = document.getElementById('stick'), hero = document.getElementById('hero');
+  var seen = { ask: false, book: false };
+  if ('IntersectionObserver' in window) {
+    var so = new IntersectionObserver(function (es) { es.forEach(function (e) { seen[e.target.id] = e.isIntersecting; }); upd(); }, { threshold: 0.15 });
+    so.observe(ask); so.observe(document.getElementById('book'));
+  }
+  function upd() { stick.classList.toggle('on', window.scrollY > hero.offsetHeight * 0.7 && !seen.ask && !seen.book); }
+  window.addEventListener('scroll', upd, { passive: true }); upd();
+})();
+
+/* ---- Portfolio cards: staggered scatter reveal, as on the homepage ---- */
+(function () {
+  var cards = Array.prototype.slice.call(document.querySelectorAll('.pf .portfolio__card'));
+  var reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  if (reduce || !('IntersectionObserver' in window)) { cards.forEach(function (c) { c.classList.add('portfolio__card--revealed'); }); return; }
+  var io = new IntersectionObserver(function (es) {
+    es.forEach(function (e) {
+      if (!e.isIntersecting) return; io.unobserve(e.target);
+      setTimeout(function () { e.target.classList.add('portfolio__card--revealed'); }, cards.indexOf(e.target) * 100);
+    });
+  }, { threshold: 0.2 });
+  cards.forEach(function (c) { io.observe(c); });
 })();
 
 </script>
