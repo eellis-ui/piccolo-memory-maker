@@ -111,7 +111,8 @@ html.js .blocks:not(.built) .blk { opacity: 0; transform: translateX(-40px); }
 .faq details p { padding-bottom: 1.3rem; color: var(--ink-2); max-width: 64ch; }
 
 /* Book */
-.book__grid { display: grid; grid-template-columns: 1fr 1.1fr; gap: 2rem; align-items: start; margin-top: clamp(14px, 2vw, 22px); }
+.book__grid { display: grid; grid-template-columns: 1fr 1.1fr; gap: 2rem; align-items: start; }
+.book__side .hello__big { font-size: clamp(4.2rem, 11vw, 11rem); margin-bottom: clamp(14px, 2vw, 22px); }
 .book__side strong { display: block; font-size: clamp(2rem, 5vw, 4.2rem); font-weight: 800; font-variation-settings: "wdth" 86; letter-spacing: -.025em; line-height: .95; color: var(--ink); }
 .book__side p { font-weight: 700; margin-top: 1rem; max-width: 30ch; }
 .book__side .link { display: inline-block; margin-top: 1.4rem; }
@@ -328,9 +329,8 @@ html.js .blocks:not(.built) .blk { opacity: 0; transform: translateX(-40px); }
 <section class="sec" id="book" data-hide-stick style="padding-top:0">
   <div class="wrap">
     <div class="hello">
-      <p class="hello__big">Hello!</p>
       <div class="book__grid">
-        <div class="book__side"><strong>Let us help you</strong><p>Tell us what a good month would look like for you. We&rsquo;ll take it from there.</p><a class="link" href="mailto:hello@herbertandellis.com">hello@herbertandellis.com</a></div>
+        <div class="book__side"><p class="hello__big">Hello!</p><strong>Let us help you</strong><p>Tell us what a good month would look like for you. We&rsquo;ll take it from there.</p><a class="link" href="mailto:hello@herbertandellis.com">hello@herbertandellis.com</a></div>
         <form class="form" id="auditForm" novalidate data-endpoint="">
           <div class="f2"><div class="f"><label for="fName">Name</label><input id="fName" name="name" autocomplete="name" required></div><div class="f"><label for="fCompany">Company</label><input id="fCompany" name="company" autocomplete="organization" required></div></div>
           <div class="f2"><div class="f"><label for="fEmail">Work email</label><input id="fEmail" name="email" type="email" autocomplete="email" required></div><div class="f"><label for="fSite">Website</label><input id="fSite" name="website" autocomplete="url"></div></div>
