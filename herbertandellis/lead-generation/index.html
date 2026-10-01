@@ -63,61 +63,6 @@
 .out .btn { margin-top: 1.3rem; }
 .fine { margin-top: .9rem; font-size: .8rem; opacity: .55; }
 
-/* Targeting */
-.icp__grid { display: grid; grid-template-columns: 1.2fr 1fr; gap: 16px 2.5rem; align-items: start; position: relative; z-index: 2; }
-.group + .group { margin-top: 1.4rem; }
-.group h3 { font-size: 1rem; font-weight: 800; margin-bottom: .7rem; display: flex; gap: .6rem; align-items: baseline; }
-.group h3 small { font-weight: 600; opacity: .65; font-size: .85rem; }
-.chips { display: flex; flex-wrap: wrap; gap: .45rem; }
-.chip-t { border: 2px solid var(--ink); background: var(--white); border-radius: 999px; padding: .45rem .95rem; font-weight: 700; font-size: .92rem; transition: background .25s, color .25s, transform .4s var(--spring); }
-.chip-t:hover { transform: translateY(-2px); }
-.chip-t[aria-pressed="true"] { background: var(--ink); color: var(--cream); }
-.brief { background: var(--white); border-radius: var(--r); padding: 1.6rem 1.6rem 1.8rem; display: flex; flex-direction: column; gap: 1.3rem; box-shadow: 0 24px 50px -30px rgba(31,29,54,.5); }
-.brief__top { display: flex; justify-content: space-between; align-items: center; font-weight: 800; }
-.brief__body { min-height: 11.5em; font-size: 1rem; line-height: 1.7; }
-.brief__line { display: grid; grid-template-columns: 5.6em 1fr; gap: .7rem; }
-.brief__line .k { color: var(--orange-2); font-weight: 800; }
-.brief__line .v { font-weight: 600; }
-.brief__line .v.empty { opacity: .4; }
-.caret { display: inline-block; width: 3px; height: 1.05em; background: var(--orange); margin-left: 2px; vertical-align: -2px; border-radius: 2px; animation: blink .9s steps(1) infinite; }
-@keyframes blink { 50% { opacity: 0; } }
-.meter__head { display: flex; justify-content: space-between; font-weight: 700; font-size: .92rem; margin-bottom: .5rem; }
-.meter__head b { color: var(--orange-2); }
-.meter { display: grid; grid-template-columns: repeat(5, 1fr); gap: 5px; }
-.meter i { height: 10px; border-radius: 999px; background: var(--cream-2); transition: background .35s; }
-.meter i.on { background: var(--orange); }
-
-/* Outreach deck */
-.seq__bar { display: flex; flex-wrap: wrap; gap: .5rem; align-items: center; margin-bottom: 1.4rem; }
-.chan { display: inline-flex; align-items: center; gap: .55rem; border: 2px solid var(--ink); background: var(--white); border-radius: 999px; padding: .5rem 1rem; font-weight: 700; font-size: .92rem; transition: opacity .3s, transform .4s var(--spring); }
-.chan:hover { transform: translateY(-2px); }
-.chan[aria-pressed="false"] { opacity: .35; }
-.dot { width: 12px; height: 12px; border-radius: 50%; border: 2px solid var(--ink); }
-.d-email { background: var(--ink); } .d-linkedin { background: var(--lilac); } .d-whatsapp { background: var(--lime); } .d-sms { background: var(--sky); }
-.seq__bar .btn { margin-left: auto; }
-.deck-wrap { overflow-x: auto; scrollbar-width: none; padding: 22px 6px 12px; margin: -22px -6px 0; }
-.deck-wrap::-webkit-scrollbar { display: none; }
-.deck { display: flex; gap: 12px; width: max-content; }
-.mcard { flex: 0 0 180px; height: 230px; border: 0; border-radius: 24px; padding: 1.2rem; display: flex; flex-direction: column; justify-content: space-between; text-align: left; color: var(--ink);
-  transition: transform .55s var(--spring), opacity .35s, flex-basis .5s var(--ease), padding .5s var(--ease), margin .5s var(--ease), box-shadow .4s; }
-.mcard.email { background: var(--ink); color: var(--cream); } .mcard.linkedin { background: var(--lilac); color: var(--white); } .mcard.whatsapp { background: var(--lime); } .mcard.sms { background: var(--sky); }
-.mcard__ch { font-weight: 700; font-size: .85rem; opacity: .8; }
-.mcard__d { font-weight: 800; font-variation-settings: "wdth" 75, "opsz" 96; letter-spacing: -.01em; font-size: 4.4rem; line-height: .8; }
-.mcard__d small { display: block; font-size: .8rem; font-weight: 700; font-variation-settings: "wdth" 100; letter-spacing: 0; opacity: .7; margin-bottom: .4rem; }
-.mcard__t { font-weight: 800; font-size: 1.02rem; line-height: 1.1; }
-.mcard:hover { transform: translateY(-6px); }
-.mcard.cur { transform: translateY(-14px); box-shadow: 0 22px 34px -12px rgba(31,29,54,.35); }
-.mcard.pop { animation: pop .55s var(--spring); }
-@keyframes pop { 0% { transform: translateY(16px) scale(.96); } 100% { transform: translateY(-14px); } }
-.mcard.off { flex-basis: 0; padding-inline: 0; margin-right: -12px; opacity: 0; pointer-events: none; }
-.msg { display: grid; grid-template-columns: 220px 1fr; gap: 1.5rem 2rem; margin-top: 1rem; }
-.msg__day { font-weight: 800; font-variation-settings: "wdth" 75, "opsz" 96; letter-spacing: -.01em; font-size: 3.6rem; line-height: .85; color: var(--orange); }
-.msg__ch { display: inline-flex; align-items: center; gap: .5rem; margin-top: .8rem; font-weight: 700; }
-.msg__title { font-weight: 800; font-size: 1.25rem; margin-top: .5rem; line-height: 1.1; }
-.msg__text { white-space: pre-wrap; line-height: 1.6; }
-.msg__text mark { background: var(--cream-2); color: var(--ink); padding: 0 .2em; border-radius: 4px; }
-.msg__why { margin-top: 1rem; padding-top: .9rem; border-top: 2px dashed var(--cream-2); font-size: .92rem; color: var(--ink-2); }
-.msg__why b { color: var(--orange-2); margin-right: .4rem; }
 .note { margin-top: .9rem; font-size: .85rem; color: var(--ink-2); }
 
 /* Google + Meta funnel */
@@ -198,23 +143,22 @@ html.js .blocks:not(.built) .blk { opacity: 0; transform: translateX(-40px); }
 .hp { position: absolute; left: -9999px; width: 1px; height: 1px; opacity: 0; }
 
 @media (max-width: 1100px) { .steps { grid-template-columns: repeat(3, 1fr); } }
-@media (max-width: 1000px) { .calc, .icp__grid, .book__grid { grid-template-columns: 1fr; } .goals { grid-template-columns: 1fr; } .msg { grid-template-columns: 1fr; } }
+@media (max-width: 1000px) { .calc, .book__grid { grid-template-columns: 1fr; } .goals { grid-template-columns: 1fr; } }
 @media (max-width: 700px) {
   .steps { grid-template-columns: 1fr 1fr; }
   .blk { width: 100%; grid-template-columns: 2rem 1fr; gap: .2rem .8rem; }
   .blk span { grid-column: 2; justify-self: start; text-align: left; }
   .f2 { grid-template-columns: 1fr; }
-  .seq__bar .btn { margin-left: 0; }
   .fn { grid-template-columns: 5.6rem 1fr 3.2rem; font-size: .8rem; }
 }
-@media (prefers-reduced-motion: reduce) { html.js .blocks:not(.built) .blk { opacity: 1; transform: none; } .mcard.pop { animation: none; } }
+@media (prefers-reduced-motion: reduce) { html.js .blocks:not(.built) .blk { opacity: 1; transform: none; } }
 </style>
 
 </head>
 <body>
 <header class="nav"><div class="wrap nav__in">
   <a class="logo" href="../" aria-label="Herbert &amp; Ellis home"><b>H&amp;E</b><span>Herbert &amp; Ellis</span></a>
-  <nav aria-label="Primary"><ul class="nav__links"><li><a href="#maths">The maths</a></li><li><a href="#targeting">Targeting</a></li><li><a href="#sequence">Outreach</a></li><li><a href="#paid">Google + Meta</a></li><li><a href="#portfolio">Portfolio</a></li></ul></nav>
+  <nav aria-label="Primary"><ul class="nav__links"><li><a href="#maths">The maths</a></li><li><a href="#paid">Google + Meta</a></li><li><a href="#portfolio">Portfolio</a></li></ul></nav>
   <a class="btn btn--orange" href="#book">We need help <i aria-hidden="true">&rarr;</i></a>
 </div></header>
 <main>
@@ -310,59 +254,6 @@ html.js .blocks:not(.built) .blk { opacity: 0; transform: translateX(-40px); }
         <p class="fine">Your inputs, simple maths. A planning tool, not a promise.</p>
       </div>
     </div>
-  </div>
-</section>
-
-<section class="sec" id="targeting" style="padding-top:0">
-  <div class="wrap">
-    <div class="panel panel--lilac">
-      <div class="head" style="position:relative;z-index:2">
-        <div class="rv"><span class="tag" style="color:var(--ink)">Targeting</span><h2 class="h2">Who do you want in your <em>calendar?</em></h2></div>
-        <p class="lead rv" style="--d:.08s;color:var(--ink)">Tap who you sell to. We&rsquo;ll turn it into a brief.</p>
-      </div>
-      <div class="icp__grid">
-        <div class="rv">
-          <div class="group" data-group="who"><h3>Decision maker <small>up to 3</small></h3><div class="chips"><button type="button" class="chip-t" aria-pressed="true">Founder / CEO</button><button type="button" class="chip-t" aria-pressed="false">Managing director</button><button type="button" class="chip-t" aria-pressed="false">Operations director</button><button type="button" class="chip-t" aria-pressed="true">Marketing director</button><button type="button" class="chip-t" aria-pressed="false">Sales director</button><button type="button" class="chip-t" aria-pressed="false">Finance director</button><button type="button" class="chip-t" aria-pressed="false">Procurement</button><button type="button" class="chip-t" aria-pressed="false">Head of IT</button></div></div>
-
-          <div class="group" data-group="at"><h3>Sector <small>up to 3</small></h3><div class="chips"><button type="button" class="chip-t" aria-pressed="true">SaaS</button><button type="button" class="chip-t" aria-pressed="false">Ecommerce</button><button type="button" class="chip-t" aria-pressed="false">Hospitality</button><button type="button" class="chip-t" aria-pressed="true">Professional services</button><button type="button" class="chip-t" aria-pressed="false">Construction &amp; trade</button><button type="button" class="chip-t" aria-pressed="false">Manufacturing</button><button type="button" class="chip-t" aria-pressed="false">Property</button><button type="button" class="chip-t" aria-pressed="false">Healthcare</button><button type="button" class="chip-t" aria-pressed="false">Agencies</button></div></div>
-
-          <div class="group" data-group="size"><h3>Company size <small>staff</small></h3><div class="chips"><button type="button" class="chip-t" aria-pressed="false">1&ndash;10</button><button type="button" class="chip-t" aria-pressed="true">11&ndash;50</button><button type="button" class="chip-t" aria-pressed="true">51&ndash;200</button><button type="button" class="chip-t" aria-pressed="false">201&ndash;1,000</button><button type="button" class="chip-t" aria-pressed="false">1,000+</button></div></div>
-
-          <div class="group" data-group="where"><h3>Where</h3><div class="chips"><button type="button" class="chip-t" aria-pressed="false">Local</button><button type="button" class="chip-t" aria-pressed="true">UK-wide</button><button type="button" class="chip-t" aria-pressed="false">Europe</button><button type="button" class="chip-t" aria-pressed="false">North America</button><button type="button" class="chip-t" aria-pressed="false">Global</button></div></div>
-
-          <div class="group" data-group="when"><h3>Why now</h3><div class="chips"><button type="button" class="chip-t" aria-pressed="true">Hiring</button><button type="button" class="chip-t" aria-pressed="false">Just raised</button><button type="button" class="chip-t" aria-pressed="false">New location</button><button type="button" class="chip-t" aria-pressed="false">New in role</button><button type="button" class="chip-t" aria-pressed="false">Expanding into the UK</button><button type="button" class="chip-t" aria-pressed="false">Out to tender</button></div></div>
-
-        </div>
-        <aside class="brief rv" style="--d:.08s" aria-label="Your targeting brief">
-          <div class="brief__top"><span>Your brief</span><span class="sticker s-lime" style="--rot:4deg;font-size:.78rem;padding:.25rem .7rem">Draft</span></div>
-          <div class="brief__body" id="briefBody" aria-live="polite"></div>
-          <div><div class="meter__head"><span>Focus</span><b id="meterLbl">Sharp</b></div><div class="meter" id="meter" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i></div></div>
-          <button class="btn" type="button" id="sendBrief" style="align-self:flex-start">Send this brief <i aria-hidden="true">&rarr;</i></button>
-        </aside>
-      </div>
-    </div>
-  </div>
-</section>
-
-<section class="sec" id="sequence" style="padding-top:0">
-  <div class="wrap">
-    <div class="head">
-      <div class="rv"><span class="tag">Outreach</span><h2 class="h2">One prospect. <em>Every</em> channel.</h2></div>
-      <p class="lead rv" style="--d:.08s">Email and LinkedIn to open the door. WhatsApp and SMS once they&rsquo;re interested.</p>
-    </div>
-    <div class="seq__bar rv">
-      <button class="chan" type="button" data-ch="email" aria-pressed="true"><span class="dot d-email"></span>Email</button>
-      <button class="chan" type="button" data-ch="linkedin" aria-pressed="true"><span class="dot d-linkedin"></span>LinkedIn</button>
-      <button class="chan" type="button" data-ch="whatsapp" aria-pressed="true"><span class="dot d-whatsapp"></span>WhatsApp</button>
-      <button class="chan" type="button" data-ch="sms" aria-pressed="true"><span class="dot d-sms"></span>SMS</button>
-      <button class="btn btn--orange" type="button" id="play"><span id="playTxt">Play the sequence</span> <i aria-hidden="true">&#9654;</i></button>
-    </div>
-    <div class="deck-wrap rv" id="deckWrap"><div class="deck" id="deck"></div></div>
-    <div class="card msg rv" aria-live="polite">
-      <div><p class="msg__day" id="mDay">Day 1</p><p class="msg__ch" id="mCh"></p><p class="msg__title" id="mTitle"></p></div>
-      <div><p class="msg__text" id="mText"></p><p class="msg__why" id="mWhy"></p></div>
-    </div>
-    <p class="note">Example sequence. Yours is written for your offer, in your voice.</p>
   </div>
 </section>
 
@@ -492,7 +383,7 @@ html.js .blocks:not(.built) .blk { opacity: 0; transform: translateX(-40px); }
 </main>
 <footer class="foot"><div class="wrap foot__in">
   <a class="logo" href="../"><b>H&amp;E</b><span>Herbert &amp; Ellis</span></a>
-  <div class="foot__links"><a href="../">Home</a><a href="#maths">The maths</a><a href="#sequence">Outreach</a><a href="#paid">Google + Meta</a><a href="#book">Book an audit</a></div>
+  <div class="foot__links"><a href="../">Home</a><a href="#maths">The maths</a><a href="#paid">Google + Meta</a><a href="#book">Book an audit</a></div>
   <span>&copy; <span id="yr">2026</span> Herbert &amp; Ellis</span>
 </div></footer>
 <a class="btn btn--orange stick" href="#ask">Get leads <i aria-hidden="true">&rarr;</i></a>
@@ -537,113 +428,22 @@ html.js .blocks:not(.built) .blk { opacity: 0; transform: translateX(-40px); }
   $$('[data-step]').forEach(function (b) { b.addEventListener('click', function () { var k = b.getAttribute('data-step'), L = limits[k]; calc[k] = clamp(calc[k] + L[2] * +b.getAttribute('data-dir'), L[0], L[1]); runCalc(); }); });
   runCalc();
 
-  /* ---------- Targeting brief ---------- */
-  var groups = { who: 'Who', at: 'Sector', size: 'Size', where: 'Where', when: 'Why now' };
-  var body = $('#briefBody'), bars = $$('#meter i'), lbl = $('#meterLbl'), prev = '', tok = 0;
-  function picks(g) { return $$('[data-group="' + g + '"] .chip-t[aria-pressed="true"]').map(function (c) { return c.textContent.trim(); }); }
-  function lines() { return Object.keys(groups).map(function (g) { var p = picks(g), v = p.join(', '); if (g === 'size' && p.length) v += ' staff'; return [groups[g], v || '— pick above']; }); }
-  function render(ls, n) {
-    var html = '', left = n, done = n == null;
-    ls.forEach(function (l) {
-      var full = l[0] + '\u0001' + l[1]; if (!done && left <= 0) return;
-      var take = done ? full : full.slice(0, left); left -= full.length;
-      var parts = take.split('\u0001'), empty = l[1].charAt(0) === '—';
-      html += '<div class="brief__line"><span class="k">' + parts[0] + '</span><span class="v' + (empty ? ' empty' : '') + '">' + (parts[1] || '') + (!done && left <= 0 ? '<span class="caret"></span>' : '') + '</span></div>';
-    });
-    if (done) html = html.replace(/<\/span><\/div>$/, '<span class="caret"></span></span></div>');
-    body.innerHTML = html;
-  }
-  function flat(ls) { return ls.map(function (l) { return l[0] + '\u0001' + l[1]; }).join(''); }
-  function score() {
-    var s = 0, c;
-    c = picks('who').length; s += c >= 1 && c <= 2 ? 1 : c === 3 ? .5 : 0;
-    c = picks('at').length; s += c >= 1 && c <= 2 ? 1 : c === 3 ? .5 : 0;
-    c = picks('size').length; s += c >= 1 && c <= 2 ? 1 : c === 3 ? .5 : 0;
-    c = picks('where').length; s += c === 1 ? 1 : c === 2 ? .5 : 0;
-    s += picks('when').length ? 1 : 0;
-    var n = Math.round(s); bars.forEach(function (b, i) { b.classList.toggle('on', i < n); });
-    lbl.textContent = n <= 1 ? 'A bit broad' : n === 2 ? 'Getting there' : n <= 4 ? 'Sharp' : 'Spot on';
-  }
-  function update(anim) {
-    var ls = lines(), full = flat(ls); score();
-    if (!anim || reduce) { render(ls); prev = full; return; }
-    var st = 0; while (st < full.length && full[st] === prev[st]) st++;
-    prev = full; var t = ++tok, n = st;
-    (function step() { if (t !== tok) return; n += 2; render(ls, n); if (n < full.length) setTimeout(step, 14); else render(ls); })();
-  }
-  $$('.chip-t').forEach(function (chip) {
-    chip.addEventListener('click', function () {
-      var g = chip.closest('[data-group]').getAttribute('data-group'), on = chip.getAttribute('aria-pressed') === 'true';
-      if (!on && (g === 'who' || g === 'at') && picks(g).length >= 3) { chip.animate && chip.animate([{ transform: 'rotate(0)' }, { transform: 'rotate(-4deg)' }, { transform: 'rotate(4deg)' }, { transform: 'rotate(0)' }], { duration: 300 }); return; }
-      chip.setAttribute('aria-pressed', String(!on)); update(true);
-    });
-  });
-  update(false);
-  function briefText() { return lines().filter(function (l) { return l[1].charAt(0) !== '—'; }).map(function (l) { return l[0] + ': ' + l[1]; }).join('\n'); }
   function numbersText() { return 'From the calculator: average deal ' + gbp(state.deal) + ', ' + Math.round(state.close * 100) + '% of meetings won, aiming for ' + state.meet + ' meetings a month.'; }
 
   /* ---------- Everything that leads to the form pre-fills it ---------- */
-  var pre = { goal: '', brief: false, nums: false }, dirty = false, ta = $('#fBrief');
+  var pre = { goal: '', nums: false }, dirty = false, ta = $('#fBrief');
   ta.addEventListener('input', function () { dirty = true; });
-  function compose() { var o = []; if (pre.goal) o.push('Goal: ' + pre.goal); if (pre.brief) o.push('Targeting brief\n' + briefText()); if (pre.nums) o.push(numbersText()); return o.join('\n\n') + (o.length ? '\n\n' : '') + 'What we sell: '; }
+  function compose() { var o = []; if (pre.goal) o.push('Goal: ' + pre.goal); if (pre.nums) o.push(numbersText()); return o.join('\n\n') + (o.length ? '\n\n' : '') + 'What we sell: '; }
   function goBook(ch) {
-    var add = ch.goal ? 'Goal: ' + ch.goal : ch.brief ? 'Targeting brief\n' + briefText() : ch.nums ? numbersText() : '';
+    var add = ch.goal ? 'Goal: ' + ch.goal : ch.nums ? numbersText() : '';
     for (var k in ch) pre[k] = ch[k];
     if (!dirty) ta.value = compose(); else if (add) ta.value = ta.value.replace(/\s*$/, '') + '\n\n' + add;
     $('#book').scrollIntoView({ behavior: reduce ? 'auto' : 'smooth' });
     setTimeout(function () { $('#fName').focus({ preventScroll: true }); }, reduce ? 0 : 700);
   }
-  $('#sendBrief').addEventListener('click', function () { goBook({ brief: true, nums: true }); });
   $('#calcCta').addEventListener('click', function (e) { e.preventDefault(); goBook({ nums: true }); });
   $$('.goal').forEach(function (g) { g.addEventListener('click', function () { $$('.goal').forEach(function (o) { o.classList.toggle('sel', o === g); o.setAttribute('aria-pressed', String(o === g)); }); goBook({ goal: g.getAttribute('data-goal') }); }); });
   $('#askBtn').addEventListener('click', function (e) { e.preventDefault(); var s = $('.goal.sel'); goBook(s ? { goal: s.getAttribute('data-goal') } : {}); });
-
-  /* ---------- Outreach deck ---------- */
-  var CH = { email: 'Email', linkedin: 'LinkedIn', whatsapp: 'WhatsApp', sms: 'SMS' };
-  var SEQ = [
-    { day: 1, ch: 'email', title: 'Opening email', text: 'Subject: [Company] and [signal]\n\nHi [First name],\n\nSaw that [Company] is [signal]. That is usually when [the problem you solve] starts to bite.\n\nWe help [type of company] with [outcome]. Worth 15 minutes next week?', why: 'Short, specific, one ask.' },
-    { day: 2, ch: 'linkedin', title: 'Connect', text: 'Hi [First name], I have been following what [Company] is doing in [sector]. Would be good to connect.', why: 'No pitch. Puts a face to the email.' },
-    { day: 4, ch: 'email', title: 'Useful follow-up', text: 'Hi [First name],\n\nOne idea, whether or not we speak: [a useful observation about their business].', why: 'Gives before it asks.' },
-    { day: 7, ch: 'linkedin', title: 'Quick message', text: 'Thanks for connecting, [First name]. Happy to pick up my email here if that is easier.', why: 'Meets them where they are.' },
-    { day: 10, ch: 'email', title: 'New angle', text: 'Hi [First name],\n\nDifferent angle: [a second problem that matters to them].\n\nIf the timing is wrong, just say.', why: 'A fresh reason to reply.' },
-    { day: 13, ch: 'whatsapp', title: 'Warm follow-up', text: 'Hi [First name], it is [Your name] from [Your company]. Still keen to find 15 minutes this week?', why: 'Only for people who have replied. Never cold.' },
-    { day: 17, ch: 'email', title: 'Closing the loop', text: 'Hi [First name],\n\nI will leave it here. If [problem] comes up, this is the thread to reply to.', why: 'A friendly close often gets the reply.' },
-    { day: 20, ch: 'sms', title: 'Reminder, once booked', text: 'Hi [First name], looking forward to our call tomorrow at [time]. Link: [meeting link]', why: 'So booked meetings actually happen.' }
-  ];
-  var deck = $('#deck'), wrap = $('#deckWrap'), playBtn = $('#play'), playTxt = $('#playTxt');
-  var on = { email: true, linkedin: true, whatsapp: true, sms: true }, cur = 0, playing = false, timer = 0;
-  SEQ.forEach(function (s, i) {
-    var b = document.createElement('button'); b.type = 'button'; b.className = 'mcard ' + s.ch;
-    b.setAttribute('aria-label', 'Day ' + s.day + ', ' + CH[s.ch] + ': ' + s.title);
-    b.innerHTML = '<span class="mcard__ch">' + CH[s.ch] + '</span><span class="mcard__d"><small>Day</small>' + s.day + '</span><span class="mcard__t">' + s.title + '</span>';
-    b.addEventListener('click', function () { stop(); select(i); }); deck.appendChild(b); s.node = b;
-  });
-  function hl(t) { return t.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/\[([^\]]+)\]/g, '<mark>[$1]</mark>'); }
-  function select(i, pop) {
-    var s = SEQ[i]; cur = i;
-    SEQ.forEach(function (o, k) { o.node.classList.toggle('cur', k === i); o.node.setAttribute('aria-pressed', String(k === i)); });
-    if (pop) { if (!reduce) { s.node.classList.remove('pop'); void s.node.offsetWidth; s.node.classList.add('pop'); } wrap.scrollTo({ left: Math.max(0, s.node.offsetLeft - 40), behavior: reduce ? 'auto' : 'smooth' }); }
-    $('#mDay').textContent = 'Day ' + s.day;
-    $('#mCh').innerHTML = '<span class="dot d-' + s.ch + '"></span>' + CH[s.ch];
-    $('#mTitle').textContent = s.title; $('#mText').innerHTML = hl(s.text); $('#mWhy').innerHTML = '<b>Why</b>' + s.why;
-  }
-  function nextOn(f) { for (var i = f; i < SEQ.length; i++) if (on[SEQ[i].ch]) return i; return -1; }
-  $$('.chan').forEach(function (b) {
-    b.addEventListener('click', function () {
-      var ch = b.getAttribute('data-ch'), count = Object.keys(on).filter(function (k) { return on[k]; }).length;
-      if (on[ch] && count === 1) return;
-      on[ch] = !on[ch]; b.setAttribute('aria-pressed', String(on[ch]));
-      SEQ.forEach(function (s) { var off = !on[s.ch]; s.node.classList.toggle('off', off); s.node.tabIndex = off ? -1 : 0; });
-      if (!on[SEQ[cur].ch]) { var f = nextOn(0); if (f > -1) select(f); }
-    });
-  });
-  function stop() { playing = false; clearTimeout(timer); playTxt.textContent = 'Play the sequence'; }
-  playBtn.addEventListener('click', function () {
-    if (playing) { stop(); return; }
-    playing = true; playTxt.textContent = 'Pause'; var i = -1;
-    (function next() { if (!playing) return; i = nextOn(i + 1); if (i < 0) { stop(); return; } select(i, true); timer = setTimeout(next, reduce ? 400 : 1300); })();
-  });
-  select(0);
 
   /* ---------- Google + Meta funnel builds itself ---------- */
   var blocks = $('#blocks'), rows = $$('button.blk', blocks);

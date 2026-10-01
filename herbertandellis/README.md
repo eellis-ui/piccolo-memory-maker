@@ -45,9 +45,8 @@ screens in the page: each phone is a `.phone` element with `data-title` (its acc
 
 ## Lead generation page
 
-Hero carousel, the meetings calculator, the targeting brief builder, the outreach sequence cards, the Google and
-Meta funnel, the "MORE LEADS?" contact push, five steps, what's included, the portfolio, FAQ, and the "Hello!" form.
-Goal picks, the brief builder and the calculator all pre-fill the form.
+Hero carousel, the quote band, the meetings calculator, the Google and Meta funnel, the "MORE LEADS?" contact push,
+five steps, what's included, the portfolio, FAQ, and the "Hello!" form. Goal picks and the calculator pre-fill the form.
 
 ## The form
 
