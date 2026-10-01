@@ -41,7 +41,7 @@ own every few seconds and pause on hover. Visitors can click the side phones, us
 swipe or drag, scroll sideways on a trackpad, or use the arrow keys.
 
 The phones are built in HTML and CSS, so there are no images to manage. To change what a phone shows, edit the
-screens in the page: each phone is a `.phone` element with `data-title` and `data-line` for its caption.
+screens in the page: each phone is a `.phone` element with `data-title` (its accessible name) and `data-word` (the giant word).
 
 ## Lead generation page
 

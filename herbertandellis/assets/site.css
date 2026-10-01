@@ -135,11 +135,6 @@ button { cursor: pointer; }
 .offers button[aria-selected="true"] i { width: 100%; transition: width 3.8s linear; }
 [data-carousel].is-paused .offers button[aria-selected="true"] i { transition: none; width: 100%; }
 @media (prefers-reduced-motion: reduce) { .offers button[aria-selected="true"] i { transition: none; } }
-.cap { text-align: center; margin-top: 1.3rem; min-height: 4.4em; position: relative; z-index: 3; }
-.cap__t { font-size: clamp(1.5rem, 2.6vw, 2.2rem); font-weight: 800; font-variation-settings: "wdth" 90; letter-spacing: -.015em; line-height: 1.05; }
-.cap__l { color: var(--ink-2); margin-top: .35rem; }
-.cap.swap .cap__t, .cap.swap .cap__l { animation: capIn .5s var(--ease); }
-@keyframes capIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: none; } }
 .hero__ctas { display: flex; flex-wrap: wrap; gap: 1rem 1.6rem; justify-content: center; align-items: center; margin-top: 1.8rem; position: relative; z-index: 3; }
 .blob { position: absolute; border-radius: 50%; filter: blur(2px); z-index: 0; pointer-events: none; }
 
