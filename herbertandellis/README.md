@@ -15,26 +15,24 @@ No build step. Every page is one self-contained HTML file with inline CSS and Ja
 The lead generation page includes the live site's stylesheet verbatim and adds its own rules after it, so shared
 elements (hero diagonal, marquee, swipe cards, manifesto, contact heading, cursor) match the homepage exactly.
 
-## Lead generation page — what's interactive
+## Lead generation page — what's on it
 
-1. **Targeting radar hero.** Prospects drift across the hero. The cursor is a spotlight; only prospects that fit the
-   ideal customer light up. Click and they fly into the diamond and count as booked. Auto-sweeps on touch devices.
-2. **Pipeline calculator.** Deal value, win rate and meetings per month give pipeline, revenue and value per meeting,
-   plus how many people need reaching at editable reply and conversion assumptions.
-3. **Targeting brief builder.** Pick decision makers, sectors, size, region and buying signals. A brief types itself
-   out with a focus meter. "Send this brief" drops it and the calculator numbers into the enquiry form.
-4. **Sequence player.** A 20-day multichannel sequence. Toggle email, LinkedIn, WhatsApp and SMS, press play, or click a
-   touchpoint to read an example message.
-5. **Google Ads + Meta funnel.** Six stages from ad to retargeting. Switch between "Ads only", where visitors leak
-   out at every unbuilt stage, and "The whole funnel", where a retargeting net catches drop-offs and brings them back.
-   Click a stage for what we build and what goes wrong without it.
-6. **"Want more leads?"** A full-width coral section pushing visitors to get in touch. Picking "More meetings",
-   "More sales" or "Both" pre-fills the form and jumps to it. A sticky "Get leads" button follows visitors down the page,
-   and the calculator has its own "Get me these meetings" button that carries the numbers over.
-7. **Process cards.** Five stages as the homepage's swipe cards, with drag, arrows and a progress bar.
-8. **What's included.** A hover grid of everything in the funnel.
-9. **Portfolio.** The homepage's portfolio cards, with TT Prospecting and TT Commerce tagged as the platforms behind the work.
-10. FAQ, the "WE DON'T CHASE LEADS." manifesto, and the audit form.
+Bold and kinetic, in the homepage's own language: big type, solid colour blocks, marquees. Short copy throughout.
+
+1. **Hero.** "PIPELINE, ENGINEERED." Letters lift and turn coral under the cursor; a slot on the coral diagonal
+   rotates through "More meetings. More sales. Full calendars…".
+2. **The maths.** Deal value, win rate and meetings a month give pipeline, revenue and value per meeting.
+3. **Targeting.** Tap who you sell to; a brief types itself out. "Send this brief" carries it into the form.
+4. **Outreach.** A row of colour-block message cards (email, LinkedIn, WhatsApp, SMS). Press play and they deal out
+   one by one; click any card to read the example message.
+5. **Google + Meta.** Six solid colour bars that build themselves into a funnel ending in "Booked or sold". Click a
+   stage for what we build.
+6. **"Want more leads?"** Full-width coral push to get in touch. Goal picks pre-fill the form. A sticky "Get leads"
+   button follows visitors down the page.
+7. **Process.** Five swipe cards, one line each.
+8. **What's included.** Nine colour tiles.
+9. **Portfolio.** The homepage's portfolio cards: "We build and back businesses…".
+10. FAQ (four questions), the manifesto, and the audit form.
 
 ## The audit form
 

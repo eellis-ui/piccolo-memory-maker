@@ -1067,19 +1067,11 @@ button { font: inherit; color: inherit; }
 .lg-hero { height: auto; min-height: 100vh; }
 .lg-hero .hero__name-line { font-size: 10.2vw; }
 .lg-hero .hero__content { padding-top: 6vh; max-width: 100%; }
-.radar { position: absolute; inset: 0; z-index: 2; pointer-events: none; }
-.hero__particles { position: absolute; inset: 0; z-index: 5; pointer-events: none; }
 .hero__ctas { display: flex; flex-wrap: wrap; gap: 1.2rem 2.2rem; align-items: center; margin-top: 2.6rem; }
 .contact__cta { cursor: none; }
 .cta-sm { font-size: .82rem; padding: 1.1rem 2.2rem; }
 .textlink { font-size: .72rem; letter-spacing: .35em; text-transform: uppercase; font-weight: 700; border-bottom: 2px solid var(--coral); padding-bottom: .35rem; cursor: none; transition: letter-spacing .4s var(--ease-snap); }
 .textlink:hover { letter-spacing: .45em; }
-.hud { position: absolute; z-index: 4; right: 6vw; bottom: 7vh; color: var(--white); text-align: right; pointer-events: none; display: grid; gap: 1.1rem; }
-.hud__row { display: flex; gap: 2.2rem; justify-content: flex-end; }
-.hud__stat span { display: block; font-size: .58rem; letter-spacing: .32em; text-transform: uppercase; font-weight: 700; opacity: .8; }
-.hud__stat b { display: block; font-size: 3.2rem; font-weight: 900; letter-spacing: -.03em; line-height: 1; font-variant-numeric: tabular-nums; }
-.hud__hint { font-size: .6rem; letter-spacing: .32em; text-transform: uppercase; font-weight: 700; }
-.hud__hint i { display: inline-block; width: 8px; height: 8px; background: var(--black); transform: rotate(45deg); margin-right: .7rem; vertical-align: 1px; animation: hintPulse 2s ease-in-out infinite; }
 
 /* ---- Shared section furniture ---- */
 .sx { position: relative; padding: 9rem 6vw; overflow: hidden; }
@@ -1123,7 +1115,6 @@ button { font: inherit; color: inherit; }
 .out__grid > div:nth-child(n+3) { border-top: 1px solid rgba(255,255,255,.18); }
 .out__grid b { display: block; font-size: clamp(1.4rem, 2.4vw, 2rem); font-weight: 900; letter-spacing: -.03em; font-variant-numeric: tabular-nums; }
 .out__grid span { display: block; margin-top: .3rem; font-size: .58rem; letter-spacing: .3em; text-transform: uppercase; opacity: .55; font-weight: 600; }
-.funnel { margin-top: 1.8rem; display: grid; gap: .55rem; }
 .fn { display: grid; grid-template-columns: 128px 1fr 72px; gap: 1rem; align-items: center; font-size: .58rem; letter-spacing: .25em; text-transform: uppercase; font-weight: 600; }
 .fn__bar { height: 20px; background: rgba(255,255,255,.07); position: relative; }
 .fn__bar i { position: absolute; left: 0; top: 0; bottom: 0; width: 0; background: var(--white); transition: width .8s var(--ease-snap); }
@@ -1173,26 +1164,6 @@ button { font: inherit; color: inherit; }
 .sw--whatsapp { background: var(--white); box-shadow: inset 0 0 0 3px var(--coral); }
 .sw--sms { background: var(--white); box-shadow: inset 0 0 0 3px var(--black); }
 .seq__bar .contact__cta { margin-left: auto; font-size: .8rem; padding: 1rem 2rem; }
-.track-wrap { position: relative; z-index: 2; overflow-x: auto; scrollbar-width: none; }
-.track-wrap::-webkit-scrollbar { display: none; }
-.track { position: relative; min-width: 780px; height: 176px; }
-.track__line { position: absolute; left: 0; right: 0; top: 84px; height: 2px; background: var(--black); }
-.track__prog { position: absolute; left: 0; top: 83px; height: 4px; width: 0; background: var(--coral); }
-.tick { position: absolute; top: 150px; transform: translateX(-50%); font-size: .58rem; letter-spacing: .25em; text-transform: uppercase; font-weight: 700; opacity: .45; white-space: nowrap; }
-.tick::before { content: ''; position: absolute; left: 50%; top: -52px; width: 1px; height: 12px; background: var(--black); }
-.node { position: absolute; top: 85px; width: 26px; height: 26px; padding: 0; border: 0; transform: translate(-50%, -50%) rotate(45deg); cursor: none; transition: transform .4s var(--ease-snap), opacity .3s; z-index: 2; }
-.node.email { background: var(--black); }
-.node.linkedin { background: var(--coral); }
-.node.whatsapp { background: var(--white); box-shadow: inset 0 0 0 4px var(--coral); }
-.node.sms { background: var(--white); box-shadow: inset 0 0 0 4px var(--black); }
-.node:hover, .node.cur { transform: translate(-50%, -50%) rotate(45deg) scale(1.5); }
-.node.cur { outline: 2px solid var(--black); outline-offset: 6px; }
-.node.off { opacity: 0; pointer-events: none; transform: translate(-50%, -50%) rotate(45deg) scale(.1); }
-.nlabel { position: absolute; transform: translateX(-50%); font-size: .56rem; letter-spacing: .2em; text-transform: uppercase; font-weight: 800; white-space: nowrap; transition: opacity .3s; text-align: center; line-height: 1.4; }
-.nlabel.up { top: 26px; } .nlabel.down { top: 110px; }
-.nlabel.off { opacity: 0; }
-.runner { position: absolute; top: 85px; left: 0; width: 14px; height: 14px; background: var(--coral); transform: translate(-50%, -50%) rotate(45deg); box-shadow: 0 0 0 7px rgba(232,80,30,.2); pointer-events: none; z-index: 3; opacity: 0; transition: opacity .3s; }
-.runner.on { opacity: 1; }
 .msg { position: relative; z-index: 2; display: grid; grid-template-columns: 250px 1fr; gap: 2rem; background: var(--black); color: var(--white); border-radius: 8px; padding: 2.2rem; margin-top: 1.4rem; min-height: 250px; }
 .msg__day { font-size: 3.6rem; font-weight: 900; letter-spacing: -.04em; line-height: 1; font-variant-numeric: tabular-nums; }
 .msg__ch { display: inline-flex; align-items: center; gap: .6rem; margin-top: 1rem; font-size: .62rem; letter-spacing: .35em; text-transform: uppercase; font-weight: 700; color: var(--coral); }
@@ -1217,32 +1188,6 @@ button { font: inherit; color: inherit; }
 .sqbtn:hover { background: var(--black); color: var(--white); }
 
 /* ---- Stack + included (black section) ---- */
-.stack { background: var(--black); color: var(--white); }
-.stack .ghost { color: var(--white); opacity: .04; }
-.stack .lead { opacity: .7; }
-.tools { position: relative; z-index: 2; display: grid; grid-template-columns: 1.3fr 1fr; gap: 1.5rem; perspective: 1200px; }
-.tool { position: relative; min-height: 380px; padding: 2.4rem; border-radius: 4px; display: flex; flex-direction: column; justify-content: flex-end; overflow: hidden; color: var(--white); cursor: none; transition: transform .6s var(--ease-snap); transform-style: preserve-3d; will-change: transform; }
-.tool--p { background: linear-gradient(135deg, var(--coral) 0%, var(--orange) 100%); border-left: 3px solid var(--white); }
-.tool--c { background: linear-gradient(135deg, #2a2a2a 0%, #1f1f1f 100%); border-left: 3px solid var(--coral); }
-.tool__glare { position: absolute; inset: 0; background: radial-gradient(circle at var(--gx, 50%) var(--gy, 50%), rgba(255,255,255,.2), transparent 45%); opacity: 0; transition: opacity .3s; pointer-events: none; }
-.tool:hover .tool__glare { opacity: 1; }
-.tool__big { position: absolute; top: -.18em; right: .02em; font-size: clamp(9rem, 18vw, 16rem); font-weight: 900; line-height: 1; opacity: .08; pointer-events: none; }
-.tool__role { font-size: .62rem; letter-spacing: .4em; text-transform: uppercase; font-weight: 700; opacity: .75; }
-.tool__name { font-size: clamp(2.2rem, 4.4vw, 3.8rem); font-weight: 900; text-transform: uppercase; letter-spacing: -.03em; line-height: .9; margin-top: .8rem; }
-.tool__desc { margin-top: 1rem; font-size: .95rem; line-height: 1.6; opacity: .8; max-width: 42ch; }
-.tool__go { position: absolute; top: 2rem; right: 2rem; font-size: .7rem; letter-spacing: .3em; text-transform: uppercase; font-weight: 700; opacity: 0; transform: translateX(10px); transition: opacity .3s, transform .3s var(--ease-snap); }
-.tool:hover .tool__go { opacity: 1; transform: none; }
-.inc { position: relative; z-index: 2; display: grid; grid-template-columns: repeat(3, 1fr); margin-top: 5rem; border-top: 2px solid var(--white); }
-.inc__t { position: relative; isolation: isolate; padding: 2rem 1.6rem 2.2rem; border-bottom: 1px solid rgba(255,255,255,.16); transition: color .3s; }
-.inc__t:not(:nth-child(3n+1)) { border-left: 1px solid rgba(255,255,255,.16); }
-.inc__t::before { content: ''; position: absolute; inset: 0; z-index: -1; background: var(--coral); transform: scaleY(0); transform-origin: bottom; transition: transform .5s var(--ease-snap); }
-.inc__t:hover::before { transform: scaleY(1); }
-.inc__t:hover { color: var(--black); }
-.inc__t i { display: block; width: 10px; height: 10px; background: var(--coral); transform: rotate(45deg); margin-bottom: 1.4rem; transition: background .3s, transform .5s var(--ease-snap); }
-.inc__t:hover i { background: var(--black); transform: rotate(225deg) scale(1.3); }
-.inc__t h3 { font-size: 1.12rem; font-weight: 900; text-transform: uppercase; letter-spacing: -.01em; line-height: 1.1; margin-bottom: .7rem; }
-.inc__t p { font-size: .88rem; line-height: 1.55; opacity: .7; }
-.inc__t:hover p { opacity: .85; }
 
 /* ---- FAQ ---- */
 .faq { position: relative; z-index: 2; border-top: 2px solid var(--black); max-width: 1100px; }
@@ -1284,7 +1229,6 @@ button { font: inherit; color: inherit; }
 @media (max-width: 1000px) {
   .sx__head, .calc, .icp__grid, .book__grid { grid-template-columns: 1fr; }
   .out, .brief { position: relative; top: 0; }
-  .tools { grid-template-columns: 1fr; }
   .msg { grid-template-columns: 1fr; }
   .msg__body { border-left: 0; padding-left: 0; border-top: 1px solid rgba(255,255,255,.15); padding-top: 1.4rem; }
 }
@@ -1294,8 +1238,6 @@ button { font: inherit; color: inherit; }
   .lg-hero .hero__name-line { font-size: 11.2vw; }
   .lg-hero .hero__content { padding-top: 0; }
   .hero__ctas { margin-top: 1.8rem; }
-  .hud { bottom: 3vh; right: 5vw; gap: .6rem; }
-  .hud__stat b { font-size: 2rem; }
   .sx { padding: 5rem 5vw; }
   .sx__head { margin-bottom: 3rem; }
   .proc { padding-top: 5rem; }
@@ -1305,54 +1247,16 @@ button { font: inherit; color: inherit; }
   .brief { padding: 1.5rem; }
   .brief__line { grid-template-columns: 4.6em 1fr; }
   .seq__bar .contact__cta { margin-left: 0; }
-  .inc { grid-template-columns: 1fr; }
-  .inc__t:not(:nth-child(3n+1)) { border-left: 0; }
   .f2 { grid-template-columns: 1fr; }
   .faq details p { padding-right: 0; }
   .book { padding: 5rem 5vw 3rem; }
-  .tool { min-height: 300px; padding: 1.8rem; }
 }
 
 /* ---- Paid: Google Ads + Meta funnel (dark section) ---- */
-.paid { background: var(--black); color: var(--white); }
-.paid .ghost { color: var(--white); opacity: .04; }
-.paid .lead { opacity: .7; }
-.paid__bar { position: relative; z-index: 2; display: flex; flex-wrap: wrap; align-items: center; gap: 1rem 2rem; margin-bottom: 2.4rem; }
-.seg { display: inline-flex; border: 2px solid var(--white); }
-.seg__b { background: transparent; border: 0; color: var(--white); padding: .85rem 1.3rem; font-size: .72rem; font-weight: 800; letter-spacing: .2em; text-transform: uppercase; cursor: none; transition: background .3s, color .3s; }
-.seg__b[aria-pressed="true"] { background: var(--white); color: var(--black); }
-.seg__b[data-mode="whole"][aria-pressed="true"] { background: var(--coral); color: var(--white); }
-.seg__b:focus-visible { outline-color: var(--white); }
-.paid__mode { font-size: .9rem; opacity: .7; max-width: 52ch; line-height: 1.5; }
-.fun-wrap { position: relative; z-index: 2; overflow-x: auto; scrollbar-width: none; }
-.fun-wrap::-webkit-scrollbar { display: none; }
-.fun { position: relative; min-width: 900px; padding-top: 150px; padding-right: 110px; }
-.fun__cv { position: absolute; left: 0; top: 0; width: 100%; height: 150px; pointer-events: none; }
-.fun__end { position: absolute; right: 0; top: 34px; width: 96px; text-align: center; font-size: .6rem; letter-spacing: .25em; text-transform: uppercase; font-weight: 800; line-height: 1.5; }
-.fun__end i { display: block; width: 26px; height: 26px; margin: 0 auto 1.1rem; background: var(--coral); transform: rotate(45deg); transition: transform .25s var(--ease-snap); }
-.fun__end.pop i { transform: rotate(45deg) scale(1.5); }
-.fun__stages { display: grid; grid-template-columns: repeat(6, 1fr); gap: 10px; }
-.stg { position: relative; text-align: left; background: rgba(255,255,255,.04); border: 2px solid rgba(255,255,255,.22); color: var(--white); padding: 1.1rem 1rem 1.2rem; min-height: 150px; display: flex; flex-direction: column; gap: .35rem; cursor: none; transition: background .3s, border-color .3s, transform .4s var(--ease-snap), opacity .3s; }
-.stg:hover { transform: translateY(-4px); border-color: var(--white); }
-.stg small { font-size: .6rem; letter-spacing: .3em; font-weight: 700; opacity: .5; }
-.stg b { font-size: 1.25rem; font-weight: 900; text-transform: uppercase; letter-spacing: -.01em; margin-top: auto; }
-.stg span { font-size: .78rem; opacity: .65; line-height: 1.4; }
-.stg__flag { position: absolute; top: .9rem; right: .9rem; font-style: normal; font-size: .52rem; letter-spacing: .2em; text-transform: uppercase; font-weight: 800; padding: .25rem .45rem; background: var(--white); color: var(--black); opacity: 0; transition: opacity .3s; }
-.stg.sel { background: var(--coral); border-color: var(--coral); }
-.stg.sel small, .stg.sel span { opacity: .85; }
-.stg:focus-visible { outline-color: var(--white); }
-.fun[data-mode="ads"] .stg:not([data-i="0"]) { border-style: dashed; background: transparent; }
-.fun[data-mode="ads"] .stg:not([data-i="0"]) b { text-decoration: line-through; text-decoration-color: var(--coral); text-decoration-thickness: 3px; }
-.fun[data-mode="ads"] .stg:not([data-i="0"]) .stg__flag { opacity: 1; }
-.fun[data-mode="ads"] .stg.sel { background: rgba(232,80,30,.18); border-color: var(--coral); }
-.stg-detail { position: relative; z-index: 2; display: grid; grid-template-columns: 1.3fr 1fr; gap: 2rem 3rem; margin-top: 1.6rem; padding: 2rem 2.2rem; background: var(--white); color: var(--black); border-radius: 8px; }
+.stg-detail { position: relative; z-index: 2; margin-top: 1.6rem; padding: 2rem 2.2rem; background: #f3f3f3; color: var(--black); border-radius: 8px; border-left: 6px solid var(--coral); }
 .stg-detail__k { display: block; font-size: .62rem; letter-spacing: .4em; text-transform: uppercase; font-weight: 800; color: var(--coral); margin-bottom: .8rem; }
 .stg-detail h3 { font-size: clamp(1.6rem, 3vw, 2.4rem); font-weight: 900; text-transform: uppercase; letter-spacing: -.02em; line-height: 1; margin-bottom: .9rem; }
 .stg-detail p { font-size: 1rem; line-height: 1.65; opacity: .8; max-width: 56ch; }
-.stg-detail__without { border-left: 6px solid var(--black); padding-left: 1.6rem; align-self: end; }
-.stg-detail__without p { font-weight: 700; opacity: 1; font-size: 1.1rem; }
-.paid__note { color: var(--white); }
-@media (max-width: 1000px) { .stg-detail { grid-template-columns: 1fr; } .stg-detail__without { align-self: start; } }
 @media (max-width: 767px) { .stg-detail { padding: 1.5rem; } }
 
 /* ---- WANT LEADS? ---- */
@@ -1360,7 +1264,6 @@ button { font: inherit; color: inherit; }
 .ask__bg { position: absolute; inset: -10% -20%; display: flex; flex-direction: column; justify-content: center; gap: 1rem; transform: rotate(-6deg); pointer-events: none; }
 .ask__row { white-space: nowrap; font-size: clamp(5rem, 13vw, 12rem); font-weight: 900; letter-spacing: -.02em; line-height: .95; color: transparent; -webkit-text-stroke: 2px rgba(255,255,255,.22); animation: marqueeRight 40s linear infinite; width: max-content; }
 .ask__row--rev { animation: marqueeLeft 46s linear infinite; -webkit-text-stroke-color: rgba(26,26,26,.12); }
-.ask__particles { position: absolute; inset: 0; pointer-events: none; z-index: 5; }
 .ask__in { position: relative; z-index: 2; }
 .ask .kicker { opacity: .75; }
 .ask__h { font-size: clamp(4rem, 13vw, 13rem); font-weight: 900; text-transform: uppercase; line-height: .86; letter-spacing: -.045em; }
@@ -1411,9 +1314,82 @@ button { font: inherit; color: inherit; }
 @media (max-width: 767px) {
   .ask { padding: 5rem 5vw; }
   .ask__btn { padding: 1.3rem 2.2rem; }
-  .stick { left: 12px; right: 12px; justify-content: center; }
+  .stick { right: 12px; bottom: calc(12px + env(safe-area-inset-bottom, 0px)); padding: .85rem 1.1rem; font-size: .66rem; letter-spacing: .22em; }
 }
 @media (prefers-reduced-motion: reduce) { .ask, .ask__row, .stick i { animation: none; } }
+
+
+/* ---- Hero: rotating word slot + letters that warm up under the cursor ---- */
+.hero__name-letter { transition: color .3s; }
+.hero__name-letter.hot { color: var(--coral); }
+.slot { position: absolute; z-index: 4; right: 6vw; bottom: 9vh; text-align: right; color: var(--white); pointer-events: none; }
+.slot__k { display: block; font-size: .66rem; letter-spacing: .4em; text-transform: uppercase; font-weight: 800; margin-bottom: .6rem; }
+.slot__win { overflow: hidden; padding-bottom: .08em; }
+.slot__w { display: block; font-size: clamp(2.2rem, 5vw, 5.2rem); font-weight: 900; text-transform: uppercase; letter-spacing: -.04em; line-height: .95; white-space: nowrap; transition: transform .55s var(--ease-snap); }
+.slot__w.out { transform: translateY(-110%); }
+.slot__w.in { transform: translateY(110%); transition: none; }
+
+/* ---- Outreach: colour-block message cards ---- */
+.deck-wrap { position: relative; z-index: 2; overflow-x: auto; scrollbar-width: none; padding: 20px 4px 10px; margin: -20px -4px 0; }
+.deck-wrap::-webkit-scrollbar { display: none; }
+.deck { display: flex; gap: 12px; width: max-content; }
+.mcard { flex: 0 0 190px; height: 240px; padding: 1.3rem 1.3rem 1.4rem; border: 0; border-radius: 8px; text-align: left; display: flex; flex-direction: column; justify-content: space-between; color: var(--white); cursor: none; overflow: hidden; position: relative;
+  transition: transform .5s var(--ease-snap), opacity .35s, flex-basis .5s var(--ease-snap), padding .5s var(--ease-snap), margin .5s var(--ease-snap), box-shadow .4s; }
+.mcard.email { background: var(--black); }
+.mcard.linkedin { background: var(--coral); }
+.mcard.whatsapp { background: var(--orange); }
+.mcard.sms { background: var(--white); color: var(--black); box-shadow: inset 0 0 0 3px var(--black); }
+.mcard__ch { font-size: .6rem; letter-spacing: .35em; text-transform: uppercase; font-weight: 800; opacity: .85; }
+.mcard__d { font-size: 5rem; font-weight: 900; letter-spacing: -.06em; line-height: .8; }
+.mcard__d small { display: block; font-size: .62rem; letter-spacing: .35em; font-weight: 800; opacity: .75; margin-bottom: .5rem; }
+.mcard__t { font-size: 1rem; font-weight: 900; text-transform: uppercase; line-height: 1.05; letter-spacing: -.01em; }
+.mcard:hover { transform: translateY(-8px); }
+.mcard.cur { transform: translateY(-14px); box-shadow: 0 22px 34px rgba(0,0,0,.16); }
+.mcard.sms.cur { box-shadow: inset 0 0 0 3px var(--black), 0 22px 34px rgba(0,0,0,.16); }
+.mcard.pop { animation: cardPop .5s var(--ease-snap); }
+@keyframes cardPop { 0% { transform: translateY(24px) scale(.94); } 100% { transform: translateY(-14px); } }
+.mcard.off { flex-basis: 0; padding-left: 0; padding-right: 0; margin-right: -12px; opacity: 0; pointer-events: none; }
+.sw--whatsapp { background: var(--orange); box-shadow: none; }
+
+/* ---- Google + Meta: a funnel that builds itself ---- */
+.blocks { position: relative; z-index: 2; display: grid; gap: 8px; }
+.blk { width: var(--w); display: grid; grid-template-columns: 52px auto 1fr; align-items: center; gap: 1.4rem; padding: 1.15rem 1.6rem; border: 0; border-radius: 8px; text-align: left; cursor: none; color: var(--white); font: inherit;
+  transition: transform .8s var(--ease-snap), opacity .6s, box-shadow .3s; transition-delay: calc(var(--k) * 110ms); }
+.blk:nth-child(3n+1) { background: var(--coral); }
+.blk:nth-child(3n+2) { background: var(--black); }
+.blk:nth-child(3n+3) { background: var(--orange); }
+.blk small { font-size: .62rem; letter-spacing: .3em; font-weight: 800; opacity: .7; }
+.blk b { font-size: clamp(1.6rem, 3.4vw, 3rem); font-weight: 900; text-transform: uppercase; letter-spacing: -.03em; line-height: .95; }
+.blk span { font-size: .88rem; font-weight: 600; opacity: .8; justify-self: end; text-align: right; }
+button.blk:hover { transform: translateX(12px); transition-delay: 0s; }
+.blk.sel { box-shadow: 0 0 0 3px var(--white), 0 0 0 6px var(--coral); }
+.blk--end { background: transparent !important; color: var(--coral); box-shadow: inset 0 0 0 3px var(--coral); grid-template-columns: 1fr; }
+.blk--end b { font-size: clamp(1.8rem, 4vw, 3.6rem); }
+html.js .blocks:not(.built) .blk { opacity: 0; transform: translateX(calc((var(--k) - 3) * 30px)) translateY(40px); }
+.stg-detail h3 { font-size: clamp(1.6rem, 3vw, 2.4rem); font-weight: 900; text-transform: uppercase; letter-spacing: -.02em; line-height: 1; margin-bottom: .7rem; }
+.stg-detail p { font-size: 1.05rem; line-height: 1.6; max-width: 60ch; opacity: .85; }
+.stg-detail__k { display: block; font-size: .62rem; letter-spacing: .4em; text-transform: uppercase; font-weight: 800; color: var(--coral); margin-bottom: .7rem; }
+
+/* ---- What's included: colour tiles on white ---- */
+.inc { position: relative; z-index: 2; display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
+.inc__t { border-radius: 8px; padding: 1.8rem 1.6rem; color: var(--white); min-height: 170px; display: flex; flex-direction: column; justify-content: flex-end; gap: .45rem; transition: transform .45s var(--ease-snap); }
+.inc__t:nth-child(3n+1) { background: var(--coral); }
+.inc__t:nth-child(3n+2) { background: var(--black); }
+.inc__t:nth-child(3n+3) { background: var(--orange); }
+.inc__t:hover { transform: translateY(-6px) rotate(-.6deg); }
+.inc__t i { display: none; }
+.inc__t h3 { font-size: 1.25rem; font-weight: 900; text-transform: uppercase; letter-spacing: -.01em; line-height: 1.05; }
+.inc__t p { font-size: .9rem; opacity: .8; }
+
+@media (max-width: 1000px) { .inc { grid-template-columns: 1fr 1fr; } }
+@media (max-width: 767px) {
+  .inc { grid-template-columns: 1fr; }
+  .blk { width: 100%; grid-template-columns: 30px 1fr; gap: .3rem 1rem; padding: 1rem 1.1rem; }
+  .blk span { grid-column: 2; justify-self: start; text-align: left; }
+  .slot { bottom: 4vh; right: 5vw; }
+  .mcard { flex-basis: 160px; height: 210px; }
+}
+@media (prefers-reduced-motion: reduce) { .blk, .mcard, .slot__w, .inc__t { transition: none; } .mcard.pop { animation: none; } html.js .blocks:not(.built) .blk { opacity: 1; transform: none; } }
 
 </style>
 </head>
@@ -1448,8 +1424,6 @@ button { font: inherit; color: inherit; }
 <!-- ========== HERO ========== -->
 <section class="hero lg-hero" id="hero" data-theme="light">
   <div class="hero__diagonal"></div>
-  <canvas class="radar" id="radar" aria-hidden="true"></canvas>
-  <div class="hero__particles" id="heroParticles"></div>
   <div class="hero__content">
     <div class="hero__est">Lead generation &middot; Outreach, Google &amp; Meta</div>
     <h1 class="hero__name">
@@ -1463,12 +1437,9 @@ button { font: inherit; color: inherit; }
     </div>
   </div>
   <div class="hero__diamond"></div>
-  <div class="hud" aria-hidden="true">
-    <div class="hud__row">
-      <div class="hud__stat"><span>ICP fit in view</span><b id="hudFit">00</b></div>
-      <div class="hud__stat"><span>Booked</span><b id="hudBooked">00</b></div>
-    </div>
-    <div class="hud__hint" id="hudHint"><i></i>Move to target &middot; click to book</div>
+  <div class="slot" aria-hidden="true">
+    <span class="slot__k">We bring you</span>
+    <div class="slot__win"><span class="slot__w" id="slotW">More meetings.</span></div>
   </div>
 </section>
 
@@ -1490,7 +1461,7 @@ button { font: inherit; color: inherit; }
   <div class="ghost" data-drift="0.12" aria-hidden="true">THE MATHS</div>
   <div class="sx__head">
     <div class="rv"><span class="kicker">01 &mdash; The maths</span><h2 class="big">What's a meeting <em>worth</em> to you?</h2></div>
-    <p class="lead rv" style="--d:.1s">An empty calendar is the most expensive thing in a growing business. Put in your own numbers and see what a steady flow of qualified meetings is worth, and what it takes to get there.</p>
+    <p class="lead rv" style="--d:.1s">Plug in your numbers. See what a steady flow of good meetings is worth.</p>
   </div>
 
   <div class="calc">
@@ -1512,7 +1483,7 @@ button { font: inherit; color: inherit; }
       </div>
       <div class="assume">
         <h3>Outreach assumptions</h3>
-        <p>Starting points for the maths, not promises. Change them to match your market. Real rates are set in the audit and tracked every week.</p>
+        <p>Starting points. Change them to match your market.</p>
         <div class="assume__row"><span>Reply rate</span>
           <span class="stepper"><button type="button" data-step="reply" data-dir="-1" aria-label="Lower reply rate">&minus;</button><output id="oReply">5%</output><button type="button" data-step="reply" data-dir="1" aria-label="Raise reply rate">+</button></span></div>
         <div class="assume__row"><span>Replies that become meetings</span>
@@ -1547,7 +1518,7 @@ button { font: inherit; color: inherit; }
 <section class="sx icp" id="targeting" data-theme="coral">
   <div class="sx__head">
     <div class="rv"><span class="kicker">02 &mdash; Targeting</span><h2 class="big">Who do you want in your <em>calendar?</em></h2></div>
-    <p class="lead rv" style="--d:.1s">Great outreach starts with a sharp brief. Pick who you sell to and we'll write it up the way we'd brief our own platform. Send it over and your audit starts from here.</p>
+    <p class="lead rv" style="--d:.1s">Tap who you sell to. We turn it into a brief.</p>
   </div>
   <div class="icp__grid">
     <div class="rv" id="icpGroups">
@@ -1580,7 +1551,7 @@ button { font: inherit; color: inherit; }
   <div class="ghost" data-drift="0.1" aria-hidden="true">EVERY CHANNEL</div>
   <div class="sx__head">
     <div class="rv"><span class="kicker">03 &mdash; Outreach</span><h2 class="big">One prospect. <em>Every</em> channel.</h2></div>
-    <p class="lead rv" style="--d:.1s">Cold outreach runs on email and LinkedIn. WhatsApp and SMS are kept for people who have already engaged. Switch channels off, press play, or click any touchpoint to read it.</p>
+    <p class="lead rv" style="--d:.1s">Email and LinkedIn to open the door. WhatsApp and SMS once they&rsquo;re interested. Press play.</p>
   </div>
   <div class="seq__bar rv">
     <button class="chan" type="button" data-ch="email" aria-pressed="true"><span class="sw sw--email"></span>Email</button>
@@ -1589,55 +1560,36 @@ button { font: inherit; color: inherit; }
     <button class="chan" type="button" data-ch="sms" aria-pressed="true"><span class="sw sw--sms"></span>SMS</button>
     <button class="contact__cta" type="button" id="play"><span class="contact__cta-text" id="playTxt">&#9654; Play the sequence</span></button>
   </div>
-  <div class="track-wrap rv">
-    <div class="track" id="track">
-      <div class="track__line"></div><div class="track__prog" id="prog"></div>
-      <div class="runner" id="runner"></div>
-    </div>
-  </div>
+  <div class="deck-wrap rv" id="deckWrap"><div class="deck" id="deck"></div></div>
   <div class="msg rv" aria-live="polite">
     <div class="msg__meta"><div class="msg__day" id="mDay">D1</div><div class="msg__ch" id="mCh"></div><div class="msg__title" id="mTitle"></div></div>
     <div class="msg__body"><div class="msg__text" id="mText"></div><div class="msg__why" id="mWhy"></div></div>
   </div>
-  <p class="seq__note">Example sequence. Every campaign is written for your offer, in your voice.</p>
+  <p class="seq__note">Example sequence. Yours is written for your offer, in your voice.</p>
 </section>
 
 <!-- ========== PAID: GOOGLE ADS + META ========== -->
-<section class="sx paid" id="paid" data-theme="dark">
+<section class="sx paid" id="paid" data-theme="light">
   <div class="ghost" data-drift="0.12" aria-hidden="true">GOOGLE &middot; META</div>
   <div class="sx__head">
     <div class="rv"><span class="kicker">04 &mdash; Google Ads + Meta</span><h2 class="big">Ads are the easy part. We build the <em>whole funnel.</em></h2></div>
-    <p class="lead rv" style="--d:.1s">Most ad spend is lost after the click: pages that don't convert, tracking that doesn't fire, enquiries nobody follows up. We build and run every stage, from the first search or scroll to the booked call or the sale.</p>
+    <p class="lead rv" style="--d:.1s">Ads bring the clicks. We build everything after them, so clicks turn into customers.</p>
   </div>
 
-  <div class="paid__bar rv">
-    <div class="seg" role="group" aria-label="Funnel view">
-      <button type="button" class="seg__b" data-mode="ads" aria-pressed="false">Ads only</button>
-      <button type="button" class="seg__b" data-mode="whole" aria-pressed="true">The whole funnel</button>
-    </div>
-    <p class="paid__mode" id="paidMode" aria-live="polite">Every stage built and connected. People who drop off are brought back by retargeting.</p>
-  </div>
-
-  <div class="fun-wrap rv">
-    <div class="fun" id="fun">
-      <canvas class="fun__cv" id="funCv" aria-hidden="true"></canvas>
-      <div class="fun__end" aria-hidden="true"><i></i><span>Booked<br>or sold</span></div>
-      <div class="fun__stages" id="funStages">
-        <button type="button" class="stg" data-i="0"><small>01</small><b>Ads</b><span>Google + Meta</span><em class="stg__flag">Live</em></button>
-        <button type="button" class="stg" data-i="1"><small>02</small><b>Landing</b><span>Pages that convert</span><em class="stg__flag">Left to chance</em></button>
-        <button type="button" class="stg" data-i="2"><small>03</small><b>Capture</b><span>Forms, quotes, calculators</span><em class="stg__flag">Left to chance</em></button>
-        <button type="button" class="stg" data-i="3"><small>04</small><b>Tracking</b><span>GA4, pixel, Conversions API</span><em class="stg__flag">Left to chance</em></button>
-        <button type="button" class="stg" data-i="4"><small>05</small><b>Follow-up</b><span>Email, WhatsApp, SMS</span><em class="stg__flag">Left to chance</em></button>
-        <button type="button" class="stg" data-i="5"><small>06</small><b>Retarget</b><span>Bring them back</span><em class="stg__flag">Missing</em></button>
-      </div>
-    </div>
+  <div class="blocks" id="blocks">
+    <button type="button" class="blk" data-i="0" style="--w:100%;--k:0"><small>01</small><b>Ads</b><span>Google Search, Shopping and Meta</span></button>
+    <button type="button" class="blk" data-i="1" style="--w:93%;--k:1"><small>02</small><b>Landing pages</b><span>Built to convert</span></button>
+    <button type="button" class="blk" data-i="2" style="--w:86%;--k:2"><small>03</small><b>Capture</b><span>Forms, quotes, calculators</span></button>
+    <button type="button" class="blk" data-i="3" style="--w:79%;--k:3"><small>04</small><b>Tracking</b><span>GA4, Meta pixel, Conversions API</span></button>
+    <button type="button" class="blk" data-i="4" style="--w:72%;--k:4"><small>05</small><b>Follow-up</b><span>Email, WhatsApp, SMS</span></button>
+    <button type="button" class="blk" data-i="5" style="--w:65%;--k:5"><small>06</small><b>Retargeting</b><span>Bring them back</span></button>
+    <div class="blk blk--end" style="--w:58%;--k:6"><b>Booked or sold &rarr;</b></div>
   </div>
 
   <div class="stg-detail rv" aria-live="polite">
-    <div><span class="stg-detail__k">What we build</span><h3 id="sdTitle">Ads</h3><p id="sdBuild"></p></div>
-    <div class="stg-detail__without"><span class="stg-detail__k">Without it</span><p id="sdWithout"></p></div>
+    <span class="stg-detail__k">What we build</span><h3 id="sdTitle">Ads</h3><p id="sdBuild"></p>
   </div>
-  <p class="seq__note paid__note">Illustration of how a funnel leaks, not measured data. Ad spend is paid by you directly to Google and Meta.</p>
+  <p class="seq__note">Ad spend is paid by you directly to Google and Meta.</p>
 </section>
 
 <!-- ========== WANT LEADS? (big contact push) ========== -->
@@ -1646,11 +1598,10 @@ button { font: inherit; color: inherit; }
     <div class="ask__row">LEADS &middot; MEETINGS &middot; SALES &middot; PIPELINE &middot; LEADS &middot; MEETINGS &middot; SALES &middot; PIPELINE &middot; LEADS &middot; MEETINGS &middot; SALES &middot; PIPELINE &middot;&nbsp;</div>
     <div class="ask__row ask__row--rev">PIPELINE &middot; SALES &middot; MEETINGS &middot; LEADS &middot; PIPELINE &middot; SALES &middot; MEETINGS &middot; LEADS &middot; PIPELINE &middot; SALES &middot; MEETINGS &middot; LEADS &middot;&nbsp;</div>
   </div>
-  <div class="ask__particles" id="askParticles"></div>
   <div class="ask__in">
     <span class="kicker">Your move</span>
     <h2 class="ask__h"><span class="ask__l1" id="askL1">WANT MORE</span><span class="ask__l2" id="askL2">LEADS?</span></h2>
-    <p class="ask__lead">Then let's talk. Tell us what a good month looks like and we'll show you exactly how we'd get you there: who to target, which channels, and what it takes.</p>
+    <p class="ask__lead">Tell us what a good month looks like. We&rsquo;ll show you how to get there.</p>
     <p class="ask__pick">What do you need most? Pick one.</p>
     <div class="goals" role="group" aria-label="What do you need most?">
       <button type="button" class="goal" data-goal="More meetings: B2B pipeline from targeted outreach"><b>More meetings</b><span>B2B pipeline from targeted outreach</span><i aria-hidden="true">&rarr;</i></button>
@@ -1659,7 +1610,7 @@ button { font: inherit; color: inherit; }
     </div>
     <div class="ask__cta">
       <a class="contact__cta ask__btn" id="askBtn" href="#book"><span class="contact__cta-text">Get me leads &rarr;</span></a>
-      <a class="ask__mail" href="mailto:hello@herbertandellis.com">or email <span class="contact__cta-text--glitch">hello@herbertandellis.com</span></a>
+      <a class="ask__mail" href="mailto:hello@herbertandellis.com">or email hello@herbertandellis.com</a>
     </div>
   </div>
 </section>
@@ -1668,14 +1619,14 @@ button { font: inherit; color: inherit; }
 <section class="proc" id="process" data-theme="light">
   <div class="sx__head">
     <div class="rv"><span class="kicker">05 &mdash; The process</span><h2 class="big">From audit to <em>booked.</em></h2></div>
-    <p class="lead rv" style="--d:.1s">Five stages, run by us, reported every week. Drag, swipe or use the arrows.</p>
+    <p class="lead rv" style="--d:.1s">Five stages. Run by us. Reported weekly.</p>
   </div>
   <div class="pillars__track" id="procTrack">
-    <div class="pillar-card pillar-card--investment"><div class="pillar-card__number">01</div><div class="pillar-card__label">Audit</div><h3 class="pillar-card__title">Pipeline<br>Audit</h3><p class="pillar-card__desc">A working session on your offer, ideal customer, sales process and numbers. You leave with a written plan, whether or not we work together.</p></div>
-    <div class="pillar-card pillar-card--marketing"><div class="pillar-card__number">02</div><div class="pillar-card__label">Build</div><h3 class="pillar-card__title">The<br>Machine</h3><p class="pillar-card__desc">We map the market, build the target list and the ad campaigns, write the messaging and creative, and set up landing pages, tracking, sending domains and sequences.</p></div>
-    <div class="pillar-card pillar-card--consultancy"><div class="pillar-card__number">03</div><div class="pillar-card__label">Launch</div><h3 class="pillar-card__title">Go<br>Live</h3><p class="pillar-card__desc">Outreach and ads go live together. We test angles, audiences and timing, then double down on whatever brings in leads.</p></div>
-    <div class="pillar-card pillar-card--black2"><div class="pillar-card__number">04</div><div class="pillar-card__label">Book</div><h3 class="pillar-card__title">In the<br>Diary</h3><p class="pillar-card__desc">We handle every reply. Qualified meetings land in your calendar with context notes and sync to your CRM, so nothing leaks between us and your closers.</p></div>
-    <div class="pillar-card pillar-card--investment"><div class="pillar-card__number">05</div><div class="pillar-card__label">Scale</div><h3 class="pillar-card__title">More of<br>What Works</h3><p class="pillar-card__desc">Weekly reporting on replies, ad spend, leads, meetings and pipeline value. When a segment or campaign works, we scale it.</p></div>
+    <div class="pillar-card pillar-card--investment"><div class="pillar-card__number">01</div><div class="pillar-card__label">Audit</div><h3 class="pillar-card__title">Pipeline<br>Audit</h3><p class="pillar-card__desc">Your offer, your customers, your numbers. You leave with a plan.</p></div>
+    <div class="pillar-card pillar-card--marketing"><div class="pillar-card__number">02</div><div class="pillar-card__label">Build</div><h3 class="pillar-card__title">The<br>Machine</h3><p class="pillar-card__desc">Targets, ads, copy, landing pages and tracking, all set up.</p></div>
+    <div class="pillar-card pillar-card--consultancy"><div class="pillar-card__number">03</div><div class="pillar-card__label">Launch</div><h3 class="pillar-card__title">Go<br>Live</h3><p class="pillar-card__desc">Outreach and ads go live. We test, then double down.</p></div>
+    <div class="pillar-card pillar-card--black2"><div class="pillar-card__number">04</div><div class="pillar-card__label">Book</div><h3 class="pillar-card__title">In the<br>Diary</h3><p class="pillar-card__desc">Replies handled. Meetings land in your calendar.</p></div>
+    <div class="pillar-card pillar-card--investment"><div class="pillar-card__number">05</div><div class="pillar-card__label">Scale</div><h3 class="pillar-card__title">More of<br>What Works</h3><p class="pillar-card__desc">Weekly numbers. More of whatever works.</p></div>
   </div>
   <div class="proc__nav">
     <button class="sqbtn" type="button" id="procPrev" aria-label="Previous stage">&larr;</button>
@@ -1685,22 +1636,22 @@ button { font: inherit; color: inherit; }
 </section>
 
 <!-- ========== STACK ========== -->
-<section class="sx stack" id="stack" data-theme="dark">
+<section class="sx stack" id="stack" data-theme="light">
   <div class="ghost" data-drift="0.14" aria-hidden="true">ALL IN</div>
   <div class="sx__head">
     <div class="rv"><span class="kicker">06 &mdash; What's included</span><h2 class="big">Everything the funnel needs. <em>One team.</em></h2></div>
-    <p class="lead rv" style="--d:.1s">No patchwork of agencies and freelancers. We build and run every piece, on our own platforms where it counts.</p>
+    <p class="lead rv" style="--d:.1s">One team builds and runs every piece.</p>
   </div>
   <div class="inc">
-    <div class="inc__t rv"><i></i><h3>ICP and market map</h3><p>A defined target market with named accounts, decision makers and buying signals.</p></div>
-    <div class="inc__t rv" style="--d:.05s"><i></i><h3>Verified contact data</h3><p>Decision-maker contacts sourced and verified through TT Prospecting.</p></div>
-    <div class="inc__t rv" style="--d:.1s"><i></i><h3>Copy in your voice</h3><p>Every message written for your offer and tested against real replies.</p></div>
-    <div class="inc__t rv"><i></i><h3>Domains and deliverability</h3><p>Dedicated sending domains, warm-up and inbox health, so mail lands.</p></div>
-    <div class="inc__t rv" style="--d:.05s"><i></i><h3>Replies and booking</h3><p>Every reply handled, meetings booked and confirmed, no-shows chased.</p></div>
-    <div class="inc__t rv" style="--d:.1s"><i></i><h3>Weekly reporting</h3><p>Replies, ad spend, leads, meetings and pipeline value, in one place, every week.</p></div>
-    <div class="inc__t rv"><i></i><h3>Google Ads and Meta</h3><p>Search, Shopping and social campaigns, retargeting audiences and creative, built and run by us.</p></div>
-    <div class="inc__t rv" style="--d:.05s"><i></i><h3>Landing pages</h3><p>Pages built for the ad or search that brought each visitor, with one clear next step.</p></div>
-    <div class="inc__t rv" style="--d:.1s"><i></i><h3>Tracking you can trust</h3><p>GA4, Merchant Center, Meta pixel and Conversions API, so the platforms optimise for real leads and sales.</p></div>
+    <div class="inc__t rv" style="--d:0.00s"><i></i><h3>ICP and market map</h3><p>Who to target, and why now.</p></div>
+    <div class="inc__t rv" style="--d:0.05s"><i></i><h3>Verified contact data</h3><p>The right people, checked.</p></div>
+    <div class="inc__t rv" style="--d:0.10s"><i></i><h3>Copy in your voice</h3><p>Written for your offer.</p></div>
+    <div class="inc__t rv" style="--d:0.00s"><i></i><h3>Google Ads and Meta</h3><p>Campaigns and creative, run by us.</p></div>
+    <div class="inc__t rv" style="--d:0.05s"><i></i><h3>Landing pages</h3><p>One clear next step.</p></div>
+    <div class="inc__t rv" style="--d:0.10s"><i></i><h3>Tracking you can trust</h3><p>GA4, pixel, Conversions API.</p></div>
+    <div class="inc__t rv" style="--d:0.00s"><i></i><h3>Domains and deliverability</h3><p>So every email lands.</p></div>
+    <div class="inc__t rv" style="--d:0.05s"><i></i><h3>Replies and booking</h3><p>Straight into your calendar.</p></div>
+    <div class="inc__t rv" style="--d:0.10s"><i></i><h3>Weekly reporting</h3><p>Every number, every week.</p></div>
   </div>
 </section>
 
@@ -1709,7 +1660,7 @@ button { font: inherit; color: inherit; }
   <div class="ghost" data-drift="0.12" aria-hidden="true">THE PORTFOLIO</div>
   <div class="sx__head">
     <div class="rv"><span class="kicker">07 &mdash; The portfolio</span><h2 class="big">We've sat in <em>your seat.</em></h2></div>
-    <p class="lead rv" style="--d:.1s">Herbert &amp; Ellis builds and backs businesses across hospitality, ecommerce and SaaS. Two of them, TT Prospecting and TT Commerce, power the outreach and follow-up behind your campaigns.</p>
+    <p class="lead rv" style="--d:.1s">We build and back businesses across hospitality, ecommerce and SaaS. Two of them power your campaigns.</p>
   </div>
   <div class="portfolio__grid">
     <!-- The Lounge — TALL featured card -->
@@ -1780,7 +1731,7 @@ button { font: inherit; color: inherit; }
       <span class="portfolio__card-url">ttcommerce.co &rarr;</span>
     </a>
   </div>
-  <div class="pf__note rv"><p>Growing businesses is what we do every day. Let's grow yours.</p><a class="contact__cta cta-sm" href="#book"><span class="contact__cta-text">Talk to us about leads &rarr;</span></a></div>
+  <div class="pf__note rv"><a class="contact__cta cta-sm" href="#book"><span class="contact__cta-text">Let&rsquo;s grow yours &rarr;</span></a></div>
 </section>
 
 <!-- ========== FAQ ========== -->
@@ -1789,13 +1740,10 @@ button { font: inherit; color: inherit; }
     <div class="rv"><span class="kicker">08 &mdash; Straight answers</span><h2 class="big">Before you <em>ask.</em></h2></div>
   </div>
   <div class="faq rv">
-    <details open><summary>Who is this for?<span class="pm" aria-hidden="true"></span></summary><p>B2B businesses with a clear offer and someone ready to take the meetings: agencies, SaaS, professional services, trade suppliers, and hospitality groups selling events and corporate bookings.</p></details>
-    <details><summary>Do we need our own data or tools?<span class="pm" aria-hidden="true"></span></summary><p>No. Data, sending and sequencing run on our own platforms. You bring the offer and the calendar.</p></details>
-    <details><summary>Will it put our main email at risk?<span class="pm" aria-hidden="true"></span></summary><p>Outreach sends from separate domains that we set up and warm up, so your main domain and day-to-day email stay protected.</p></details>
-    <details><summary>What about GDPR?<span class="pm" aria-hidden="true"></span></summary><p>B2B outreach relies on legitimate interest. Every message carries a clear opt-out, and anyone who says no goes on a suppression list. We walk through the detail in the audit.</p></details>
-    <details><summary>Do you run the Google Ads and Meta accounts?<span class="pm" aria-hidden="true"></span></summary><p>Yes. We set up the accounts, tracking, campaigns and creative, then manage and improve them every month. Ad spend is paid by you directly to Google and Meta.</p></details>
-    <details><summary>How much ad budget do we need?<span class="pm" aria-hidden="true"></span></summary><p>It depends on your market and your goal. We recommend a starting budget in the audit, based on what the campaigns need to gather enough data to optimise.</p></details>
-    <details><summary>How is it priced?<span class="pm" aria-hidden="true"></span></summary><p>We quote after the audit, once we know your market, volumes and channels. No guesswork, no padded packages.</p></details>
+    <details open><summary>Who is this for?<span class="pm" aria-hidden="true"></span></summary><p>Businesses with a clear offer and a team ready to take the calls or the orders.</p></details>
+    <details><summary>Do we need our own tools?<span class="pm" aria-hidden="true"></span></summary><p>No. We bring the data, the platforms and the people. You bring the offer.</p></details>
+    <details><summary>Do you run Google and Meta?<span class="pm" aria-hidden="true"></span></summary><p>Yes, start to finish. Ad spend is paid by you directly to Google and Meta.</p></details>
+    <details><summary>How is it priced?<span class="pm" aria-hidden="true"></span></summary><p>We quote after the audit, once we know your market and goals.</p></details>
   </div>
 </section>
 
@@ -1820,8 +1768,8 @@ button { font: inherit; color: inherit; }
         <span class="contact__line--hidden" id="contactLets" style="display:block">LET'S</span>
         <span class="contact__talk contact__line--hidden" id="contactTalk">BOOK IT.</span>
       </div>
-      <p class="lead">Tell us who you sell to, where your leads come from today, and what a good month looks like. We'll come back with a pipeline audit and a straight answer on whether we can help.</p>
-      <a class="book__mail contact__cta-text--glitch" href="mailto:hello@herbertandellis.com">hello@herbertandellis.com</a>
+      <p class="lead">Tell us who you sell to and what a good month looks like. We&rsquo;ll take it from there.</p>
+      <a class="book__mail" href="mailto:hello@herbertandellis.com">hello@herbertandellis.com</a>
     </div>
     <form class="form" id="auditForm" novalidate data-endpoint="">
       <div class="f2">
@@ -1937,105 +1885,21 @@ button { font: inherit; color: inherit; }
   }
 
   /* =========================================================
-     HERO RADAR — move to target, click to book
+     HERO — rotating word slot, letters that warm up under the cursor
      ========================================================= */
-  var hero = $('#hero'), cv = $('#radar'), ctx = cv.getContext('2d'), diamond = $('.hero__diamond');
-  var heroDiag = $('.hero__diagonal'), heroParticles = $('#heroParticles');
-  var hudFit = $('#hudFit'), hudBooked = $('#hudBooked'), hudHint = $('#hudHint');
-  var W = 0, H = 0, dots = [], ptr = { x: 0, y: 0, in: false }, sweep = 0, booked = 0, lastFit = -1, heroVisible = true;
-  if (isMobile) hudHint.innerHTML = '<i></i>Tap to book';
-
-  function mkDot() {
-    return { x: Math.random() * W, y: Math.random() * H, vx: (Math.random() - 0.5) * 0.3, vy: (Math.random() - 0.5) * 0.3,
-             fit: Math.random() < 0.3, g: 0, st: 0, k: 0, sx: 0, sy: 0 };
-  }
-  function sizeRadar() {
-    var r = hero.getBoundingClientRect(), d = Math.min(2, window.devicePixelRatio || 1);
-    W = r.width; H = r.height;
-    cv.width = Math.round(W * d); cv.height = Math.round(H * d);
-    cv.style.width = W + 'px'; cv.style.height = H + 'px';
-    ctx.setTransform(d, 0, 0, d, 0, 0);
-    var n = clamp(Math.round(W * H / 5200), 70, 240);
-    dots = []; for (var i = 0; i < n; i++) dots.push(mkDot());
-  }
-  // Is a point over the coral diagonal? Mirrors the clip-paths in the site CSS.
-  function onDiag(x, y) {
-    if (isMobile) return y > 0.65 * H + 0.35 * H * 0.4 * (1 - x / W);
-    return x > W * 0.45 + W * 0.55 * 0.25 * (1 - y / H);
-  }
-  function target() {
-    var hr = hero.getBoundingClientRect(), dr = diamond.getBoundingClientRect();
-    return { x: dr.left + dr.width / 2 - hr.left, y: dr.top + dr.height / 2 - hr.top };
-  }
-  function square(x, y, s) { ctx.save(); ctx.translate(x, y); ctx.rotate(Math.PI / 4); ctx.fillRect(-s, -s, 2 * s, 2 * s); ctx.restore(); }
-
-  hero.addEventListener('pointermove', function (e) {
-    if (e.pointerType === 'touch') return;
-    var r = hero.getBoundingClientRect(); ptr.x = e.clientX - r.left; ptr.y = e.clientY - r.top; ptr.in = true;
-  });
-  hero.addEventListener('pointerleave', function () { ptr.in = false; });
-  hero.addEventListener('click', function (e) {
-    if (e.target.closest('a, button')) return;
-    var sent = 0;
-    dots.forEach(function (d) { if (d.st === 0 && d.fit && d.g > 0.5) { d.st = 1; d.k = 0; d.sx = d.x; d.sy = d.y; sent++; } });
-    if (!sent) { hudHint.animate && hudHint.animate([{ transform: 'translateX(0)' }, { transform: 'translateX(-8px)' }, { transform: 'translateX(6px)' }, { transform: 'translateX(0)' }], { duration: 300 }); }
-  });
-
-  function drawRadar() {
-    ctx.clearRect(0, 0, W, H);
-    var px = ptr.x, py = ptr.y;
-    if (!ptr.in) { // auto-sweep so the hero is alive at rest and on touch
-      if (!reduce) sweep += 0.004;
-      px = W * (isMobile ? 0.5 + 0.34 * Math.sin(sweep * 1.3) : 0.66 + 0.2 * Math.sin(sweep * 1.3));
-      py = H * (isMobile ? 0.8 + 0.1 * Math.sin(sweep * 2.1 + 1) : 0.5 + 0.3 * Math.sin(sweep * 2.1 + 1));
-    }
-    var rad = isMobile ? 110 : 160, T = target(), fit = 0, overDiag = onDiag(px, py);
-
-    ctx.lineWidth = 1;
-    ctx.setLineDash([4, 6]);
-    ctx.strokeStyle = overDiag ? 'rgba(255,255,255,.75)' : 'rgba(26,26,26,.45)';
-    ctx.beginPath(); ctx.arc(px, py, rad, 0, Math.PI * 2); ctx.stroke();
-    ctx.setLineDash([]);
-    ctx.beginPath(); ctx.moveTo(px - 8, py); ctx.lineTo(px + 8, py); ctx.moveTo(px, py - 8); ctx.lineTo(px, py + 8); ctx.stroke();
-
-    for (var i = 0; i < dots.length; i++) {
-      var d = dots[i];
-      if (d.st === 0) {
-        if (!reduce) { d.x += d.vx; d.y += d.vy; }
-        if (d.x < 0) d.x += W; else if (d.x > W) d.x -= W;
-        if (d.y < 0) d.y += H; else if (d.y > H) d.y -= H;
-        var lit = d.fit && Math.hypot(d.x - px, d.y - py) < rad;
-        d.g += ((lit ? 1 : 0) - d.g) * 0.15;
-        if (lit) fit++;
-        var dg = onDiag(d.x, d.y);
-        if (d.g > 0.05) {
-          ctx.strokeStyle = dg ? 'rgba(255,255,255,' + (0.55 * d.g) + ')' : 'rgba(232,80,30,' + (0.55 * d.g) + ')';
-          ctx.beginPath(); ctx.moveTo(px, py); ctx.lineTo(d.x, d.y); ctx.stroke();
-          ctx.fillStyle = dg ? '#ffffff' : '#e8501e';
-          square(d.x, d.y, 1.6 + 3.2 * d.g);
-        } else {
-          ctx.fillStyle = dg ? 'rgba(255,255,255,.5)' : (d.fit ? 'rgba(26,26,26,.32)' : 'rgba(26,26,26,.16)');
-          ctx.fillRect(d.x - 1.2, d.y - 1.2, 2.4, 2.4);
-        }
-      } else {
-        d.k = Math.min(1, d.k + (reduce ? 1 : 0.03));
-        var e = 1 - Math.pow(1 - d.k, 3);
-        d.x = d.sx + (T.x - d.sx) * e; d.y = d.sy + (T.y - d.sy) * e;
-        ctx.fillStyle = onDiag(d.x, d.y) ? '#1a1a1a' : '#e8501e';
-        square(d.x, d.y, 4 - 2 * e);
-        if (d.k >= 1) {
-          booked++; hudBooked.textContent = pad(booked);
-          var hr = hero.getBoundingClientRect();
-          spawnParticles(heroParticles, hr.left + T.x, hr.top + T.y, 8, '#1a1a1a');
-          var fresh = mkDot(); fresh.x = Math.random() < 0.5 ? 0 : W; dots[i] = fresh;
-        }
-      }
-    }
-    if (fit !== lastFit) { hudFit.textContent = pad(fit); lastFit = fit; }
-  }
-  sizeRadar();
-  var rt; window.addEventListener('resize', function () { clearTimeout(rt); rt = setTimeout(sizeRadar, 150); });
+  var hero = $('#hero'), diamond = $('.hero__diamond'), heroDiag = $('.hero__diagonal'), heroVisible = true;
   if ('IntersectionObserver' in window) new IntersectionObserver(function (es) { heroVisible = es[0].isIntersecting; }).observe(hero);
+
+  var slotW = $('#slotW'), slotWords = ['More meetings.', 'More sales.', 'Full calendars.', 'Warm leads.', 'Booked calls.', 'Real pipeline.'], slotI = 0;
+  if (!reduce) setInterval(function () {
+    if (!heroVisible) return;
+    slotW.classList.add('out');
+    setTimeout(function () {
+      slotI = (slotI + 1) % slotWords.length; slotW.textContent = slotWords[slotI];
+      slotW.classList.remove('out'); slotW.classList.add('in');
+      requestAnimationFrame(function () { requestAnimationFrame(function () { slotW.classList.remove('in'); }); });
+    }, 420);
+  }, 2200);
 
   function heroScroll() {
     var r = hero.getBoundingClientRect(), p = clamp(-r.top / (r.height * 0.8), 0, 1);
@@ -2043,11 +1907,21 @@ button { font: inherit; color: inherit; }
     heroL2.style.transform = 'translate3d(' + (p * 10) + 'vw,0,0)';
     heroDiag.style.transform = 'scaleX(' + (1 + p * 0.8) + ')';
     heroDiag.style.transformOrigin = 'right center';
+    if (!isMobile && !reduce) diamond.style.translate = ((mouseX / window.innerWidth - 0.5) * -40) + 'px ' + ((mouseY / window.innerHeight - 0.5) * -40) + 'px';
   }
-  var heroTime = 0;
+  var heroTime = 0, lift = heroLetters.map(function () { return 0; });
   function heroRipple() {
     heroTime += 0.03;
-    for (var i = 0; i < heroLetters.length; i++) heroLetters[i].style.transform = 'translate3d(0,' + (Math.sin(heroTime + i * 0.4) * 3) + 'px,0)';
+    for (var i = 0; i < heroLetters.length; i++) {
+      var el = heroLetters[i], target = 0;
+      if (!isMobile) {
+        var r = el.getBoundingClientRect(), d = Math.hypot(mouseX - (r.left + r.width / 2), mouseY - (r.top + r.height / 2));
+        target = d < 180 ? (1 - d / 180) : 0;
+      }
+      lift[i] += (target - lift[i]) * 0.15;
+      el.style.transform = 'translate3d(0,' + (Math.sin(heroTime + i * 0.4) * 3 - lift[i] * 26) + 'px,0)';
+      el.classList.toggle('hot', lift[i] > 0.35);
+    }
   }
 
   /* =========================================================
@@ -2217,37 +2091,32 @@ button { font: inherit; color: inherit; }
     { day: 17, ch: 'email', title: 'Closing the loop', text: 'Hi [First name],\n\nI will stop here so I do not clutter your inbox. If [problem] comes up later, this is the thread to reply to.', why: 'A polite close often gets the reply the first four did not.' },
     { day: 20, ch: 'sms', title: 'Reminder, once booked', text: 'Hi [First name], looking forward to our call tomorrow at [time]. Link: [meeting link]', why: 'Every booked meeting gets a reminder the day before, so it actually happens.' }
   ];
-  var track = $('#track'), runner = $('#runner'), prog = $('#prog'), playBtn = $('#play'), playTxt = $('#playTxt');
-  var enabled = { email: true, linkedin: true, whatsapp: true, sms: true }, cur = 0, playing = false, playRaf = 0;
-  function pos(day) { return 3 + (day - 1) / 20 * 94; }
-  [1, 7, 14, 21].forEach(function (d) {
-    var tk = document.createElement('div'); tk.className = 'tick'; tk.style.left = pos(d) + '%'; tk.textContent = 'Day ' + d; track.appendChild(tk);
-  });
+  var deck = $('#deck'), deckWrap = $('#deckWrap'), playBtn = $('#play'), playTxt = $('#playTxt');
+  var enabled = { email: true, linkedin: true, whatsapp: true, sms: true }, cur = 0, playing = false, playTimer = 0;
   SEQ.forEach(function (s, i) {
     var b = document.createElement('button');
-    b.type = 'button'; b.className = 'node ' + s.ch; b.style.left = pos(s.day) + '%';
+    b.type = 'button'; b.className = 'mcard ' + s.ch;
     b.setAttribute('aria-label', 'Day ' + s.day + ', ' + CH[s.ch] + ': ' + s.title);
+    b.innerHTML = '<span class="mcard__ch">' + CH[s.ch] + '</span><span class="mcard__d"><small>Day</small>' + s.day + '</span><span class="mcard__t">' + s.title + '</span>';
     b.addEventListener('click', function () { stopPlay(); select(i); });
-    track.appendChild(b); s.node = b;
-    var l = document.createElement('div');
-    l.className = 'nlabel ' + (i % 2 ? 'down' : 'up'); l.style.left = pos(s.day) + '%';
-    l.innerHTML = 'D' + s.day + '<br>' + CH[s.ch]; l.setAttribute('aria-hidden', 'true');
-    track.appendChild(l); s.label = l;
+    deck.appendChild(b); s.node = b;
   });
   function highlight(text) { return text.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/\[([^\]]+)\]/g, '<mark>[$1]</mark>'); }
-  function select(i) {
+  function select(i, pop) {
     var s = SEQ[i]; if (!s) return; cur = i;
-    SEQ.forEach(function (o, j) { o.node.classList.toggle('cur', j === i); });
-    $('#mDay').textContent = 'D' + s.day;
+    SEQ.forEach(function (o, k) { o.node.classList.toggle('cur', k === i); o.node.setAttribute('aria-pressed', String(k === i)); });
+    if (pop && !reduce) { s.node.classList.remove('pop'); void s.node.offsetWidth; s.node.classList.add('pop'); }
+    if (pop) deckWrap.scrollTo({ left: Math.max(0, s.node.offsetLeft - 40), behavior: reduce ? 'auto' : 'smooth' });
+    $('#mDay').textContent = 'Day ' + s.day;
     $('#mCh').innerHTML = '<span class="sw sw--' + s.ch + '"></span>' + CH[s.ch];
     $('#mTitle').textContent = s.title;
     $('#mText').innerHTML = highlight(s.text);
     $('#mWhy').innerHTML = '<b>Why</b>' + s.why;
   }
-  function firstEnabled(from) { for (var i = from; i < SEQ.length; i++) if (enabled[SEQ[i].ch]) return i; return -1; }
+  function nextEnabled(from) { for (var i = from; i < SEQ.length; i++) if (enabled[SEQ[i].ch]) return i; return -1; }
   function applyChannels() {
-    SEQ.forEach(function (s) { var off = !enabled[s.ch]; s.node.classList.toggle('off', off); s.label.classList.toggle('off', off); s.node.tabIndex = off ? -1 : 0; });
-    if (!enabled[SEQ[cur].ch]) { var f = firstEnabled(0); if (f > -1) select(f); }
+    SEQ.forEach(function (s) { var off = !enabled[s.ch]; s.node.classList.toggle('off', off); s.node.tabIndex = off ? -1 : 0; });
+    if (!enabled[SEQ[cur].ch]) { var f = nextEnabled(0); if (f > -1) select(f); }
   }
   $$('.chan').forEach(function (b) {
     b.addEventListener('click', function () {
@@ -2258,24 +2127,18 @@ button { font: inherit; color: inherit; }
       applyChannels();
     });
   });
-  function stopPlay() {
-    playing = false; cancelAnimationFrame(playRaf);
-    runner.classList.remove('on'); playTxt.innerHTML = '&#9654; Play the sequence';
-  }
+  function stopPlay() { playing = false; clearTimeout(playTimer); playTxt.innerHTML = '&#9654; Play the sequence'; }
   playBtn.addEventListener('click', function () {
     if (playing) { stopPlay(); return; }
-    playing = true; playTxt.innerHTML = '&#10074;&#10074; Pause'; runner.classList.add('on');
-    var t0 = performance.now(), dur = reduce ? 1 : 8000, lastHit = -1;
-    (function step(now) {
+    playing = true; playTxt.innerHTML = '&#10074;&#10074; Pause';
+    var i = -1;
+    (function next() {
       if (!playing) return;
-      var k = Math.min(1, (now - t0) / dur), day = 1 + k * 20, x = pos(day);
-      runner.style.left = x + '%'; prog.style.width = x + '%';
-      for (var i = SEQ.length - 1; i >= 0; i--) {
-        if (enabled[SEQ[i].ch] && SEQ[i].day <= day) { if (i !== lastHit) { lastHit = i; select(i); } break; }
-      }
-      if (k < 1) playRaf = requestAnimationFrame(step);
-      else setTimeout(function () { stopPlay(); prog.style.width = '0'; }, 900);
-    })(t0);
+      i = nextEnabled(i + 1);
+      if (i < 0) { stopPlay(); return; }
+      select(i, true);
+      playTimer = setTimeout(next, reduce ? 400 : 1300);
+    })();
   });
   select(0);
 
@@ -2300,21 +2163,6 @@ button { font: inherit; color: inherit; }
   window.addEventListener('pointerup', function () {
     if (!drag) return; drag = null; pt.classList.remove('drag');
   });
-
-  /* =========================================================
-     STACK — 3D tilt with glare
-     ========================================================= */
-  if (!isMobile && !reduce) {
-    $$('.tool').forEach(function (el) {
-      el.addEventListener('pointermove', function (e) {
-        var r = el.getBoundingClientRect(), x = (e.clientX - r.left) / r.width, y = (e.clientY - r.top) / r.height;
-        el.style.transition = 'transform .1s linear';
-        el.style.transform = 'rotateY(' + ((x - 0.5) * 10) + 'deg) rotateX(' + ((0.5 - y) * 8) + 'deg) translateZ(0)';
-        el.style.setProperty('--gx', x * 100 + '%'); el.style.setProperty('--gy', y * 100 + '%');
-      });
-      el.addEventListener('pointerleave', function () { el.style.transition = ''; el.style.transform = ''; });
-    });
-  }
 
   /* =========================================================
      MANIFESTO + BOOK headline (same choreography as the homepage)
@@ -2421,7 +2269,7 @@ button { font: inherit; color: inherit; }
         trails[j].style.opacity = (1 - (j + 1) / trails.length) * 0.4;
       }
     }
-    if (heroVisible) { heroScroll(); if (!reduce) heroRipple(); drawRadar(); }
+    if (heroVisible) { heroScroll(); if (!reduce) heroRipple(); }
     if (!reduce) ghostDrift();
     requestAnimationFrame(tick);
   }
@@ -2447,120 +2295,33 @@ button { font: inherit; color: inherit; }
 })();
 
 /* =========================================================
-   PAID — Google Ads + Meta funnel: ads only vs the whole funnel
+   GOOGLE + META — the funnel builds itself, click a stage for detail
    ========================================================= */
 (function () {
-  var fun = document.getElementById('fun'); if (!fun) return;
+  var blocks = document.getElementById('blocks'); if (!blocks) return;
   var reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-  var cv = document.getElementById('funCv'), ctx = cv.getContext('2d');
-  var tiles = Array.prototype.slice.call(fun.querySelectorAll('.stg'));
-  var endEl = fun.querySelector('.fun__end'), modeTxt = document.getElementById('paidMode');
+  var rows = Array.prototype.slice.call(blocks.querySelectorAll('button.blk'));
   var STAGES = [
-    { t: 'Ads', b: 'Google Search and Shopping campaigns for people already looking, and Meta campaigns on Facebook and Instagram to reach them before they search. Accounts, audiences and all the creative, built and launched by us.', w: 'No traffic, or the wrong traffic.' },
-    { t: 'Landing pages', b: 'Fast pages written for the search or ad that brought each visitor, with one clear next step. No sending paid clicks to a homepage and hoping.', w: 'You pay for clicks that bounce.' },
-    { t: 'Capture', b: 'Enquiry forms, quote builders and calculators that make it easy to say yes, and hand every lead over with the context your team needs.', w: 'Interest with nowhere to go.' },
-    { t: 'Tracking', b: 'GA4, Google Merchant Center, the Meta pixel and Conversions API, set up so Google and Meta optimise for real leads and sales, with a reporting dashboard you can read.', w: 'The platforms optimise for the wrong thing, and nobody can see what is working.' },
-    { t: 'Follow-up', b: 'Email, WhatsApp and SMS flows that follow up every enquiry, quote and abandoned checkout, so no lead waits for someone to remember to call.', w: 'Leads go cold before anyone gets back to them.' },
-    { t: 'Retargeting', b: 'Audiences on Google and Meta that bring back people who visited but did not act, with ads written for the point where they dropped off.', w: 'Most visitors leave and never come back.' }
+    { t: 'Ads', b: 'Google Search and Shopping for people already looking. Meta on Facebook and Instagram to reach them first. Creative included.' },
+    { t: 'Landing pages', b: 'Fast pages written for the ad that brought each visitor, with one clear next step.' },
+    { t: 'Capture', b: 'Forms, quote builders and calculators that make saying yes easy.' },
+    { t: 'Tracking', b: 'GA4, Merchant Center, Meta pixel and Conversions API, so Google and Meta optimise for real leads and sales.' },
+    { t: 'Follow-up', b: 'Email, WhatsApp and SMS that follow up every enquiry, quote and abandoned basket.' },
+    { t: 'Retargeting', b: 'Ads that bring back people who visited but did not act yet.' }
   ];
-  // Chance a visitor drops out as they reach each stage (illustrative only)
-  var DROP = { ads: [0, 0.45, 0.4, 0.12, 0.45, 0], whole: [0, 0.22, 0.18, 0, 0.14, 0] };
-  var mode = 'whole', sel = 0, W = 0, H = 150, nodes = [], endX = 0, dots = [], frame = 0, visible = false;
-  var PIPE = 60, NET = 118;
-
-  function size() {
-    var d = Math.min(2, window.devicePixelRatio || 1), fr = fun.getBoundingClientRect();
-    W = fr.width; cv.width = Math.round(W * d); cv.height = Math.round(H * d); ctx.setTransform(d, 0, 0, d, 0, 0);
-    nodes = tiles.map(function (t) { var r = t.getBoundingClientRect(); return r.left - fr.left + r.width / 2; });
-    var er = endEl.getBoundingClientRect(); endX = er.left - fr.left + er.width / 2;
-  }
-  function diamond(x, y, s, fill, stroke) {
-    ctx.save(); ctx.translate(x, y); ctx.rotate(Math.PI / 4);
-    if (fill) { ctx.fillStyle = fill; ctx.fillRect(-s, -s, 2 * s, 2 * s); }
-    if (stroke) { ctx.strokeStyle = stroke; ctx.lineWidth = 2; ctx.strokeRect(-s, -s, 2 * s, 2 * s); }
-    ctx.restore();
-  }
-  function spawn() { dots.push({ x: -6, y: PIPE, next: 0, st: 'pipe', a: 1, vy: 0, keep: Math.random() < 0.6 }); }
-
-  function step() {
-    ctx.clearRect(0, 0, W, H);
-    var whole = mode === 'whole';
-    // pipe
-    ctx.lineWidth = 2; ctx.strokeStyle = 'rgba(255,255,255,.85)';
-    ctx.beginPath(); ctx.moveTo(0, PIPE); ctx.lineTo(whole ? endX : nodes[1], PIPE); ctx.stroke();
-    if (!whole) { ctx.setLineDash([6, 8]); ctx.strokeStyle = 'rgba(255,255,255,.35)'; ctx.beginPath(); ctx.moveTo(nodes[1], PIPE); ctx.lineTo(endX, PIPE); ctx.stroke(); ctx.setLineDash([]); }
-    // retargeting net: catches drop-outs and carries them back in at the retarget stage
-    if (whole) {
-      ctx.setLineDash([4, 6]); ctx.strokeStyle = 'rgba(232,80,30,.9)';
-      ctx.beginPath(); ctx.moveTo(nodes[1] - 30, NET); ctx.lineTo(nodes[5] - 24, NET);
-      ctx.quadraticCurveTo(nodes[5], NET, nodes[5], PIPE + 14); ctx.stroke(); ctx.setLineDash([]);
-      ctx.fillStyle = 'rgba(232,80,30,.9)'; ctx.font = '700 9px -apple-system, Helvetica, Arial, sans-serif';
-      ctx.fillText('RETARGETING', nodes[1] - 30, NET + 18);
-    }
-    // stage nodes
-    nodes.forEach(function (x, i) {
-      var live = whole || i === 0;
-      diamond(x, PIPE, i === sel ? 9 : 7, live ? (i === sel ? '#e8501e' : '#ffffff') : null, live ? null : 'rgba(255,255,255,.45)');
-    });
-    // visitors
-    if (!reduce && ++frame % (whole ? 9 : 9) === 0) spawn();
-    for (var i = dots.length - 1; i >= 0; i--) {
-      var d = dots[i], sp = reduce ? 0 : 2.1;
-      if (d.st === 'pipe') {
-        d.x += sp;
-        if (d.next < nodes.length && d.x >= nodes[d.next]) {
-          var p = DROP[mode][d.next]; d.next++;
-          if (Math.random() < p) { d.st = whole ? 'drop' : 'fall'; d.vy = 0.6; }
-        }
-        if (d.x >= endX) { dots.splice(i, 1); endEl.classList.add('pop'); setTimeout(function () { endEl.classList.remove('pop'); }, 120); continue; }
-        ctx.fillStyle = '#e8501e'; ctx.fillRect(d.x - 2.5, d.y - 2.5, 5, 5);
-      } else if (d.st === 'fall') {           // ads only: lost for good
-        d.vy += 0.12; d.y += d.vy; d.x += 0.6; d.a -= 0.02;
-        ctx.fillStyle = 'rgba(255,255,255,' + Math.max(0, d.a) + ')'; ctx.fillRect(d.x - 2, d.y - 2, 4, 4);
-        if (d.a <= 0 || d.y > H) dots.splice(i, 1);
-      } else if (d.st === 'drop') {           // whole funnel: falls into the retargeting net
-        d.y += 2.2; if (d.y >= NET) { d.y = NET; d.st = 'net'; }
-        ctx.fillStyle = '#ffffff'; ctx.fillRect(d.x - 2, d.y - 2, 4, 4);
-      } else if (d.st === 'net') {
-        d.x += sp * 1.3;
-        if (d.x >= nodes[5] - 24) {
-          if (!d.keep) { d.st = 'fall'; d.a = 0.8; d.vy = 0.2; continue; } // not everyone comes back
-          d.st = 'rise';
-        }
-        ctx.fillStyle = '#ffffff'; ctx.fillRect(d.x - 2, d.y - 2, 4, 4);
-      } else if (d.st === 'rise') {
-        d.x += (nodes[5] - d.x) * 0.2; d.y -= 2.4;
-        if (d.y <= PIPE) { d.y = PIPE; d.x = nodes[5]; d.st = 'pipe'; d.next = 6; }
-        ctx.fillStyle = '#e8501e'; ctx.fillRect(d.x - 2.5, d.y - 2.5, 5, 5);
-      }
-    }
-  }
-
   function select(i) {
-    sel = i; var s = STAGES[i];
-    tiles.forEach(function (t, j) { t.classList.toggle('sel', j === i); t.setAttribute('aria-pressed', String(j === i)); });
-    document.getElementById('sdTitle').textContent = s.t;
-    document.getElementById('sdBuild').textContent = s.b;
-    document.getElementById('sdWithout').textContent = s.w;
+    rows.forEach(function (r, k) { r.classList.toggle('sel', k === i); r.setAttribute('aria-pressed', String(k === i)); });
+    document.getElementById('sdTitle').textContent = STAGES[i].t;
+    document.getElementById('sdBuild').textContent = STAGES[i].b;
   }
-  function setMode(m) {
-    mode = m; fun.setAttribute('data-mode', m); dots = [];
-    Array.prototype.forEach.call(document.querySelectorAll('.seg__b'), function (b) { b.setAttribute('aria-pressed', String(b.getAttribute('data-mode') === m)); });
-    modeTxt.textContent = m === 'whole'
-      ? 'Every stage built and connected. People who drop off are brought back by retargeting.'
-      : 'Ads running into a funnel nobody built. Watch where the visitors fall out.';
-    if (reduce) step();
-  }
-  tiles.forEach(function (t, i) { t.addEventListener('click', function () { select(i); if (reduce) step(); }); });
-  Array.prototype.forEach.call(document.querySelectorAll('.seg__b'), function (b) { b.addEventListener('click', function () { setMode(b.getAttribute('data-mode')); }); });
-
-  size(); setMode('whole'); select(0); step();
-  var rt; window.addEventListener('resize', function () { clearTimeout(rt); rt = setTimeout(function () { size(); step(); }, 150); });
-  if ('IntersectionObserver' in window) new IntersectionObserver(function (es) { visible = es[0].isIntersecting; }).observe(fun);
-  else visible = true;
-  (function loop() { if (visible && !reduce) step(); requestAnimationFrame(loop); })();
+  rows.forEach(function (r, i) { r.addEventListener('click', function () { select(i); }); });
+  select(0);
+  if (reduce || !('IntersectionObserver' in window)) { blocks.classList.add('built'); return; }
+  var io = new IntersectionObserver(function (es) {
+    if (es[0].isIntersecting) { io.disconnect(); blocks.classList.add('built'); }
+  }, { threshold: 0.25 });
+  io.observe(blocks);
 })();
-
 
 /* =========================================================
    WANT LEADS? — goal picks, magnetic button, slam-in headline, sticky button
@@ -2593,19 +2354,7 @@ button { font: inherit; color: inherit; }
     ask.addEventListener('pointerleave', function () { btn.style.transform = ''; });
   }
 
-  // Headline slams in from both sides with a particle burst, like the homepage manifesto
-  function burst(el) {
-    if (reduce) return;
-    var box = document.getElementById('askParticles'), br = box.getBoundingClientRect(), r = el.getBoundingClientRect();
-    for (var i = 0; i < 14; i++) {
-      var p = document.createElement('div'); p.className = 'manifesto__particle'; p.style.background = '#1a1a1a';
-      var a = Math.PI * 2 / 14 * i, dist = 60 + Math.random() * 90;
-      p.style.left = (r.left + r.width / 2 - br.left) + 'px'; p.style.top = (r.top + r.height / 2 - br.top) + 'px'; p.style.opacity = '1';
-      p.style.transition = 'transform .6s cubic-bezier(.16,1,.3,1), opacity .6s ease-out'; box.appendChild(p);
-      (function (p, a, dist) { requestAnimationFrame(function () { p.style.transform = 'translate(' + Math.cos(a) * dist + 'px,' + Math.sin(a) * dist + 'px) rotate(' + Math.random() * 360 + 'deg)'; p.style.opacity = '0'; }); })(p, a, dist);
-      setTimeout(function (el) { el.remove(); }, 700, p);
-    }
-  }
+  // Headline slides in from both sides
   var l1 = document.getElementById('askL1'), l2 = document.getElementById('askL2');
   if (!reduce && 'IntersectionObserver' in window) {
     l1.style.transform = 'translateX(-100vw)'; l2.style.transform = 'translateX(100vw)';
@@ -2614,7 +2363,6 @@ button { font: inherit; color: inherit; }
       [l1, l2].forEach(function (l, i) {
         setTimeout(function () {
           l.style.transition = 'transform .6s cubic-bezier(.16,1,.3,1)'; l.style.transform = 'translateX(0)';
-          setTimeout(function () { burst(l); }, 350);
         }, i * 300);
       });
     }, { threshold: 0.3 });
