@@ -161,14 +161,13 @@ button { cursor: pointer; }
 .cal .d { background: transparent; min-height: auto; text-align: center; font-size: .7em; font-weight: 800; color: var(--ink-2); }
 .cal .m { font-size: .62em; font-weight: 800; padding: .5em .45em; line-height: 1.15; }
 
-/* ---------- Sticker marquee ---------- */
-.marq { background: var(--ink); padding: 1.3rem 0; overflow: hidden; }
-.marq__row { display: flex; gap: 1.6rem; width: max-content; animation: marq 46s linear infinite; }
-.marq:hover .marq__row { animation-play-state: paused; }
-.marq .sticker { background: none !important; border: 0; color: var(--cream) !important; font-size: clamp(1.4rem, 2.6vw, 2.2rem); font-weight: 800; font-variation-settings: "wdth" 80; letter-spacing: -.02em; padding: 0; gap: 1.6rem; }
-.marq .sticker::after { content: ""; width: .32em; height: .32em; border-radius: 50%; background: var(--orange); }
-@keyframes marq { to { transform: translateX(-50%); } }
-@media (prefers-reduced-motion: reduce) { .marq__row { animation: none; } }
+/* ---------- Quote band ---------- */
+.qband { background: var(--ink); color: var(--cream); text-align: center; padding: clamp(2.6rem, 6vw, 4.6rem) var(--g); }
+.qband p { font-family: var(--chunk); font-weight: 800; font-variation-settings: "wdth" 80; font-size: clamp(1.9rem, 4.6vw, 3.9rem); line-height: 1.02; letter-spacing: -.025em; max-width: 18ch; margin-inline: auto; text-wrap: balance; }
+.qband p::before { content: "\201C"; display: block; color: var(--orange); font-size: 1.6em; line-height: .7; height: .45em; }
+.qband em { font-style: normal; color: var(--orange); }
+.qband figcaption { margin-top: 1.2rem; font-size: .8rem; font-weight: 800; letter-spacing: .16em; text-transform: uppercase; color: rgba(245,239,230,.7); }
+.qband figcaption::before { content: ""; display: inline-block; width: 1.8em; height: 2px; background: var(--orange); vertical-align: middle; margin-right: .7em; }
 
 /* ---------- Notched colour cards (arrow sits in the cut-out corner) ---------- */
 .ncards { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; }
