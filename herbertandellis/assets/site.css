@@ -104,11 +104,11 @@ button { cursor: pointer; }
   .giant__ch.out { animation: lift .3s var(--ease) forwards; animation-delay: calc(var(--i, 0) * 22ms); }
   @keyframes lift { from { opacity: 1; transform: none; } to { opacity: 0; transform: translateY(-.3em); } }
 }
-.giant--swap { height: .84em; display: flex; align-items: center; justify-content: center; }
-.giant--swap .giant__line { width: 100%; overflow: hidden; padding-inline: .02em; }
+.giant--swap { position: relative; height: .84em; width: 100vw; margin-left: calc(50% - 50vw); overflow: hidden; }
+.giant--swap .giant__line { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; padding-inline: var(--g); white-space: nowrap; overflow: hidden; transition: transform .75s var(--ease); will-change: transform; }
 .hero__intro { text-align: center; margin: clamp(10px, 1.5vw, 18px) auto 0; font-weight: 700; font-size: clamp(1rem, 1.5vw, 1.2rem); position: relative; z-index: 3; }
 
-.stage { --pf: clamp(9.5px, 1vw, 14.5px); --lap: clamp(24px, 5vw, 84px); position: relative; z-index: 2; height: calc(37em + 30px); font-size: var(--pf); margin-top: calc(-1 * var(--lap)); display: grid; place-items: center; perspective: 1600px; touch-action: pan-y; outline: none; -webkit-user-select: none; user-select: none; cursor: grab; }
+.stage { --pf: clamp(9.5px, 1vw, 14.5px); --lap: clamp(6px, 1.6vw, 28px); position: relative; z-index: 2; height: calc(37em + 30px); font-size: var(--pf); margin-top: calc(-1 * var(--lap)); display: grid; place-items: center; perspective: 1600px; touch-action: pan-y; outline: none; -webkit-user-select: none; user-select: none; cursor: grab; }
 .stage:active { cursor: grabbing; }
 .stage:focus-visible .phone[data-d="0"] { box-shadow: 0 0 0 4px var(--orange), 0 30px 60px -22px rgba(31,29,54,.5); }
 .phone { position: absolute; top: 0; width: 18em; height: 37em; border-radius: 2.8em; background: var(--ink); padding: .55em; box-shadow: 0 30px 60px -22px rgba(31,29,54,.5); transform-style: preserve-3d;

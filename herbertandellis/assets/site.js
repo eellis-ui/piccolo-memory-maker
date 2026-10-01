@@ -34,21 +34,32 @@
   /* Keep a swapping word on one line: shrink it only if it would run wider than its space */
   function fit(line) {
     line.style.fontSize = '';
+    line.style.justifyContent = 'flex-start'; // centred overflow hides the left edge from scrollWidth
     var cw = line.clientWidth, sw = line.scrollWidth;
+    line.style.justifyContent = '';
     if (sw > cw && cw > 0) line.style.fontSize = (cw / sw * 0.98).toFixed(3) + 'em';
   }
-  function fitAll() { $$('[data-word-target]').forEach(fit); }
+  function fitAll() { $$('[data-word-target] .giant__line').forEach(fit); }
   if (document.fonts && document.fonts.ready) document.fonts.ready.then(fitAll);
+  if (document.fonts && document.fonts.addEventListener) document.fonts.addEventListener('loadingdone', fitAll);
   window.addEventListener('resize', fitAll);
 
-  /* Swap a giant word: old letters lift away, new ones rise in */
-  function swapWord(line, word) {
-    if (!line || line.getAttribute('data-now') === word) return;
-    line.setAttribute('data-now', word);
-    if (reduce) { fillWord(line, word); fit(line); return; }
-    var old = $$('.giant__ch', line);
-    old.forEach(function (c, k) { c.style.setProperty('--i', k); c.classList.add('out'); });
-    setTimeout(function () { if (line.getAttribute('data-now') === word) { fillWord(line, word); fit(line); } }, 260 + old.length * 22);
+  /* Swap a giant word by sliding: the new word pushes in from the side you moved towards
+     and shoves the old one out the other side. dir 1 = forward (in from the right), -1 = back. */
+  function swapWord(box, word, dir) {
+    if (!box || box.getAttribute('data-now') === word) return;
+    box.setAttribute('data-now', word);
+    var lines = $$('.giant__line', box), cur = lines[lines.length - 1];
+    lines.slice(0, -1).forEach(function (l) { l.remove(); });   // finish any slide still in flight
+    var nl = document.createElement('span');
+    nl.className = 'giant__line'; nl.textContent = word;
+    if (reduce || !cur) { if (cur) cur.remove(); box.appendChild(nl); fit(nl); return; }
+    nl.style.transition = 'none'; nl.style.transform = 'translateX(' + (dir * 100) + '%)';
+    box.appendChild(nl); fit(nl);
+    void nl.offsetWidth;
+    nl.style.transition = ''; nl.style.transform = 'translateX(0)';
+    cur.style.transform = 'translateX(' + (-dir * 100) + '%)';
+    setTimeout(function () { if (cur.parentNode) cur.remove(); }, 800);
   }
 
   /* Phone carousel: three phones on show, the rest wait behind. Swipe, drag, click, keys or the service pills. */
@@ -56,31 +67,31 @@
     var stage = $('.stage', car), phones = $$('.phone', car), n = phones.length;
     var tabs = $$('.offers button', car), cap = $('.cap', car), capT = $('.cap__t', car), capL = $('.cap__l', car);
     var word = $('[data-word-target]', car);
-    if (word) word.setAttribute('data-now', word.textContent.replace(/\u00A0/g, ' '));
+    if (word) word.setAttribute('data-now', word.textContent.replace(/\u00A0/g, ' ').trim());
     var i = 0, timer = 0, paused = false, lastWheel = 0;
     function off(k) { var d = ((k - i) % n + n) % n; return d > n / 2 ? d - n : d; }
-    function render() {
+    function render(dir) {
       phones.forEach(function (p, k) {
         var d = off(k); p.setAttribute('data-d', d); p.style.zIndex = 10 - Math.abs(d);
         p.setAttribute('aria-hidden', String(d !== 0));
       });
       tabs.forEach(function (t, k) { t.setAttribute('aria-selected', String(k === i)); t.tabIndex = k === i ? 0 : -1; });
-      if (word && phones[i].getAttribute('data-word')) swapWord(word, phones[i].getAttribute('data-word'));
+      if (word && phones[i].getAttribute('data-word')) swapWord(word, phones[i].getAttribute('data-word'), dir || 1);
       if (cap) {
         capT.textContent = phones[i].getAttribute('data-title'); capL.textContent = phones[i].getAttribute('data-line');
         cap.classList.remove('swap'); void cap.offsetWidth; cap.classList.add('swap');
       }
     }
-    function go(k) { i = ((k % n) + n) % n; render(); restart(); }
-    function next() { go(i + 1); }
-    function prev() { go(i - 1); }
+    function go(k, dir) { var t = ((k % n) + n) % n; if (dir == null) dir = off(t) < 0 ? -1 : 1; i = t; render(dir); restart(); }
+    function next() { go(i + 1, 1); }
+    function prev() { go(i - 1, -1); }
     function refill() {
       var bar = tabs[i] && $('i', tabs[i]); if (!bar) return;
       bar.style.transition = 'none'; bar.style.width = '0'; void bar.offsetWidth; bar.style.transition = ''; bar.style.width = '';
     }
     function restart() {
       clearInterval(timer); car.classList.toggle('is-paused', paused || reduce);
-      if (!reduce && !paused) { refill(); timer = setInterval(function () { i = (i + 1) % n; render(); }, 3800); }
+      if (!reduce && !paused) { refill(); timer = setInterval(function () { i = (i + 1) % n; render(1); }, 3800); }
     }
     tabs.forEach(function (t, k) { t.addEventListener('click', function () { go(k); }); });
     var pBtn = $('.stage__arrow--prev', car), nBtn = $('.stage__arrow--next', car);
