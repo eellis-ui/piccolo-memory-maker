@@ -70,6 +70,8 @@ button { cursor: pointer; }
 /* ---------- Stickers ---------- */
 .sticker { display: inline-flex; align-items: center; gap: .45rem; padding: .42rem .95rem; border-radius: 999px; font-weight: 700; font-size: .85rem; background: transparent; border: 1.5px solid var(--ink); white-space: nowrap; }
 .s-orange { background: var(--orange); color: var(--white); }
+.sticker--caps { font-size: .82rem; font-weight: 800; letter-spacing: .16em; text-transform: uppercase; padding: .5rem 1.15rem; border-width: 2px; }
+.sticker--caps.s-orange { border-color: var(--orange); }
 .s-lilac { background: var(--lilac); color: var(--white); }
 .s-lime { background: var(--lime); }
 .s-sky { background: var(--sky); }
@@ -99,7 +101,11 @@ button { cursor: pointer; }
 @media (prefers-reduced-motion: no-preference) {
   .giant__ch { animation: rise 1s var(--ease) both; animation-delay: calc(var(--i, 0) * 45ms + 100ms); }
   @keyframes rise { from { opacity: 0; transform: translateY(.35em); } to { opacity: 1; transform: none; } }
+  .giant__ch.out { animation: lift .3s var(--ease) forwards; animation-delay: calc(var(--i, 0) * 22ms); }
+  @keyframes lift { from { opacity: 1; transform: none; } to { opacity: 0; transform: translateY(-.3em); } }
 }
+.giant--swap { height: .84em; display: flex; align-items: flex-end; justify-content: center; }
+.giant--swap .giant__line { width: 100%; overflow: hidden; padding-inline: .02em; }
 .hero__intro { text-align: center; margin: clamp(10px, 1.5vw, 18px) auto 0; font-weight: 700; font-size: clamp(1rem, 1.5vw, 1.2rem); position: relative; z-index: 3; }
 
 .stage { --pf: clamp(9.5px, 1vw, 14.5px); --lap: clamp(24px, 5vw, 84px); position: relative; z-index: 2; height: calc(37em + 30px); font-size: var(--pf); margin-top: calc(-1 * var(--lap)); display: grid; place-items: center; perspective: 1600px; touch-action: pan-y; outline: none; }
@@ -184,7 +190,9 @@ button { cursor: pointer; }
 @media (max-width: 620px) { .pcards { grid-template-columns: 1fr; } }
 .pcard { position: relative; display: flex; flex-direction: column; gap: .4rem; min-height: 250px; padding: 1.6rem; border-radius: var(--r); transition: transform .5s var(--spring); overflow: hidden; }
 .pcard:hover { transform: translateY(-6px); }
-.pcard__sector { align-self: flex-start; font-size: .78rem; font-weight: 700; padding: .3rem .8rem; border-radius: 999px; background: rgba(255,255,255,.6); margin-bottom: auto; }
+.pcard__top { display: flex; align-items: center; gap: .6rem; margin-bottom: auto; padding-right: 7.5rem; }
+.pcard__logo { height: 46px; width: auto; max-width: 150px; object-fit: contain; background: var(--white); border-radius: 12px; padding: 6px 10px; }
+.pcard__sector { align-self: center; font-size: .78rem; font-weight: 700; padding: .3rem .8rem; border-radius: 999px; background: rgba(255,255,255,.6); }
 .pcard__name { font-size: clamp(1.7rem, 2.8vw, 2.4rem); font-weight: 800; font-variation-settings: "wdth" 88; letter-spacing: -.02em; line-height: 1; margin-top: 1.6rem; }
 .pcard__type { font-weight: 700; font-size: .95rem; }
 .pcard__desc { font-size: .92rem; opacity: .8; max-width: 34ch; }

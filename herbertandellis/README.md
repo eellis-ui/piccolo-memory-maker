@@ -25,9 +25,17 @@ Wade & Leta palette.
 - **Shapes:** rounded corners, pill buttons, straight outline tags, colour cards with a notched arrow corner.
   Motion is limited to letters rising in, cards lifting on hover, and the phone carousel.
 
+## Partner logos
+
+The "Partnered with" cards on both pages show a logo when one exists at `assets/logos/<name>.png`:
+`the-lounge.png`, `knock-and-snitch.png`, `piccoload.png`, `tt-prospecting.png`, `musefile.png`, `tt-commerce.png`.
+Until a file is there, the card simply shows the name.
+
 ## The phone carousel
 
-Both heroes have a giant word with three phones in front, each showing a different service. They rotate on their
+Both heroes have a giant word with three phones in front, each showing a different service. On the homepage the
+giant word changes with the phone: LEADS, INVEST, CONSULT, BUILD and GROWTH. Each phone sets its word with
+`data-word`. They rotate on their
 own every few seconds and pause on hover. Visitors can click the side phones, use the arrows, tap a service pill,
 swipe or drag, scroll sideways on a trackpad, or use the arrow keys.
 

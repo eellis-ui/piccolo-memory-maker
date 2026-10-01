@@ -20,20 +20,43 @@
   }
 
   /* Giant word: letters rise in one after another on load */
-  $$('.giant__line').forEach(function (line, li) {
-    var text = line.textContent; line.textContent = ''; line.setAttribute('aria-hidden', 'true');
+  function fillWord(line, text, base) {
+    line.textContent = '';
     for (var i = 0; i < text.length; i++) {
       var s = document.createElement('span');
-      s.className = 'giant__ch'; s.textContent = text[i] === ' ' ? ' ' : text[i];
-      s.style.setProperty('--i', i + li * 7);
+      s.className = 'giant__ch'; s.textContent = text[i] === ' ' ? '\u00A0' : text[i];
+      s.style.setProperty('--i', i + (base || 0));
       line.appendChild(s);
     }
-  });
+  }
+  $$('.giant__line').forEach(function (line, li) { line.setAttribute('aria-hidden', 'true'); fillWord(line, line.textContent, li * 7); });
+
+  /* Keep a swapping word on one line: shrink it only if it would run wider than its space */
+  function fit(line) {
+    line.style.fontSize = '';
+    var cw = line.clientWidth, sw = line.scrollWidth;
+    if (sw > cw && cw > 0) line.style.fontSize = (cw / sw * 0.98).toFixed(3) + 'em';
+  }
+  function fitAll() { $$('[data-word-target]').forEach(fit); }
+  if (document.fonts && document.fonts.ready) document.fonts.ready.then(fitAll);
+  window.addEventListener('resize', fitAll);
+
+  /* Swap a giant word: old letters lift away, new ones rise in */
+  function swapWord(line, word) {
+    if (!line || line.getAttribute('data-now') === word) return;
+    line.setAttribute('data-now', word);
+    if (reduce) { fillWord(line, word); fit(line); return; }
+    var old = $$('.giant__ch', line);
+    old.forEach(function (c, k) { c.style.setProperty('--i', k); c.classList.add('out'); });
+    setTimeout(function () { if (line.getAttribute('data-now') === word) { fillWord(line, word); fit(line); } }, 260 + old.length * 22);
+  }
 
   /* Phone carousel: three phones on show, the rest wait behind. Swipe, drag, click, keys or the service pills. */
   $$('[data-carousel]').forEach(function (car) {
     var stage = $('.stage', car), phones = $$('.phone', car), n = phones.length;
     var tabs = $$('.offers button', car), cap = $('.cap', car), capT = $('.cap__t', car), capL = $('.cap__l', car);
+    var word = $('[data-word-target]', car);
+    if (word) word.setAttribute('data-now', word.textContent.replace(/\u00A0/g, ' '));
     var i = 0, timer = 0, paused = false, lastWheel = 0;
     function off(k) { var d = ((k - i) % n + n) % n; return d > n / 2 ? d - n : d; }
     function render() {
@@ -42,6 +65,7 @@
         p.setAttribute('aria-hidden', String(d !== 0));
       });
       tabs.forEach(function (t, k) { t.setAttribute('aria-selected', String(k === i)); t.tabIndex = k === i ? 0 : -1; });
+      if (word && phones[i].getAttribute('data-word')) swapWord(word, phones[i].getAttribute('data-word'));
       if (cap) {
         capT.textContent = phones[i].getAttribute('data-title'); capL.textContent = phones[i].getAttribute('data-line');
         cap.classList.remove('swap'); void cap.offsetWidth; cap.classList.add('swap');
