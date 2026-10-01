@@ -100,14 +100,6 @@ html.js .blocks:not(.built) .blk { opacity: 0; transform: translateX(-40px); }
 .step b { font-size: 1.35rem; font-weight: 800; letter-spacing: -.01em; line-height: 1.05; }
 .step p { font-size: .95rem; opacity: .85; }
 
-/* Included: a tidy list on sand */
-.incl { background: var(--cream-2); display: grid; grid-template-columns: 1fr 1.4fr; gap: 2rem 4rem; align-items: start; }
-.incl__list { list-style: none; display: grid; grid-template-columns: 1fr 1fr; gap: 0 2rem; }
-.incl__list li { display: flex; gap: .8rem; align-items: center; padding: .9rem 0; border-bottom: 1.5px solid rgba(22,21,31,.12); font-weight: 700; font-size: 1.08rem; }
-.incl__list li::before { content: ""; flex: none; width: 1.5rem; height: 1.5rem; border-radius: 50%; background: var(--orange) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M6 12.5l4 4 8-9' fill='none' stroke='%23fff' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E") center / 70% no-repeat; }
-@media (max-width: 900px) { .incl { grid-template-columns: 1fr; } }
-@media (max-width: 560px) { .incl__list { grid-template-columns: 1fr; } }
-
 /* FAQ */
 .faq { display: grid; gap: 10px; max-width: 960px; }
 .faq details { background: var(--white); border-radius: 22px; padding: 0 1.5rem; }
@@ -300,25 +292,6 @@ html.js .blocks:not(.built) .blk { opacity: 0; transform: translateX(-40px); }
       <div class="step s-sky rv" style="--d:.1s"><em>03</em><b>Launch</b><p>Outreach and ads go live. We test, then double down.</p></div>
       <div class="step s-pink rv" style="--d:.15s"><em>04</em><b>Book</b><p>Replies handled. Meetings land in your calendar.</p></div>
       <div class="step s-orange rv" style="--d:.2s;color:var(--white)"><em>05</em><b>Scale</b><p>Weekly numbers. More of whatever works.</p></div>
-    </div>
-  </div>
-</section>
-
-<section class="sec" id="included" style="padding-top:0">
-  <div class="wrap">
-    <div class="incl panel rv">
-      <div><span class="tag">What&rsquo;s included</span><h2 class="h2">Everything. <em>One team.</em></h2></div>
-      <ul class="incl__list">
-        <li>ICP and market map</li>
-        <li>Verified contact data</li>
-        <li>Copy in your voice</li>
-        <li>Google Ads and Meta</li>
-        <li>Landing pages</li>
-        <li>Tracking you can trust</li>
-        <li>Sending domains</li>
-        <li>Replies and booking</li>
-        <li>Weekly reporting</li>
-      </ul>
     </div>
   </div>
 </section>
