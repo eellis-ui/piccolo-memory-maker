@@ -28,7 +28,7 @@ Wade & Leta palette.
 ## Company logos
 
 The "H&E family" cards on both pages swap the company name for its logo when one exists at `assets/logos/<name>.png`:
-`the-lounge.png`, `knock-and-snitch.png`, `piccoload.png`, `tt-prospecting.png`, `musefile.png`, `tt-commerce.png`.
+`the-lounge.png`, `knock-and-snitch.png`, `piccoload.png`, `tt-massive-marketing.png`, `musefile.png`.
 Until a file is there, the card simply shows the name.
 
 ## The phone carousel
