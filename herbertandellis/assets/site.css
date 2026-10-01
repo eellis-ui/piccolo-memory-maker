@@ -191,9 +191,11 @@ button { cursor: pointer; }
 .pcard { position: relative; display: flex; flex-direction: column; gap: .4rem; min-height: 250px; padding: 1.6rem; border-radius: var(--r); transition: transform .5s var(--spring); overflow: hidden; }
 .pcard:hover { transform: translateY(-6px); }
 .pcard__top { display: flex; align-items: center; gap: .6rem; margin-bottom: auto; padding-right: 7.5rem; }
-.pcard__logo { height: 46px; width: auto; max-width: 150px; object-fit: contain; background: var(--white); border-radius: 12px; padding: 6px 10px; }
 .pcard__sector { align-self: center; font-size: .78rem; font-weight: 700; padding: .3rem .8rem; border-radius: 999px; background: rgba(255,255,255,.6); }
 .pcard__name { font-size: clamp(1.7rem, 2.8vw, 2.4rem); font-weight: 800; font-variation-settings: "wdth" 88; letter-spacing: -.02em; line-height: 1; margin-top: 1.6rem; }
+.pcard__mark { display: block; height: clamp(60px, 6vw, 84px); width: auto; max-width: 78%; object-fit: contain; object-position: left center; }
+.pcard__name:has(.pcard__mark) .pcard__nm { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
+.pc-ink .pcard__mark, .pc-cobalt .pcard__mark, .pc-orange .pcard__mark { filter: invert(1); }
 .pcard__type { font-weight: 700; font-size: .95rem; }
 .pcard__desc { font-size: .92rem; opacity: .8; max-width: 34ch; }
 .pcard__url { margin-top: .6rem; font-size: .85rem; font-weight: 700; display: inline-flex; align-items: center; gap: .4rem; }
