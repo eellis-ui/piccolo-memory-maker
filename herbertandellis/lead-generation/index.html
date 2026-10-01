@@ -63,7 +63,6 @@
 .out .btn { margin-top: 1.3rem; }
 .fine { margin-top: .9rem; font-size: .8rem; opacity: .55; }
 
-.note { margin-top: .9rem; font-size: .85rem; color: var(--ink-2); }
 
 /* Google + Meta funnel */
 .blocks { display: grid; gap: 8px; }
@@ -74,14 +73,9 @@
 .blk small { font-weight: 800; font-size: 1rem; line-height: 1; opacity: .75; }
 .blk b { font-size: clamp(1.4rem, 3vw, 2.5rem); font-weight: 800; font-variation-settings: "wdth" 88; letter-spacing: -.02em; line-height: 1; }
 .blk span { justify-self: end; text-align: right; font-weight: 600; font-size: .92rem; opacity: .85; }
-button.blk:hover { transform: translateX(8px); transition-delay: 0s; }
-.blk.sel { box-shadow: 0 0 0 3px var(--cream), 0 0 0 6px var(--ink); }
 .blk--end { background: var(--cream) !important; color: var(--orange-2) !important; box-shadow: inset 0 0 0 3px var(--orange); grid-template-columns: 1fr; }
 .blk--end b { font-weight: 800; font-variation-settings: "wdth" 80; font-size: clamp(1.6rem, 3.4vw, 2.8rem); letter-spacing: -.03em; }
 html.js .blocks:not(.built) .blk { opacity: 0; transform: translateX(-40px); }
-.detail { margin-top: 12px; }
-.detail h3 { font-size: clamp(1.5rem, 2.6vw, 2.1rem); font-weight: 800; letter-spacing: -.02em; line-height: 1; margin-bottom: .5rem; }
-.detail p { max-width: 62ch; color: var(--ink-2); font-size: 1.05rem; }
 
 /* Want leads */
 .ask .mega { color: var(--cream); }
@@ -263,16 +257,14 @@ html.js .blocks:not(.built) .blk { opacity: 0; transform: translateX(-40px); }
       <div class="rv"><span class="tag">Google and Meta</span><h2 class="h2">Ads are the easy part. We build the <em>whole funnel.</em></h2></div>
     </div>
     <div class="blocks" id="blocks">
-      <button type="button" class="blk" style="--w:100%;--k:0"><small>1</small><b>Ads</b><span>Google Search, Shopping and Meta</span></button>
-      <button type="button" class="blk" style="--w:93%;--k:1"><small>2</small><b>Landing pages</b><span>Built to convert</span></button>
-      <button type="button" class="blk" style="--w:86%;--k:2"><small>3</small><b>Capture</b><span>Forms, quotes, calculators</span></button>
-      <button type="button" class="blk" style="--w:79%;--k:3"><small>4</small><b>Tracking</b><span>GA4, Meta pixel, Conversions API</span></button>
-      <button type="button" class="blk" style="--w:72%;--k:4"><small>5</small><b>Follow-up</b><span>Email, WhatsApp, SMS</span></button>
-      <button type="button" class="blk" style="--w:65%;--k:5"><small>6</small><b>Retargeting</b><span>Bring them back</span></button>
+      <div class="blk" style="--w:100%;--k:0"><small>1</small><b>Ads</b><span>Google Search, Shopping and Meta</span></div>
+      <div class="blk" style="--w:93%;--k:1"><small>2</small><b>Landing pages</b><span>Built to convert</span></div>
+      <div class="blk" style="--w:86%;--k:2"><small>3</small><b>Capture</b><span>Forms, quotes, calculators</span></div>
+      <div class="blk" style="--w:79%;--k:3"><small>4</small><b>Tracking</b><span>GA4, Meta pixel, Conversions API</span></div>
+      <div class="blk" style="--w:72%;--k:4"><small>5</small><b>Follow-up</b><span>Email, WhatsApp, SMS</span></div>
+      <div class="blk" style="--w:65%;--k:5"><small>6</small><b>Retargeting</b><span>Bring them back</span></div>
       <div class="blk blk--end" style="--w:58%;--k:6"><b>Booked or sold &rarr;</b></div>
     </div>
-    <div class="card detail rv" aria-live="polite"><span class="tag">What we build</span><h3 id="sdTitle">Ads</h3><p id="sdBuild"></p></div>
-    <p class="note">Ad spend is paid by you directly to Google and Meta.</p>
   </div>
 </section>
 
@@ -445,18 +437,7 @@ html.js .blocks:not(.built) .blk { opacity: 0; transform: translateX(-40px); }
   $('#askBtn').addEventListener('click', function (e) { e.preventDefault(); var s = $('.goal.sel'); goBook(s ? { goal: s.getAttribute('data-goal') } : {}); });
 
   /* ---------- Google + Meta funnel builds itself ---------- */
-  var blocks = $('#blocks'), rows = $$('button.blk', blocks);
-  var STAGES = [
-    ['Ads', 'Google Search and Shopping for people already looking. Meta on Facebook and Instagram to reach them first. Creative included.'],
-    ['Landing pages', 'Fast pages written for the ad that brought each visitor, with one clear next step.'],
-    ['Capture', 'Forms, quote builders and calculators that make saying yes easy.'],
-    ['Tracking', 'GA4, Merchant Center, Meta pixel and Conversions API, so Google and Meta optimise for real leads and sales.'],
-    ['Follow-up', 'Email, WhatsApp and SMS that follow up every enquiry, quote and abandoned basket.'],
-    ['Retargeting', 'Ads that bring back people who visited but have not acted yet.']
-  ];
-  function pick(i) { rows.forEach(function (r, k) { r.classList.toggle('sel', k === i); r.setAttribute('aria-pressed', String(k === i)); }); $('#sdTitle').textContent = STAGES[i][0]; $('#sdBuild').textContent = STAGES[i][1]; }
-  rows.forEach(function (r, i) { r.addEventListener('click', function () { pick(i); }); });
-  pick(0);
+  var blocks = $('#blocks');
   if (reduce || !('IntersectionObserver' in window)) blocks.classList.add('built');
   else { var bio = new IntersectionObserver(function (es) { if (es[0].isIntersecting) { bio.disconnect(); blocks.classList.add('built'); } }, { threshold: .25 }); bio.observe(blocks); }
 
