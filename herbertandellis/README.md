@@ -25,9 +25,9 @@ Wade & Leta palette.
 - **Shapes:** rounded corners, pill buttons, straight outline tags, colour cards with a notched arrow corner.
   Motion is limited to letters rising in, cards lifting on hover, and the phone carousel.
 
-## Partner logos
+## Company logos
 
-The "Partnered with" cards on both pages show a logo when one exists at `assets/logos/<name>.png`:
+The "H&E family" cards on both pages show a logo when one exists at `assets/logos/<name>.png`:
 `the-lounge.png`, `knock-and-snitch.png`, `piccoload.png`, `tt-prospecting.png`, `musefile.png`, `tt-commerce.png`.
 Until a file is there, the card simply shows the name.
 
