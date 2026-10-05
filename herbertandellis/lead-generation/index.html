@@ -92,14 +92,6 @@ html.js .blocks:not(.built) .blk { opacity: 0; transform: translateX(-40px); }
 .ask__cta { display: flex; flex-wrap: wrap; align-items: center; gap: 1rem 1.6rem; margin-top: 2rem; }
 .ask__cta .link { color: var(--white); }
 
-/* Process */
-.steps { display: grid; grid-template-columns: repeat(5, 1fr); gap: 12px; }
-.step { border-radius: var(--r); padding: 1.4rem 1.3rem 1.6rem; min-height: 230px; display: flex; flex-direction: column; gap: .5rem; transition: transform .5s var(--spring); }
-.step:hover { transform: translateY(-5px); }
-.step em { font-style: normal; font-weight: 800; font-variation-settings: "wdth" 75, "opsz" 96; letter-spacing: -.01em; font-size: 3.2rem; line-height: .85; margin-bottom: auto; opacity: .9; }
-.step b { font-size: 1.35rem; font-weight: 800; letter-spacing: -.01em; line-height: 1.05; }
-.step p { font-size: .95rem; opacity: .85; }
-
 /* FAQ */
 .faq { display: grid; gap: 10px; max-width: 960px; }
 .faq details { background: var(--white); border-radius: 22px; padding: 0 1.5rem; }
@@ -129,10 +121,8 @@ html.js .blocks:not(.built) .blk { opacity: 0; transform: translateX(-40px); }
 .form__status.err { color: var(--orange-2); }
 .hp { position: absolute; left: -9999px; width: 1px; height: 1px; opacity: 0; }
 
-@media (max-width: 1100px) { .steps { grid-template-columns: repeat(3, 1fr); } }
 @media (max-width: 1000px) { .calc, .book__grid { grid-template-columns: 1fr; } .goals { grid-template-columns: 1fr; } }
 @media (max-width: 700px) {
-  .steps { grid-template-columns: 1fr 1fr; }
   .blk { width: 100%; grid-template-columns: 2rem 1fr; gap: .2rem .8rem; }
   .blk span { grid-column: 2; justify-self: start; text-align: left; }
   .f2 { grid-template-columns: 1fr; }
@@ -277,22 +267,6 @@ html.js .blocks:not(.built) .blk { opacity: 0; transform: translateX(-40px); }
           <a class="link" href="mailto:hello@herbertandellis.com">or email hello@herbertandellis.com</a>
         </div>
       </div>
-    </div>
-  </div>
-</section>
-
-<section class="sec" id="process" style="padding-top:0">
-  <div class="wrap">
-    <div class="head">
-      <div class="rv"><span class="tag">How it works</span><h2 class="h2">From hello to <em>booked.</em></h2></div>
-      <p class="lead rv" style="--d:.08s">Five steps. Run by us. Reported weekly.</p>
-    </div>
-    <div class="steps">
-      <div class="step s-lime rv"><em>01</em><b>Audit</b><p>Your offer, customers and numbers. You leave with a plan.</p></div>
-      <div class="step s-lilac rv" style="--d:.05s"><em>02</em><b>Build</b><p>Targets, ads, copy, pages and tracking, all set up.</p></div>
-      <div class="step s-sky rv" style="--d:.1s"><em>03</em><b>Launch</b><p>Outreach and ads go live. We test, then double down.</p></div>
-      <div class="step s-pink rv" style="--d:.15s"><em>04</em><b>Book</b><p>Replies handled. Meetings land in your calendar.</p></div>
-      <div class="step s-orange rv" style="--d:.2s;color:var(--white)"><em>05</em><b>Scale</b><p>Weekly numbers. More of whatever works.</p></div>
     </div>
   </div>
 </section>
