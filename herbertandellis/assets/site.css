@@ -273,7 +273,6 @@ html.js .rv.in { opacity: 1; transform: none; }
 .ivt small { font-size: .66em; font-weight: 800; letter-spacing: .1em; text-transform: uppercase; opacity: .8; }
 .ivt b { font-size: 1.15em; line-height: 1.1; letter-spacing: -.02em; font-weight: 800; }
 .ivt p { font-size: .76em; line-height: 1.35; }
-.ivt__match { align-self: center; margin-block: -.15em; padding: .35em .95em; border-radius: 999px; background: var(--ink); color: var(--cream); font-size: .72em; font-weight: 800; letter-spacing: .02em; }
 .arr { align-self: center; font-weight: 800; color: var(--ink-2); font-size: .8em; line-height: .5; }
 .sw-on { margin-left: auto; flex: none; width: 2.6em; height: 1.5em; border-radius: 999px; background: var(--orange); position: relative; }
 .sw-on::after { content: ""; position: absolute; right: .2em; top: .2em; width: 1.1em; height: 1.1em; border-radius: 50%; background: var(--white); }
