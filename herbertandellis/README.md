@@ -48,16 +48,6 @@ screens in the page: each phone is a `.phone` element with `data-title` (its acc
 Hero carousel, the quote band, the meetings calculator, the Google and Meta funnel, the "MORE LEADS?" contact push,
 the portfolio and the "Hello!" form. Goal picks and the calculator pre-fill the form.
 
-## The form
-
-With no configuration it opens the visitor's email app pre-filled to `hello@herbertandellis.com`. To collect
-submissions through a form service or Worker, set `data-endpoint` on `<form id="auditForm">`; the page POSTs JSON
-with `name`, `company`, `email`, `website`, `brief` and `source`.
-
-## Deploying
-
-Upload the whole folder to the web root, keeping `assets/` and `lead-generation/` as folders.
-
 ## Going live (Cloudflare Pages)
 
 Upload the whole `herbertandellis/` folder (or the zip of it) as the Pages project for www.herbertandellis.com.
