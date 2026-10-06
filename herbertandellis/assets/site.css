@@ -28,7 +28,7 @@
 }
 
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-html { scroll-behavior: smooth; -webkit-text-size-adjust: 100%; }
+html { scroll-behavior: smooth; scroll-padding-top: 112px; -webkit-text-size-adjust: 100%; }
 @media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } }
 body { font-family: var(--font); font-size: 17px; line-height: 1.55; color: var(--ink); background: var(--cream); -webkit-font-smoothing: antialiased; overflow-x: clip; }
 img, svg { display: block; max-width: 100%; }
@@ -79,7 +79,7 @@ button { cursor: pointer; }
 /* ---------- Nav ---------- */
 .nav { position: sticky; top: 0; z-index: 50; padding-top: env(safe-area-inset-top, 0px); background: rgba(245,239,230,.9); -webkit-backdrop-filter: blur(14px); backdrop-filter: blur(14px); transition: box-shadow .3s; }
 .nav.scrolled { box-shadow: 0 1px 0 var(--line); }
-.nav__in { display: flex; align-items: center; justify-content: space-between; gap: 1.5rem; height: 84px; }
+.nav__in { display: flex; align-items: center; justify-content: space-between; gap: 1.5rem; height: 104px; }
 .logo { display: inline-flex; align-items: stretch; gap: .55rem; color: var(--ink); }
 .logo__bar { flex: none; width: 3px; border-radius: 2px; background: var(--orange); }
 .logo__wm { display: grid; align-content: center; position: relative; top: 1px; font-family: var(--chunk); font-weight: 800; font-variation-settings: "wdth" 85, "opsz" 96; font-size: 1.6rem; line-height: .85; letter-spacing: -.01em; text-transform: uppercase; white-space: nowrap; }
