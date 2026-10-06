@@ -294,7 +294,7 @@ html.js .blocks:not(.built) .blk { opacity: 0; transform: translateX(-40px); }
         <form class="form" id="auditForm" novalidate data-endpoint="">
           <div class="f2"><div class="f"><label for="fName">Name</label><input id="fName" name="name" autocomplete="name" required></div><div class="f"><label for="fCompany">Company <span class="opt">(optional)</span></label><input id="fCompany" name="company" autocomplete="organization"></div></div>
           <div class="f2"><div class="f"><label for="fEmail">Email</label><input id="fEmail" name="email" type="email" autocomplete="email" required></div><div class="f"><label for="fPhone">Phone number</label><input id="fPhone" name="phone" type="tel" autocomplete="tel" inputmode="tel" required></div></div>
-          <div class="f"><label for="fSite">Website <span class="opt">(optional)</span></label><input id="fSite" name="website" autocomplete="url" inputmode="url"></div>
+          <div class="f"><label for="fSite">Website</label><input id="fSite" name="website" autocomplete="url" inputmode="url" required></div>
           <div class="f"><label for="fBrief">Please tell us a bit about the services you require</label><textarea id="fBrief" name="brief" required></textarea></div>
           <div class="hp" aria-hidden="true"><label for="fHp">Leave empty</label><input id="fHp" name="company_url" tabindex="-1" autocomplete="off"></div>
           <div class="form__foot"><button class="btn btn--orange" type="submit">Book my audit <i aria-hidden="true">&rarr;</i></button><small>A real person reads this and replies.</small></div>
@@ -379,11 +379,11 @@ html.js .blocks:not(.built) .blk { opacity: 0; transform: translateX(-40px); }
   form.addEventListener('submit', function (e) {
     e.preventDefault(); status.className = 'form__status'; status.textContent = '';
     if ($('#fHp').value) return;
-    var bad = ['fName', 'fEmail', 'fPhone', 'fBrief'].filter(function (id) {
+    var bad = ['fName', 'fEmail', 'fPhone', 'fSite', 'fBrief'].filter(function (id) {
       var el = document.getElementById(id), v = el.value.trim();
-      return !v || (el.type === 'email' && !el.validity.valid) || (el.type === 'tel' && v.replace(/\D/g, '').length < 7);
+      return !v || (el.type === 'email' && !el.validity.valid) || (el.type === 'tel' && v.replace(/\D/g, '').length < 7) || (id === 'fSite' && v.indexOf('.') < 0);
     });
-    if (bad.length) { document.getElementById(bad[0]).focus(); status.className = 'form__status err'; status.textContent = 'Add your name, a valid email, your phone number and a line about the services you need.'; return; }
+    if (bad.length) { document.getElementById(bad[0]).focus(); status.className = 'form__status err'; status.textContent = 'Add your name, a valid email, your phone number, your website and a line about the services you need.'; return; }
     var d = { name: $('#fName').value.trim(), company: $('#fCompany').value.trim(), email: $('#fEmail').value.trim(), phone: $('#fPhone').value.trim(), website: $('#fSite').value.trim(), brief: ta.value.trim(), source: location.href };
     var ep = form.getAttribute('data-endpoint');
     if (ep) {
@@ -393,7 +393,7 @@ html.js .blocks:not(.built) .blk { opacity: 0; transform: translateX(-40px); }
         .catch(function () { status.className = 'form__status err'; status.textContent = 'That didn’t send. Email hello@herbertandellis.com instead.'; });
       return;
     }
-    var bodyTxt = 'Name: ' + d.name + (d.company ? '\nCompany: ' + d.company : '') + '\nEmail: ' + d.email + '\nPhone: ' + d.phone + (d.website ? '\nWebsite: ' + d.website : '') + '\n\nServices required:\n' + d.brief + '\n';
+    var bodyTxt = 'Name: ' + d.name + (d.company ? '\nCompany: ' + d.company : '') + '\nEmail: ' + d.email + '\nPhone: ' + d.phone + '\nWebsite: ' + d.website + '\n\nServices required:\n' + d.brief + '\n';
     window.location.href = 'mailto:hello@herbertandellis.com?subject=' + encodeURIComponent('Enquiry from ' + (d.company || d.name)) + '&body=' + encodeURIComponent(bodyTxt);
     status.textContent = 'Your email app should open with everything filled in.';
   });
