@@ -62,10 +62,10 @@
     setTimeout(function () { if (cur.parentNode) cur.remove(); }, 800);
   }
 
-  /* Phone carousel: three phones on show, the rest wait behind. Swipe, drag, click, keys or the service pills. */
+  /* Phone carousel: three phones on show, the rest wait behind. Swipe, drag, click, keys or the progress lines. */
   $$('[data-carousel]').forEach(function (car) {
     var stage = $('.stage', car), phones = $$('.phone', car), n = phones.length;
-    var tabs = $$('.offers button', car), cap = $('.cap', car), capT = $('.cap__t', car), capL = $('.cap__l', car);
+    var tabs = $$('.offers button', car), ctas = $('.hero__ctas', car), c1 = $('[data-cta="1"]', car), c2 = $('[data-cta="2"]', car);
     var word = $('[data-word-target]', car);
     if (word) word.setAttribute('data-now', word.textContent.replace(/\u00A0/g, ' ').trim());
     var i = 0, timer = 0, paused = false, lastWheel = 0;
@@ -77,9 +77,12 @@
       });
       tabs.forEach(function (t, k) { t.setAttribute('aria-selected', String(k === i)); t.tabIndex = k === i ? 0 : -1; });
       if (word && phones[i].getAttribute('data-word')) swapWord(word, phones[i].getAttribute('data-word'), dir || 1);
-      if (cap) {
-        capT.textContent = phones[i].getAttribute('data-title'); capL.textContent = phones[i].getAttribute('data-line');
-        cap.classList.remove('swap'); void cap.offsetWidth; cap.classList.add('swap');
+      // the buttons under the phones follow the phone in the middle
+      var ph = phones[i];
+      if (c1 && ph.getAttribute('data-c1')) {
+        $('span', c1).textContent = ph.getAttribute('data-c1'); c1.setAttribute('href', ph.getAttribute('data-h1'));
+        c2.textContent = ph.getAttribute('data-c2'); c2.setAttribute('href', ph.getAttribute('data-h2'));
+        if (dir) { ctas.classList.remove('swap'); void ctas.offsetWidth; ctas.classList.add('swap'); }
       }
     }
     function go(k, dir) { var t = ((k % n) + n) % n; if (dir == null) dir = off(t) < 0 ? -1 : 1; i = t; render(dir); restart(); }

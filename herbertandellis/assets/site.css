@@ -136,6 +136,9 @@ button { cursor: pointer; }
 [data-carousel].is-paused .offers button[aria-selected="true"] i { transition: none; width: 100%; }
 @media (prefers-reduced-motion: reduce) { .offers button[aria-selected="true"] i { transition: none; } }
 .hero__ctas { display: flex; flex-wrap: wrap; gap: 1rem 1.6rem; justify-content: center; align-items: center; margin-top: 1.8rem; position: relative; z-index: 3; }
+.hero__ctas.swap > * { animation: ctaIn .45s var(--ease); }
+@keyframes ctaIn { from { opacity: 0; transform: translateY(6px); } }
+@media (prefers-reduced-motion: reduce) { .hero__ctas.swap > * { animation: none; } }
 .blob { position: absolute; border-radius: 50%; filter: blur(2px); z-index: 0; pointer-events: none; }
 
 /* ---------- Phone screens ---------- */
