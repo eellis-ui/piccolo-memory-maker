@@ -12,8 +12,8 @@
   --orange-2: #C2430F;
   --lilac: #1F2C4D;   /* deep navy */
   --lime: #E6DCCB;    /* sand */
-  --sky: #D8CEC0;     /* warm stone */
-  --pink: #C9B8A6;    /* taupe */
+  --sky: #C8D3D8;     /* slate */
+  --pink: #DDBBA6;    /* clay */
   --white: #FFFFFF;
   --line: rgba(31, 29, 54, .12);
 
@@ -192,7 +192,7 @@ button { cursor: pointer; }
 .ncard__body p { font-size: .98rem; line-height: 1.45; }
 .ncard__n { font-size: .8rem; font-weight: 800; letter-spacing: .08em; opacity: .7; }
 .ncard__cta { margin-top: auto; font-weight: 800; font-size: .95rem; }
-.ncard__body.s-ink + .ncard__go, .ncard__body.s-lilac + .ncard__go { background: var(--orange); }
+.ncard__body.s-ink + .ncard__go { background: var(--orange); }
 .ncard__go { position: absolute; right: 6px; bottom: 6px; width: 60px; height: 60px; border-radius: 50%; display: grid; place-items: center; background: var(--ink); color: var(--white); font-weight: 800; font-size: 1.3rem; transition: transform .5s var(--spring), background .3s; }
 .ncard:hover .ncard__go { transform: rotate(-45deg) scale(1.06); background: var(--orange); }
 .ncard .sticker { position: absolute; z-index: 2; top: 18px; right: 18px; font-size: .75rem; padding: .25rem .7rem; border-color: currentColor; }
@@ -202,18 +202,13 @@ button { cursor: pointer; }
 .fam__tile { --bg: var(--white); --tilt: 0deg; flex: 0 0 calc((100% - 4 * var(--gap)) / 5); aspect-ratio: 1 / 1.05; display: grid; grid-template-rows: 1fr auto; padding: 1.1rem 1.2rem; border-radius: var(--r); background: var(--bg); transform: rotate(var(--tilt)); transition: transform .5s var(--spring), box-shadow .35s; }
 .fam__tile:hover { transform: rotate(0deg) translateY(-8px) scale(1.03); box-shadow: 0 26px 40px -24px rgba(22,21,31,.5); z-index: 1; }
 /* each company gets its own colour and a slight sticker-like tilt */
-.fam__tile:nth-child(5n+1) { --tilt: -2deg; }
-.fam__tile:nth-child(5n+2) { --tilt: 1.5deg; }
-.fam__tile:nth-child(5n+3) { --tilt: -1deg; }
-.fam__tile:nth-child(5n+4) { --tilt: 2deg; }
-.fam__tile:nth-child(5n+5) { --tilt: -1.5deg; }
-.fam--ink { --bg: var(--ink); color: var(--cream); }
-.fam--navy { --bg: var(--lilac); color: var(--cream); }
-.fam--orange { --bg: var(--orange); color: var(--ink); }
-.fam--ink .fam__mark, .fam--navy .fam__mark { filter: invert(1); }
-.fam--ink .fam__meta, .fam--navy .fam__meta { color: var(--cream); border-top-color: rgba(245,239,230,.2); }
-.fam--orange .fam__meta { border-top-color: rgba(22,21,31,.2); }
-.fam--orange:hover .fam__go { background: var(--ink); }
+.fam__tile:nth-child(5n+1) { --bg: var(--sky); --tilt: -2deg; }
+.fam__tile:nth-child(5n+2) { --bg: var(--pink); --tilt: 1.5deg; }
+.fam__tile:nth-child(5n+3) { --bg: var(--lime); --tilt: -1deg; }
+.fam__tile:nth-child(5n+4) { --bg: #EAD7CA; --tilt: 2deg; }
+.fam__tile:nth-child(5n+5) { --bg: var(--lilac); --tilt: -1.5deg; color: var(--cream); }
+.fam__tile:nth-child(5n+5) .fam__mark { filter: invert(1); }
+.fam__tile:nth-child(5n+5) .fam__meta { color: var(--cream); border-top-color: rgba(245,239,230,.2); }
 .fam__logo { --slot: clamp(58px, 5vw, 74px); display: grid; place-items: center; text-align: center; }
 .fam__mark { display: block; height: calc(var(--slot) * var(--lh, .6)); width: auto; max-width: 86%; object-fit: contain; }
 .fam__nm { font-family: var(--chunk); font-weight: 800; font-variation-settings: "wdth" 80; font-size: clamp(1.4rem, 2vw, 1.8rem); letter-spacing: -.02em; line-height: 1; }
