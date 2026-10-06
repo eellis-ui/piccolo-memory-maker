@@ -158,6 +158,8 @@ button { cursor: pointer; }
 .pill { align-self: center; padding: .6em 1.2em; border-radius: 999px; font-weight: 800; font-size: .9em; background: var(--orange); color: var(--white); margin-top: auto; }
 .scr__note { margin-top: auto; padding: .85em .95em; border-radius: 1em; background: var(--ink); color: var(--cream); font-size: .74em; line-height: 1.45; }
 .scr__note + .pill { margin-top: .2em; }
+/* where a screen has room, the note grows into it with larger type */
+.scr__note--fill { flex: 1 1 auto; margin-top: .2em; display: flex; align-items: center; font-size: .86em; line-height: 1.38; font-weight: 600; padding: .85em .95em; }
 .bub { max-width: 82%; padding: .7em .9em; border-radius: 1.1em; font-size: .85em; line-height: 1.35; }
 .bub.in { background: #F1EEEA; border-bottom-left-radius: .3em; }
 .bub.out { background: var(--lime); align-self: flex-end; border-bottom-right-radius: .3em; }
