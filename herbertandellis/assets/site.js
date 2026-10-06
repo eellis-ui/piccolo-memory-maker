@@ -42,6 +42,20 @@
   function fitAll() { $$('[data-word-target] .giant__line').forEach(fit); }
   if (document.fonts && document.fonts.ready) document.fonts.ready.then(fitAll);
   if (document.fonts && document.fonts.addEventListener) document.fonts.addEventListener('loadingdone', fitAll);
+
+  /* Footer sign-off: size it so the longest line runs edge to edge */
+  function fitBig() {
+    $$('.foot__big').forEach(function (el) {
+      el.style.fontSize = '';
+      var lines = Array.prototype.slice.call(el.children), widest = 0;
+      lines.forEach(function (l) { widest = Math.max(widest, l.offsetWidth); });
+      if (widest > 0) el.style.fontSize = (parseFloat(getComputedStyle(el).fontSize) * el.clientWidth / widest * 0.995).toFixed(2) + 'px';
+    });
+  }
+  fitBig();
+  window.addEventListener('resize', fitBig);
+  if (document.fonts && document.fonts.ready) document.fonts.ready.then(fitBig);
+  if (document.fonts && document.fonts.addEventListener) document.fonts.addEventListener('loadingdone', fitBig);
   window.addEventListener('resize', fitAll);
 
   /* Swap a giant word by sliding: the new word pushes in from the side you moved towards

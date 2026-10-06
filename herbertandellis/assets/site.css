@@ -160,6 +160,8 @@ button { cursor: pointer; }
 .src { display: inline-block; margin-left: .25em; padding: .2em .55em; border-radius: 999px; background: var(--white); font-size: .68em; font-weight: 800; vertical-align: .12em; }
 .bar { height: .55em; border-radius: 999px; background: #ECE8E2; }
 .pill { align-self: center; padding: .6em 1.2em; border-radius: 999px; font-weight: 800; font-size: .9em; background: var(--orange); color: var(--white); margin-top: auto; }
+.scr__note { margin-top: auto; padding: .85em .95em; border-radius: 1em; background: var(--ink); color: var(--cream); font-size: .74em; line-height: 1.45; }
+.scr__note + .pill { margin-top: .2em; }
 .bub { max-width: 82%; padding: .7em .9em; border-radius: 1.1em; font-size: .85em; line-height: 1.35; }
 .bub.in { background: #F1EEEA; border-bottom-left-radius: .3em; }
 .bub.out { background: var(--lime); align-self: flex-end; border-bottom-right-radius: .3em; }
@@ -231,10 +233,14 @@ button { cursor: pointer; }
 @media (max-width: 700px) { .hello__line { grid-template-columns: 1fr; } .hello__line span { text-align: left; } }
 
 /* ---------- Footer ---------- */
-.foot { padding-block: 40px calc(32px + env(safe-area-inset-bottom, 0px)); }
-.foot__in { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 1rem 2rem; color: var(--ink-2); font-size: .92rem; }
+.foot { background: var(--ink); color: var(--cream); overflow: hidden; padding-block: clamp(48px, 8vw, 110px) calc(32px + env(safe-area-inset-bottom, 0px)); }
+/* the sign-off: one statement, edge to edge */
+.foot__big { font-family: var(--chunk); font-weight: 800; font-variation-settings: "wdth" 75, "opsz" 96; text-transform: uppercase; font-size: clamp(2.4rem, 10.5vw, 12rem); line-height: .84; letter-spacing: -.012em; margin-bottom: clamp(40px, 6vw, 80px); }
+.foot__big span, .foot__big em { display: block; width: max-content; white-space: nowrap; font-style: normal; }
+.foot__big em { color: var(--orange); }
+.foot__in { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 1rem 2rem; padding-top: 24px; border-top: 1px solid rgba(245,239,230,.16); color: rgba(245,239,230,.7); font-size: .92rem; }
 .foot__links { display: flex; flex-wrap: wrap; gap: .4rem 1.4rem; }
-.foot__links a:hover { color: var(--orange-2); }
+.foot__links a:hover { color: var(--orange); }
 
 /* ---------- Sticky "Get leads" ---------- */
 .stick { position: fixed; right: 20px; bottom: calc(20px + env(safe-area-inset-bottom, 0px)); z-index: 60; transform: translateY(160%); transition: transform .6s var(--spring); box-shadow: 0 14px 30px -10px rgba(255,106,51,.8); }
