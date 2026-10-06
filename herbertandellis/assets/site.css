@@ -60,8 +60,11 @@ button { cursor: pointer; }
 .btn--orange { background: var(--orange); color: var(--white); }
 .btn--orange i { background: var(--white); color: var(--orange-2); }
 .btn--orange:hover { background: var(--ink); box-shadow: 0 12px 24px -10px rgba(31,29,54,.6); }
-.btn--light { background: var(--white); color: var(--ink); }
-.btn--light i { background: var(--ink); color: var(--white); }
+/* black button for orange panels; turns white on hover so it never disappears into the orange */
+.btn--ink { background: var(--ink); color: var(--white); }
+.btn--ink i { background: var(--white); color: var(--ink); }
+.btn--ink:hover { background: var(--white); color: var(--ink); box-shadow: 0 12px 24px -10px rgba(31,29,54,.45); }
+.btn--ink:hover i { background: var(--ink); color: var(--white); }
 .btn--big { font-size: 1.15rem; padding: 1.2rem 1.2rem 1.2rem 2rem; }
 .btn--big i { width: 2.6rem; height: 2.6rem; }
 .link { font-weight: 700; border-bottom: 2px solid currentColor; padding-bottom: 2px; transition: color .25s; }
