@@ -203,8 +203,9 @@ button { cursor: pointer; }
 .fam__tile:hover { transform: rotate(0deg) translateY(-8px) scale(1.03); box-shadow: 0 26px 40px -24px rgba(22,21,31,.5); z-index: 1; }
 /* each company gets its own colour and a slight sticker-like tilt */
 .fam__tile:nth-child(5n+1) { --bg: var(--sky); --tilt: -2deg; }
-.fam__tile:nth-child(5n+2) { --bg: var(--pink); --tilt: 1.5deg; }
-.fam__tile:nth-child(5n+3) { --bg: var(--lime); --tilt: -1deg; }
+.fam__tile:nth-child(5n+2) { --bg: var(--lime); --tilt: 1.5deg; }
+.fam__tile:nth-child(5n+3) { --bg: var(--orange); --tilt: -1deg; }
+.fam__tile:nth-child(5n+3):hover .fam__go { background: var(--ink); }
 .fam__tile:nth-child(5n+4) { --bg: #EAD7CA; --tilt: 2deg; }
 .fam__tile:nth-child(5n+5) { --bg: var(--lilac); --tilt: -1.5deg; color: var(--cream); }
 .fam__tile:nth-child(5n+5) .fam__mark { filter: invert(1); }
