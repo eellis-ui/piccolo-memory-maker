@@ -268,6 +268,7 @@ html.js .rv.in { opacity: 1; transform: none; }
 .inp { padding: .75em 1em; border-radius: 999px; background: #F1EEEA; font-size: .78em; color: var(--ink-2); font-weight: 600; }
 .tick { width: 1.7em; height: 1.7em; border-radius: 50%; display: grid; place-items: center; font-weight: 900; font-size: .8em; flex: none; background: var(--lime); }
 .tick.no { background: #ECE8E2; }
+.row.hi .tick { background: var(--white); }
 .prog { height: .8em; border-radius: 999px; background: #ECE8E2; overflow: hidden; }
 .prog i { display: block; height: 100%; width: 70%; background: var(--orange); border-radius: inherit; }
 .chathead { background: var(--lime); padding: .75em 1.2em; font-weight: 800; display: flex; align-items: center; gap: .6em; margin-bottom: .4em; }
