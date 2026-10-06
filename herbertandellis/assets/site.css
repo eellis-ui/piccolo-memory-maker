@@ -192,31 +192,19 @@ button { cursor: pointer; }
 .ncard:hover .ncard__go { transform: rotate(-45deg) scale(1.06); background: var(--orange); }
 .ncard .sticker { position: absolute; z-index: 2; top: 18px; right: 18px; font-size: .75rem; padding: .25rem .7rem; border-color: currentColor; }
 
-/* ---------- Portfolio ---------- */
-.pcards { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
-@media (max-width: 1000px) { .pcards { grid-template-columns: repeat(2, 1fr); } }
-@media (max-width: 620px) { .pcards { grid-template-columns: 1fr; } }
-.pcard { --slot: clamp(66px, 5.4vw, 76px); position: relative; display: flex; flex-direction: column; gap: .4rem; min-height: 250px; padding: 1.6rem; border-radius: var(--r); transition: transform .5s var(--spring); overflow: hidden; }
-.pcard:hover { transform: translateY(-6px); }
-.pcard__top { display: flex; align-items: center; gap: .6rem; padding-right: 7.5rem; }
-.pcard__sector { align-self: center; font-size: .78rem; font-weight: 700; padding: .3rem .8rem; border-radius: 999px; background: rgba(255,255,255,.6); }
-.pcard__name { height: var(--slot); display: flex; align-items: center; font-size: clamp(1.7rem, 2.8vw, 2.4rem); font-weight: 800; font-variation-settings: "wdth" 88; letter-spacing: -.02em; line-height: 1; margin-top: 1.4rem; margin-bottom: .5rem; }
-.pcard__mark { display: block; height: calc(var(--slot) * var(--lh, .6)); width: auto; max-width: 82%; object-fit: contain; object-position: left center; }
-.pcard__name:has(.pcard__mark) .pcard__nm { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
-.pc-ink .pcard__mark, .pc-cobalt .pcard__mark { filter: invert(1); }
-.pcard__type { font-weight: 700; font-size: .95rem; }
-.pcard__desc { font-size: .92rem; opacity: .8; max-width: 34ch; }
-.pcard__url { margin-top: auto; padding-top: .6rem; font-size: .85rem; font-weight: 700; display: inline-flex; align-items: center; gap: .4rem; }
-.pcard__url::after { content: "→"; transition: transform .35s var(--spring); }
-.pcard:hover .pcard__url::after { transform: translateX(5px); }
-.pcard .sticker { position: absolute; top: 1.3rem; right: 1.3rem; font-size: .72rem; padding: .25rem .7rem; }
-.pc-ink { background: var(--ink); color: var(--cream); }
-.pc-ink .pcard__sector { background: rgba(255,255,255,.14); }
-.pc-orange { background: var(--orange); color: var(--white); }
-.pc-cobalt { background: var(--lilac); color: var(--white); }
-.pc-cobalt .pcard__sector { background: rgba(255,255,255,.18); }
-.pc-line { background: transparent; box-shadow: inset 0 0 0 1.5px var(--ink); }
-.pc-orange .pcard__sector { background: rgba(255,255,255,.25); }
+/* ---------- The H&E family: logo wall ---------- */
+.fam { --gap: 14px; display: flex; flex-wrap: wrap; justify-content: center; gap: var(--gap); }
+.fam__tile { flex: 0 0 calc((100% - 4 * var(--gap)) / 5); aspect-ratio: 1 / 1.05; display: grid; grid-template-rows: 1fr auto; padding: 1.1rem 1.2rem; border-radius: var(--r); background: var(--white); box-shadow: inset 0 0 0 1.5px rgba(22,21,31,.06); transition: transform .5s var(--spring), box-shadow .35s; }
+.fam__tile:hover { transform: translateY(-6px); box-shadow: inset 0 0 0 2px var(--ink), 0 22px 34px -22px rgba(22,21,31,.45); }
+.fam__logo { --slot: clamp(58px, 5vw, 74px); display: grid; place-items: center; text-align: center; }
+.fam__mark { display: block; height: calc(var(--slot) * var(--lh, .6)); width: auto; max-width: 86%; object-fit: contain; }
+.fam__nm { font-family: var(--chunk); font-weight: 800; font-variation-settings: "wdth" 80; font-size: clamp(1.4rem, 2vw, 1.8rem); letter-spacing: -.02em; line-height: 1; }
+.fam__logo:has(.fam__mark) .fam__nm { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
+.fam__meta { display: flex; justify-content: space-between; align-items: center; padding-top: .8rem; border-top: 1.5px solid rgba(22,21,31,.08); font-size: .8rem; font-weight: 700; color: var(--ink-2); }
+.fam__go { width: 1.8rem; height: 1.8rem; border-radius: 50%; display: grid; place-items: center; background: var(--cream-2); color: var(--ink); transition: transform .35s var(--spring), background .25s, color .25s; }
+.fam__tile:hover .fam__go { transform: rotate(-45deg); background: var(--orange); color: var(--white); }
+@media (max-width: 1000px) { .fam__tile { flex-basis: calc((100% - 2 * var(--gap)) / 3); } }
+@media (max-width: 620px) { .fam { --gap: 10px; } .fam__tile { flex-basis: calc((100% - var(--gap)) / 2); padding: .9rem; } }
 
 /* ---------- Big rounded panels ---------- */
 .panel { border-radius: clamp(20px, 3vw, 32px); padding: clamp(32px, 6vw, 80px); position: relative; overflow: hidden; }
