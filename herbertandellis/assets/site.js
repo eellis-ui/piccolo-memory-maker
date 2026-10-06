@@ -81,7 +81,7 @@
       var ph = phones[i];
       if (c1 && ph.getAttribute('data-c1')) {
         $('span', c1).textContent = ph.getAttribute('data-c1'); c1.setAttribute('href', ph.getAttribute('data-h1'));
-        var t2 = ph.getAttribute('data-c2'); c2.classList.toggle('is-off', !t2);   // only some phones have a second link; its space is kept so the page doesn't jump
+        var t2 = ph.getAttribute('data-c2'); c2.classList.toggle('is-off', !t2);   // only some phones have a second link; without it the button centres
         if (t2) { c2.textContent = t2; c2.setAttribute('href', ph.getAttribute('data-h2')); }
         if (dir) { ctas.classList.remove('swap'); void ctas.offsetWidth; ctas.classList.add('swap'); }
       }
@@ -122,7 +122,17 @@
     car.addEventListener('pointerleave', function () { paused = false; restart(); });
     car.addEventListener('focusin', function () { paused = true; clearInterval(timer); });
     car.addEventListener('focusout', function () { paused = false; restart(); });
-    render(); restart();
+    // keep the button row as tall as it is with the second link, so the page doesn't jump when the link goes
+    function reserve() {
+      if (!ctas || !c2) return;
+      var off = c2.classList.contains('is-off');
+      c2.classList.remove('is-off'); ctas.style.minHeight = '';
+      ctas.style.minHeight = ctas.offsetHeight + 'px';
+      c2.classList.toggle('is-off', off);
+    }
+    window.addEventListener('resize', reserve);
+    if (document.fonts && document.fonts.ready) document.fonts.ready.then(reserve);
+    render(); reserve(); restart();
   });
 
   /* Reveal on scroll */
