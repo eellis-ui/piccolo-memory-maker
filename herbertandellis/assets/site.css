@@ -60,11 +60,6 @@ button { cursor: pointer; }
 .btn--orange { background: var(--orange); color: var(--white); }
 .btn--orange i { background: var(--white); color: var(--orange-2); }
 .btn--orange:hover { background: var(--ink); box-shadow: 0 12px 24px -10px rgba(31,29,54,.6); }
-/* black button for orange panels; turns white on hover so it never disappears into the orange */
-.btn--ink { background: var(--ink); color: var(--white); }
-.btn--ink i { background: var(--white); color: var(--ink); }
-.btn--ink:hover { background: var(--white); color: var(--ink); box-shadow: 0 12px 24px -10px rgba(31,29,54,.45); }
-.btn--ink:hover i { background: var(--ink); color: var(--white); }
 .btn--big { font-size: 1.15rem; padding: 1.2rem 1.2rem 1.2rem 2rem; }
 .btn--big i { width: 2.6rem; height: 2.6rem; }
 .link { font-weight: 700; border-bottom: 2px solid currentColor; padding-bottom: 2px; transition: color .25s; }
@@ -82,18 +77,19 @@ button { cursor: pointer; }
 .s-ink { background: var(--ink); color: var(--cream); }
 
 /* ---------- Nav ---------- */
-.nav { position: sticky; top: 0; z-index: 50; padding-top: env(safe-area-inset-top, 0px); background: rgba(255,245,234,.82); -webkit-backdrop-filter: blur(14px); backdrop-filter: blur(14px); transition: box-shadow .3s; }
+.nav { position: sticky; top: 0; z-index: 50; padding-top: env(safe-area-inset-top, 0px); background: rgba(245,239,230,.9); -webkit-backdrop-filter: blur(14px); backdrop-filter: blur(14px); transition: box-shadow .3s; }
 .nav.scrolled { box-shadow: 0 1px 0 var(--line); }
-.nav__in { display: flex; align-items: center; justify-content: space-between; gap: 1.5rem; height: 74px; }
-.logo { display: inline-flex; align-items: center; gap: .65rem; font-weight: 800; letter-spacing: -.01em; }
-.logo b { font-weight: 800; font-variation-settings: "wdth" 75, "opsz" 96; color: var(--orange); font-size: 1.75rem; line-height: 1; letter-spacing: 0; }
-.logo span { font-size: 1rem; }
+.nav__in { display: flex; align-items: center; justify-content: space-between; gap: 1.5rem; height: 84px; }
+.logo { display: inline-flex; align-items: center; color: var(--ink); }
+.logo__wm { font-family: "Inter", "Helvetica Neue", Arial, sans-serif; font-weight: 900; font-size: 1.3rem; letter-spacing: -.035em; line-height: 1; text-transform: uppercase; white-space: nowrap; }
+.foot .logo { color: var(--cream); }
 .nav__links { display: flex; gap: .3rem; list-style: none; }
 .nav__links a { display: block; padding: .55rem .95rem; border-radius: 999px; font-weight: 600; font-size: .95rem; transition: background .25s; }
 .nav__links a:hover, .nav__links a.on { background: var(--cream-2); }
-.nav .btn { padding: .65rem .7rem .65rem 1.2rem; font-size: .92rem; }
-.nav .btn i { width: 1.6rem; height: 1.6rem; }
-@media (max-width: 960px) { .nav__links { display: none; } .logo span { display: none; } }
+.nav .btn { padding: .5rem .5rem .5rem 1.1rem; font-size: .9rem; gap: .65rem; }
+.nav .btn i { width: 1.55rem; height: 1.55rem; }
+@media (max-width: 960px) { .nav__links { display: none; } }
+@media (max-width: 420px) { .logo__wm { font-size: 1.02rem; } }
 
 /* ---------- Hero with giant word + phones ---------- */
 .hero { position: relative; padding-top: clamp(28px, 4vw, 48px); padding-bottom: clamp(40px, 6vw, 72px); overflow: hidden; }
@@ -276,7 +272,7 @@ html.js .fam__tile.rv.in:hover { transform: rotate(0deg) translateY(-8px) scale(
 .post__acts { display: flex; gap: .55em; }
 .post__acts i { width: 1.5em; height: 1.5em; border-radius: 50%; border: 2px solid var(--ink); }
 .post__cta { padding: .7em; border-radius: .8em; background: var(--ink); color: var(--white); font-weight: 800; font-size: .85em; display: flex; justify-content: space-between; }
-.lp { border-radius: 1em; background: var(--lilac); padding: 1.1em; display: flex; flex-direction: column; gap: .6em; }
+.lp { border-radius: 1em; background: var(--lilac); color: var(--white); padding: 1.1em; display: flex; flex-direction: column; gap: .6em; }
 .lp b { font-size: 1.45em; line-height: 1; letter-spacing: -.02em; font-weight: 800; }
 .lp em { font-style: normal; align-self: flex-start; background: var(--orange); color: var(--white); font-weight: 800; font-size: .75em; padding: .5em .9em; border-radius: 999px; }
 .inp { padding: .75em 1em; border-radius: 999px; background: #F1EEEA; font-size: .78em; color: var(--ink-2); font-weight: 600; }
