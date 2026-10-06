@@ -180,9 +180,9 @@ button { cursor: pointer; }
 .qband figcaption::before { content: ""; display: inline-block; width: 1.8em; height: 2px; background: var(--orange); vertical-align: middle; margin-right: .7em; }
 
 /* ---------- Notched colour cards (arrow sits in the cut-out corner) ---------- */
-.ncards { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; }
-@media (max-width: 1100px) { .ncards { grid-template-columns: repeat(2, 1fr); } }
-@media (max-width: 620px) { .ncards { grid-template-columns: 1fr; } }
+.ncards { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
+@media (max-width: 1000px) { .ncards { grid-template-columns: repeat(2, 1fr); } }
+@media (max-width: 620px) { .ncards { grid-template-columns: 1fr; } .ncard__body { min-height: 0; } }
 .ncard { position: relative; display: block; transition: transform .5s var(--spring); }
 .ncard:hover { transform: translateY(-6px); }
 .ncard__body { display: flex; flex-direction: column; gap: .7rem; min-height: 300px; padding: 1.8rem 1.6rem 4.6rem; border-radius: var(--r);
@@ -190,6 +190,9 @@ button { cursor: pointer; }
           mask: radial-gradient(circle 40px at calc(100% - 36px) calc(100% - 36px), transparent 39px, #000 40px); }
 .ncard__body .h3 { font-size: clamp(1.6rem, 2.4vw, 2.1rem); }
 .ncard__body p { font-size: .98rem; line-height: 1.45; }
+.ncard__n { font-size: .8rem; font-weight: 800; letter-spacing: .08em; opacity: .7; }
+.ncard__cta { margin-top: auto; font-weight: 800; font-size: .95rem; }
+.ncard__body.s-ink + .ncard__go { background: var(--orange); }
 .ncard__go { position: absolute; right: 6px; bottom: 6px; width: 60px; height: 60px; border-radius: 50%; display: grid; place-items: center; background: var(--ink); color: var(--white); font-weight: 800; font-size: 1.3rem; transition: transform .5s var(--spring), background .3s; }
 .ncard:hover .ncard__go { transform: rotate(-45deg) scale(1.06); background: var(--orange); }
 .ncard .sticker { position: absolute; z-index: 2; top: 18px; right: 18px; font-size: .75rem; padding: .25rem .7rem; border-color: currentColor; }
