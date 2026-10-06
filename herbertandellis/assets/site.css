@@ -80,8 +80,9 @@ button { cursor: pointer; }
 .nav { position: sticky; top: 0; z-index: 50; padding-top: env(safe-area-inset-top, 0px); background: rgba(245,239,230,.9); -webkit-backdrop-filter: blur(14px); backdrop-filter: blur(14px); transition: box-shadow .3s; }
 .nav.scrolled { box-shadow: 0 1px 0 var(--line); }
 .nav__in { display: flex; align-items: center; justify-content: space-between; gap: 1.5rem; height: 84px; }
-.logo { display: inline-flex; align-items: center; color: var(--ink); }
-.logo__wm { font-family: "Inter", "Helvetica Neue", Arial, sans-serif; font-weight: 900; font-size: 1.3rem; letter-spacing: -.035em; line-height: 1; text-transform: uppercase; white-space: nowrap; }
+.logo { display: inline-flex; align-items: stretch; gap: .55rem; color: var(--ink); }
+.logo__bar { flex: none; width: 3px; border-radius: 2px; background: var(--orange); }
+.logo__wm { display: grid; font-family: var(--chunk); font-weight: 800; font-variation-settings: "wdth" 85, "opsz" 96; font-size: 1.45rem; line-height: .9; letter-spacing: -.01em; text-transform: uppercase; white-space: nowrap; }
 .foot .logo { color: var(--cream); }
 .nav__links { display: flex; gap: .3rem; list-style: none; }
 .nav__links a { display: block; padding: .55rem .95rem; border-radius: 999px; font-weight: 600; font-size: .95rem; transition: background .25s; }
@@ -89,7 +90,7 @@ button { cursor: pointer; }
 .nav .btn { padding: .5rem .5rem .5rem 1.1rem; font-size: .9rem; gap: .65rem; }
 .nav .btn i { width: 1.55rem; height: 1.55rem; }
 @media (max-width: 960px) { .nav__links { display: none; } }
-@media (max-width: 420px) { .logo__wm { font-size: 1.02rem; } }
+@media (max-width: 420px) { .logo__wm { font-size: 1.2rem; } }
 
 /* ---------- Hero with giant word + phones ---------- */
 .hero { position: relative; padding-top: clamp(28px, 4vw, 48px); padding-bottom: clamp(40px, 6vw, 72px); overflow: hidden; }
