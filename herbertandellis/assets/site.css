@@ -225,13 +225,16 @@ button { cursor: pointer; }
 .mega { font-family: var(--chunk); font-weight: 800; font-variation-settings: "wdth" 75, "opsz" 96; line-height: .86; letter-spacing: -.015em; font-size: clamp(3.8rem, 13vw, 11.5rem); }
 
 /* "Hello!" contact panel, after twoplusone */
-.hello { background: var(--sky); border-radius: clamp(20px, 3vw, 32px); padding: clamp(28px, 5vw, 64px); overflow: hidden; position: relative; }
-.hello__big { font-family: var(--chunk); font-weight: 800; font-variation-settings: "wdth" 75, "opsz" 96; color: var(--orange); font-size: clamp(4.2rem, 15vw, 13rem); line-height: .85; letter-spacing: -.015em; }
-.hello__line { display: grid; grid-template-columns: 1fr auto; align-items: end; gap: 1rem 2rem; border-top: 2px solid rgba(31,29,54,.18); padding-block: clamp(14px, 2vw, 22px); }
+.hello { background: var(--orange); color: var(--ink); border-radius: clamp(20px, 3vw, 32px); padding: clamp(28px, 5vw, 64px); overflow: hidden; position: relative; }
+.hello__big { font-family: var(--chunk); font-weight: 800; font-variation-settings: "wdth" 75, "opsz" 96; color: var(--cream); font-size: clamp(4.2rem, 15vw, 13rem); line-height: .85; letter-spacing: -.015em; }
+.hello__line { display: grid; grid-template-columns: 1fr auto; align-items: end; gap: 1rem 2rem; border-top: 2px solid rgba(22,21,31,.22); padding-block: clamp(14px, 2vw, 22px); }
 .hello__line:first-of-type { margin-top: clamp(14px, 2vw, 22px); }
 .hello__line strong { font-size: clamp(2rem, 6.2vw, 5.4rem); font-weight: 800; font-variation-settings: "wdth" 86; letter-spacing: -.025em; line-height: .95; color: var(--ink); }
 .hello__line span { font-weight: 700; max-width: 22ch; text-align: right; }
-.hello__foot { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 1rem; border-top: 2px solid rgba(31,29,54,.18); padding-top: clamp(16px, 2vw, 24px); }
+.hello__foot { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 1rem; border-top: 2px solid rgba(22,21,31,.22); padding-top: clamp(16px, 2vw, 24px); }
+/* on the orange panel, dark buttons turn white on hover instead of orange */
+.hello .btn:not(.btn--orange):hover { background: var(--white); color: var(--ink); }
+.hello .btn:not(.btn--orange):hover i { background: var(--ink); color: var(--white); }
 @media (max-width: 700px) { .hello__line { grid-template-columns: 1fr; } .hello__line span { text-align: left; } }
 
 /* ---------- Footer ---------- */
