@@ -230,7 +230,7 @@ button { cursor: pointer; }
 .mega { font-family: var(--chunk); font-weight: 800; font-variation-settings: "wdth" 75, "opsz" 96; line-height: .86; letter-spacing: -.015em; font-size: clamp(3.8rem, 13vw, 11.5rem); }
 
 /* "Hello!" contact panel, after twoplusone */
-.hello { background: var(--orange); color: var(--ink); border-radius: clamp(20px, 3vw, 32px); padding: clamp(28px, 5vw, 64px); overflow: hidden; position: relative; }
+.hello { background: var(--orange); color: var(--ink); border-radius: clamp(20px, 3vw, 32px); padding: clamp(20px, 3vw, 36px); overflow: hidden; position: relative; }
 .hello__big { font-family: var(--chunk); font-weight: 800; font-variation-settings: "wdth" 75, "opsz" 96; color: var(--cream); font-size: clamp(4.2rem, 15vw, 13rem); line-height: .85; letter-spacing: -.015em; }
 .hello__line { display: grid; grid-template-columns: 1fr auto; align-items: end; gap: 1rem 2rem; border-top: 2px solid rgba(22,21,31,.22); padding-block: clamp(14px, 2vw, 22px); }
 .hello__line:first-of-type { margin-top: clamp(14px, 2vw, 22px); }

@@ -97,6 +97,7 @@ html.js .blocks:not(.built) .blk { opacity: 0; transform: translateX(-40px); }
 .form__foot small { color: var(--ink-2); max-width: 30ch; }
 .form__status { font-weight: 700; min-height: 1.4em; }
 .form__status.err { color: var(--orange-2); }
+.form__status:empty { display: none; }
 .hp { position: absolute; left: -9999px; width: 1px; height: 1px; opacity: 0; }
 
 @media (max-width: 1000px) { .calc, .book__grid { grid-template-columns: 1fr; } }
@@ -266,7 +267,7 @@ html.js .blocks:not(.built) .blk { opacity: 0; transform: translateX(-40px); }
           <div class="f"><label for="fSite">Website</label><input id="fSite" name="website" autocomplete="url" inputmode="url" required></div>
           <div class="f"><label for="fBrief">Please tell us a bit about the services you require</label><textarea id="fBrief" name="brief" required></textarea></div>
           <div class="hp" aria-hidden="true"><label for="fHp">Leave empty</label><input id="fHp" name="company_url" tabindex="-1" autocomplete="off"></div>
-          <div class="form__foot"><button class="btn btn--orange" type="submit">Get in touch <i aria-hidden="true">&rarr;</i></button></div>
+          <div class="form__foot"><button class="btn" type="submit">Get in touch <i aria-hidden="true">&rarr;</i></button></div>
           <p class="form__status" id="formStatus" role="status"></p>
         </form>
       </div>
