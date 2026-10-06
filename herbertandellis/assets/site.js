@@ -81,7 +81,8 @@
       var ph = phones[i];
       if (c1 && ph.getAttribute('data-c1')) {
         $('span', c1).textContent = ph.getAttribute('data-c1'); c1.setAttribute('href', ph.getAttribute('data-h1'));
-        c2.textContent = ph.getAttribute('data-c2'); c2.setAttribute('href', ph.getAttribute('data-h2'));
+        var t2 = ph.getAttribute('data-c2'); c2.classList.toggle('is-off', !t2);   // only some phones have a second link; its space is kept so the page doesn't jump
+        if (t2) { c2.textContent = t2; c2.setAttribute('href', ph.getAttribute('data-h2')); }
         if (dir) { ctas.classList.remove('swap'); void ctas.offsetWidth; ctas.classList.add('swap'); }
       }
     }
