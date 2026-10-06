@@ -8,12 +8,12 @@
   --cream-2: #E9E0D3;
   --ink: #16151F;
   --ink-2: #4B4855;
-  --orange: #FF5B1F;
-  --orange-2: #E2470C;
-  --lilac: #2D3BD6;   /* cobalt */
+  --orange: #E2531E;
+  --orange-2: #C2430F;
+  --lilac: #1F2C4D;   /* deep navy */
   --lime: #E6DCCB;    /* sand */
-  --sky: #C3DAE6;     /* dusty sky */
-  --pink: #E4B8A3;    /* clay */
+  --sky: #C8D3D8;     /* slate */
+  --pink: #DDBBA6;    /* clay */
   --white: #FFFFFF;
   --line: rgba(31, 29, 54, .12);
 
@@ -55,7 +55,7 @@ button { cursor: pointer; }
 /* ---------- Buttons ---------- */
 .btn { display: inline-flex; align-items: center; gap: .8rem; padding: .95rem 1rem .95rem 1.5rem; border-radius: 999px; background: var(--ink); color: var(--cream); font-weight: 700; font-size: 1rem; border: 0; white-space: nowrap; transition: transform .45s var(--spring), background .3s, color .3s, box-shadow .3s; }
 .btn i { width: 2rem; height: 2rem; border-radius: 50%; display: grid; place-items: center; background: var(--cream); color: var(--ink); font-style: normal; font-weight: 800; transition: transform .45s var(--spring); }
-.btn:hover { transform: translateY(-2px); background: var(--orange); color: var(--white); box-shadow: 0 12px 24px -10px rgba(255,106,51,.7); }
+.btn:hover { transform: translateY(-2px); background: var(--orange); color: var(--white); box-shadow: 0 12px 24px -10px rgba(226,83,30,.6); }
 .btn:hover i { transform: rotate(-45deg); }
 .btn--orange { background: var(--orange); color: var(--white); }
 .btn--orange i { background: var(--white); color: var(--orange-2); }
@@ -205,8 +205,10 @@ button { cursor: pointer; }
 .fam__tile:nth-child(5n+1) { --bg: var(--sky); --tilt: -2deg; }
 .fam__tile:nth-child(5n+2) { --bg: var(--pink); --tilt: 1.5deg; }
 .fam__tile:nth-child(5n+3) { --bg: var(--lime); --tilt: -1deg; }
-.fam__tile:nth-child(5n+4) { --bg: #FFD3BF; --tilt: 2deg; }
-.fam__tile:nth-child(5n+5) { --bg: #D3D7F6; --tilt: -1.5deg; }
+.fam__tile:nth-child(5n+4) { --bg: #EAD7CA; --tilt: 2deg; }
+.fam__tile:nth-child(5n+5) { --bg: var(--lilac); --tilt: -1.5deg; color: var(--cream); }
+.fam__tile:nth-child(5n+5) .fam__mark { filter: invert(1); }
+.fam__tile:nth-child(5n+5) .fam__meta { color: var(--cream); border-top-color: rgba(245,239,230,.2); }
 .fam__logo { --slot: clamp(58px, 5vw, 74px); display: grid; place-items: center; text-align: center; }
 .fam__mark { display: block; height: calc(var(--slot) * var(--lh, .6)); width: auto; max-width: 86%; object-fit: contain; }
 .fam__nm { font-family: var(--chunk); font-weight: 800; font-variation-settings: "wdth" 80; font-size: clamp(1.4rem, 2vw, 1.8rem); letter-spacing: -.02em; line-height: 1; }
@@ -246,7 +248,7 @@ button { cursor: pointer; }
 .foot__links a:hover { color: var(--orange); }
 
 /* ---------- Sticky "Get leads" ---------- */
-.stick { position: fixed; right: 20px; bottom: calc(20px + env(safe-area-inset-bottom, 0px)); z-index: 60; transform: translateY(160%); transition: transform .6s var(--spring); box-shadow: 0 14px 30px -10px rgba(255,106,51,.8); }
+.stick { position: fixed; right: 20px; bottom: calc(20px + env(safe-area-inset-bottom, 0px)); z-index: 60; transform: translateY(160%); transition: transform .6s var(--spring); box-shadow: 0 14px 30px -10px rgba(226,83,30,.7); }
 .stick.on { transform: none; }
 @media (max-width: 640px) { .stick { right: 12px; bottom: calc(12px + env(safe-area-inset-bottom, 0px)); } }
 
