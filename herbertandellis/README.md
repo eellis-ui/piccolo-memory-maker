@@ -57,3 +57,20 @@ with `name`, `company`, `email`, `website`, `brief` and `source`.
 ## Deploying
 
 Upload the whole folder to the web root, keeping `assets/` and `lead-generation/` as folders.
+
+## Going live (Cloudflare Pages)
+
+Upload the whole `herbertandellis/` folder (or the zip of it) as the Pages project for www.herbertandellis.com.
+Everything is static: no build step. Alongside the two pages it ships `404.html`, `robots.txt`, `sitemap.xml`,
+`og-image.png` (the 1200x630 link-share image) and `logo.png` (used in the structured data).
+
+After the first deploy, submit the sitemap in Google Search Console: `https://www.herbertandellis.com/sitemap.xml`.
+
+## Enquiries
+
+The lead-generation form posts to FormSubmit (`https://formsubmit.co/ajax/hello@herbertandellis.com`), which
+emails each enquiry to hello@herbertandellis.com with the visitor's email as the reply-to address. The first
+submission after going live sends an activation email to that inbox; click the link in it once and every
+enquiry after that is delivered. If the service is ever unreachable, the form opens the visitor's own email
+app with the enquiry filled in, addressed to hello@herbertandellis.com, so nothing is lost. To use a different
+service, change `data-endpoint` on the form in `lead-generation/index.html`.
