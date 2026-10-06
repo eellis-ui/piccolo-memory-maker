@@ -142,7 +142,7 @@ button { cursor: pointer; }
 .hero__ctas.swap > * { animation: ctaIn .45s var(--ease); }
 .hero__ctas .is-off { display: none; }
 @keyframes ctaIn { from { opacity: 0; transform: translateY(6px); } }
-@media (prefers-reduced-motion: reduce) { .hero__ctas.swap > * { animation: none; } }
+@media (prefers-reduced-motion: reduce) { .hero__ctas.swap > * { animation: none; } .fam__tile { transform: none !important; } }
 .blob { position: absolute; border-radius: 50%; filter: blur(2px); z-index: 0; pointer-events: none; }
 
 /* ---------- Phone screens ---------- */
@@ -193,15 +193,21 @@ button { cursor: pointer; }
 .ncard .sticker { position: absolute; z-index: 2; top: 18px; right: 18px; font-size: .75rem; padding: .25rem .7rem; border-color: currentColor; }
 
 /* ---------- The H&E family: logo wall ---------- */
-.fam { --gap: 14px; display: flex; flex-wrap: wrap; justify-content: center; gap: var(--gap); }
-.fam__tile { flex: 0 0 calc((100% - 4 * var(--gap)) / 5); aspect-ratio: 1 / 1.05; display: grid; grid-template-rows: 1fr auto; padding: 1.1rem 1.2rem; border-radius: var(--r); background: var(--white); box-shadow: inset 0 0 0 1.5px rgba(22,21,31,.06); transition: transform .5s var(--spring), box-shadow .35s; }
-.fam__tile:hover { transform: translateY(-6px); box-shadow: inset 0 0 0 2px var(--ink), 0 22px 34px -22px rgba(22,21,31,.45); }
+.fam { --gap: 16px; display: flex; padding-block: 10px; flex-wrap: wrap; justify-content: center; gap: var(--gap); }
+.fam__tile { --bg: var(--white); --tilt: 0deg; flex: 0 0 calc((100% - 4 * var(--gap)) / 5); aspect-ratio: 1 / 1.05; display: grid; grid-template-rows: 1fr auto; padding: 1.1rem 1.2rem; border-radius: var(--r); background: var(--bg); transform: rotate(var(--tilt)); transition: transform .5s var(--spring), box-shadow .35s; }
+.fam__tile:hover { transform: rotate(0deg) translateY(-8px) scale(1.03); box-shadow: 0 26px 40px -24px rgba(22,21,31,.5); z-index: 1; }
+/* each company gets its own colour and a slight sticker-like tilt */
+.fam__tile:nth-child(5n+1) { --bg: var(--sky); --tilt: -2deg; }
+.fam__tile:nth-child(5n+2) { --bg: var(--pink); --tilt: 1.5deg; }
+.fam__tile:nth-child(5n+3) { --bg: var(--lime); --tilt: -1deg; }
+.fam__tile:nth-child(5n+4) { --bg: #FFD3BF; --tilt: 2deg; }
+.fam__tile:nth-child(5n+5) { --bg: #D3D7F6; --tilt: -1.5deg; }
 .fam__logo { --slot: clamp(58px, 5vw, 74px); display: grid; place-items: center; text-align: center; }
 .fam__mark { display: block; height: calc(var(--slot) * var(--lh, .6)); width: auto; max-width: 86%; object-fit: contain; }
 .fam__nm { font-family: var(--chunk); font-weight: 800; font-variation-settings: "wdth" 80; font-size: clamp(1.4rem, 2vw, 1.8rem); letter-spacing: -.02em; line-height: 1; }
 .fam__logo:has(.fam__mark) .fam__nm { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
-.fam__meta { display: flex; justify-content: space-between; align-items: center; padding-top: .8rem; border-top: 1.5px solid rgba(22,21,31,.08); font-size: .8rem; font-weight: 700; color: var(--ink-2); }
-.fam__go { width: 1.8rem; height: 1.8rem; border-radius: 50%; display: grid; place-items: center; background: var(--cream-2); color: var(--ink); transition: transform .35s var(--spring), background .25s, color .25s; }
+.fam__meta { display: flex; justify-content: space-between; align-items: center; padding-top: .8rem; border-top: 1.5px solid rgba(22,21,31,.12); font-size: .8rem; font-weight: 700; color: var(--ink); }
+.fam__go { width: 1.8rem; height: 1.8rem; border-radius: 50%; display: grid; place-items: center; background: var(--white); color: var(--ink); transition: transform .35s var(--spring), background .25s, color .25s; }
 .fam__tile:hover .fam__go { transform: rotate(-45deg); background: var(--orange); color: var(--white); }
 @media (max-width: 1000px) { .fam__tile { flex-basis: calc((100% - 2 * var(--gap)) / 3); } }
 @media (max-width: 620px) { .fam { --gap: 10px; } .fam__tile { flex-basis: calc((100% - var(--gap)) / 2); padding: .9rem; } }
@@ -239,6 +245,10 @@ button { cursor: pointer; }
 html.js .rv { opacity: 0; transform: translateY(28px); transition: opacity .8s var(--ease), transform .8s var(--ease); transition-delay: var(--d, 0s); }
 html.js .rv.in { opacity: 1; transform: none; }
 @media (prefers-reduced-motion: reduce) { html.js .rv { opacity: 1; transform: none; transition: none; } .phone, .giant__ch { transition: none; } }
+/* family tiles keep their tilt once revealed, and straighten on hover */
+html.js .fam__tile.rv { transform: translateY(28px) rotate(var(--tilt)); }
+html.js .fam__tile.rv.in { transform: rotate(var(--tilt)); transition: opacity .8s var(--ease), transform .5s var(--spring), box-shadow .35s; }
+html.js .fam__tile.rv.in:hover { transform: rotate(0deg) translateY(-8px) scale(1.03); }
 
 /* ---------- Phone screen parts ---------- */
 .srch { margin: .1em 1em .5em; padding: .75em 1em; border-radius: 999px; background: #F1EEEA; font-size: .85em; font-weight: 600; }
