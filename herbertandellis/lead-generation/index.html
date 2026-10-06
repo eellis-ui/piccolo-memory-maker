@@ -103,6 +103,7 @@ html.js .blocks:not(.built) .blk { opacity: 0; transform: translateX(-40px); }
 .f2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
 .f { display: grid; gap: .35rem; }
 .f label { font-weight: 700; font-size: .92rem; }
+.f label .opt { font-weight: 600; color: var(--ink-2); }
 .f input, .f textarea { width: 100%; border: 2px solid transparent; background: var(--cream); border-radius: 16px; padding: .85rem 1rem; font-size: 1rem; outline: none; transition: border-color .25s, background .25s; }
 .f textarea { min-height: 150px; resize: vertical; line-height: 1.55; }
 .f input:focus, .f textarea:focus { border-color: var(--orange); background: var(--white); }
@@ -291,9 +292,10 @@ html.js .blocks:not(.built) .blk { opacity: 0; transform: translateX(-40px); }
       <div class="book__grid">
         <div class="book__side"><p class="hello__big">Hello!</p><strong>Let us help you</strong><p>Tell us what a good month would look like for you. We&rsquo;ll take it from there.</p><a class="link" href="mailto:hello@herbertandellis.com">hello@herbertandellis.com</a></div>
         <form class="form" id="auditForm" novalidate data-endpoint="">
-          <div class="f2"><div class="f"><label for="fName">Name</label><input id="fName" name="name" autocomplete="name" required></div><div class="f"><label for="fCompany">Company</label><input id="fCompany" name="company" autocomplete="organization" required></div></div>
-          <div class="f2"><div class="f"><label for="fEmail">Work email</label><input id="fEmail" name="email" type="email" autocomplete="email" required></div><div class="f"><label for="fSite">Website</label><input id="fSite" name="website" autocomplete="url"></div></div>
-          <div class="f"><label for="fBrief">What you sell, and who to</label><textarea id="fBrief" name="brief" required></textarea></div>
+          <div class="f2"><div class="f"><label for="fName">Name</label><input id="fName" name="name" autocomplete="name" required></div><div class="f"><label for="fCompany">Company <span class="opt">(optional)</span></label><input id="fCompany" name="company" autocomplete="organization"></div></div>
+          <div class="f2"><div class="f"><label for="fEmail">Email</label><input id="fEmail" name="email" type="email" autocomplete="email" required></div><div class="f"><label for="fPhone">Phone number</label><input id="fPhone" name="phone" type="tel" autocomplete="tel" inputmode="tel" required></div></div>
+          <div class="f"><label for="fSite">Website <span class="opt">(optional)</span></label><input id="fSite" name="website" autocomplete="url" inputmode="url"></div>
+          <div class="f"><label for="fBrief">Please tell us a bit about the services you require</label><textarea id="fBrief" name="brief" required></textarea></div>
           <div class="hp" aria-hidden="true"><label for="fHp">Leave empty</label><input id="fHp" name="company_url" tabindex="-1" autocomplete="off"></div>
           <div class="form__foot"><button class="btn btn--orange" type="submit">Book my audit <i aria-hidden="true">&rarr;</i></button><small>A real person reads this and replies.</small></div>
           <p class="form__status" id="formStatus" role="status"></p>
@@ -355,7 +357,7 @@ html.js .blocks:not(.built) .blk { opacity: 0; transform: translateX(-40px); }
   /* ---------- Everything that leads to the form pre-fills it ---------- */
   var pre = { goal: '', nums: false }, dirty = false, ta = $('#fBrief');
   ta.addEventListener('input', function () { dirty = true; });
-  function compose() { var o = []; if (pre.goal) o.push('Goal: ' + pre.goal); if (pre.nums) o.push(numbersText()); return o.join('\n\n') + (o.length ? '\n\n' : '') + 'What we sell: '; }
+  function compose() { var o = []; if (pre.goal) o.push('Goal: ' + pre.goal); if (pre.nums) o.push(numbersText()); return o.join('\n\n') + (o.length ? '\n\n' : ''); }
   function goBook(ch) {
     var add = ch.goal ? 'Goal: ' + ch.goal : ch.nums ? numbersText() : '';
     for (var k in ch) pre[k] = ch[k];
@@ -377,9 +379,12 @@ html.js .blocks:not(.built) .blk { opacity: 0; transform: translateX(-40px); }
   form.addEventListener('submit', function (e) {
     e.preventDefault(); status.className = 'form__status'; status.textContent = '';
     if ($('#fHp').value) return;
-    var bad = ['fName', 'fCompany', 'fEmail', 'fBrief'].filter(function (id) { var el = document.getElementById(id); return !el.value.trim() || (el.type === 'email' && !el.validity.valid); });
-    if (bad.length) { document.getElementById(bad[0]).focus(); status.className = 'form__status err'; status.textContent = 'Add your name, company, a valid work email and a line about what you sell.'; return; }
-    var d = { name: $('#fName').value.trim(), company: $('#fCompany').value.trim(), email: $('#fEmail').value.trim(), website: $('#fSite').value.trim(), brief: ta.value.trim(), source: location.href };
+    var bad = ['fName', 'fEmail', 'fPhone', 'fBrief'].filter(function (id) {
+      var el = document.getElementById(id), v = el.value.trim();
+      return !v || (el.type === 'email' && !el.validity.valid) || (el.type === 'tel' && v.replace(/\D/g, '').length < 7);
+    });
+    if (bad.length) { document.getElementById(bad[0]).focus(); status.className = 'form__status err'; status.textContent = 'Add your name, a valid email, your phone number and a line about the services you need.'; return; }
+    var d = { name: $('#fName').value.trim(), company: $('#fCompany').value.trim(), email: $('#fEmail').value.trim(), phone: $('#fPhone').value.trim(), website: $('#fSite').value.trim(), brief: ta.value.trim(), source: location.href };
     var ep = form.getAttribute('data-endpoint');
     if (ep) {
       status.textContent = 'Sending…';
@@ -388,8 +393,8 @@ html.js .blocks:not(.built) .blk { opacity: 0; transform: translateX(-40px); }
         .catch(function () { status.className = 'form__status err'; status.textContent = 'That didn’t send. Email hello@herbertandellis.com instead.'; });
       return;
     }
-    var bodyTxt = 'Name: ' + d.name + '\nCompany: ' + d.company + '\nEmail: ' + d.email + (d.website ? '\nWebsite: ' + d.website : '') + '\n\n' + d.brief + '\n';
-    window.location.href = 'mailto:hello@herbertandellis.com?subject=' + encodeURIComponent('Pipeline audit: ' + d.company) + '&body=' + encodeURIComponent(bodyTxt);
+    var bodyTxt = 'Name: ' + d.name + (d.company ? '\nCompany: ' + d.company : '') + '\nEmail: ' + d.email + '\nPhone: ' + d.phone + (d.website ? '\nWebsite: ' + d.website : '') + '\n\nServices required:\n' + d.brief + '\n';
+    window.location.href = 'mailto:hello@herbertandellis.com?subject=' + encodeURIComponent('Enquiry from ' + (d.company || d.name)) + '&body=' + encodeURIComponent(bodyTxt);
     status.textContent = 'Your email app should open with everything filled in.';
   });
 })();
