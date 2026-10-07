@@ -170,5 +170,33 @@
     window.addEventListener('scroll', upd, { passive: true }); upd();
   }
 
+  /* Enquiry form: sends to hello@herbertandellis.com; if that fails, opens a pre-filled email instead */
+  var form = $('#auditForm'), status = $('#formStatus');
+  if (form) form.addEventListener('submit', function (e) {
+    e.preventDefault(); status.className = 'form__status'; status.textContent = '';
+    if ($('#fHp').value) return;
+    var bad = ['fName', 'fEmail', 'fPhone', 'fSite', 'fBrief'].filter(function (id) {
+      var el = document.getElementById(id), v = el.value.trim();
+      return !v || (el.type === 'email' && !el.validity.valid) || (el.type === 'tel' && v.replace(/\D/g, '').length < 7) || (id === 'fSite' && v.indexOf('.') < 0);
+    });
+    if (bad.length) { document.getElementById(bad[0]).focus(); status.className = 'form__status err'; status.textContent = 'Add your name, a valid email, your phone number, your website and a line about the services you need.'; return; }
+    var d = { name: $('#fName').value.trim(), company: $('#fCompany').value.trim(), email: $('#fEmail').value.trim(), phone: $('#fPhone').value.trim(), website: $('#fSite').value.trim(), brief: $('#fBrief').value.trim(), source: location.href };
+    var bodyTxt = 'Name: ' + d.name + (d.company ? '\nCompany: ' + d.company : '') + '\nEmail: ' + d.email + '\nPhone: ' + d.phone + '\nWebsite: ' + d.website + '\n\nServices required:\n' + d.brief + '\n';
+    var subject = 'Website enquiry from ' + (d.company || d.name);
+    function byEmail() {   // backup: open the visitor's email app, already filled in
+      window.location.href = 'mailto:hello@herbertandellis.com?subject=' + encodeURIComponent(subject) + '&body=' + encodeURIComponent(bodyTxt);
+      status.className = 'form__status'; status.textContent = 'Your email app should open with everything filled in. Press send and it comes straight to us.';
+    }
+    var ep = form.getAttribute('data-endpoint'), btn = form.querySelector('button[type="submit"]');
+    if (!ep || !window.fetch) { byEmail(); return; }
+    status.textContent = 'Sending…'; btn.disabled = true;
+    var payload = { Name: d.name, Company: d.company || '-', Email: d.email, Phone: d.phone, Website: d.website, 'Services required': d.brief, Page: d.source, _subject: subject, _replyto: d.email, _template: 'table', _captcha: 'false' };
+    fetch(ep, { method: 'POST', headers: { 'Content-Type': 'application/json', Accept: 'application/json' }, body: JSON.stringify(payload) })
+      .then(function (r) { return r.json().catch(function () { return {}; }).then(function (j) { if (!r.ok || String(j.success) !== 'true') throw 0; }); })
+      .then(function () { status.className = 'form__status'; status.textContent = 'Thank you. Your enquiry is with us and we\u2019ll be in touch shortly.'; form.reset(); })
+      .catch(byEmail)
+      .then(function () { btn.disabled = false; });
+  });
+
   var yr = $('#yr'); if (yr) yr.textContent = new Date().getFullYear();
 })();

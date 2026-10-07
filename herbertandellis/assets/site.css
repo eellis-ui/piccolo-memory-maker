@@ -242,6 +242,29 @@ button { cursor: pointer; }
 .hello .btn:not(.btn--orange):hover i { background: var(--ink); color: var(--white); }
 @media (max-width: 700px) { .hello__line { grid-template-columns: 1fr; } .hello__line span { text-align: left; } }
 
+/* Contact form panel (home and lead pages) */
+.book__grid { display: grid; grid-template-columns: 1fr 1.1fr; gap: 2rem; align-items: start; }
+.book__side .hello__big { font-size: clamp(4.2rem, 11vw, 11rem); margin-bottom: clamp(14px, 2vw, 22px); }
+.book__side strong { display: block; font-size: clamp(2rem, 5vw, 4.2rem); font-weight: 800; font-variation-settings: "wdth" 86; letter-spacing: -.025em; line-height: .95; color: var(--ink); }
+.book__side p { font-weight: 700; margin-top: 1rem; max-width: 30ch; }
+.book__side .link { display: inline-block; margin-top: 1.4rem; color: var(--sky); }
+.form { background: var(--white); border-radius: var(--r); padding: clamp(20px, 3vw, 32px); display: grid; gap: 12px; }
+.f2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.f { display: grid; gap: .35rem; }
+.f label { font-weight: 700; font-size: .92rem; }
+.f label .opt { font-weight: 600; color: var(--ink-2); }
+.f input, .f textarea { width: 100%; border: 2px solid transparent; background: var(--cream); border-radius: 16px; padding: .85rem 1rem; font-size: 1rem; outline: none; transition: border-color .25s, background .25s; }
+.f textarea { min-height: 150px; resize: vertical; line-height: 1.55; }
+.f input:focus, .f textarea:focus { border-color: var(--orange); background: var(--white); }
+.form__foot { display: flex; flex-wrap: wrap; align-items: center; gap: .8rem 1.4rem; margin-top: .4rem; }
+.form__foot small { color: var(--ink-2); max-width: 30ch; }
+.form__status { font-weight: 700; min-height: 1.4em; }
+.form__status.err { color: var(--orange-2); }
+.form__status:empty { display: none; }
+.hp { position: absolute; left: -9999px; width: 1px; height: 1px; opacity: 0; }
+@media (max-width: 1000px) { .book__grid { grid-template-columns: 1fr; } }
+@media (max-width: 700px) { .f2 { grid-template-columns: 1fr; } }
+
 /* ---------- Footer ---------- */
 .foot { background: var(--ink); color: var(--cream); overflow: hidden; padding-block: clamp(48px, 8vw, 110px) calc(32px + env(safe-area-inset-bottom, 0px)); }
 /* the sign-off: one statement, edge to edge */

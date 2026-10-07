@@ -88,32 +88,11 @@
 .blk--end b { font-weight: 800; font-variation-settings: "wdth" 80; font-size: clamp(1.6rem, 3.4vw, 2.8rem); letter-spacing: -.03em; }
 html.js .blocks:not(.built) .blk { opacity: 0; transform: translateX(-40px); }
 
-/* Book */
-.book__grid { display: grid; grid-template-columns: 1fr 1.1fr; gap: 2rem; align-items: start; }
-.book__side .hello__big { font-size: clamp(4.2rem, 11vw, 11rem); margin-bottom: clamp(14px, 2vw, 22px); }
-.book__side strong { display: block; font-size: clamp(2rem, 5vw, 4.2rem); font-weight: 800; font-variation-settings: "wdth" 86; letter-spacing: -.025em; line-height: .95; color: var(--ink); }
-.book__side p { font-weight: 700; margin-top: 1rem; max-width: 30ch; }
-.book__side .link { display: inline-block; margin-top: 1.4rem; color: var(--sky); }
-.form { background: var(--white); border-radius: var(--r); padding: clamp(20px, 3vw, 32px); display: grid; gap: 12px; }
-.f2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
-.f { display: grid; gap: .35rem; }
-.f label { font-weight: 700; font-size: .92rem; }
-.f label .opt { font-weight: 600; color: var(--ink-2); }
-.f input, .f textarea { width: 100%; border: 2px solid transparent; background: var(--cream); border-radius: 16px; padding: .85rem 1rem; font-size: 1rem; outline: none; transition: border-color .25s, background .25s; }
-.f textarea { min-height: 150px; resize: vertical; line-height: 1.55; }
-.f input:focus, .f textarea:focus { border-color: var(--orange); background: var(--white); }
-.form__foot { display: flex; flex-wrap: wrap; align-items: center; gap: .8rem 1.4rem; margin-top: .4rem; }
-.form__foot small { color: var(--ink-2); max-width: 30ch; }
-.form__status { font-weight: 700; min-height: 1.4em; }
-.form__status.err { color: var(--orange-2); }
-.form__status:empty { display: none; }
-.hp { position: absolute; left: -9999px; width: 1px; height: 1px; opacity: 0; }
 
-@media (max-width: 1000px) { .calc, .book__grid { grid-template-columns: 1fr; } }
+@media (max-width: 1000px) { .calc { grid-template-columns: 1fr; } }
 @media (max-width: 700px) {
   .blk { width: 100%; grid-template-columns: 2rem 1fr; gap: .2rem .8rem; }
   .blk span { grid-column: 2; justify-self: start; text-align: left; }
-  .f2 { grid-template-columns: 1fr; }
   .fn { grid-template-columns: 5.6rem 1fr 3.2rem; font-size: .8rem; }
 }
 @media (prefers-reduced-motion: reduce) { html.js .blocks:not(.built) .blk { opacity: 1; transform: none; } }
@@ -353,33 +332,8 @@ html.js .blocks:not(.built) .blk { opacity: 0; transform: translateX(-40px); }
   if (reduce || !('IntersectionObserver' in window)) blocks.classList.add('built');
   else { var bio = new IntersectionObserver(function (es) { if (es[0].isIntersecting) { bio.disconnect(); blocks.classList.add('built'); } }, { threshold: .25 }); bio.observe(blocks); }
 
-  /* ---------- Form: sends to hello@herbertandellis.com; if that fails, opens a pre-filled email instead ---------- */
-  var form = $('#auditForm'), status = $('#formStatus');
-  form.addEventListener('submit', function (e) {
-    e.preventDefault(); status.className = 'form__status'; status.textContent = '';
-    if ($('#fHp').value) return;
-    var bad = ['fName', 'fEmail', 'fPhone', 'fSite', 'fBrief'].filter(function (id) {
-      var el = document.getElementById(id), v = el.value.trim();
-      return !v || (el.type === 'email' && !el.validity.valid) || (el.type === 'tel' && v.replace(/\D/g, '').length < 7) || (id === 'fSite' && v.indexOf('.') < 0);
-    });
-    if (bad.length) { document.getElementById(bad[0]).focus(); status.className = 'form__status err'; status.textContent = 'Add your name, a valid email, your phone number, your website and a line about the services you need.'; return; }
-    var d = { name: $('#fName').value.trim(), company: $('#fCompany').value.trim(), email: $('#fEmail').value.trim(), phone: $('#fPhone').value.trim(), website: $('#fSite').value.trim(), brief: ta.value.trim(), source: location.href };
-    var bodyTxt = 'Name: ' + d.name + (d.company ? '\nCompany: ' + d.company : '') + '\nEmail: ' + d.email + '\nPhone: ' + d.phone + '\nWebsite: ' + d.website + '\n\nServices required:\n' + d.brief + '\n';
-    var subject = 'Website enquiry from ' + (d.company || d.name);
-    function byEmail() {   // backup: open the visitor's email app, already filled in
-      window.location.href = 'mailto:hello@herbertandellis.com?subject=' + encodeURIComponent(subject) + '&body=' + encodeURIComponent(bodyTxt);
-      status.className = 'form__status'; status.textContent = 'Your email app should open with everything filled in. Press send and it comes straight to us.';
-    }
-    var ep = form.getAttribute('data-endpoint'), btn = form.querySelector('button[type="submit"]');
-    if (!ep || !window.fetch) { byEmail(); return; }
-    status.textContent = 'Sending…'; btn.disabled = true;
-    var payload = { Name: d.name, Company: d.company || '-', Email: d.email, Phone: d.phone, Website: d.website, 'Services required': d.brief, Page: d.source, _subject: subject, _replyto: d.email, _template: 'table', _captcha: 'false' };
-    fetch(ep, { method: 'POST', headers: { 'Content-Type': 'application/json', Accept: 'application/json' }, body: JSON.stringify(payload) })
-      .then(function (r) { return r.json().catch(function () { return {}; }).then(function (j) { if (!r.ok || String(j.success) !== 'true') throw 0; }); })
-      .then(function () { status.className = 'form__status'; status.textContent = 'Thank you. Your enquiry is with us and we\u2019ll be in touch shortly.'; form.reset(); dirty = false; })
-      .catch(byEmail)
-      .then(function () { btn.disabled = false; });
-  });
+  /* Clear the 'edited by hand' flag once the shared form script resets the form after sending */
+  $('#auditForm').addEventListener('reset', function () { dirty = false; });
 })();
 </script>
 
