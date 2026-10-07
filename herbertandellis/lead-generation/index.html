@@ -322,7 +322,7 @@ html.js .blocks:not(.built) .blk { opacity: 0; transform: translateX(-40px); }
     var add = ch.goal ? 'Goal: ' + ch.goal : ch.nums ? numbersText() : '';
     for (var k in ch) pre[k] = ch[k];
     if (!dirty) ta.value = compose(); else if (add) ta.value = ta.value.replace(/\s*$/, '') + '\n\n' + add;
-    $('#book').scrollIntoView({ behavior: reduce ? 'auto' : 'smooth' });
+    ($('#book') || $('#contact')).scrollIntoView({ behavior: reduce ? 'auto' : 'smooth' });
     setTimeout(function () { $('#fName').focus({ preventScroll: true }); }, reduce ? 0 : 700);
   }
   $('#calcCta').addEventListener('click', function (e) { e.preventDefault(); goBook({ nums: true }); });

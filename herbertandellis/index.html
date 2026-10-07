@@ -29,6 +29,74 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wdth,wght@12..96,75..100,300..800&display=swap">
 <link rel="stylesheet" href="assets/site.css">
+<style>
+/* ---------- Lead generation page ---------- */
+.giant--leads { font-size: clamp(4rem, 22vw, 21rem); }
+.hero--leads .stage { --lap: min(2.6vw, 40px); }
+
+/* The maths */
+.calc { display: grid; grid-template-columns: 1fr 1.05fr; gap: 16px; align-items: start; }
+.card { background: var(--white); border-radius: var(--r); padding: clamp(22px, 3vw, 36px); }
+.ctrl + .ctrl { margin-top: 1.6rem; }
+.ctrl__top { display: flex; justify-content: space-between; align-items: baseline; gap: 1rem; margin-bottom: .6rem; }
+.ctrl label { font-weight: 700; }
+.ctrl output { font-size: clamp(1.7rem, 3vw, 2.5rem); font-weight: 800; font-variation-settings: "wdth" 88; letter-spacing: -.02em; font-variant-numeric: tabular-nums; line-height: 1; }
+.range { -webkit-appearance: none; appearance: none; width: 100%; height: 30px; background: transparent; cursor: pointer; --p: 50%; }
+.range::-webkit-slider-runnable-track { height: 12px; border-radius: 999px; background: linear-gradient(to right, var(--orange) var(--p), var(--cream-2) var(--p)); }
+.range::-moz-range-track { height: 12px; border-radius: 999px; background: var(--cream-2); }
+.range::-moz-range-progress { height: 12px; border-radius: 999px; background: var(--orange); }
+.range::-webkit-slider-thumb { -webkit-appearance: none; width: 30px; height: 30px; margin-top: -9px; border-radius: 50%; background: var(--white); border: 5px solid var(--ink); transition: transform .35s var(--spring); }
+.range::-moz-range-thumb { width: 22px; height: 22px; border-radius: 50%; background: var(--white); border: 5px solid var(--ink); }
+.range:active::-webkit-slider-thumb { transform: scale(1.2); }
+.assume { margin-top: 1.8rem; padding: 1.2rem 1.3rem; border-radius: var(--r-sm); background: var(--cream); display: grid; gap: .8rem; }
+.assume p { font-size: .88rem; color: var(--ink-2); }
+.assume__row { display: flex; justify-content: space-between; align-items: center; gap: 1rem; font-weight: 600; font-size: .95rem; }
+.stepper { display: inline-flex; align-items: center; background: var(--white); border-radius: 999px; padding: 4px; flex: none; }
+.stepper button { width: 34px; height: 34px; border-radius: 50%; border: 0; background: var(--cream-2); font-weight: 800; font-size: 1.1rem; transition: background .2s, transform .3s var(--spring); }
+.stepper button:hover { background: var(--lime); transform: scale(1.08); }
+.stepper output { min-width: 58px; text-align: center; font-weight: 800; font-variant-numeric: tabular-nums; }
+.out { background: var(--ink); color: var(--cream); border-radius: var(--r); padding: clamp(22px, 3vw, 36px); }
+.out__label { font-weight: 700; opacity: .75; }
+.out__big { font-size: clamp(3rem, 6.5vw, 5.6rem); font-weight: 800; font-variation-settings: "wdth" 85; letter-spacing: -.03em; line-height: .95; color: var(--orange); font-variant-numeric: tabular-nums; margin-top: .3rem; }
+.out__grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 1.4rem; }
+.out__grid div { background: rgba(255,255,255,.07); border-radius: var(--r-sm); padding: 1rem 1.1rem; }
+.out__grid b { display: block; font-size: clamp(1.3rem, 2.2vw, 1.8rem); font-weight: 800; letter-spacing: -.02em; font-variant-numeric: tabular-nums; }
+.out__grid span { font-size: .85rem; opacity: .7; }
+.funnel { margin-top: 1.4rem; display: grid; gap: 8px; }
+.fn { display: grid; grid-template-columns: 7.5rem 1fr 4rem; gap: .8rem; align-items: center; font-size: .88rem; font-weight: 600; }
+.fn__bar { height: 26px; border-radius: 999px; background: rgba(255,255,255,.08); overflow: hidden; }
+.fn__bar i { display: block; height: 100%; width: 0; border-radius: inherit; transition: width .9s var(--spring); }
+.fn:nth-child(1) i { background: var(--sky); } .fn:nth-child(2) i { background: var(--lilac); } .fn:nth-child(3) i { background: var(--lime); } .fn:nth-child(4) i { background: var(--orange); }
+.fn b { text-align: right; font-weight: 800; font-variant-numeric: tabular-nums; }
+.out__say { margin-top: 1.3rem; font-size: 1.02rem; opacity: .9; }
+.out__say b { color: var(--lime); }
+.out .btn { margin-top: 1.3rem; }
+.fine { margin-top: .9rem; font-size: .8rem; opacity: .55; }
+
+
+/* Google + Meta funnel */
+.blocks { display: grid; gap: 8px; }
+.blk { width: var(--w); display: grid; grid-template-columns: 2.6rem auto 1fr; align-items: center; gap: 1rem; padding: 1rem 1.4rem; border: 0; border-radius: 22px; text-align: left; color: var(--ink);
+  transition: transform .8s var(--spring), opacity .6s, box-shadow .3s; transition-delay: calc(var(--k) * 100ms); }
+.blk:nth-child(1) { background: var(--orange); color: var(--white); } .blk:nth-child(2) { background: var(--lilac); color: var(--white); } .blk:nth-child(3) { background: var(--sky); }
+.blk:nth-child(4) { background: var(--lime); } .blk:nth-child(5) { background: var(--pink); } .blk:nth-child(6) { background: var(--ink); color: var(--cream); }
+.blk:nth-child(7) { background: var(--white); } .blk:nth-child(8) { background: var(--orange-2); color: var(--white); }
+.blk small { font-weight: 800; font-size: 1rem; line-height: 1; opacity: .75; }
+.blk b { font-size: clamp(1.4rem, 3vw, 2.5rem); font-weight: 800; font-variation-settings: "wdth" 88; letter-spacing: -.02em; line-height: 1; }
+.blk span { justify-self: end; text-align: right; font-weight: 600; font-size: .92rem; opacity: .85; }
+.blk--end { background: var(--cream) !important; color: var(--orange-2) !important; box-shadow: inset 0 0 0 3px var(--orange); grid-template-columns: 1fr; }
+.blk--end b { font-weight: 800; font-variation-settings: "wdth" 80; font-size: clamp(1.6rem, 3.4vw, 2.8rem); letter-spacing: -.03em; }
+html.js .blocks:not(.built) .blk { opacity: 0; transform: translateX(-40px); }
+
+
+@media (max-width: 1000px) { .calc { grid-template-columns: 1fr; } }
+@media (max-width: 700px) {
+  .blk { width: 100%; grid-template-columns: 2rem 1fr; gap: .2rem .8rem; }
+  .blk span { grid-column: 2; justify-self: start; text-align: left; }
+  .fn { grid-template-columns: 5.6rem 1fr 3.2rem; font-size: .8rem; }
+}
+@media (prefers-reduced-motion: reduce) { html.js .blocks:not(.built) .blk { opacity: 1; transform: none; } }
+</style>
 
 </head>
 <body>
@@ -48,7 +116,7 @@
     <h1 class="sr">Herbert &amp; Ellis: lead generation, automations, capital, consultancy, websites and growth</h1>
     <p class="giant giant--swap" data-word-target aria-hidden="true" style="font-size:clamp(4rem,22vw,21rem)"><span class="giant__line">LEADS</span></p>
     <div class="stage" tabindex="0" role="region" aria-roledescription="carousel" aria-label="What we do. Use arrow keys to rotate.">
-<div class="phone" data-title="Leads" data-line="Qualified enquiries from Google and Meta ads, ready to book." data-word="LEADS" data-c1="Get me leads" data-h1="lead-generation/#book" data-c2="Run the numbers" data-h2="lead-generation/#maths" role="group" aria-roledescription="slide" aria-label="Leads"><div class="phone__screen"><div class="scr"><div class="scr__status"><span>9:41</span><span>&#9679;&#9679;&#9679;</span></div><div class="scr__head">New leads <small>Today</small></div><div class="scr__body">
+<div class="phone" data-title="Leads" data-line="Qualified enquiries from Google and Meta ads, ready to book." data-word="LEADS" data-c1="Get me leads" data-h1="#contact" data-c2="Run the numbers" data-h2="#maths" role="group" aria-roledescription="slide" aria-label="Leads"><div class="phone__screen"><div class="scr"><div class="scr__status"><span>9:41</span><span>&#9679;&#9679;&#9679;</span></div><div class="scr__head">New leads <small>Today</small></div><div class="scr__body">
 <div class="row"><span class="av s-sky">SM</span><p><b>Kitchen refit <span class="src">Google</span></b>&pound;15k+ &middot; This month</p></div>
 <div class="row"><span class="av s-pink">JT</span><p><b>Bathroom quote <span class="src">Meta</span></b>&pound;8k &middot; Within 4 weeks</p></div>
 <div class="row hi"><span class="av s-orange">PK</span><p><b>Full renovation <span class="src">Google</span></b>&pound;40k &middot; Ready to book</p></div>
@@ -92,8 +160,8 @@
 </div>
 <div class="offers" role="tablist" aria-label="What we do"><button type="button" role="tab" aria-label="Leads"><i></i></button><button type="button" role="tab" aria-label="Automations"><i></i></button><button type="button" role="tab" aria-label="Capital"><i></i></button><button type="button" role="tab" aria-label="Consult"><i></i></button><button type="button" role="tab" aria-label="Build"><i></i></button><button type="button" role="tab" aria-label="Growth"><i></i></button></div>
 <div class="hero__ctas">
-  <a class="btn btn--orange btn--big" data-cta="1" href="lead-generation/#book"><span>Get me leads</span> <i aria-hidden="true">&rarr;</i></a>
-  <a class="link" data-cta="2" href="lead-generation/#maths">Run the numbers</a>
+  <a class="btn btn--orange btn--big" data-cta="1" href="#contact"><span>Get me leads</span> <i aria-hidden="true">&rarr;</i></a>
+  <a class="link" data-cta="2" href="#maths">Run the numbers</a>
 </div>
   </div>
 </section>
@@ -113,6 +181,65 @@
       <a class="ncard rv" style="--d:0.00s" href="#contact" aria-label="Consult: Have a chat"><div class="ncard__body s-sky"><span class="ncard__n">04</span><span class="h3">Consult</span><p>Experience-backed advice and auditing across operations, systems and marketing. One-off or ongoing.</p><span class="ncard__cta">Have a chat</span></div><span class="ncard__go" aria-hidden="true">&rarr;</span></a>
       <a class="ncard rv" style="--d:0.06s" href="#contact" aria-label="Build: Build with us"><div class="ncard__body s-pink"><span class="ncard__n">05</span><span class="h3">Build</span><p>Full-stack brand, digital, and performance marketing. We turn attention into revenue across every channel that matters.</p><span class="ncard__cta">Build with us</span></div><span class="ncard__go" aria-hidden="true">&rarr;</span></a>
       <a class="ncard rv" style="--d:0.12s" href="#contact" aria-label="Growth: Show me how"><div class="ncard__body s-ink"><span class="ncard__n">06</span><span class="h3">Growth</span><p>Operations, strategy, and scale advisory. We embed with teams to unlock velocity at every stage of growth.</p><span class="ncard__cta">Show me how</span></div><span class="ncard__go" aria-hidden="true">&rarr;</span></a>
+    </div>
+  </div>
+</section>
+
+<section class="sec" id="maths">
+  <div class="wrap">
+    <div class="head">
+      <div class="rv"><span class="tag">The maths</span><h2 class="h2">What&rsquo;s a meeting <em>worth?</em></h2></div>
+      <p class="lead rv" style="--d:.08s">Plug in your numbers. See what a steady flow of good meetings is worth.</p>
+    </div>
+    <div class="calc">
+      <div class="card rv">
+        <div class="ctrl"><div class="ctrl__top"><label for="rDeal">Average deal value</label><output id="oDeal" for="rDeal">£12,000</output></div><input class="range" id="rDeal" type="range" min="0" max="1000" step="1" value="511"></div>
+        <div class="ctrl"><div class="ctrl__top"><label for="rClose">Meetings you win</label><output id="oClose" for="rClose">20%</output></div><input class="range" id="rClose" type="range" min="5" max="60" step="1" value="20"></div>
+        <div class="ctrl"><div class="ctrl__top"><label for="rMeet">Meetings a month</label><output id="oMeet" for="rMeet">12</output></div><input class="range" id="rMeet" type="range" min="2" max="60" step="1" value="12"></div>
+        <div class="assume">
+          <p>Starting points. Change them to match your market.</p>
+          <div class="assume__row"><span>Reply rate</span><span class="stepper"><button type="button" data-step="reply" data-dir="-1" aria-label="Lower reply rate">&minus;</button><output id="oReply">5%</output><button type="button" data-step="reply" data-dir="1" aria-label="Raise reply rate">+</button></span></div>
+          <div class="assume__row"><span>Replies that become meetings</span><span class="stepper"><button type="button" data-step="conv" data-dir="-1" aria-label="Lower rate">&minus;</button><output id="oConv">25%</output><button type="button" data-step="conv" data-dir="1" aria-label="Raise rate">+</button></span></div>
+        </div>
+      </div>
+      <div class="out rv" style="--d:.08s" aria-live="polite">
+        <p class="out__label">Expected new revenue a month</p>
+        <p class="out__big" id="vRev">£28,800</p>
+        <div class="out__grid">
+          <div><b id="vPipe">£144,000</b><span>Pipeline a month</span></div>
+          <div><b id="vPer">£2,400</b><span>Each meeting is worth</span></div>
+          <div><b id="vWins">2.4</b><span>New customers a month</span></div>
+          <div><b id="vYear">£345,600</b><span>New revenue a year</span></div>
+        </div>
+        <div class="funnel">
+          <div class="fn"><span>Reached</span><div class="fn__bar"><i id="bC"></i></div><b id="nC">960</b></div>
+          <div class="fn"><span>Replies</span><div class="fn__bar"><i id="bR"></i></div><b id="nR">48</b></div>
+          <div class="fn"><span>Meetings</span><div class="fn__bar"><i id="bM"></i></div><b id="nM">12</b></div>
+          <div class="fn"><span>Customers</span><div class="fn__bar"><i id="bW"></i></div><b id="nW">2.4</b></div>
+        </div>
+        <p class="out__say" id="vSay"></p>
+        <a class="btn btn--orange" id="calcCta" href="#contact">Get me these meetings <i aria-hidden="true">&rarr;</i></a>
+        <p class="fine">Your inputs, simple maths. A planning tool, not a promise.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="sec" id="paid" style="padding-top:0">
+  <div class="wrap">
+    <div class="head">
+      <div class="rv"><span class="tag">Google and Meta</span><h2 class="h2">Ads are the easy part. We build the <em>whole funnel.</em></h2></div>
+    </div>
+    <div class="blocks" id="blocks">
+      <div class="blk" style="--w:100%;--k:0"><small>1</small><b>Ads</b><span>Google Search, Shopping, Meta and TikTok</span></div>
+      <div class="blk" style="--w:94%;--k:1"><small>2</small><b>Landing pages</b><span>Built to convert</span></div>
+      <div class="blk" style="--w:88%;--k:2"><small>3</small><b>Capture</b><span>Forms, quotes, calculators</span></div>
+      <div class="blk" style="--w:82%;--k:3"><small>4</small><b>Tracking</b><span>GA4, Meta pixel, Conversions API</span></div>
+      <div class="blk" style="--w:76%;--k:4"><small>5</small><b>Automations</b><span>CRM, bookings and admin on autopilot</span></div>
+      <div class="blk" style="--w:70%;--k:5"><small>6</small><b>Follow-up</b><span>Email, WhatsApp, SMS</span></div>
+      <div class="blk" style="--w:64%;--k:6"><small>7</small><b>Retargeting</b><span>Bring them back</span></div>
+      <div class="blk" style="--w:58%;--k:7"><small>8</small><b>SaaS</b><span>Our own software runs it all</span></div>
+      <div class="blk blk--end" style="--w:52%;--k:8"><b>Booked or sold &rarr;</b></div>
     </div>
   </div>
 </section>
@@ -171,5 +298,69 @@
 @media (max-width: 900px) { .lb { grid-template-columns: 1fr; } }
 </style>
 <script src="assets/site.js" defer></script>
+<script>
+(function () {
+  'use strict';
+  var reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  var $ = function (s, c) { return (c || document).querySelector(s); };
+  var $$ = function (s, c) { return Array.prototype.slice.call((c || document).querySelectorAll(s)); };
+  function clamp(v, a, b) { return Math.max(a, Math.min(b, v)); }
+  function gbp(n) { return '£' + Math.round(n).toLocaleString('en-GB'); }
+  function num(n) { return Math.round(n).toLocaleString('en-GB'); }
+  function one(n) { return n < 10 ? (Math.round(n * 10) / 10).toLocaleString('en-GB') : num(n); }
+
+  /* ---------- The maths ---------- */
+  var rDeal = $('#rDeal'), rClose = $('#rClose'), rMeet = $('#rMeet');
+  var calc = { reply: 5, conv: 25 }, limits = { reply: [1, 20, 0.5], conv: [5, 60, 5] }, state = {};
+  function dealFrom(v) { var raw = 500 * Math.pow(500, v / 1000), st = raw < 2000 ? 50 : raw < 20000 ? 250 : raw < 100000 ? 1000 : 5000; return Math.round(raw / st) * st; }
+  function fill(r) { r.style.setProperty('--p', ((r.value - r.min) / (r.max - r.min) * 100) + '%'); }
+  var tw = {};
+  function tween(id, to, f) {
+    var el = document.getElementById(id), from = tw[id] != null ? tw[id] : to; tw[id] = to;
+    if (reduce || from === to) { el.textContent = f(to); return; }
+    var t0 = performance.now();
+    (function step(now) { var k = Math.min(1, (now - t0) / 500), e = 1 - Math.pow(1 - k, 3); el.textContent = f(from + (to - from) * e); if (k < 1 && tw[id] === to) requestAnimationFrame(step); })(t0);
+  }
+  function runCalc() {
+    var deal = dealFrom(+rDeal.value), close = +rClose.value / 100, meet = +rMeet.value;
+    var pipe = meet * deal, rev = pipe * close, wins = meet * close, replies = meet / (calc.conv / 100), reach = replies / (calc.reply / 100);
+    $('#oDeal').textContent = gbp(deal); $('#oClose').textContent = Math.round(close * 100) + '%'; $('#oMeet').textContent = meet;
+    $('#oReply').textContent = (calc.reply % 1 ? calc.reply.toFixed(1) : calc.reply) + '%'; $('#oConv').textContent = calc.conv + '%';
+    [rDeal, rClose, rMeet].forEach(fill);
+    tween('vRev', rev, gbp); tween('vPipe', pipe, gbp); tween('vPer', deal * close, gbp); tween('vWins', wins, one); tween('vYear', rev * 12, gbp);
+    tween('nC', reach, num); tween('nR', replies, num); tween('nM', meet, num); tween('nW', wins, one);
+    var top = Math.log10(reach + 1);
+    [['bC', reach], ['bR', replies], ['bM', meet], ['bW', wins]].forEach(function (b) { document.getElementById(b[0]).style.width = Math.max(4, Math.log10(b[1] + 1) / top * 100) + '%'; });
+    $('#vSay').innerHTML = 'To book <b>' + meet + ' meetings</b> a month at these rates, we reach about <b>' + num(reach) + ' of the right people</b>. Finding them is our job.';
+    state = { deal: deal, close: close, meet: meet };
+  }
+  [rDeal, rClose, rMeet].forEach(function (r) { r.addEventListener('input', runCalc); });
+  $$('[data-step]').forEach(function (b) { b.addEventListener('click', function () { var k = b.getAttribute('data-step'), L = limits[k]; calc[k] = clamp(calc[k] + L[2] * +b.getAttribute('data-dir'), L[0], L[1]); runCalc(); }); });
+  runCalc();
+
+  function numbersText() { return 'From the calculator: average deal ' + gbp(state.deal) + ', ' + Math.round(state.close * 100) + '% of meetings won, aiming for ' + state.meet + ' meetings a month.'; }
+
+  /* ---------- Everything that leads to the form pre-fills it ---------- */
+  var pre = { goal: '', nums: false }, dirty = false, ta = $('#fBrief');
+  ta.addEventListener('input', function () { dirty = true; });
+  function compose() { var o = []; if (pre.goal) o.push('Goal: ' + pre.goal); if (pre.nums) o.push(numbersText()); return o.join('\n\n') + (o.length ? '\n\n' : ''); }
+  function goBook(ch) {
+    var add = ch.goal ? 'Goal: ' + ch.goal : ch.nums ? numbersText() : '';
+    for (var k in ch) pre[k] = ch[k];
+    if (!dirty) ta.value = compose(); else if (add) ta.value = ta.value.replace(/\s*$/, '') + '\n\n' + add;
+    ($('#book') || $('#contact')).scrollIntoView({ behavior: reduce ? 'auto' : 'smooth' });
+    setTimeout(function () { $('#fName').focus({ preventScroll: true }); }, reduce ? 0 : 700);
+  }
+  $('#calcCta').addEventListener('click', function (e) { e.preventDefault(); goBook({ nums: true }); });
+
+  /* ---------- Google + Meta funnel builds itself ---------- */
+  var blocks = $('#blocks');
+  if (reduce || !('IntersectionObserver' in window)) blocks.classList.add('built');
+  else { var bio = new IntersectionObserver(function (es) { if (es[0].isIntersecting) { bio.disconnect(); blocks.classList.add('built'); } }, { threshold: .25 }); bio.observe(blocks); }
+
+  /* Clear the 'edited by hand' flag once the shared form script resets the form after sending */
+  $('#auditForm').addEventListener('reset', function () { dirty = false; });
+})();
+</script>
 </body>
 </html>
