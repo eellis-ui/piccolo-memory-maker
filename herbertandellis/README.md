@@ -9,7 +9,7 @@ stylesheet and one shared script.
 | --- | --- |
 | `index.html` | Homepage |
 | `lead-generation/index.html` | Lead generation page, served at `/lead-generation/` |
-| `finance-form/index.html` | Development finance client form, served at `/finance-form/` |
+| `finance-form/index.html` | Property finance client form, served at `/finance-form/` |
 | `finance-form/thanks/index.html` | Where the finance form lands after sending |
 | `assets/site.css` | Shared design system: colours, type, buttons, stickers, phone carousel, cards, panels |
 | `assets/site.js` | Shared behaviour: nav, giant-word letters, phone carousel, reveals, sticky "Get leads" button |
@@ -67,9 +67,12 @@ enquiry after that is delivered. If the service is ever unreachable, the form op
 app with the enquiry filled in, addressed to hello@herbertandellis.com, so nothing is lost. To use a different
 service, change `data-endpoint` on the form in `lead-generation/index.html`.
 
-## Development finance form
+## Property finance form
 
-`/finance-form/` is the web version of the Development & Refurbishment Finance client information form. It is
+`/finance-form/` is the web version of the client information form, covering bridging (residential and
+commercial), refurbishment (light, medium or heavy; residential, HMO or commercial-to-residential conversion),
+development and part-complete development (pre or post wind and watertight). Only the follow-up answers for the
+chosen type are sent. It is
 kept out of search results (`noindex`) and out of the sitemap, since it is sent to clients by link. It posts
 straight to FormSubmit (`https://formsubmit.co/hello@herbertandellis.com`) as a normal form post, which lets
 clients attach their documents, up to 10 MB in total; the email's reply-to is the client's address. Before

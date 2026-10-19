@@ -3,14 +3,14 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<title>Development Finance Client Form | Herbert &amp; Ellis</title>
-<meta name="description" content="Development and refurbishment finance: send Herbert &amp; Ellis your project details and documents so we can put it in front of the right lender.">
+<title>Property Finance Client Form | Herbert &amp; Ellis</title>
+<meta name="description" content="Bridging, refurbishment, development and part-complete development finance: send Herbert &amp; Ellis your project details and documents so we can put it in front of the right lender.">
 <link rel="canonical" href="https://www.herbertandellis.com/finance-form/">
 <meta name="theme-color" content="#F5EFE6">
 <meta property="og:type" content="website">
 <meta property="og:url" content="https://www.herbertandellis.com/finance-form/">
-<meta property="og:title" content="Development Finance Client Form | Herbert &amp; Ellis">
-<meta property="og:description" content="Development and refurbishment finance: send Herbert &amp; Ellis your project details and documents so we can put it in front of the right lender.">
+<meta property="og:title" content="Property Finance Client Form | Herbert &amp; Ellis">
+<meta property="og:description" content="Bridging, refurbishment, development and part-complete development finance: send Herbert &amp; Ellis your project details and documents so we can put it in front of the right lender.">
 <meta name="robots" content="noindex, nofollow">
 <meta property="og:locale" content="en_GB">
 <meta property="og:image" content="https://www.herbertandellis.com/og-image.png">
@@ -19,8 +19,8 @@
 <meta property="og:image:alt" content="Herbert &amp; Ellis. We don&rsquo;t follow trends. We build what&rsquo;s next.">
 <meta property="og:site_name" content="Herbert &amp; Ellis">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="Development Finance Client Form | Herbert &amp; Ellis">
-<meta name="twitter:description" content="Development and refurbishment finance: send Herbert &amp; Ellis your project details and documents so we can put it in front of the right lender.">
+<meta name="twitter:title" content="Property Finance Client Form | Herbert &amp; Ellis">
+<meta name="twitter:description" content="Bridging, refurbishment, development and part-complete development finance: send Herbert &amp; Ellis your project details and documents so we can put it in front of the right lender.">
 <meta name="twitter:image" content="https://www.herbertandellis.com/og-image.png">
 
 <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='12' fill='%2316151F'/%3E%3Crect x='9' y='14' width='5' height='36' rx='2' fill='%23E2531E'/%3E%3Ctext x='18' y='43' font-family='Arial Black%2CHelvetica Neue%2CArial%2Csans-serif' font-weight='900' font-size='25' fill='%23F5EFE6' letter-spacing='-1'%3EH%26amp%3BE%3C/text%3E%3C/svg%3E">
@@ -66,6 +66,21 @@
 .ff-note { font-weight: 600; color: var(--ink-2); font-size: .93rem; margin-bottom: 1rem; max-width: 80ch; }
 #advMore { margin-top: 16px; }
 #advMore[hidden] { display: none; }
+
+/* Type of finance */
+.ff-types { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 10px; }
+.ff-type { position: relative; display: grid; align-content: start; gap: .35rem; padding: 1.1rem 1.1rem 1.2rem; border-radius: 16px; background: var(--cream); border: 2px solid transparent; cursor: pointer; transition: border-color .2s, background .2s, transform .2s; }
+.ff-type:hover { transform: translateY(-2px); }
+.ff-type input { position: absolute; top: 1rem; right: 1rem; accent-color: var(--orange); width: 1.15rem; height: 1.15rem; margin: 0; }
+.ff-type b { font-size: 1.15rem; font-weight: 800; font-variation-settings: "wdth" 90; padding-right: 1.6rem; }
+.ff-type span { font-size: .88rem; font-weight: 600; color: var(--ink-2); line-height: 1.35; }
+.ff-type:has(input:checked) { border-color: var(--orange); background: var(--white); }
+.ff-type:has(input:focus-visible) { outline: 2px solid var(--orange); outline-offset: 3px; }
+.ff-types.is-bad .ff-type { border-color: var(--orange-2); }
+.ff-more { display: grid; gap: 14px; margin-top: 16px; padding: 1rem 1.1rem; border-radius: 16px; background: #FDFAF6; border: 1px solid var(--cream-2); }
+.ff-more[hidden] { display: none; }
+.ff-more .opt { font-weight: 600; color: var(--ink-2); }
+.ff-amt { margin-top: 16px; }
 
 /* Team and unit rows */
 .ff-team__h, .ff-team__row { display: grid; grid-template-columns: 1fr 1.6fr 1.6fr 2.4rem; gap: 10px; align-items: center; }
@@ -117,6 +132,7 @@
 .btn[disabled] { opacity: .65; pointer-events: none; }
 
 @media (max-width: 860px) {
+  .ff-types { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .ff-g .s1, .ff-g .s2 { grid-column: span 3; }
   .ff-g .s3, .ff-g .s4 { grid-column: 1 / -1; }
   .ff-doc { grid-template-columns: 1fr; }
@@ -152,9 +168,9 @@
 <main>
 <section class="ff-hero">
   <div class="ff-wrap">
-    <span class="tag">Development &amp; refurbishment finance</span>
+    <span class="tag">Property finance</span>
     <h1 class="h2">Client information <em>form.</em></h1>
-    <p class="lead">Complete the sections below and send it with the documents listed in section 6. The more you can give us up front, the faster we can put your project in front of the right lender. Leave anything that does not apply blank.</p>
+    <p class="lead">Bridging, refurbishment, development and part-complete schemes. Complete the sections below and send it with the documents listed in section 7. The more you can give us up front, the faster we can put your project in front of the right lender. Leave anything that does not apply blank.</p>
     <p class="ff-draft" id="draftNote" hidden>We&rsquo;ve kept what you typed last time on this device. <button type="button" id="draftClear">Start again</button></p>
   </div>
 </section>
@@ -162,15 +178,38 @@
 <section class="ff-body">
   <div class="ff-wrap">
   <form id="financeForm" action="https://formsubmit.co/hello@herbertandellis.com" method="POST" enctype="multipart/form-data" novalidate>
-    <input type="hidden" name="_subject" id="fSubject" value="Development finance client form">
+    <input type="hidden" name="_subject" id="fSubject" value="Property finance client form">
     <input type="hidden" name="_template" value="table">
     <input type="hidden" name="_captcha" value="false">
     <input type="hidden" name="_next" value="https://www.herbertandellis.com/finance-form/thanks/">
     <input type="hidden" name="_replyto" id="fReply" disabled>
-    <input type="hidden" name="Form" value="Development &amp; refurbishment finance client form">
+    <input type="hidden" name="Form" value="Property finance client form">
     <div class="hp" aria-hidden="true"><label for="fHoney">Leave empty</label><input id="fHoney" name="_honey" tabindex="-1" autocomplete="off"></div>
     <fieldset class="ff-sec" id="s1">
-      <legend class="ff-sec__head"><span class="ff-num" aria-hidden="true">1</span><span class="ff-sec__t">Borrower</span> <small>who will be taking the loan</small></legend>
+      <legend class="ff-sec__head"><span class="ff-num" aria-hidden="true">1</span><span class="ff-sec__t">Finance required</span> <small>what you are looking for</small></legend>
+      <div class="ff-types" role="radiogroup" aria-labelledby="ftQ" id="ftGroup">
+        <span class="sr" id="ftQ">Type of finance</span>
+        <label class="ff-type"><input type="radio" name="Finance type" value="Bridging"><b>Bridging</b><span>Residential and commercial</span></label>
+        <label class="ff-type"><input type="radio" name="Finance type" value="Refurbishment"><b>Refurbishment</b><span>Light, medium and heavy refurbishments</span></label>
+        <label class="ff-type"><input type="radio" name="Finance type" value="Development"><b>Development</b><span>Out of the ground new builds</span></label>
+        <label class="ff-type"><input type="radio" name="Finance type" value="Part-complete development (PCD)"><b>Part-complete (PCD)</b><span>Pre and post wind and watertight</span></label>
+      </div>
+      <div class="ff-more" data-for="Bridging" hidden>
+        <div class="f"><span class="ff-lab">Property type</span><div class="ff-choices"><label class="ff-choice"><input type="radio" name="Bridging property type" value="Residential"> Residential</label><label class="ff-choice"><input type="radio" name="Bridging property type" value="Commercial"> Commercial</label></div></div>
+      </div>
+      <div class="ff-more" data-for="Refurbishment" hidden>
+        <div class="f"><span class="ff-lab">Level of refurbishment</span><div class="ff-choices"><label class="ff-choice"><input type="radio" name="Refurbishment level" value="Light"> Light</label><label class="ff-choice"><input type="radio" name="Refurbishment level" value="Medium"> Medium</label><label class="ff-choice"><input type="radio" name="Refurbishment level" value="Heavy"> Heavy</label></div></div>
+        <div class="f"><span class="ff-lab">The scheme</span><div class="ff-choices"><label class="ff-choice"><input type="radio" name="Refurbishment scheme" value="Residential"> Residential</label><label class="ff-choice"><input type="radio" name="Refurbishment scheme" value="HMO"> HMO</label><label class="ff-choice"><input type="radio" name="Refurbishment scheme" value="Commercial to residential conversion"> Commercial to residential conversion <span class="opt">offices, barns, churches, pubs</span></label></div></div>
+      </div>
+      <div class="ff-more" data-for="Part-complete development (PCD)" hidden>
+        <div class="f"><span class="ff-lab">Where the build is now</span><div class="ff-choices"><label class="ff-choice"><input type="radio" name="PCD stage" value="Pre wind and watertight"> Pre wind and watertight</label><label class="ff-choice"><input type="radio" name="PCD stage" value="Post wind and watertight"> Post wind and watertight</label></div></div>
+      </div>
+      <div class="ff-g ff-amt">
+        <div class="f s2"><label for="fAmount">Loan amount required</label><span class="ff-money"><input id="fAmount" name="Loan amount required (GBP)" type="text" inputmode="decimal" autocomplete="off" data-money></span></div>
+      </div>
+    </fieldset>
+    <fieldset class="ff-sec" id="s2">
+      <legend class="ff-sec__head"><span class="ff-num" aria-hidden="true">2</span><span class="ff-sec__t">Borrower</span> <small>who will be taking the loan</small></legend>
       <div class="ff-g">
         <div class="f s6"><label for="bName">Borrowing company name <span class="opt">or your full name if you are not borrowing through an SPV</span></label><input id="bName" name="Borrowing company or name" type="text" required autocomplete="organization"></div>
         <div class="f s3"><label for="bNumber">Company number <span class="opt">if borrowing through a company</span></label><input id="bNumber" name="Company number" type="text" autocomplete="off"></div>
@@ -183,8 +222,8 @@
         <div class="f s2"><label for="cPhone">Phone</label><input id="cPhone" name="Phone" type="tel" required autocomplete="tel" inputmode="tel"></div>
       </div>
     </fieldset>
-    <fieldset class="ff-sec" id="s2">
-      <legend class="ff-sec__head"><span class="ff-num" aria-hidden="true">2</span><span class="ff-sec__t">The property or site</span> <small>the security for the loan</small></legend>
+    <fieldset class="ff-sec" id="s3">
+      <legend class="ff-sec__head"><span class="ff-num" aria-hidden="true">3</span><span class="ff-sec__t">The property or site</span> <small>the security for the loan</small></legend>
       <div class="ff-g">
         <div class="f s6"><label for="pAddr">Full address</label><textarea id="pAddr" name="Property address" required rows="3" autocomplete="street-address"></textarea></div>
         <div class="f s1"><label for="pPost">Postcode</label><input id="pPost" name="Postcode" type="text" autocomplete="postal-code"></div>
@@ -195,8 +234,8 @@
         <div class="f s4"><label for="pPlan">Planning reference for the elected scheme <span class="opt">if applicable</span></label><input id="pPlan" name="Planning reference" type="text" autocomplete="off"></div>
       </div>
     </fieldset>
-    <fieldset class="ff-sec" id="s3">
-      <legend class="ff-sec__head"><span class="ff-num" aria-hidden="true">3</span><span class="ff-sec__t">Construction team</span> <small>who is building it</small></legend>
+    <fieldset class="ff-sec" id="s4">
+      <legend class="ff-sec__head"><span class="ff-num" aria-hidden="true">4</span><span class="ff-sec__t">Construction team</span> <small>who is building it, if there are works</small></legend>
       <div class="ff-team" id="team">
         <div class="ff-team__h" aria-hidden="true"><span>Role</span><span>Company name</span><span>Website</span><span></span></div>
         <div class="ff-team__rows" id="teamRows"></div>
@@ -204,8 +243,8 @@
         <input type="hidden" name="Construction team" id="teamOut" disabled>
       </div>
     </fieldset>
-    <fieldset class="ff-sec" id="s4">
-      <legend class="ff-sec__head"><span class="ff-num" aria-hidden="true">4</span><span class="ff-sec__t">Breakdown of units</span> <small>one line per unit</small></legend>
+    <fieldset class="ff-sec" id="s5">
+      <legend class="ff-sec__head"><span class="ff-num" aria-hidden="true">5</span><span class="ff-sec__t">Breakdown of units</span> <small>one line per unit</small></legend>
       <p class="ff-note">For units you plan to sell, give the expected sale price (GDV). For units you plan to rent out, give the expected monthly rent. Fill in both if you have them.</p>
       <div class="ff-units" id="units">
         <div class="ff-units__h" aria-hidden="true"><span>Unit</span><span>Type</span><span>Bedrooms</span><span>Sq ft</span><span>GDV (£)</span><span>Rent (£ pcm)</span><span>Sell or let</span><span></span></div>
@@ -216,8 +255,8 @@
         <input type="hidden" name="Unit totals" id="totOut" disabled>
       </div>
     </fieldset>
-    <fieldset class="ff-sec" id="s5">
-      <legend class="ff-sec__head"><span class="ff-num" aria-hidden="true">5</span><span class="ff-sec__t">Adverse credit</span> <small>for the borrower, directors and shareholders</small></legend>
+    <fieldset class="ff-sec" id="s6">
+      <legend class="ff-sec__head"><span class="ff-num" aria-hidden="true">6</span><span class="ff-sec__t">Adverse credit</span> <small>for the borrower, directors and shareholders</small></legend>
       <p class="ff-q" id="advQ">Has the borrower, or any director or shareholder, had any adverse credit, for example CCJs, defaults, missed payments, arrears, IVAs or bankruptcy, personally or through a company?</p>
       <div class="ff-choices" role="radiogroup" aria-labelledby="advQ" id="advGroup">
         <label class="ff-choice"><input type="radio" name="Adverse credit" value="No"> No</label>
@@ -227,8 +266,8 @@
         <div class="f s6"><label for="advD">Details and the reasons behind it <span class="opt">who it relates to, what it was, when, the amount, and whether it is now settled</span></label><textarea id="advD" name="Adverse credit details" rows="4"></textarea></div>
       </div>
     </fieldset>
-    <fieldset class="ff-sec" id="s6">
-      <legend class="ff-sec__head"><span class="ff-num" aria-hidden="true">6</span><span class="ff-sec__t">Documents to send with this form</span> <small>attach each one, or tick if you&rsquo;ll email it</small></legend>
+    <fieldset class="ff-sec" id="s7">
+      <legend class="ff-sec__head"><span class="ff-num" aria-hidden="true">7</span><span class="ff-sec__t">Documents to send with this form</span> <small>attach each one, or tick if you&rsquo;ll email it</small></legend>
       <div class="ff-docs">
         <div class="ff-doc" data-doc="Development appraisal">
           <div class="ff-doc__t"><b>Development appraisal</b><p>Including the core construction cost, contingency and CIL.</p></div>
@@ -266,8 +305,8 @@
         <p>Attach what you can above, up to 10&nbsp;MB in total, and press send at the bottom. It comes straight to us at <a href="mailto:hello@herbertandellis.com">hello@herbertandellis.com</a>. Anything larger, email it to that address or straight to your Herbert &amp; Ellis contact. We will be in touch to talk it through.</p>
       </div>
     </fieldset>
-    <fieldset class="ff-sec" id="s7">
-      <legend class="ff-sec__head"><span class="ff-num" aria-hidden="true">7</span><span class="ff-sec__t">Declaration</span></legend>
+    <fieldset class="ff-sec" id="s8">
+      <legend class="ff-sec__head"><span class="ff-num" aria-hidden="true">8</span><span class="ff-sec__t">Declaration</span></legend>
       <p class="ff-q">I confirm the information in this form is true and complete to the best of my knowledge, and I am happy for Herbert &amp; Ellis to share it with lenders to arrange finance for this project.</p>
       <label class="ff-tick ff-tick--big"><input type="checkbox" id="decl" name="Declaration" value="Confirmed" required> I confirm</label>
       <div class="ff-g">
@@ -370,6 +409,10 @@
   });
 
   /* ---------- Adverse credit ---------- */
+  /* ---------- Type of finance: show the follow-up questions for the one chosen ---------- */
+  function ftype() { var c = $('input[name="Finance type"]:checked'), v = c ? c.value : ''; $$('[data-for]').forEach(function (d) { d.hidden = d.getAttribute('data-for') !== v; }); }
+  $$('input[name="Finance type"]').forEach(function (r) { r.addEventListener('change', ftype); });
+
   function adverse() { var y = $('input[name="Adverse credit"][value="Yes"]').checked; $('#advMore').hidden = !y; }
   $$('input[name="Adverse credit"]').forEach(function (r) { r.addEventListener('change', adverse); });
 
@@ -418,7 +461,7 @@
     Object.keys(d.v || {}).forEach(function (id) { var el = document.getElementById(id); if (el) { el.value = d.v[id]; if (id !== 'sDate' && !/^tR/.test(id)) any = true; } });
     Object.keys(d.c || {}).forEach(function (id) { var el = document.getElementById(id); if (el) el.checked = true; });
     Object.keys(d.r || {}).forEach(function (n) { $$('input[type=radio]', form).forEach(function (r) { if (r.name === n && r.value === d.r[n]) { r.checked = true; any = true; } }); });
-    adverse(); totals();
+    adverse(); ftype(); totals();
     if (any) $('#draftNote').hidden = false;
   }
   restore();
@@ -429,7 +472,7 @@
   /* ---------- Send ---------- */
   function clearBad() { $$('.is-bad', form).forEach(function (el) { el.classList.remove('is-bad'); }); }
   form.addEventListener('input', function (e) { if (e.target.classList) e.target.classList.remove('is-bad'); });
-  form.addEventListener('change', function (e) { var g = e.target.closest && e.target.closest('.ff-choices, .ff-tick'); if (g) g.classList.remove('is-bad'); });
+  form.addEventListener('change', function (e) { var g = e.target.closest && e.target.closest('.ff-choices, .ff-tick, .ff-types'); if (g) g.classList.remove('is-bad'); });
   var off = [];
   function hide(el) { if (!el.disabled) { el.disabled = true; off.push(el); } }
   function show(el, v) { el.value = v; el.disabled = !v; }
@@ -441,6 +484,8 @@
     var bad = [];
     function need(id, ok) { var el = document.getElementById(id); if (!ok(el.value.trim(), el)) { el.classList.add('is-bad'); bad.push(el); } }
     var filled = function (v) { return !!v; };
+    var ft = $('input[name="Finance type"]:checked');
+    if (!ft) { $('#ftGroup').classList.add('is-bad'); bad.push($('input[name="Finance type"]')); }
     need('bName', filled); need('cName', filled);
     need('cEmail', function (v, el) { return v && el.validity.valid; });
     need('cPhone', function (v) { return v.replace(/\D/g, '').length >= 7; });
@@ -452,7 +497,7 @@
     need('sName', filled); need('sSig', filled); need('sDate', filled);
     if (bad.length) {
       bad[0].focus(); status.className = 'form__status err';
-      status.textContent = 'Nearly there. Fill in the boxes marked in orange: the borrower, main contact, email, phone, property address, the adverse credit question and the declaration.';
+      status.textContent = 'Nearly there. Fill in the boxes marked in orange: the type of finance, the borrower, main contact, email, phone, property address, the adverse credit question and the declaration.';
       return;
     }
     if (!sizeCheck()) return;
@@ -479,7 +524,8 @@
     });
     show($('#docsOut'), docs.join('\n'));
     show($('#fReply'), $('#cEmail').value.trim());
-    $('#fSubject').value = 'Development finance form: ' + $('#bName').value.trim();
+    $('#fSubject').value = 'Finance form (' + ft.value + '): ' + $('#bName').value.trim();
+    $$('[data-for][hidden] input').forEach(hide);
 
     /* Leave out empty boxes and empty file slots */
     $$('input, textarea, select', form).forEach(function (el) {
