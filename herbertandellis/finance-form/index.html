@@ -465,6 +465,9 @@
     if (any) $('#draftNote').hidden = false;
   }
   restore();
+  /* Arriving from a product card (?type=bridging etc.) picks that type, unless a saved draft already has one */
+  var want = { bridging: 'Bridging', refurbishment: 'Refurbishment', development: 'Development', pcd: 'Part-complete development (PCD)' }[(location.search.match(/[?&]type=([a-z]+)/) || [])[1]];
+  if (want && !$('input[name="Finance type"]:checked')) $$('input[name="Finance type"]').forEach(function (r) { if (r.value === want) { r.checked = true; ftype(); } });
   form.addEventListener('input', save); form.addEventListener('change', save);
   $('#draftClear').addEventListener('click', function () { try { localStorage.removeItem(KEY); } catch (e) {} location.reload(); });
   var dt = $('#sDate'); if (!dt.value) { var t = new Date(); dt.value = t.getFullYear() + '-' + String(t.getMonth() + 1).padStart(2, '0') + '-' + String(t.getDate()).padStart(2, '0'); }

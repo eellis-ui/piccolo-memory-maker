@@ -9,6 +9,7 @@ stylesheet and one shared script.
 | --- | --- |
 | `index.html` | Homepage |
 | `lead-generation/index.html` | Lead generation page, served at `/lead-generation/` |
+| `property-finance/index.html` | Property finance page (bridging, refurbishment, development, part-complete), served at `/property-finance/` |
 | `finance-form/index.html` | Property finance client form, served at `/finance-form/` |
 | `finance-form/thanks/index.html` | Where the finance form lands after sending |
 | `assets/site.css` | Shared design system: colours, type, buttons, stickers, phone carousel, cards, panels |
@@ -79,3 +80,11 @@ clients attach their documents, up to 10 MB in total; the email's reply-to is th
 sending, the page turns the construction team, unit breakdown and document checklist into a few tidy lines
 and leaves empty boxes out. FormSubmit then returns the client to `/finance-form/thanks/`. What a client types
 is kept in their own browser until they send, so they can come back to it; attached files are not kept.
+
+## Property finance page
+
+`/property-finance/` sets out the four kinds of finance, how it works, what to have ready, and the capital side
+(investors and backers). Each product card opens the client form with that type already chosen, for example
+`/finance-form/?type=bridging` (also `refurbishment`, `development`, `pcd`). The homepage links to it from the
+"Property finance" band under the services grid. The page carries the standard warning that finance is subject
+to status and lender criteria and that a property may be repossessed if repayments on a secured debt are not kept up.

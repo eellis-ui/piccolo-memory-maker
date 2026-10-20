@@ -185,6 +185,20 @@ html.js .blocks:not(.built) .blk { opacity: 0; transform: translateX(-40px); }
   </div>
 </section>
 
+<section class="sec" id="finance" style="padding-top:0">
+  <div class="wrap">
+    <div class="hf rv">
+      <div class="hf__l"><span class="tag">Property finance</span><h2 class="h2">Bridging, refurbishment and development <em>finance.</em></h2><p>Tell us the project. We put it in front of the right lender.</p><a class="btn btn--orange" href="property-finance/">Explore property finance <i aria-hidden="true">&rarr;</i></a></div>
+      <div class="hf__g">
+        <a href="property-finance/#bridging"><b>Bridging</b><span>Residential and commercial</span><i aria-hidden="true">&rarr;</i></a>
+        <a href="property-finance/#refurbishment"><b>Refurbishment</b><span>Light, medium and heavy</span><i aria-hidden="true">&rarr;</i></a>
+        <a href="property-finance/#development"><b>Development</b><span>Out of the ground new builds</span><i aria-hidden="true">&rarr;</i></a>
+        <a href="property-finance/#pcd"><b>Part-complete</b><span>Pre and post wind and watertight</span><i aria-hidden="true">&rarr;</i></a>
+      </div>
+    </div>
+  </div>
+</section>
+
 <section class="sec" id="maths">
   <div class="wrap">
     <div class="head">
@@ -296,6 +310,20 @@ html.js .blocks:not(.built) .blk { opacity: 0; transform: translateX(-40px); }
 .lb__side p { font-size: clamp(1.1rem, 1.6vw, 1.35rem); font-weight: 700; max-width: 30ch; margin-bottom: 1.6rem; }
 .lb__side .link { color: var(--white); }
 @media (max-width: 900px) { .lb { grid-template-columns: 1fr; } }
+.hf { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.1fr); gap: 2rem 3rem; align-items: center; background: var(--ink); color: var(--cream); border-radius: clamp(20px, 3vw, 32px); padding: clamp(24px, 4vw, 56px); }
+.hf .tag { color: var(--orange); }
+.hf .h2 { color: var(--cream); font-size: clamp(2.2rem, 4.6vw, 4.4rem); }
+.hf__l p { margin: 1rem 0 1.6rem; font-weight: 600; font-size: clamp(1.02rem, 1.4vw, 1.2rem); color: rgba(245,239,230,.82); max-width: 36ch; }
+.hf__g { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
+.hf__g a { position: relative; display: grid; gap: .3rem; align-content: start; min-height: 132px; padding: 1.1rem 1.2rem 2.8rem; border-radius: 18px; background: rgba(245,239,230,.07); border: 1px solid rgba(245,239,230,.14); transition: background .25s, transform .4s var(--spring); }
+.hf__g a:hover { background: var(--orange); transform: translateY(-3px); }
+.hf__g b { font-size: clamp(1.2rem, 1.8vw, 1.5rem); font-weight: 800; font-variation-settings: "wdth" 88; }
+.hf__g span { font-size: .9rem; font-weight: 600; color: rgba(245,239,230,.75); }
+.hf__g a:hover span { color: var(--white); }
+.hf__g i { position: absolute; right: 12px; bottom: 12px; width: 2rem; height: 2rem; border-radius: 50%; display: grid; place-items: center; font-style: normal; font-weight: 800; background: var(--cream); color: var(--ink); transition: transform .45s var(--spring); }
+.hf__g a:hover i { transform: rotate(-45deg); }
+@media (max-width: 1000px) { .hf { grid-template-columns: 1fr; } }
+@media (max-width: 460px) { .hf__g { grid-template-columns: 1fr; } .hf__g a { min-height: 0; } }
 </style>
 <script src="assets/site.js" defer></script>
 <script>
