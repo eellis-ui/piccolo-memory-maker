@@ -91,9 +91,8 @@ to status and lender criteria and that a property may be repossessed if repaymen
 
 ## Finance wording and disclosure
 
-Herbert & Ellis only arranges non-regulated commercial finance. Every page footer carries a short disclosure
-(class `foot__legal`): commercial finance broker, not a lender; non-regulated finance only, with no regulated
-mortgages or consumer credit; details passed to lenders, investors and finance providers where appropriate; possible
-fee or commission; subject to status and lender criteria. Finance wording on the site says "investment" property
-rather than plain "residential", so it does not suggest loans on a home the borrower lives in.
-
+Herbert & Ellis is not a lender or a broker and is not regulated by the FCA; it passes enquiries on to companies
+that may be able to help. Every page footer says so (class `foot__legal`): not a lender, not regulated by the
+Financial Conduct Authority, and details may be passed to lenders, investors and finance providers where
+appropriate. Finance wording on the site avoids "arrange" and "broker", and says "investment" property rather than
+plain "residential", so it does not suggest loans on a home the borrower lives in.
