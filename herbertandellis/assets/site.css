@@ -272,6 +272,7 @@ button { cursor: pointer; }
 .foot__big span, .foot__big em { display: block; width: max-content; white-space: nowrap; font-style: normal; }
 .foot__big em { color: var(--orange); }
 .foot__in { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 1rem 2rem; padding-top: 24px; border-top: 1px solid rgba(245,239,230,.16); color: rgba(245,239,230,.7); font-size: .92rem; }
+.foot__legal p { margin-top: 18px; max-width: 120ch; font-size: .74rem; line-height: 1.55; font-weight: 500; color: rgba(245,239,230,.58); }
 .foot__links { display: flex; flex-wrap: wrap; gap: .4rem 1.4rem; }
 .foot__links a:hover { color: var(--orange); }
 

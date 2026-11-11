@@ -88,3 +88,12 @@ is kept in their own browser until they send, so they can come back to it; attac
 `/finance-form/?type=bridging` (also `refurbishment`, `development`, `pcd`). The homepage links to it from the
 "Property finance" band under the services grid. The page carries the standard warning that finance is subject
 to status and lender criteria and that a property may be repossessed if repayments on a secured debt are not kept up.
+
+## Finance wording and disclosure
+
+Herbert & Ellis only arranges non-regulated commercial finance. Every page footer carries a short disclosure
+(class `foot__legal`): commercial finance broker, not a lender; non-regulated finance only, with no regulated
+mortgages or consumer credit; details passed to lenders, investors and finance providers where appropriate; possible
+fee or commission; subject to status and lender criteria. Finance wording on the site says "investment" property
+rather than plain "residential", so it does not suggest loans on a home the borrower lives in.
+

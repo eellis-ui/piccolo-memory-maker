@@ -155,7 +155,7 @@
     $$('.rv').forEach(function (el) { rio.observe(el); });
   } else $$('.rv').forEach(function (el) { el.classList.add('in'); });
 
-  /* Sticky "Get leads": after the hero, hidden while a contact section is on screen */
+  /* Sticky help button: after the hero, hidden while a contact section is on screen */
   var stick = $('.stick'), heroEl = $('.hero');
   if (stick && heroEl) {
     var seen = {}, hides = $$('[data-hide-stick]');
