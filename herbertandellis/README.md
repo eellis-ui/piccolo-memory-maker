@@ -53,9 +53,19 @@ the portfolio and the "Hello!" form. Goal picks and the calculator pre-fill the 
 
 ## Going live (Cloudflare Pages)
 
-Upload the whole `herbertandellis/` folder (or the zip of it) as the Pages project for www.herbertandellis.com.
-Everything is static: no build step. Alongside the two pages it ships `404.html`, `robots.txt`, `sitemap.xml`,
-`og-image.png` (the 1200x630 link-share image) and `logo.png` (used in the structured data).
+The site is the Cloudflare Pages project `herbert-ellis` (www.herbertandellis.com). There are two ways to publish:
+
+- **Dashboard upload:** in Cloudflare, open the project, choose Create deployment and upload the whole
+  `herbertandellis/` folder (or a zip of it). Everything is static: no build step.
+- **From the command line with an API token** (Account, Cloudflare Pages, Edit):
+  `python3 herbertandellis-deploy/build_worker.py herbertandellis <out>` packs every file into one `_worker.js`
+  that serves them the way Pages serves static files, then
+  `wrangler pages deploy <out> --project-name=herbert-ellis --branch=main --skip-caching` publishes it. Use
+  `--branch=preview` first to check it at preview.herbert-ellis.pages.dev. Served this way, each request counts
+  against the account's Workers allowance; a later dashboard upload switches the site back to plain static files.
+
+Alongside the pages it ships `404.html`, `robots.txt`, `sitemap.xml`, `og-image.png` (the 1200x630 link-share
+image) and `logo.png` (used in the structured data).
 
 After the first deploy, submit the sitemap in Google Search Console: `https://www.herbertandellis.com/sitemap.xml`.
 
